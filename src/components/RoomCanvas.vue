@@ -174,7 +174,7 @@ const setupAudioContext = async () => {
 onMounted(async () => {
   ctx.value = canvas.value.getContext('2d')
   draw()
-  canvas.value.focus()
+  //canvas.value.focus()
 
   useCanvasControls({
     canvas,
