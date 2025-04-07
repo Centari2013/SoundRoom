@@ -76,8 +76,8 @@ const draw = () => {
   const dy = Math.sin(angleRad) * 20
   ctx.value.beginPath()
   ctx.value.moveTo(listener.value.x, listener.value.y)
-  ctx.value.lineTo(listener.value.x + dx, listener.value.y + dy)
-  ctx.value.strokeStyle = '#00f'
+  ctx.value.lineTo(listener.value.x - dx, listener.value.y - dy)
+  ctx.value.strokeStyle = '#fff'
   ctx.value.stroke()
 }
 

@@ -60,22 +60,65 @@ export function createSoundSource({
   }
 
   const draw = () => {
-    const { x, y } = state
-    ctx.beginPath()
-    ctx.arc(x, y, 10, 0, Math.PI * 2)
-    ctx.fillStyle = 'rgba(255, 0, 0, 0.6)'
-    ctx.fill()
-
-    const angleRad = rad(state.angle)
-    const dx = Math.cos(angleRad) * 14
-    const dy = Math.sin(angleRad) * 14
-    ctx.beginPath()
-    ctx.moveTo(x, y)
-    ctx.lineTo(x + dx, y + dy)
-    ctx.strokeStyle = '#fff'
-    ctx.lineWidth = 2
-    ctx.stroke()
-  }
+    const { x, y, angle, coneInner, coneOuter } = state;
+    const radAngle = rad(angle);
+    const coneLength = 80;
+  
+    if (!ctx) return;
+  
+    // Outer cone (soft)
+    if (coneOuter < 360) {
+      ctx.beginPath();
+      ctx.moveTo(x, y);
+      ctx.lineTo(
+        x + Math.cos(radAngle - rad(coneOuter / 2)) * coneLength,
+        y + Math.sin(radAngle - rad(coneOuter / 2)) * coneLength
+      );
+      ctx.lineTo(
+        x + Math.cos(radAngle + rad(coneOuter / 2)) * coneLength,
+        y + Math.sin(radAngle + rad(coneOuter / 2)) * coneLength
+      );
+      ctx.closePath();
+      ctx.fillStyle = 'rgba(255, 0, 0, 0.2)';
+      ctx.fill();
+    }
+  
+    // Inner cone (hard)
+    if (coneInner < 360) {
+      ctx.beginPath();
+      ctx.moveTo(x, y);
+      ctx.lineTo(
+        x + Math.cos(radAngle - rad(coneInner / 2)) * coneLength,
+        y + Math.sin(radAngle - rad(coneInner / 2)) * coneLength
+      );
+      ctx.lineTo(
+        x + Math.cos(radAngle + rad(coneInner / 2)) * coneLength,
+        y + Math.sin(radAngle + rad(coneInner / 2)) * coneLength
+      );
+      ctx.closePath();
+      ctx.fillStyle = 'rgba(255, 0, 0, 0.4)';
+      ctx.fill();
+    }
+  
+    // Core circle
+    ctx.beginPath();
+    ctx.arc(x, y, 10, 0, Math.PI * 2);
+    ctx.fillStyle = '#f00';
+    ctx.fill();
+  
+    // Direction line
+    if (coneInner < 360){
+      const dx = Math.cos(radAngle) * 14;
+      const dy = Math.sin(radAngle) * 14;
+      ctx.beginPath();
+      ctx.moveTo(x, y);
+      ctx.lineTo(x + dx, y + dy);
+      ctx.strokeStyle = '#fff';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+    }
+    
+  };
 
   audioElement.play()
   updateAudio()
