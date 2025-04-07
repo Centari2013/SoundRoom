@@ -1,4 +1,4 @@
-export async function createSoundSource({
+export function createSoundSource({
   audioContext,
   file,
   position = [0, 0, 0],
@@ -14,88 +14,91 @@ export async function createSoundSource({
     angle,
     coneInner,
     coneOuter
-  };
+  }
 
-  const rad = deg => (deg * Math.PI) / 180;
-  const scale = 0.01;
+  const rad = (deg) => (deg * Math.PI) / 180
+  const scale = 0.01
 
-  // Load and decode audio buffer
-  const response = await fetch(file);
-  const arrayBuffer = await response.arrayBuffer();
-  const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+  const audioElement = new Audio()
+  audioElement.src = file
+  audioElement.preload = 'auto'
+  audioElement.loop = loop
+  audioElement.volume = 1.0
 
-  const sourceNode = audioContext.createBufferSource();
-  sourceNode.buffer = audioBuffer;
-  sourceNode.loop = loop;
+  const sourceNode = audioContext.createMediaElementSource(audioElement)
+  const gainNode = audioContext.createGain()
+  const pannerNode = audioContext.createPanner()
 
-  const pannerNode = audioContext.createPanner();
-  pannerNode.panningModel = 'HRTF';
-  pannerNode.distanceModel = 'inverse';
-  pannerNode.refDistance = 1;
-  pannerNode.maxDistance = 10000;
-  pannerNode.rolloffFactor = 1;
-  pannerNode.coneInnerAngle = coneInner;
-  pannerNode.coneOuterAngle = coneOuter;
-  pannerNode.coneOuterGain = 0.2;
+  pannerNode.panningModel = 'HRTF'
+  pannerNode.distanceModel = 'inverse'
+  pannerNode.refDistance = 1
+  pannerNode.maxDistance = 10000
+  pannerNode.rolloffFactor = 1
+  pannerNode.coneInnerAngle = coneInner
+  pannerNode.coneOuterAngle = coneOuter
+  pannerNode.coneOuterGain = 0.2
 
-  sourceNode.connect(pannerNode).connect(audioContext.destination);
+  sourceNode.connect(gainNode).connect(pannerNode).connect(audioContext.destination)
 
   const updateAudio = () => {
-    const radAngle = rad(state.angle);
-    const x = state.x * scale;
-    const y = state.y * scale;
+    const radAngle = rad(state.angle)
+    const x = state.x * scale
+    const y = state.y * scale
 
     if (pannerNode.positionX) {
-      pannerNode.positionX.setValueAtTime(x, audioContext.currentTime);
-      pannerNode.positionY.setValueAtTime(y, audioContext.currentTime);
-      pannerNode.positionZ.setValueAtTime(0, audioContext.currentTime);
+      pannerNode.positionX.setValueAtTime(x, audioContext.currentTime)
+      pannerNode.positionY.setValueAtTime(y, audioContext.currentTime)
+      pannerNode.positionZ.setValueAtTime(0, audioContext.currentTime)
 
-      pannerNode.orientationX.setValueAtTime(Math.cos(radAngle), audioContext.currentTime);
-      pannerNode.orientationY.setValueAtTime(Math.sin(radAngle), audioContext.currentTime);
-      pannerNode.orientationZ.setValueAtTime(0, audioContext.currentTime);
+      pannerNode.orientationX.setValueAtTime(Math.cos(radAngle), audioContext.currentTime)
+      pannerNode.orientationY.setValueAtTime(Math.sin(radAngle), audioContext.currentTime)
+      pannerNode.orientationZ.setValueAtTime(0, audioContext.currentTime)
     } else {
-      pannerNode.setPosition(x, y, 0);
-      pannerNode.setOrientation(Math.cos(radAngle), Math.sin(radAngle), 0);
+      pannerNode.setPosition(x, y, 0)
+      pannerNode.setOrientation(Math.cos(radAngle), Math.sin(radAngle), 0)
     }
-  };
+  }
 
   const draw = () => {
-    const { x, y } = state;
-    ctx.beginPath();
-    ctx.arc(x, y, 10, 0, Math.PI * 2);
-    ctx.fillStyle = 'rgba(255, 0, 0, 0.6)';
-    ctx.fill();
+    const { x, y } = state
+    ctx.beginPath()
+    ctx.arc(x, y, 10, 0, Math.PI * 2)
+    ctx.fillStyle = 'rgba(255, 0, 0, 0.6)'
+    ctx.fill()
 
-    const angleRad = rad(state.angle);
-    const dx = Math.cos(angleRad) * 14;
-    const dy = Math.sin(angleRad) * 14;
-    ctx.beginPath();
-    ctx.moveTo(x, y);
-    ctx.lineTo(x + dx, y + dy);
-    ctx.strokeStyle = '#fff';
-    ctx.lineWidth = 2;
-    ctx.stroke();
-  };
+    const angleRad = rad(state.angle)
+    const dx = Math.cos(angleRad) * 14
+    const dy = Math.sin(angleRad) * 14
+    ctx.beginPath()
+    ctx.moveTo(x, y)
+    ctx.lineTo(x + dx, y + dy)
+    ctx.strokeStyle = '#fff'
+    ctx.lineWidth = 2
+    ctx.stroke()
+  }
 
-  // Start playback
-  sourceNode.start();
-  updateAudio();
+  audioElement.play()
+  updateAudio()
 
   return {
+    audioElement,
     sourceNode,
+    gainNode,
     pannerNode,
     state,
     updateAudio,
     draw,
-    stop: () => sourceNode.stop(),
+    stop: () => audioElement.pause(),
     dispose: () => {
       try {
-        sourceNode.stop();
-        sourceNode.disconnect();
-        pannerNode.disconnect();
+        audioElement.pause()
+        audioElement.src = ''
+        sourceNode.disconnect()
+        gainNode.disconnect()
+        pannerNode.disconnect()
       } catch (err) {
-        console.warn('Source cleanup error:', err);
+        console.warn('Media element cleanup failed:', err)
       }
     }
-  };
+  }
 }
