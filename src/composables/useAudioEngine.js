@@ -12,11 +12,11 @@ export function useAudioEngine({ soundSources, ctxRef, selectedIndex, deletedSou
     return audioContext
   }
 
-  const setupAudioEngine = async () => {
+  const setupAudioEngine = () => {
     for (const src of soundSources.value) {
       const ctx = ensureAudioContext()
 
-      const instance = await createSoundSource({
+      const instance = createSoundSource({
         audioContext: ctx,
         file: src.audioPath,
         position: [src.x, src.y, 0],

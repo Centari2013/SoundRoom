@@ -94,7 +94,7 @@ const { handleKeyDown } = useKeyboardControls({
 })
 
 const setupAudioContext = async () => {
-  await setupAudioEngine()
+  setupAudioEngine()
   audioContext = getAudioContext()
   setAudioContext(audioContext)
   updateListener()
