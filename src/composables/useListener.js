@@ -1,7 +1,7 @@
 // composables/useListener.js
 import { ref } from 'vue'
 
-export const listener = ref({ x: 300, y: 200, angle: 0 })
+export const listener = ref({ x: 300, y: 200, angle: 90 })
 
 export function createListenerTools() {
   let audioContextRef = null
