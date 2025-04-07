@@ -1,3 +1,5 @@
+import { ref } from 'vue'
+
 export function createSoundSource({
   audioContext,
   file,
@@ -120,18 +122,29 @@ export function createSoundSource({
     
   };
 
-  audioElement.play()
-  updateAudio()
+  let playing = ref(false);
+
+  const play = () =>{
+    audioElement.play()
+    updateAudio()
+    playing.value = true
+  }
+
+  const stop = () => {
+    audioElement.pause()
+    playing.value = false
+  }
 
   return {
-    audioElement,
     sourceNode,
     gainNode,
     pannerNode,
     state,
     updateAudio,
     draw,
-    stop: () => audioElement.pause(),
+    playing,
+    play,
+    stop,
     dispose: () => {
       try {
         audioElement.pause()

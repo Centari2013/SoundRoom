@@ -28,7 +28,6 @@ export function useAudioEngine({ soundSources, ctxRef, selectedIndex, deletedSou
 
       src.instance = instance
     }
-    //console.log(soundSources)
   }
   const addSoundSource = () => {
     if (soundSources.value.length >= 30) {
@@ -66,18 +65,33 @@ export function useAudioEngine({ soundSources, ctxRef, selectedIndex, deletedSou
         loop: true,
         ctx: ctxRef.value
       })
+
+      instance.play()
       
       src.instance = instance
-  
       selectedIndex.value = soundSources.value.length - 1
       
     }
+  }
+  const playAll = () => {
+    soundSources.value.forEach(s => {
+      s.instance.play()
+    });
+  }
+  const pauseAll = () => {
+    soundSources.value.forEach(s => {
+      if (s.instance.playing){
+        s.instance.stop()
+      }
+    });
   }
 
   return {
     setupAudioEngine,
     deleteSoundSource,
     getAudioContext,
-    undoDeleteSoundSource
+    undoDeleteSoundSource,
+    playAll,
+    pauseAll
   }
 }

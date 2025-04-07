@@ -2,7 +2,7 @@
   <div class="min-h-screen min-w-screen bg-white text-neutral-900 dark:bg-neutral-950 dark:text-white flex flex-col">
     <!-- Header -->
     <header class="px-6 py-4 border-b border-neutral-300 dark:border-neutral-800 flex items-center justify-between">
-      <h1 class="text-xl font-bold tracking-wide">F-SEA Spatial Audio Engine</h1>
+      <h1 class="text-xl font-bold tracking-wide">SoundRoom</h1>
       <nav class="space-x-4">
         <button class="px-3 py-1 text-sm rounded hover:bg-neutral-100 dark:hover:bg-neutral-800">Settings</button>
         <button class="px-3 py-1 text-sm rounded hover:bg-neutral-100 dark:hover:bg-neutral-800">Help</button>
@@ -39,8 +39,8 @@
         <!-- Toolbar -->
         <div class="flex items-center justify-between p-4 border-b border-neutral-300 dark:border-neutral-800 bg-neutral-100 dark:bg-neutral-900">
           <div class="space-x-2">
-            <button class="px-3 py-1 rounded text-sm bg-neutral-200 dark:bg-neutral-800 hover:bg-neutral-300 dark:hover:bg-neutral-700">Play All</button>
-            <button class="px-3 py-1 rounded text-sm bg-neutral-200 dark:bg-neutral-800 hover:bg-neutral-300 dark:hover:bg-neutral-700">Stop All</button>
+            <button @click="playAll" class="px-3 py-1 rounded text-sm bg-neutral-200 dark:bg-neutral-800 hover:bg-neutral-300 dark:hover:bg-neutral-700">Play All</button>
+            <button @click="pauseAll" class="px-3 py-1 rounded text-sm bg-neutral-200 dark:bg-neutral-800 hover:bg-neutral-300 dark:hover:bg-neutral-700">Pause All</button>
             <button class="px-3 py-1 rounded text-sm bg-neutral-200 dark:bg-neutral-800 hover:bg-neutral-300 dark:hover:bg-neutral-700">Undo</button>
           </div>
           <span class="text-xs text-neutral-500">Press 'U' to restore last deleted</span>
@@ -50,13 +50,13 @@
         <div class="flex-1 bg-neutral-200 dark:bg-black flex items-center justify-center">
           <div class="w-[600px] h-[400px] border-2 border-neutral-400 dark:border-neutral-700 flex items-center justify-center">
             <canvas
-            ref="canvas"
-            width="600"
-            height="400"
-            @keydown="handleKeyDown"
-            tabindex="0"
-            style="border: 1px solid #333"
-          />
+              ref="canvas"
+              width="600"
+              height="400"
+              @keydown="handleKeyDown"
+              tabindex="0"
+              style="border: 1px solid #333"
+            />
           </div>
         </div>
       </main>
@@ -89,16 +89,12 @@ import { useKeyboardControls } from '@/composables/useKeyboardControls'
 
 const { listener, updateListener, setAudioContext } = createListenerTools()
 
-
 const canvas = ref(null)
 const ctx = ref(null)
 let audioContext = null
 const audioInitialized = ref(false)
 
-
-
 const room = { width: 600, height: 400 }
-
 
 // Refs to source data and components
 const soundSources = ref([
@@ -109,8 +105,12 @@ const deletedSources = ref([])
 
 const selectedIndex = ref(null)
 
-
-const { setupAudioEngine, deleteSoundSource, getAudioContext, undoDeleteSoundSource } = useAudioEngine({ soundSources, ctxRef: ctx, selectedIndex, deletedSources })
+const { setupAudioEngine, deleteSoundSource, getAudioContext, undoDeleteSoundSource, playAll, pauseAll } = useAudioEngine({
+  soundSources,
+  ctxRef: ctx,
+  selectedIndex,
+  deletedSources
+})
 
 const draw = () => {
   ctx.value.clearRect(0, 0, room.width, room.height)
@@ -120,9 +120,8 @@ const draw = () => {
       src.x = src.instance.state.x
       src.y = src.instance.state.y
       src.angle = src.instance.state.angle
-      src.instance.updateAudio() // ← ADD THIS
+      src.instance.updateAudio()
       src.instance.draw()
-
 
       if (selectedIndex.value === i) {
         const s = src.instance.state
@@ -150,16 +149,16 @@ const draw = () => {
   ctx.value.stroke()
 }
 
-const { handleKeyDown } = useKeyboardControls({ 
-  listener, 
-  selectedIndex, 
-  soundSources, 
-  draw, 
-  deleteSoundSource, 
+const { handleKeyDown } = useKeyboardControls({
+  listener,
+  selectedIndex,
+  soundSources,
+  draw,
+  deleteSoundSource,
   undoDeleteSoundSource,
   updateListener,
-  deletedSources, 
-  getAudioContext, 
+  deletedSources,
+  getAudioContext,
   ctx
 })
 
@@ -172,32 +171,21 @@ const setupAudioContext = async () => {
   draw()
 }
 
-onMounted(() => {
+onMounted(async () => {
   ctx.value = canvas.value.getContext('2d')
   draw()
   canvas.value.focus()
 
   useCanvasControls({
-  canvas,
-  ctx,
-  soundSources,
-  selectedIndex,
-  draw
-})
-
-  canvas.value.addEventListener('click', async () => {
-  if (audioInitialized.value) return;
-
-  audioInitialized.value = true;
-  await setupAudioContext(); // this will now create the AudioContext safely
-})
-
-
-
-
-
-
+    canvas,
+    ctx,
+    soundSources,
+    selectedIndex,
+    draw
   })
+
+  await setupAudioContext()
+})
 </script>
 
 <style scoped>
