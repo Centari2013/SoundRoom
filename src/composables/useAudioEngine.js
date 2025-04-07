@@ -74,6 +74,9 @@ export function useAudioEngine({ soundSources, ctxRef, selectedIndex, deletedSou
     }
   }
   const playAll = () => {
+    if (audioContext.state === 'suspended') {
+      audioContext.resume();
+    }
     soundSources.value.forEach(s => {
       s.instance.play()
     });
