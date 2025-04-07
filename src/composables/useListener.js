@@ -21,8 +21,8 @@ export function createListenerTools() {
       0
     )
     audioContextRef.listener.setOrientation(
-      Math.cos(angleRad),
-      -Math.sin(angleRad),
+      -Math.cos(angleRad),
+      Math.sin(angleRad),
       0,
       0,
       0,
