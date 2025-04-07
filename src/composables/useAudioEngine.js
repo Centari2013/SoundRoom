@@ -38,7 +38,8 @@ export function useAudioEngine({ soundSources, ctxRef, selectedIndex, deletedSou
   }
 
   const deleteSoundSource = () => {
-    if (selectedIndex.value !== null) {
+    console.log(selectedIndex.value)
+    if (selectedIndex.value >= 0) {
       const src = soundSources.value[selectedIndex.value]
       const instance = src.instance
 
