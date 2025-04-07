@@ -41,7 +41,7 @@ const deletedSources = ref([])
 const selectedIndex = ref(null)
 
 
-const { setupAudioEngine, deleteSoundSource, getAudioContext } = useAudioEngine({ soundSources, ctxRef: ctx, selectedIndex, deletedSources })
+const { setupAudioEngine, deleteSoundSource, getAudioContext, undoDeleteSoundSource } = useAudioEngine({ soundSources, ctxRef: ctx, selectedIndex, deletedSources })
 
 const draw = () => {
   ctx.value.clearRect(0, 0, room.width, room.height)
@@ -87,6 +87,7 @@ const { handleKeyDown } = useKeyboardControls({
   soundSources, 
   draw, 
   deleteSoundSource, 
+  undoDeleteSoundSource,
   updateListener,
   deletedSources, 
   getAudioContext, 

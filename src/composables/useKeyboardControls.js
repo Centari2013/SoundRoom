@@ -5,7 +5,8 @@ export function useKeyboardControls({
   selectedIndex, 
   soundSources, 
   draw, 
-  deleteSoundSource, 
+  deleteSoundSource,
+  undoDeleteSoundSource,
   updateListener,
   deletedSources, 
   getAudioContext, 
@@ -66,21 +67,8 @@ export function useKeyboardControls({
         draw()
         break
       case 'u':
-        if (deletedSources.value.length > 0) {
-          const restored = deletedSources.value.pop()
-          soundSources.value.push(restored)
-      
-          const instance = createSoundSource({
-            ...restored,
-            ctx: ctx.value, // or pass ctx as part of useKeyboardControls options
-            getAudioContext
-          })
-          await instance.setupAudio()
-          restored.instance = instance
-      
-          selectedIndex.value = soundSources.value.length - 1
-          draw()
-        }
+        undoDeleteSoundSource()
+        draw()
         break
         
     }

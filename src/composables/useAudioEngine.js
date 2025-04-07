@@ -14,10 +14,9 @@ export function useAudioEngine({ soundSources, ctxRef, selectedIndex, deletedSou
 
   const setupAudioEngine = () => {
     for (const src of soundSources.value) {
-      const ctx = ensureAudioContext()
 
       const instance = createSoundSource({
-        audioContext: ctx,
+        audioContext: ensureAudioContext(),
         file: src.audioPath,
         position: [src.x, src.y, 0],
         angle: src.angle,
@@ -29,6 +28,7 @@ export function useAudioEngine({ soundSources, ctxRef, selectedIndex, deletedSou
 
       src.instance = instance
     }
+    //console.log(soundSources)
   }
   const addSoundSource = () => {
     if (soundSources.value.length >= 30) {
@@ -51,9 +51,33 @@ export function useAudioEngine({ soundSources, ctxRef, selectedIndex, deletedSou
     }
   }
 
+  const undoDeleteSoundSource = () => {
+    if (deletedSources.value.length > 0) {
+      const src = deletedSources.value.pop()
+      soundSources.value.push(src)
+  
+      const instance = createSoundSource({
+        audioContext: ensureAudioContext(),
+        file: src.audioPath,
+        position: [src.x, src.y, 0],
+        angle: src.angle,
+        coneInner: src.coneInner ?? 60,
+        coneOuter: src.coneOuter ?? 180,
+        loop: true,
+        ctx: ctxRef.value
+      })
+      
+      src.instance = instance
+  
+      selectedIndex.value = soundSources.value.length - 1
+      
+    }
+  }
+
   return {
     setupAudioEngine,
     deleteSoundSource,
-    getAudioContext
+    getAudioContext,
+    undoDeleteSoundSource
   }
 }

@@ -6,7 +6,7 @@ export function createSoundSource({
   coneInner = 360,
   coneOuter = 360,
   loop = true,
-  ctx,
+  ctx
 }) {
   const state = {
     x: position[0],
