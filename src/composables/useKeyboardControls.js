@@ -8,9 +8,8 @@ export function useKeyboardControls({
   deleteSoundSource,
   undoDeleteSoundSource,
   updateListener,
-  deletedSources, 
-  getAudioContext, 
-  ctx
+  clamp, 
+  room
 }){
   const handleKeyDown = async (e) => {
     const speed = 5
@@ -19,19 +18,19 @@ export function useKeyboardControls({
     switch (e.key) {
       case 'ArrowUp':
       case 'w':
-        listener.value.y -= speed
+        listener.value.y = clamp(listener.value.y - speed, 0, room.height)
         break
       case 'ArrowDown':
       case 's':
-        listener.value.y += speed
+        listener.value.y = clamp(listener.value.y + speed, 0, room.height)
         break
       case 'ArrowLeft':
       case 'a':
-        listener.value.x -= speed
+        listener.value.x = clamp(listener.value.x - speed, 0, room.width)
         break
       case 'ArrowRight':
       case 'd':
-        listener.value.x += speed
+        listener.value.x = clamp(listener.value.x + speed, 0, room.width)
         break
       case 'q':
         listener.value.angle += rotationStep

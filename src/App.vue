@@ -1,10 +1,10 @@
 <template>
   <div id="app">
-    <RoomCanvas />
+    <SoundRoom />
   </div>
 </template>
 
 <script setup>
-import RoomCanvas from './components/RoomCanvas.vue'
+import SoundRoom from './components/SoundRoom.vue'
 
 </script>
