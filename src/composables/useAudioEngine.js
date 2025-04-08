@@ -1,9 +1,11 @@
 import { createSoundSource } from '@/audio/createSoundSource'
+import { ref } from 'vue'
 
 export function useAudioEngine({ soundSources, ctxRef, selectedIndex, deletedSources }) {
   let audioContext = null
 
   const getAudioContext = () => audioContext
+  const playingAudio = ref(false)
 
   const ensureAudioContext = () => {
     if (!audioContext) {
@@ -65,7 +67,7 @@ export function useAudioEngine({ soundSources, ctxRef, selectedIndex, deletedSou
         loop: true,
         ctx: ctxRef.value
       })
-      
+
       src.instance = instance
       selectedIndex.value = soundSources.value.length - 1
       
@@ -78,6 +80,11 @@ export function useAudioEngine({ soundSources, ctxRef, selectedIndex, deletedSou
     soundSources.value.forEach(s => {
       s.instance.play()
     });
+
+    if (soundSources.value.length > 0){
+      playingAudio.value = true
+    }
+    
   }
   const pauseAll = () => {
     soundSources.value.forEach(s => {
@@ -85,6 +92,7 @@ export function useAudioEngine({ soundSources, ctxRef, selectedIndex, deletedSou
         s.instance.stop()
       }
     });
+    playingAudio.value = false
   }
 
   return {
@@ -93,6 +101,7 @@ export function useAudioEngine({ soundSources, ctxRef, selectedIndex, deletedSou
     getAudioContext,
     undoDeleteSoundSource,
     playAll,
-    pauseAll
+    pauseAll,
+    playingAudio
   }
 }

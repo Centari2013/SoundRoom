@@ -41,8 +41,8 @@
         <!-- Toolbar -->
         <div class="flex items-center justify-between p-4 border-b border-neutral-300 dark:border-neutral-800 bg-neutral-100 dark:bg-neutral-900">
           <div class="space-x-2">
-            <button @click="playAll" class="px-3 py-1 rounded text-sm bg-neutral-200 dark:bg-neutral-800 hover:bg-neutral-300 dark:hover:bg-neutral-700">Play All</button>
-            <button @click="pauseAll" class="px-3 py-1 rounded text-sm bg-neutral-200 dark:bg-neutral-800 hover:bg-neutral-300 dark:hover:bg-neutral-700">Pause All</button>
+            <button @click="playingAudio ? pauseAll() : playAll()" class="px-3 py-1 rounded text-sm bg-neutral-200 dark:bg-neutral-800 hover:bg-neutral-300 dark:hover:bg-neutral-700">{{playingAudio ? "Pause All" : "Play All"}}</button>
+            
             <button @click="() => { undoDeleteSoundSource(); draw()}" :disabled="deletedSources.length == 0" class="px-3 py-1 rounded text-sm bg-neutral-200 dark:bg-neutral-800 hover:bg-neutral-300 dark:hover:bg-neutral-700">Undo</button>
           </div>
           <span class="text-xs text-neutral-500">Press 'U' to restore last deleted</span>
@@ -113,7 +113,6 @@ const getSourceName = (path) => {
   return file.replace(/\.[^/.]+$/, '') // removes extension
 }
 
-
 // Audio Engine Hooks
 const {
   setupAudioEngine,
@@ -121,7 +120,8 @@ const {
   getAudioContext,
   undoDeleteSoundSource,
   playAll,
-  pauseAll
+  pauseAll,
+  playingAudio
 } = useAudioEngine({
   soundSources,
   ctxRef: ctx,
