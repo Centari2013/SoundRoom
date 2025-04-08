@@ -17,19 +17,22 @@
         <section>
           <h2 class="text-sm font-semibold uppercase text-neutral-500 dark:text-neutral-400 mb-2">Sound Sources</h2>
           <ul class="space-y-2 text-sm">
-            <li v-for="s in soundSources" class="hover:bg-neutral-200 dark:hover:bg-neutral-800 px-2 py-1 rounded cursor-pointer">{{s.audioPath.split('/').pop()}}</li>
-            
+            <li v-for="s in soundSources" class="hover:bg-neutral-200 dark:hover:bg-neutral-800 px-2 py-1 rounded cursor-pointer">
+              {{ s.audioPath.split('/').pop() }}
+            </li>
           </ul>
-          <button class="mt-4 w-full bg-neutral-200 dark:bg-neutral-800 text-xs py-1 rounded hover:bg-neutral-300 dark:hover:bg-neutral-700">+ Add Source</button>
+          <button class="mt-4 w-full bg-neutral-200 dark:bg-neutral-800 text-xs py-1 rounded hover:bg-neutral-300 dark:hover:bg-neutral-700">
+            + Add Source
+          </button>
         </section>
 
         <!-- Listener Info -->
         <section>
           <h2 class="text-sm font-semibold uppercase text-neutral-500 dark:text-neutral-400 mb-2">Listener</h2>
           <div class="text-xs space-y-1">
-            <p>X: {{listener.x}}</p>
-            <p>Y: {{listener.y}}</p>
-            <p>Angle: {{displayListenerAngle}}°</p>
+            <p>X: {{ listener.x }}</p>
+            <p>Y: {{ listener.y }}</p>
+            <p>Angle: {{ displayListenerAngle }}°</p>
           </div>
         </section>
       </aside>
@@ -46,7 +49,7 @@
           <span class="text-xs text-neutral-500">Press 'U' to restore last deleted</span>
         </div>
 
-        <!-- Canvas Placeholder -->
+        <!-- Canvas Area -->
         <div class="flex-1 bg-neutral-200 dark:bg-black flex items-center justify-center">
           <div class="w-[600px] h-[400px] border-2 border-neutral-400 dark:border-neutral-700 flex items-center justify-center">
             <canvas
@@ -81,60 +84,60 @@
 </template>
 
 <script setup>
+// Imports
 import { ref, onMounted, computed } from 'vue'
 import { createListenerTools } from '@/composables/useListener'
 import { useCanvasControls } from '@/composables/useCanvasControls'
 import { useAudioEngine } from '@/composables/useAudioEngine'
 import { useKeyboardControls } from '@/composables/useKeyboardControls'
 
+// Listener Setup
 const { listener, setAudioContext, draw: drawListener } = createListenerTools()
-const displayListenerAngle = computed(() => {
-  const angle = ((listener.value.angle % 360) + 360) % 360;
-  return Math.min(angle, 360);
-});
+const displayListenerAngle = computed(() => ((listener.value.angle % 360 + 360) % 360))
 
+// Canvas and Drawing Context
 const canvas = ref(null)
 const ctx = ref(null)
 let audioContext = null
-
 const room = { width: 600, height: 400 }
-const clamp = (val, min, max) => Math.max(min, Math.min(val, max)) // for keeping objects in canvas bounds
+const clamp = (val, min, max) => Math.max(min, Math.min(val, max))
 
-// Refs to source data and components
+// Data and State
 const soundSources = ref([
   { x: 100, y: 100, angle: 0, audioPath: '/ambient.mp3', component: null },
   { x: 500, y: 0, angle: 90, audioPath: '/water.mp3', coneInner: 360, coneOuter: 360, component: null }
 ])
 const deletedSources = ref([])
-
 const selectedIndex = ref(null)
 
-const { setupAudioEngine, deleteSoundSource, getAudioContext, undoDeleteSoundSource, playAll, pauseAll } = useAudioEngine({
+// Audio Engine Hooks
+const {
+  setupAudioEngine,
+  deleteSoundSource,
+  getAudioContext,
+  undoDeleteSoundSource,
+  playAll,
+  pauseAll
+} = useAudioEngine({
   soundSources,
   ctxRef: ctx,
   selectedIndex,
   deletedSources
 })
 
+// Canvas Drawing Logic
 const draw = () => {
-  
-
   ctx.value.clearRect(0, 0, room.width, room.height)
 
   soundSources.value.forEach((src, i) => {
     if (src.instance) {
       const state = src.instance.state
-
-      // Clamp state positions
       state.x = clamp(state.x, 0, room.width)
       state.y = clamp(state.y, 0, room.height)
-
-      src.x = state.x
-      src.y = state.y
-      src.angle = state.angle
+      Object.assign(src, { x: state.x, y: state.y, angle: state.angle })
       src.instance.updateAudio()
       src.instance.draw()
-      
+
       if (selectedIndex.value === i) {
         ctx.value.beginPath()
         ctx.value.arc(state.x, state.y, 14, 0, Math.PI * 2)
@@ -147,10 +150,10 @@ const draw = () => {
 
   listener.value.x = clamp(listener.value.x, 0, room.width)
   listener.value.y = clamp(listener.value.y, 0, room.height)
-
   drawListener(ctx)
 }
 
+// Keyboard Controls
 const { handleKeyDown } = useKeyboardControls({
   listener,
   selectedIndex,
@@ -162,6 +165,7 @@ const { handleKeyDown } = useKeyboardControls({
   room
 })
 
+// Audio Initialization
 const setupAudioContext = () => {
   setupAudioEngine()
   audioContext = getAudioContext()
@@ -169,10 +173,10 @@ const setupAudioContext = () => {
   draw()
 }
 
-onMounted(async () => {
+// Mount Hook
+onMounted(() => {
   ctx.value = canvas.value.getContext('2d')
   draw()
-  //canvas.value.focus()
 
   useCanvasControls({
     canvas,
