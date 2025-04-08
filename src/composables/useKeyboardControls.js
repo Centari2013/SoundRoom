@@ -32,10 +32,10 @@ export function useKeyboardControls({
         listener.value.x = clamp(listener.value.x + speed, 0, room.width)
         break
       case 'q':
-        listener.value.angle += rotationStep
+        listener.value.angle -= rotationStep
         break
       case 'e':
-        listener.value.angle -= rotationStep
+        listener.value.angle += rotationStep
         break
       case 'z':
         if (selectedIndex.value !== null) {
