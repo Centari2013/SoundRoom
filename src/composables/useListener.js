@@ -44,12 +44,13 @@ export function createListenerTools() {
     ctx.value.lineTo(listener.value.x - dx, listener.value.y - dy)
     ctx.value.strokeStyle = '#fff'
     ctx.value.stroke()
+
+    updateListener()
   }
 
   return {
     draw,
     listener,
-    updateListener,
     setAudioContext
   }
 }

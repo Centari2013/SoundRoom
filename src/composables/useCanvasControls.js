@@ -1,6 +1,7 @@
 // src/composables/useCanvasControls.js
 
-export function useCanvasControls({ canvas, soundSources, selectedIndex, draw }) {
+export function useCanvasControls({ canvas, soundSources, selectedIndex, draw, listener }) {
+  let draggingListener = false
   let draggingIndex = null
   let offsetX = 0
   let offsetY = 0
@@ -35,6 +36,21 @@ export function useCanvasControls({ canvas, soundSources, selectedIndex, draw })
           break
         }
       }
+
+      // Check listener
+      const lx = listener.value.x
+      const ly = listener.value.y
+      const dx = mouseX - lx
+      const dy = mouseY - ly
+      const dist = Math.sqrt(dx * dx + dy * dy)
+
+      if (dist <= 20) {
+        draggingListener = true
+        offsetX = dx
+        offsetY = dy
+        found = true
+      }
+
     
       // If nothing hit, deselect
       if (!found) {
@@ -46,6 +62,16 @@ export function useCanvasControls({ canvas, soundSources, selectedIndex, draw })
     
 
     canvasEl.addEventListener('mousemove', (e) => {
+      if (draggingListener) {
+        const rect = canvasEl.getBoundingClientRect()
+        const mouseX = e.clientX - rect.left
+        const mouseY = e.clientY - rect.top
+      
+        listener.value.x = mouseX - offsetX
+        listener.value.y = mouseY - offsetY
+        draw()
+      }
+      
       if (draggingIndex === null) return
 
       const rect = canvasEl.getBoundingClientRect()
@@ -63,10 +89,14 @@ export function useCanvasControls({ canvas, soundSources, selectedIndex, draw })
 
     canvasEl.addEventListener('mouseup', () => {
       draggingIndex = null
+      draggingListener = false
+
     })
 
     canvasEl.addEventListener('mouseleave', () => {
       draggingIndex = null
+      draggingListener = false
+      
     })
   }
 

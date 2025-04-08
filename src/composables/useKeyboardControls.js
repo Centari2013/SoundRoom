@@ -7,7 +7,6 @@ export function useKeyboardControls({
   draw, 
   deleteSoundSource,
   undoDeleteSoundSource,
-  updateListener,
   clamp, 
   room
 }){
@@ -71,8 +70,6 @@ export function useKeyboardControls({
         break
         
     }
-  
-    updateListener()
     draw()
   }
 

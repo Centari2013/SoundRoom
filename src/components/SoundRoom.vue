@@ -87,7 +87,7 @@ import { useCanvasControls } from '@/composables/useCanvasControls'
 import { useAudioEngine } from '@/composables/useAudioEngine'
 import { useKeyboardControls } from '@/composables/useKeyboardControls'
 
-const { listener, updateListener, setAudioContext, draw: drawListener } = createListenerTools()
+const { listener, setAudioContext, draw: drawListener } = createListenerTools()
 const displayListenerAngle = computed(() => {
   const angle = ((listener.value.angle % 360) + 360) % 360;
   return Math.min(angle, 360);
@@ -158,7 +158,6 @@ const { handleKeyDown } = useKeyboardControls({
   draw,
   deleteSoundSource,
   undoDeleteSoundSource,
-  updateListener,
   clamp,
   room
 })
@@ -167,8 +166,6 @@ const setupAudioContext = async () => {
   setupAudioEngine()
   audioContext = getAudioContext()
   setAudioContext(audioContext)
-  updateListener()
-
   draw()
 }
 
@@ -182,7 +179,8 @@ onMounted(async () => {
     ctx,
     soundSources,
     selectedIndex,
-    draw
+    draw,
+    listener
   })
 
   await setupAudioContext()
