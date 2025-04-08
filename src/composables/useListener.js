@@ -30,7 +30,24 @@ export function createListenerTools() {
     )
   }
 
+  const draw = (ctx) => {
+    ctx.value.beginPath()
+    ctx.value.arc(listener.value.x, listener.value.y, 10, 0, Math.PI * 2)
+    ctx.value.fillStyle = '#00f'
+    ctx.value.fill()
+
+    const angleRad = (listener.value.angle * Math.PI) / 180
+    const dx = Math.cos(angleRad) * 20
+    const dy = Math.sin(angleRad) * 20
+    ctx.value.beginPath()
+    ctx.value.moveTo(listener.value.x, listener.value.y)
+    ctx.value.lineTo(listener.value.x - dx, listener.value.y - dy)
+    ctx.value.strokeStyle = '#fff'
+    ctx.value.stroke()
+  }
+
   return {
+    draw,
     listener,
     updateListener,
     setAudioContext
