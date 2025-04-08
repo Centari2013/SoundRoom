@@ -67,15 +67,19 @@
       <aside class="w-64 bg-neutral-100 dark:bg-neutral-900 border-l border-neutral-300 dark:border-neutral-800 p-4 space-y-4">
         <!-- Source Details -->
         <section>
-          <h2 class="text-sm font-semibold uppercase text-neutral-500 dark:text-neutral-400 mb-2">Selected Source</h2>
-          <div class="text-xs space-y-1">
-            <p>X: 500</p>
-            <p>Y: 0</p>
-            <p>Angle: 90°</p>
-            <p>Inner Cone: 360°</p>
-            <p>Outer Cone: 360°</p>
+          <h5 class="text-sm font-semibold uppercase text-neutral-500 dark:text-neutral-400 mb-2">Selected Source</h5>
+          <div v-if="selectedSource" class="text-xs space-y-1">
+            <h4>{{ selectedSource.name }}</h4>
+            <p>X: {{selectedSource.x}}</p>
+            <p>Y: {{ selectedSource.y }}</p>
+            <p>Angle: {{selectedSource.angle}}°</p>
+            <p>Inner Cone: {{selectedSource.innerCone}}°</p>
+            <p>Outer Cone: {{selectedSource.outerCone}}°</p>
           </div>
-          <button class="mt-3 w-full bg-red-600 text-xs py-1 rounded hover:bg-red-500">Delete</button>
+          <div v-else>
+            <p>No Source Selected</p>
+          </div>
+          <button v-if="selectedSource" class="mt-3 w-full bg-red-600 text-xs py-1 rounded hover:bg-red-500">Delete</button>
         </section>
       </aside>
     </div>
@@ -93,6 +97,7 @@ import { useKeyboardControls } from '@/composables/useKeyboardControls'
 // Listener Setup
 const { listener, setAudioContext, draw: drawListener } = createListenerTools()
 const displayListenerAngle = computed(() => ((listener.value.angle % 360 + 360) % 360))
+
 
 // Canvas and Drawing Context
 const canvas = ref(null)
@@ -112,6 +117,29 @@ const getSourceName = (path) => {
   const file = path.split('/').pop()
   return file.replace(/\.[^/.]+$/, '') // removes extension
 }
+const selectedSource = computed(() => {
+  const index = selectedIndex.value
+  const sources = soundSources.value
+
+  if (index == null || index < 0 || index >= sources.length) return null
+
+  const src = sources[index]
+
+  const name = getSourceName(src.audioPath)
+  const instanceState = src.instance?.state
+  let calculatedAngle = instanceState?.angle ?? src.angle
+  calculatedAngle = (calculatedAngle % 360 + 360) % 360
+  return {
+    name,
+    x: instanceState?.x ?? src.x,
+    y: instanceState?.y ?? src.y,
+    angle: calculatedAngle,
+    innerCone: instanceState?.coneInner ?? src.coneInner ?? 360,
+    outerCone: instanceState?.coneOuter ?? src.coneOuter ?? 360
+  }
+})
+
+
 
 // Audio Engine Hooks
 const {
