@@ -103,8 +103,8 @@ const clamp = (val, min, max) => Math.max(min, Math.min(val, max))
 
 // Data and State
 const soundSources = ref([
-  { x: 100, y: 100, angle: 0, audioPath: '/ambient.mp3', name: getSourceName('/ambient.mp3') },
-  { x: 500, y: 0, angle: 90, audioPath: '/water.mp3', coneInner: 360, coneOuter: 360, name: getSourceName('/water.mp3') }
+  { x: 100, y: 100, angle: 0, audioPath: '/ambient.mp3'},
+  { x: 500, y: 0, angle: 90, audioPath: '/water.mp3', coneInner: 360, coneOuter: 360 }
 ])
 const deletedSources = ref([])
 const selectedIndex = ref(null)
