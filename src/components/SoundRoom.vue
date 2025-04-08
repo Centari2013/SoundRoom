@@ -162,7 +162,7 @@ const { handleKeyDown } = useKeyboardControls({
   room
 })
 
-const setupAudioContext = async () => {
+const setupAudioContext = () => {
   setupAudioEngine()
   audioContext = getAudioContext()
   setAudioContext(audioContext)
@@ -183,7 +183,7 @@ onMounted(async () => {
     listener
   })
 
-  await setupAudioContext()
+  setupAudioContext()
 })
 </script>
 
