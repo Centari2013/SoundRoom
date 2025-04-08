@@ -65,8 +65,6 @@ export function useAudioEngine({ soundSources, ctxRef, selectedIndex, deletedSou
         loop: true,
         ctx: ctxRef.value
       })
-
-      instance.play()
       
       src.instance = instance
       selectedIndex.value = soundSources.value.length - 1

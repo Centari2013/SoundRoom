@@ -43,7 +43,7 @@
           <div class="space-x-2">
             <button @click="playAll" class="px-3 py-1 rounded text-sm bg-neutral-200 dark:bg-neutral-800 hover:bg-neutral-300 dark:hover:bg-neutral-700">Play All</button>
             <button @click="pauseAll" class="px-3 py-1 rounded text-sm bg-neutral-200 dark:bg-neutral-800 hover:bg-neutral-300 dark:hover:bg-neutral-700">Pause All</button>
-            <button class="px-3 py-1 rounded text-sm bg-neutral-200 dark:bg-neutral-800 hover:bg-neutral-300 dark:hover:bg-neutral-700">Undo</button>
+            <button @click="() => { undoDeleteSoundSource(); draw()}" :disabled="deletedSources.length == 0" class="px-3 py-1 rounded text-sm bg-neutral-200 dark:bg-neutral-800 hover:bg-neutral-300 dark:hover:bg-neutral-700">Undo</button>
           </div>
           <span class="text-xs text-neutral-500">Press 'U' to restore last deleted</span>
         </div>

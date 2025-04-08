@@ -65,6 +65,16 @@ button:focus-visible {
   text-align: center;
 }
 
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+  background-color: #444; /* fallback for dark mode */
+  color: #ccc;
+}
+
+
+
 @media (prefers-color-scheme: light) {
   :root {
     color: #213547;
@@ -75,5 +85,9 @@ button:focus-visible {
   }
   button {
     background-color: #f9f9f9;
+  }
+  button:disabled {
+    background-color: #ddd;
+    color: #888;
   }
 }
