@@ -17,9 +17,8 @@
         <section>
           <h2 class="text-sm font-semibold uppercase text-neutral-500 dark:text-neutral-400 mb-2">Sound Sources</h2>
           <ul class="space-y-2 text-sm">
-            <li v-for="s in soundSources" class="hover:bg-neutral-200 dark:hover:bg-neutral-800 px-2 py-1 rounded cursor-pointer">
-              {{ s.audioPath.split('/').pop() }}
-            </li>
+            <li v-for="s in soundSources" >{{ getSourceName(s.audioPath) }}</li>
+
           </ul>
           <button class="mt-4 w-full bg-neutral-200 dark:bg-neutral-800 text-xs py-1 rounded hover:bg-neutral-300 dark:hover:bg-neutral-700">
             + Add Source
@@ -104,11 +103,16 @@ const clamp = (val, min, max) => Math.max(min, Math.min(val, max))
 
 // Data and State
 const soundSources = ref([
-  { x: 100, y: 100, angle: 0, audioPath: '/ambient.mp3', component: null },
-  { x: 500, y: 0, angle: 90, audioPath: '/water.mp3', coneInner: 360, coneOuter: 360, component: null }
+  { x: 100, y: 100, angle: 0, audioPath: '/ambient.mp3', name: getSourceName('/ambient.mp3') },
+  { x: 500, y: 0, angle: 90, audioPath: '/water.mp3', coneInner: 360, coneOuter: 360, name: getSourceName('/water.mp3') }
 ])
 const deletedSources = ref([])
 const selectedIndex = ref(null)
+const getSourceName = (path) => {
+  const file = path.split('/').pop()
+  return file.replace(/\.[^/.]+$/, '') // removes extension
+}
+
 
 // Audio Engine Hooks
 const {
@@ -137,6 +141,8 @@ const draw = () => {
       Object.assign(src, { x: state.x, y: state.y, angle: state.angle })
       src.instance.updateAudio()
       src.instance.draw()
+
+   
 
       if (selectedIndex.value === i) {
         ctx.value.beginPath()
