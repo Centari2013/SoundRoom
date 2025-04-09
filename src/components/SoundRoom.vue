@@ -35,7 +35,7 @@
 
         <!-- Listener Info -->
         <section>
-          <h2 class="text-sm font-semibold uppercase text-neutral-500 dark:text-neutral-400 mb-2">Listener</h2>
+          <h5 class="text-sm font-semibold uppercase text-neutral-500 dark:text-neutral-400 mb-2">Listener</h5>
           <div class="text-xs space-y-1">
             <p>X: {{ listener.x }}</p>
             <p>Y: {{ listener.y }}</p>
