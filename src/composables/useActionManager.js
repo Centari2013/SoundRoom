@@ -1,6 +1,7 @@
 import { ref, computed } from 'vue'
 
 export function useActionManager() {
+  const MAX_STACK = 100
   const actionMap = ref({})
   const actionStack = ref([]) // [{ name, payload }]
   const redoStack = ref([])   // [{ name, payload }]
@@ -21,6 +22,9 @@ export function useActionManager() {
 
     action.doAction?.(payload)
     actionStack.value.push({ name: actionName, payload })
+    if (actionStack.value.length > MAX_STACK) {
+      actionStack.value.shift() // remove oldest
+    }
     redoStack.value.length = 0 // clear redo on new action
   }
 
@@ -35,6 +39,9 @@ export function useActionManager() {
     
     action.undoAction?.(payload)
     redoStack.value.push({ name, payload })
+    if (redoStack.value.length > MAX_STACK) {
+      redoStack.value.shift()
+    }
   }
 
   const redoLastAction = () => {
