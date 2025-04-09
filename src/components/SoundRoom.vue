@@ -128,7 +128,11 @@ const soundLibrarySources = ref([
 
 // for playing in canvas
 const canvasSoundSources = ref([])
-
+/* const soundSources = ref([
+    { x: 100, y: 100, angle: 0, audioPath: '/ambient.mp3'},
+    { x: 500, y: 0, angle: 90, audioPath: '/water.mp3', coneInner: 360, coneOuter: 360 }
+  ])
+ */
 
 // for Audio Engine management
 const deletedSources = ref([])

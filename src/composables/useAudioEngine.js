@@ -3,11 +3,9 @@ import { ref } from 'vue'
 
 export function useAudioEngine({ soundSources, ctxRef, selectedIndex, deletedSources }) {
   let audioContext = null
-
-  const getAudioContext = () => audioContext
   const playingAudio = ref(false)
 
-  const ensureAudioContext = () => {
+  const getAudioContext = () => {
     if (!audioContext) {
       audioContext = new (window.AudioContext || window.webkitAudioContext)()
     }
@@ -18,7 +16,7 @@ export function useAudioEngine({ soundSources, ctxRef, selectedIndex, deletedSou
     for (const src of soundSources.value) {
 
       const instance = createSoundSource({
-        audioContext: ensureAudioContext(),
+        audioContext: getAudioContext(),
         file: src.audioPath,
         position: [src.x, src.y, 0],
         angle: src.angle,
@@ -33,7 +31,7 @@ export function useAudioEngine({ soundSources, ctxRef, selectedIndex, deletedSou
   }
   const addSoundSource = (src) => {
     const instance = createSoundSource({
-      audioContext: ensureAudioContext(),
+      audioContext: getAudioContext(),
       file: src.audioPath,
       position: [src.x, src.y, 0],
       angle: src.angle ?? 0,
@@ -69,7 +67,7 @@ export function useAudioEngine({ soundSources, ctxRef, selectedIndex, deletedSou
       soundSources.value.push(src)
   
       const instance = createSoundSource({
-        audioContext: ensureAudioContext(),
+        audioContext: getAudioContext(),
         file: src.audioPath,
         position: [src.x, src.y, 0],
         angle: src.angle,
