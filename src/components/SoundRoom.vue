@@ -15,7 +15,7 @@
       <aside class="w-64 bg-neutral-100 dark:bg-neutral-900 border-r border-neutral-300 dark:border-neutral-800 p-4 space-y-6">
         <!-- Sound Sources -->
         <section>
-          <h2 class="text-sm font-semibold uppercase text-neutral-500 dark:text-neutral-400 mb-2">Sound Sources</h2>
+          <h5 class="text-sm font-semibold uppercase text-neutral-500 dark:text-neutral-400 mb-2">Sound Sources</h5>
           <ul class="space-y-2 text-sm">
             <li
               v-for="s in soundLibrarySources"
