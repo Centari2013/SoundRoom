@@ -1,4 +1,4 @@
-import { createSoundSource } from '@/audio/createSoundSource'
+import { useSoundSource } from '@/composables/useSoundSource'
 import { computed } from 'vue'
 
 export function useAudioEngine({ soundSources, ctxRef}) {
@@ -15,7 +15,7 @@ export function useAudioEngine({ soundSources, ctxRef}) {
   const setupAudioEngine = () => {
     for (const src of soundSources.value) {
 
-      const instance = createSoundSource({
+      const instance = useSoundSource({
         audioContext: getAudioContext(),
         file: src.audioPath,
         position: [src.x, src.y, 0],
@@ -33,7 +33,7 @@ export function useAudioEngine({ soundSources, ctxRef}) {
     const src = payload.src
     src.index = payload.index ?? soundSources.value.length
      
-    const instance = createSoundSource({
+    const instance = useSoundSource({
       audioContext: getAudioContext(),
       file: src.audioPath,
       position: [src.x, src.y, 0],

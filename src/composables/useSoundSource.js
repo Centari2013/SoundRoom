@@ -1,6 +1,6 @@
 import { ref } from 'vue'
 
-export function createSoundSource({
+export function useSoundSource({
   audioContext,
   file,
   position = [0, 0, 0],
