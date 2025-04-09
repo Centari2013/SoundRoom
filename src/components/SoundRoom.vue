@@ -4,18 +4,18 @@
     <header class="px-6 py-4 border-b border-neutral-300 dark:border-neutral-800 flex items-center justify-between">
       <h1 class="text-xl font-bold tracking-wide">SoundRoom</h1>
       <nav class="space-x-4">
-        <button class="px-3 py-1 text-sm rounded hover:bg-neutral-100 dark:hover:bg-neutral-800">Settings</button>
-        <button class="px-3 py-1 text-sm rounded hover:bg-neutral-100 dark:hover:bg-neutral-800">Help</button>
+        <button class="px-3 py-1 text-sm rounded hover:bg-neutral-200 dark:hover:bg-neutral-800">Settings</button>
+        <button class="px-3 py-1 text-sm rounded hover:bg-neutral-200 dark:hover:bg-neutral-800">Help</button>
       </nav>
     </header>
 
     <!-- Main Layout -->
     <div class="flex flex-1 overflow-hidden">
       <!-- Left Sidebar -->
-      <aside class="w-64 bg-neutral-100 dark:bg-neutral-900 border-r border-neutral-300 dark:border-neutral-800 p-4 space-y-6">
+      <aside class="w-64 bg-neutral-200 dark:bg-neutral-900 border-r border-neutral-400 dark:border-neutral-800 p-4 space-y-6">
         <!-- Sound Sources -->
         <section>
-          <h5 class="text-sm font-semibold uppercase text-neutral-500 dark:text-neutral-400 mb-2">Sound Sources</h5>
+          <h5 class="text-sm font-semibold uppercase text-neutral-600 dark:text-neutral-400 mb-2">Sound Sources</h5>
           <ul class="space-y-2 text-sm">
             <li
               v-for="s in soundLibrarySources"
@@ -28,14 +28,14 @@
             </li>
 
           </ul>
-          <button :disabled="canvasSoundSources.length == 20" class="mt-4 w-full bg-neutral-200 dark:bg-neutral-800 text-xs py-1 rounded hover:bg-neutral-300 dark:hover:bg-neutral-700">
+          <button :disabled="canvasSoundSources.length == 20" class="mt-4 w-full bg-neutral-300 dark:bg-neutral-800 text-xs py-1 rounded hover:bg-neutral-400 dark:hover:bg-neutral-700">
             + Add Source
           </button>
         </section>
 
         <!-- Listener Info -->
         <section>
-          <h5 class="text-sm font-semibold uppercase text-neutral-500 dark:text-neutral-400 mb-2">Listener</h5>
+          <h5 class="text-sm font-semibold uppercase text-neutral-600 dark:text-neutral-400 mb-2">Listener</h5>
           <div class="text-xs space-y-1">
             <p>X: {{ listener.x }}</p>
             <p>Y: {{ listener.y }}</p>
