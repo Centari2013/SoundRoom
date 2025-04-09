@@ -1,9 +1,10 @@
 import { createSoundSource } from '@/audio/createSoundSource'
 import { ref } from 'vue'
 
-export function useAudioEngine({ soundSources, ctxRef, selectedIndex, deletedSources }) {
+export function useAudioEngine({ soundSources, ctxRef, selectedIndex }) {
   let audioContext = null
   const playingAudio = ref(false)
+  const deletedSources = ref([])
 
   const getAudioContext = () => {
     if (!audioContext) {
