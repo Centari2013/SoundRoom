@@ -102,6 +102,8 @@ import { createListenerTools } from '@/composables/useListener'
 import { useCanvasControls } from '@/composables/useCanvasControls'
 import { useAudioEngine } from '@/composables/useAudioEngine'
 import { useKeyboardControls } from '@/composables/useKeyboardControls'
+import { useDragDropAudio } from '@/composables/useDragDropAudio'
+
 
 // Listener Setup
 const { listener, setAudioContext, draw: drawListener } = createListenerTools()
@@ -126,7 +128,7 @@ const soundLibrarySources = ref([
 
 // for playing in canvas
 const canvasSoundSources = ref([])
-const draggedSource = ref(null)
+
 
 // for Audio Engine management
 const deletedSources = ref([])
@@ -174,40 +176,6 @@ const {
   deletedSources
 })
 
-const handleDragStart = (e, source) => {
-  draggedSource.value = source
-}
-
-const handleDrop = (e) => {
-  if (!draggedSource.value) return
-  
-  const canvasBounds = canvas.value.getBoundingClientRect()
-  const dropX = e.clientX - canvasBounds.left
-  const dropY = e.clientY - canvasBounds.top
-
-  /* const soundSources = ref([
-    { x: 100, y: 100, angle: 0, audioPath: '/ambient.mp3'},
-    { x: 500, y: 0, angle: 90, audioPath: '/water.mp3', coneInner: 360, coneOuter: 360 }
-  ])
- */
-  addSoundSource({
-    x: dropX,
-    y: dropY,
-    angle: 0,
-    audioPath: draggedSource.value.audioPath,
-    coneInner: 360,
-    coneOuter: 360
-  })
-
-  draw()
-}
-
-
-
-
-
-
-
 
 // Canvas Drawing Logic
 const draw = () => {
@@ -238,6 +206,14 @@ const draw = () => {
   listener.value.y = clamp(listener.value.y, 0, room.height)
   drawListener(ctx)
 }
+
+const draggedSource = ref(null)
+const { handleDragStart, handleDrop } = useDragDropAudio({
+  draggedSource,
+  canvasRef: canvas,
+  addSoundSource,
+  draw
+})
 
 // Keyboard Controls
 const { handleKeyDown } = useKeyboardControls({
