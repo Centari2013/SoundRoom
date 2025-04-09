@@ -105,7 +105,7 @@ import { useKeyboardControls } from '@/composables/useKeyboardControls'
 import { useDragDropAudio } from '@/composables/useDragDropAudio'
 import { useCanvasRenderer } from '@/composables/useCanvasRenderer'
 import { useSelectedSource } from '@/composables/useSelectedSource'
-
+import { useRoom } from '@/composables/useRoom'
 
 // Listener Setup
 const { listener, setAudioContext, draw: drawListener } = createListenerTools()
@@ -116,8 +116,8 @@ const displayListenerAngle = computed(() => ((listener.value.angle % 360 + 360) 
 const canvas = ref(null)
 const ctx = ref(null)
 let audioContext = null
-const room = { width: 600, height: 400 }
-const clamp = (val, min, max) => Math.max(min, Math.min(val, max))
+
+const { room, clamp } = useRoom()
 
 // Data and State
 
