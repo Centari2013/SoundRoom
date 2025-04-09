@@ -155,8 +155,8 @@ const selectedSource = computed(() => {
   calculatedAngle = (calculatedAngle % 360 + 360) % 360
   return {
     name,
-    x: instanceState?.x ?? src.x,
-    y: instanceState?.y ?? src.y,
+    x: Math.round(instanceState?.x ?? src.x),
+    y: Math.round(instanceState?.y ?? src.y),
     angle: calculatedAngle,
     innerCone: instanceState?.coneInner ?? src.coneInner ?? 360,
     outerCone: instanceState?.coneOuter ?? src.coneOuter ?? 360
