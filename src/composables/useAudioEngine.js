@@ -31,12 +31,23 @@ export function useAudioEngine({ soundSources, ctxRef, selectedIndex, deletedSou
       src.instance = instance
     }
   }
-  const addSoundSource = () => {
-    if (soundSources.value.length >= 30) {
-      console.warn('Sound source limit reached (30 max).');
-      return; // silently fail or show a toast if you want
-    }
+  const addSoundSource = (src) => {
+    const instance = createSoundSource({
+      audioContext: ensureAudioContext(),
+      file: src.audioPath,
+      position: [src.x, src.y, 0],
+      angle: src.angle ?? 0,
+      coneInner: src.coneInner ?? 60,
+      coneOuter: src.coneOuter ?? 180,
+      loop: true,
+      ctx: ctxRef.value
+    })
+  
+    src.instance = instance
+    soundSources.value.push(src)
+    instance.play()
   }
+  
 
   const deleteSoundSource = () => {
     if (selectedIndex.value >= 0) {
@@ -97,6 +108,7 @@ export function useAudioEngine({ soundSources, ctxRef, selectedIndex, deletedSou
 
   return {
     setupAudioEngine,
+    addSoundSource,
     deleteSoundSource,
     getAudioContext,
     undoDeleteSoundSource,

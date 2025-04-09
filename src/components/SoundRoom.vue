@@ -17,10 +17,18 @@
         <section>
           <h2 class="text-sm font-semibold uppercase text-neutral-500 dark:text-neutral-400 mb-2">Sound Sources</h2>
           <ul class="space-y-2 text-sm">
-            <li v-for="s in soundSources" >{{ getSourceName(s.audioPath) }}</li>
+            <li
+              v-for="s in soundLibrarySources"
+              :key="s.audioPath"
+              class="cursor-move bg-neutral-300 dark:bg-neutral-700 p-1 rounded text-center"
+              draggable="true"
+              @dragstart="(e) => handleDragStart(e, s)"
+            >
+              {{ getSourceName(s.audioPath) }}
+            </li>
 
           </ul>
-          <button :disabled="soundSources.length == 20" class="mt-4 w-full bg-neutral-200 dark:bg-neutral-800 text-xs py-1 rounded hover:bg-neutral-300 dark:hover:bg-neutral-700">
+          <button :disabled="canvasSoundSources.length == 20" class="mt-4 w-full bg-neutral-200 dark:bg-neutral-800 text-xs py-1 rounded hover:bg-neutral-300 dark:hover:bg-neutral-700">
             + Add Source
           </button>
         </section>
@@ -41,7 +49,7 @@
         <!-- Toolbar -->
         <div class="flex items-center justify-between p-4 border-b border-neutral-300 dark:border-neutral-800 bg-neutral-100 dark:bg-neutral-900">
           <div class="space-x-2">
-            <button @click="playingAudio ? pauseAll() : playAll()" class="px-3 py-1 rounded text-sm bg-neutral-200 dark:bg-neutral-800 hover:bg-neutral-300 dark:hover:bg-neutral-700">{{playingAudio ? "Pause All" : "Play All"}}</button>
+            <button :disabled="canvasSoundSources.length == 0" @click="playingAudio ? pauseAll() : playAll()" class="px-3 py-1 rounded text-sm bg-neutral-200 dark:bg-neutral-800 hover:bg-neutral-300 dark:hover:bg-neutral-700">{{playingAudio ? "Pause All" : "Play All"}}</button>
             
             <button @click="() => { undoDeleteSoundSource(); draw()}" :disabled="deletedSources.length == 0" class="px-3 py-1 rounded text-sm bg-neutral-200 dark:bg-neutral-800 hover:bg-neutral-300 dark:hover:bg-neutral-700">Undo</button>
           </div>
@@ -55,9 +63,10 @@
               ref="canvas"
               width="600"
               height="400"
+              @dragover.prevent
+              @drop="handleDrop"
               @keydown="handleKeyDown"
               tabindex="0"
-              style="border: 1px solid #333"
             />
           </div>
         </div>
@@ -107,12 +116,19 @@ const room = { width: 600, height: 400 }
 const clamp = (val, min, max) => Math.max(min, Math.min(val, max))
 
 // Data and State
-const soundSources = ref([
-  { x: 100, y: 100, angle: 0, audioPath: '/ambient.mp3'},
-  { x: 500, y: 0, angle: 90, audioPath: '/water.mp3', coneInner: 360, coneOuter: 360 }
+
+// for populating sound library
+const soundLibrarySources = ref([
+  { audioPath: '/ambient.mp3' },
+  { audioPath: '/water.mp3' },
+  // Add more templates
 ])
 
-/* const soundSources = ref(Array(20).fill({ x: 100, y: 100, angle: 0, audioPath: '/ambient.mp3'})) */
+// for playing in canvas
+const canvasSoundSources = ref([])
+const draggedSource = ref(null)
+
+// for Audio Engine management
 const deletedSources = ref([])
 const selectedIndex = ref(null)
 const getSourceName = (path) => {
@@ -121,7 +137,7 @@ const getSourceName = (path) => {
 }
 const selectedSource = computed(() => {
   const index = selectedIndex.value
-  const sources = soundSources.value
+  const sources = canvasSoundSources.value
 
   if (index == null || index < 0 || index >= sources.length) return null
 
@@ -141,11 +157,10 @@ const selectedSource = computed(() => {
   }
 })
 
-
-
 // Audio Engine Hooks
 const {
   setupAudioEngine,
+  addSoundSource,
   deleteSoundSource,
   getAudioContext,
   undoDeleteSoundSource,
@@ -153,17 +168,52 @@ const {
   pauseAll,
   playingAudio
 } = useAudioEngine({
-  soundSources,
+  soundSources: canvasSoundSources,
   ctxRef: ctx,
   selectedIndex,
   deletedSources
 })
 
+const handleDragStart = (e, source) => {
+  draggedSource.value = source
+}
+
+const handleDrop = (e) => {
+  if (!draggedSource.value) return
+  
+  const canvasBounds = canvas.value.getBoundingClientRect()
+  const dropX = e.clientX - canvasBounds.left
+  const dropY = e.clientY - canvasBounds.top
+
+  /* const soundSources = ref([
+    { x: 100, y: 100, angle: 0, audioPath: '/ambient.mp3'},
+    { x: 500, y: 0, angle: 90, audioPath: '/water.mp3', coneInner: 360, coneOuter: 360 }
+  ])
+ */
+  addSoundSource({
+    x: dropX,
+    y: dropY,
+    angle: 0,
+    audioPath: draggedSource.value.audioPath,
+    coneInner: 360,
+    coneOuter: 360
+  })
+
+  draw()
+}
+
+
+
+
+
+
+
+
 // Canvas Drawing Logic
 const draw = () => {
   ctx.value.clearRect(0, 0, room.width, room.height)
 
-  soundSources.value.forEach((src, i) => {
+  canvasSoundSources.value.forEach((src, i) => {
     if (src.instance) {
       const state = src.instance.state
       state.x = clamp(state.x, 0, room.width)
@@ -193,7 +243,7 @@ const draw = () => {
 const { handleKeyDown } = useKeyboardControls({
   listener,
   selectedIndex,
-  soundSources,
+  soundSources: canvasSoundSources,
   draw,
   deleteSoundSource,
   undoDeleteSoundSource,
@@ -217,7 +267,7 @@ onMounted(() => {
   useCanvasControls({
     canvas,
     ctx,
-    soundSources,
+    soundSources: canvasSoundSources,
     selectedIndex,
     draw,
     listener
