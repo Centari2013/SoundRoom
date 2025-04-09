@@ -135,6 +135,8 @@ export function useSoundSource({
     playing.value = false
   }
 
+  // TODO: add volume controls
+
   return {
     sourceNode,
     gainNode,
