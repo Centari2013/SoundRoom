@@ -103,7 +103,7 @@ import { useCanvasControls } from '@/composables/useCanvasControls'
 import { useAudioEngine } from '@/composables/useAudioEngine'
 import { useKeyboardControls } from '@/composables/useKeyboardControls'
 import { useDragDropAudio } from '@/composables/useDragDropAudio'
-
+import { useCanvasRenderer } from '@/composables/useCanvasRenderer'
 
 // Listener Setup
 const { listener, setAudioContext, draw: drawListener } = createListenerTools()
@@ -178,34 +178,15 @@ const {
 
 
 // Canvas Drawing Logic
-const draw = () => {
-  ctx.value.clearRect(0, 0, room.width, room.height)
-
-  canvasSoundSources.value.forEach((src, i) => {
-    if (src.instance) {
-      const state = src.instance.state
-      state.x = clamp(state.x, 0, room.width)
-      state.y = clamp(state.y, 0, room.height)
-      Object.assign(src, { x: state.x, y: state.y, angle: state.angle })
-      src.instance.updateAudio()
-      src.instance.draw()
-
-   
-
-      if (selectedIndex.value === i) {
-        ctx.value.beginPath()
-        ctx.value.arc(state.x, state.y, 14, 0, Math.PI * 2)
-        ctx.value.strokeStyle = 'rgba(255, 255, 0, 0.6)'
-        ctx.value.lineWidth = 2
-        ctx.value.stroke()
-      }
-    }
-  })
-
-  listener.value.x = clamp(listener.value.x, 0, room.width)
-  listener.value.y = clamp(listener.value.y, 0, room.height)
-  drawListener(ctx)
-}
+const { draw } = useCanvasRenderer({
+  soundSources: canvasSoundSources,
+  ctxRef: ctx,
+  selectedIndex,
+  listener,
+  drawListener,
+  room,
+  clamp
+})
 
 const draggedSource = ref(null)
 const { handleDragStart, handleDrop } = useDragDropAudio({
