@@ -59,6 +59,13 @@
 
         <!-- Canvas Area -->
         <div class="flex-1 bg-neutral-200 dark:bg-black flex items-center justify-center">
+          <ContextMenu
+            :visible="contextMenu.visible"
+            :pos="contextMenu.pos"
+            :functionList="contextMenu.actions"
+            @close="contextMenu.visible = false"
+          />
+
           <div class="w-[600px] h-[400px] border-2 border-neutral-400 dark:border-neutral-700 flex items-center justify-center">
             <canvas
               ref="canvas"
@@ -108,6 +115,8 @@ import { useCanvasRenderer } from '@/composables/useCanvasRenderer'
 import { useSelectedSource } from '@/composables/useSelectedSource'
 import { useActionManager } from '@/composables/useActionManager'
 import { useRoom } from '@/composables/useRoom'
+
+import ContextMenu from '@/components/ui/context/ContextMenu.vue'
 
 // for do, undo, and redo
 const { actionStackEmpty, redoStackEmpty, registerActionHandlers, doAction, undoLastAction, redoLastAction } = useActionManager()
@@ -244,6 +253,38 @@ registerActionHandlers(
   }
 )
 
+const contextMenu = ref({
+  visible: ref(false),
+  pos: { x: 0, y: 0 },
+  actions: []
+})
+
+contextMenu.value.actions = [
+      {
+        label: 'Delete',
+        function: () => {
+          doAction("delete_canvas_sound_source", {index: selectedIndex.value, src: canvasSoundSources.value[selectedIndex.value]})
+          contextMenu.value.visible = false
+        }
+      },
+      /* {
+        label: sourceHasCone(source) ? 'Remove Cone' : 'Add Cone',
+        function: () => {
+          toggleCone(source)
+          contextMenu.visible = false
+        }
+      },
+      {
+        label: 'Replace Sound',
+        function: () => {
+          openSoundPicker(source)
+          contextMenu.visible = false
+        }
+      } */
+  ]
+
+
+
 
 // Mount Hook
 onMounted(() => {
@@ -257,7 +298,8 @@ onMounted(() => {
     selectedIndex,
     draw,
     listener,
-    doAction
+    doAction,
+    contextMenu
   })
 
   setupAudioContext()

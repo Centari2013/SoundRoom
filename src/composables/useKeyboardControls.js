@@ -60,7 +60,7 @@ export function useKeyboardControls({
         break
       case 'Delete':
       case 'Backspace':
-        doAction("delete_canvas_sound_source", { index: selectedIndex.value })
+        doAction("delete_canvas_sound_source", { index: selectedIndex.value, src: soundSources.value[selectedIndex.value] })
         draw()
         break
       case 'u':

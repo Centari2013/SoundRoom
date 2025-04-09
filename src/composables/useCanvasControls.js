@@ -1,6 +1,6 @@
 // src/composables/useCanvasControls.js
 
-export function useCanvasControls({ canvas, soundSources, selectedIndex, draw, listener, doAction }) {
+export function useCanvasControls({ canvas, soundSources, selectedIndex, draw, listener, doAction, contextMenu }) {
   // --- Internal state ---
   let draggingListener = false
   let draggingSourceIndex = null
@@ -62,11 +62,12 @@ export function useCanvasControls({ canvas, soundSources, selectedIndex, draw, l
   }
 
   const onMouseDown = (e) => {
+    if (e.button === 2) return // ignore right-click
     const { x, y } = getMousePos(e)
 
     const hitSource = trySelectSoundSource(x, y)
     const hitListener = trySelectListener(x, y)
-
+    
     if (!hitSource && !hitListener) selectedIndex.value = null
 
     draw()
@@ -114,6 +115,17 @@ export function useCanvasControls({ canvas, soundSources, selectedIndex, draw, l
       moveListenerPayload = null
     }
   }
+  const showContextMenu = (e) => {
+    e.preventDefault()
+    const { x, y } = getMousePos(e)
+    const target = trySelectSoundSource(x, y)
+  
+    if (!target) return;
+
+    contextMenu.value.visible = true
+    contextMenu.value.pos = { x: e.clientX, y: e.clientY }
+    
+  }
 
   const setupMouseListeners = () => {
     const el = canvas.value
@@ -121,6 +133,7 @@ export function useCanvasControls({ canvas, soundSources, selectedIndex, draw, l
     el.addEventListener("mousemove", onMouseMove)
     el.addEventListener("mouseup", onMouseUpOrLeave)
     el.addEventListener("mouseleave", onMouseUpOrLeave)
+    el.addEventListener('contextmenu', showContextMenu)
   }
 
   setupMouseListeners()
