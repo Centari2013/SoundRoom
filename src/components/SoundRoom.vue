@@ -230,6 +230,20 @@ registerActionHandlers(
   }
 )
 
+registerActionHandlers(
+  "move_listener",
+  (payload) => {
+    listener.value.x = payload.to.x
+    listener.value.y = payload.to.y
+    draw()
+  },
+  (payload) => {
+    listener.value.x = payload.from.x
+    listener.value.y = payload.from.y
+    draw()
+  }
+)
+
 
 // Mount Hook
 onMounted(() => {
