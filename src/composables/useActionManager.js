@@ -1,42 +1,63 @@
-// src/composables/useActionManager.js
-
 import { ref, computed } from 'vue'
 
 export function useActionManager() {
   const actionMap = ref({})
-  const actionStack = ref([])
-  const actionStackEmpty = computed(() => actionStack.value.length === 0)
+  const actionStack = ref([]) // [{ name, payload }]
+  const redoStack = ref([])   // [{ name, payload }]
 
-  const registerActionHandlers = (actionName, undoAction, doAction) => {
+  const actionStackEmpty = computed(() => actionStack.value.length === 0)
+  const redoStackEmpty = computed(() => redoStack.value.length === 0)
+
+  const registerActionHandlers = (actionName, doAction, undoAction) => {
     actionMap.value[actionName] = { undoAction, doAction }
   }
 
-  const doAction = (actionName) => {
+  const doAction = (actionName, payload = null) => {
     const action = actionMap.value[actionName]
     if (!action) {
       console.warn(`No registered action for "${actionName}"`)
       return
     }
-    action.doAction()
-    actionStack.value.push(actionName)
+
+    action.doAction?.(payload)
+    actionStack.value.push({ name: actionName, payload })
+    //console.log(actionStack.value)
+    redoStack.value.length = 0 // clear redo on new action
   }
 
   const undoLastAction = () => {
     if (actionStackEmpty.value) return
-
-    const actionName = actionStack.value.pop()
-    const action = actionMap.value[actionName]
+    const { name, payload } = actionStack.value.pop()
+    const action = actionMap.value[name]
     if (!action) {
-      console.warn(`No undo handler for "${actionName}"`)
+      console.warn(`No undo handler for "${name}"`)
       return
     }
-    action.undoAction()
+    console.log(name, payload)
+    action.undoAction?.(payload)
+    redoStack.value.push({ name, payload })
+  }
+
+  const redoLastAction = () => {
+    if (redoStackEmpty.value) return
+
+    const { name, payload } = redoStack.value.pop()
+    const action = actionMap.value[name]
+    if (!action) {
+      console.warn(`No redo handler for "${name}"`)
+      return
+    }
+
+    action.doAction?.(payload)
+    actionStack.value.push({ name, payload })
   }
 
   return {
     actionStackEmpty,
+    redoStackEmpty,
     registerActionHandlers,
     doAction,
-    undoLastAction
+    undoLastAction,
+    redoLastAction
   }
 }

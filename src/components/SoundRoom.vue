@@ -51,7 +51,8 @@
           <div class="space-x-2">
             <button :disabled="canvasSoundSources.length == 0" @click="playingAudio ? pauseAll() : playAll()" class="px-3 py-1 rounded text-sm bg-neutral-200 dark:bg-neutral-800 hover:bg-neutral-300 dark:hover:bg-neutral-700">{{playingAudio ? "Pause All" : "Play All"}}</button>
             
-            <button @click="() => { undoDeleteSoundSource(); draw()}" :disabled="deletedSources.length == 0" class="px-3 py-1 rounded text-sm bg-neutral-200 dark:bg-neutral-800 hover:bg-neutral-300 dark:hover:bg-neutral-700">Undo</button>
+            <button @click="undoLastAction" :disabled="actionStackEmpty" class="px-3 py-1 rounded text-sm bg-neutral-200 dark:bg-neutral-800 hover:bg-neutral-300 dark:hover:bg-neutral-700">Undo</button>
+            <button @click="redoLastAction" :disabled="redoStackEmpty" class="px-3 py-1 rounded text-sm bg-neutral-200 dark:bg-neutral-800 hover:bg-neutral-300 dark:hover:bg-neutral-700">Redo</button>
           </div>
           <span class="text-xs text-neutral-500">Press 'U' to restore last deleted</span>
         </div>
@@ -105,7 +106,11 @@ import { useKeyboardControls } from '@/composables/useKeyboardControls'
 import { useDragDropAudio } from '@/composables/useDragDropAudio'
 import { useCanvasRenderer } from '@/composables/useCanvasRenderer'
 import { useSelectedSource } from '@/composables/useSelectedSource'
+import { useActionManager } from '@/composables/useActionManager'
 import { useRoom } from '@/composables/useRoom'
+
+// for do, undo, and redo
+const { actionStackEmpty, redoStackEmpty, registerActionHandlers, doAction, undoLastAction, redoLastAction } = useActionManager()
 
 // Listener Setup
 const { listener, setAudioContext, draw: drawListener } = createListenerTools()
@@ -137,7 +142,6 @@ const canvasSoundSources = ref([])
  */
 
 // for Audio Engine management
-const deletedSources = ref([])
 const selectedIndex = ref(null)
 const { selectedSource, getSourceName } = useSelectedSource(canvasSoundSources, selectedIndex)
 
@@ -147,16 +151,14 @@ const {
   addSoundSource,
   deleteSoundSource,
   getAudioContext,
-  undoDeleteSoundSource,
   playAll,
   pauseAll,
   playingAudio
 } = useAudioEngine({
   soundSources: canvasSoundSources,
-  ctxRef: ctx,
-  selectedIndex,
-  deletedSources
+  ctxRef: ctx
 })
+
 
 
 // Canvas Drawing Logic
@@ -174,7 +176,7 @@ const draggedSource = ref(null)
 const { handleDragStart, handleDrop } = useDragDropAudio({
   draggedSource,
   canvasRef: canvas,
-  addSoundSource,
+  doAction,
   draw
 })
 
@@ -184,8 +186,8 @@ const { handleKeyDown } = useKeyboardControls({
   selectedIndex,
   soundSources: canvasSoundSources,
   draw,
-  deleteSoundSource,
-  undoDeleteSoundSource,
+  doAction,
+  undoLastAction,
   clamp,
   room
 })
@@ -197,6 +199,18 @@ const setupAudioContext = () => {
   setAudioContext(audioContext)
   draw()
 }
+
+// Set Action Handlers
+registerActionHandlers(
+  "add_canvas_sound_source", 
+  (payload) => {addSoundSource(payload); draw()}, 
+  (payload) => { deleteSoundSource(payload); draw() }
+)
+registerActionHandlers(
+  "delete_canvas_sound_source", 
+  (payload) => { deleteSoundSource(payload); draw() }, 
+  (payload) => {addSoundSource(payload); draw()}
+)
 
 // Mount Hook
 onMounted(() => {

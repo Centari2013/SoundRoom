@@ -1,12 +1,11 @@
 // src/composables/useKeyboardControls.js
-import { createSoundSource } from '@/audio/createSoundSource'
 export function useKeyboardControls({ 
   listener, 
   selectedIndex, 
   soundSources, 
-  draw, 
-  deleteSoundSource,
-  undoDeleteSoundSource,
+  draw,
+  doAction,
+  undoLastAction,
   clamp, 
   room
 }){
@@ -61,11 +60,11 @@ export function useKeyboardControls({
         break
       case 'Delete':
       case 'Backspace':
-        deleteSoundSource()
+        doAction("delete_canvas_sound_source", { index: selectedIndex.value })
         draw()
         break
       case 'u':
-        undoDeleteSoundSource()
+        undoLastAction()
         draw()
         break
         

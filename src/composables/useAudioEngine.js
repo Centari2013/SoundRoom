@@ -1,10 +1,9 @@
 import { createSoundSource } from '@/audio/createSoundSource'
-import { ref } from 'vue'
+import { computed } from 'vue'
 
-export function useAudioEngine({ soundSources, ctxRef, selectedIndex }) {
+export function useAudioEngine({ soundSources, ctxRef}) {
   let audioContext = null
-  const playingAudio = ref(false)
-  const deletedSources = ref([])
+  const playingAudio = computed(() => { return soundSources.value.some((s)=> s.instance.playing)})
 
   const getAudioContext = () => {
     if (!audioContext) {
@@ -30,7 +29,10 @@ export function useAudioEngine({ soundSources, ctxRef, selectedIndex }) {
       src.instance = instance
     }
   }
-  const addSoundSource = (src) => {
+  const addSoundSource = (payload) => {
+    const src = payload.src
+    src.index = payload.index ?? soundSources.value.length
+     
     const instance = createSoundSource({
       audioContext: getAudioContext(),
       file: src.audioPath,
@@ -47,42 +49,18 @@ export function useAudioEngine({ soundSources, ctxRef, selectedIndex }) {
     instance.play()
   }
   
-
-  const deleteSoundSource = () => {
-    if (selectedIndex.value >= 0) {
-      const src = soundSources.value[selectedIndex.value]
-      const instance = src.instance
-
-      instance?.stop?.()
-      instance?.dispose?.()
-
-      deletedSources.value.push(src)
-      soundSources.value.splice(selectedIndex.value, 1)
-      selectedIndex.value = Math.min(selectedIndex.value, soundSources.value.length - 1)
-    }
-  }
-
-  const undoDeleteSoundSource = () => {
-    if (deletedSources.value.length > 0) {
-      const src = deletedSources.value.pop()
-      soundSources.value.push(src)
+  const deleteSoundSource = (payload) => {
+    const index = payload.src.index
+    const src = soundSources.value[index]
+    const instance = src?.instance
   
-      const instance = createSoundSource({
-        audioContext: getAudioContext(),
-        file: src.audioPath,
-        position: [src.x, src.y, 0],
-        angle: src.angle,
-        coneInner: src.coneInner ?? 60,
-        coneOuter: src.coneOuter ?? 180,
-        loop: true,
-        ctx: ctxRef.value
-      })
-      instance.play()
-      src.instance = instance
-      selectedIndex.value = soundSources.value.length - 1
-      
-    }
+    instance?.stop?.()
+    instance?.dispose?.()
+  
+    soundSources.value.splice(index, 1)
   }
+  
+
   const playAll = () => {
     if (audioContext.state === 'suspended') {
       audioContext.resume();
@@ -90,10 +68,6 @@ export function useAudioEngine({ soundSources, ctxRef, selectedIndex }) {
     soundSources.value.forEach(s => {
       s.instance.play()
     });
-
-    if (soundSources.value.length > 0){
-      playingAudio.value = true
-    }
     
   }
   const pauseAll = () => {
@@ -102,7 +76,7 @@ export function useAudioEngine({ soundSources, ctxRef, selectedIndex }) {
         s.instance.stop()
       }
     });
-    playingAudio.value = false
+
   }
 
   return {
@@ -110,7 +84,6 @@ export function useAudioEngine({ soundSources, ctxRef, selectedIndex }) {
     addSoundSource,
     deleteSoundSource,
     getAudioContext,
-    undoDeleteSoundSource,
     playAll,
     pauseAll,
     playingAudio
