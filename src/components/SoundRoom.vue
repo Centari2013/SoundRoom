@@ -212,6 +212,25 @@ registerActionHandlers(
   (payload) => {addSoundSource(payload); draw()}
 )
 
+registerActionHandlers(
+  "move_canvas_sound_source",
+  (payload) => {
+    const src = canvasSoundSources.value[payload.index]
+    src.instance.state.x = payload.to.x
+    src.instance.state.y = payload.to.y
+    src.instance.updateAudio()
+    draw()
+  },
+  (payload) => {
+    const src = canvasSoundSources.value[payload.index]
+    src.instance.state.x = payload.from.x
+    src.instance.state.y = payload.from.y
+    src.instance.updateAudio()
+    draw()
+  }
+)
+
+
 // Mount Hook
 onMounted(() => {
   ctx.value = canvas.value.getContext('2d')
@@ -223,7 +242,8 @@ onMounted(() => {
     soundSources: canvasSoundSources,
     selectedIndex,
     draw,
-    listener
+    listener,
+    doAction
   })
 
   setupAudioContext()

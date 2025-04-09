@@ -1,10 +1,12 @@
 // src/composables/useCanvasControls.js
 
-export function useCanvasControls({ canvas, soundSources, selectedIndex, draw, listener }) {
+export function useCanvasControls({ canvas, soundSources, selectedIndex, draw, listener, doAction }) {
   let draggingListener = false
   let draggingIndex = null
   let offsetX = 0
   let offsetY = 0
+
+  let movePayload = null
 
   const setupMouseListeners = () => {
     const canvasEl = canvas.value
@@ -27,7 +29,12 @@ export function useCanvasControls({ canvas, soundSources, selectedIndex, draw, l
         const dy = mouseY - sy
         const dist = Math.sqrt(dx * dx + dy * dy)
     
-        if (dist <= 20) {
+        if (dist <= 20) { // sound source found
+          movePayload = {
+            index: i,
+            from: { x: sx, y: sy } // original position
+          }
+          
           selectedIndex.value = i
           offsetX = dx
           offsetY = dy
@@ -90,6 +97,17 @@ export function useCanvasControls({ canvas, soundSources, selectedIndex, draw, l
     canvasEl.addEventListener('mouseup', () => {
       draggingIndex = null
       draggingListener = false
+
+      if (movePayload) {
+        const src = soundSources.value[movePayload.index]
+        movePayload.to = {
+          x: src.instance.state.x,
+          y: src.instance.state.y
+        }
+        doAction("move_canvas_sound_source", movePayload)
+        movePayload = null
+      }
+      
 
     })
 
