@@ -20,7 +20,7 @@
             <li v-for="s in soundSources" >{{ getSourceName(s.audioPath) }}</li>
 
           </ul>
-          <button class="mt-4 w-full bg-neutral-200 dark:bg-neutral-800 text-xs py-1 rounded hover:bg-neutral-300 dark:hover:bg-neutral-700">
+          <button :disabled="soundSources.length == 20" class="mt-4 w-full bg-neutral-200 dark:bg-neutral-800 text-xs py-1 rounded hover:bg-neutral-300 dark:hover:bg-neutral-700">
             + Add Source
           </button>
         </section>
@@ -79,7 +79,7 @@
           <div v-else>
             <p>No Source Selected</p>
           </div>
-          <button v-if="selectedSource" class="mt-3 w-full bg-red-600 text-xs py-1 rounded hover:bg-red-500">Delete</button>
+          <button v-if="selectedSource" @click="() => { deleteSoundSource(); draw()}" class="mt-3 w-full bg-red-600 text-xs py-1 rounded hover:bg-red-500">Delete</button>
         </section>
       </aside>
     </div>
@@ -111,6 +111,8 @@ const soundSources = ref([
   { x: 100, y: 100, angle: 0, audioPath: '/ambient.mp3'},
   { x: 500, y: 0, angle: 90, audioPath: '/water.mp3', coneInner: 360, coneOuter: 360 }
 ])
+
+/* const soundSources = ref(Array(20).fill({ x: 100, y: 100, angle: 0, audioPath: '/ambient.mp3'})) */
 const deletedSources = ref([])
 const selectedIndex = ref(null)
 const getSourceName = (path) => {
