@@ -104,6 +104,8 @@ import { useAudioEngine } from '@/composables/useAudioEngine'
 import { useKeyboardControls } from '@/composables/useKeyboardControls'
 import { useDragDropAudio } from '@/composables/useDragDropAudio'
 import { useCanvasRenderer } from '@/composables/useCanvasRenderer'
+import { useSelectedSource } from '@/composables/useSelectedSource'
+
 
 // Listener Setup
 const { listener, setAudioContext, draw: drawListener } = createListenerTools()
@@ -137,31 +139,7 @@ const canvasSoundSources = ref([])
 // for Audio Engine management
 const deletedSources = ref([])
 const selectedIndex = ref(null)
-const getSourceName = (path) => {
-  const file = path.split('/').pop()
-  return file.replace(/\.[^/.]+$/, '') // removes extension
-}
-const selectedSource = computed(() => {
-  const index = selectedIndex.value
-  const sources = canvasSoundSources.value
-
-  if (index == null || index < 0 || index >= sources.length) return null
-
-  const src = sources[index]
-
-  const name = getSourceName(src.audioPath)
-  const instanceState = src.instance?.state
-  let calculatedAngle = instanceState?.angle ?? src.angle
-  calculatedAngle = (calculatedAngle % 360 + 360) % 360
-  return {
-    name,
-    x: Math.round(instanceState?.x ?? src.x),
-    y: Math.round(instanceState?.y ?? src.y),
-    angle: calculatedAngle,
-    innerCone: instanceState?.coneInner ?? src.coneInner ?? 360,
-    outerCone: instanceState?.coneOuter ?? src.coneOuter ?? 360
-  }
-})
+const { selectedSource, getSourceName } = useSelectedSource(canvasSoundSources, selectedIndex)
 
 // Audio Engine Hooks
 const {
