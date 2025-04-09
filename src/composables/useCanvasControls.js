@@ -64,14 +64,24 @@ export function useCanvasControls({ canvas, soundSources, selectedIndex, draw, l
   const onMouseDown = (e) => {
     if (e.button === 2) return // ignore right-click
     const { x, y } = getMousePos(e)
-
-    const hitSource = trySelectSoundSource(x, y)
-    const hitListener = trySelectListener(x, y)
-    
-    if (!hitSource && !hitListener) selectedIndex.value = null
-
+  
+    // prioritize sound sources first
+    if (trySelectSoundSource(x, y)) {
+      draw()
+      return
+    }
+  
+    // only check listener if no source was selected
+    if (trySelectListener(x, y)) {
+      draw()
+      return
+    }
+  
+    // If nothing was selected
+    selectedIndex.value = null
     draw()
   }
+  
 
   const onMouseMove = (e) => {
     const { x, y } = getMousePos(e)
