@@ -21,7 +21,6 @@ export function useActionManager() {
 
     action.doAction?.(payload)
     actionStack.value.push({ name: actionName, payload })
-    //console.log(actionStack.value)
     redoStack.value.length = 0 // clear redo on new action
   }
 
@@ -33,7 +32,7 @@ export function useActionManager() {
       console.warn(`No undo handler for "${name}"`)
       return
     }
-    console.log(name, payload)
+    
     action.undoAction?.(payload)
     redoStack.value.push({ name, payload })
   }
