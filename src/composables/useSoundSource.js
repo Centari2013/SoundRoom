@@ -146,8 +146,6 @@ export function useSoundSource({
   const getVolume = () => reactiveVolume.value
 
 
-  // TODO: fix volume slider not updating
-
   return {
     sourceNode,
     gainNode,
