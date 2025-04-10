@@ -118,7 +118,21 @@
           <div v-else>
             <p>No Source Selected</p>
           </div>
-          <button v-if="selectedSource" @click="() => { deleteSoundSource(); draw()}" class="mt-10 w-full bg-red-600 text-xs py-1 rounded hover:bg-red-500">Delete</button>
+          <button v-if="selectedSource" 
+          @click="() => { 
+            const src = canvasSoundSources[selectedIndex]
+            src.instance.playing ? src.instance.stop() : src.instance.play()
+          }" 
+          class="mt-10 w-full bg-red-600 text-xs py-1 rounded hover:bg-red-500">
+            {{ computed(() => {const src = canvasSoundSources[selectedIndex]
+          return src.instance.playing ? "Pause" : "Play"}) }}
+          </button>
+          <button v-if="selectedSource" 
+          @click="() => { 
+            doAction('delete_canvas_sound_source',{index: selectedIndex, src: canvasSoundSources[selectedIndex]})
+          }" 
+            class="mt-3 w-full bg-red-600 text-xs py-1 rounded hover:bg-red-500">Delete</button>
+        
         </section>
       </aside>
     </div>
@@ -300,6 +314,16 @@ const contextMenu = ref({
 })
 
 contextMenu.value.actions = [
+      {
+        label: computed(() => {
+          const src = canvasSoundSources.value[selectedIndex.value]
+          return src.instance.playing ? "Pause" : "Play"
+        }),
+        function: () => {
+         const src = canvasSoundSources.value[selectedIndex.value]
+         src.instance.playing ? src.instance.stop() : src.instance.play()
+        }
+      },
       {
         label: 'Delete',
         function: () => {
