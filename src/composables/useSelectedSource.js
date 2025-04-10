@@ -22,7 +22,8 @@ export function useSelectedSource(soundSources, selectedIndex) {
       y: Math.round(state?.y ?? src.y),
       angle,
       innerCone: state?.coneInner ?? src.coneInner ?? 360,
-      outerCone: state?.coneOuter ?? src.coneOuter ?? 360
+      outerCone: state?.coneOuter ?? src.coneOuter ?? 360,
+      volume: src.instance.getVolume() * 100
     }
   })
 

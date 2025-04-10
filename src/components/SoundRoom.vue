@@ -85,18 +85,21 @@
         <!-- Source Details -->
         <section>
           <h5 class="text-sm font-semibold uppercase text-neutral-500 dark:text-neutral-400 mb-2">Selected Source</h5>
-          <div v-if="selectedSource" class="text-xs space-y-1">
+          <div v-if="selectedSource" class="text-xs space-y-1 flex flex-col items-center">
             <h4>{{ selectedSource.name }}</h4>
             <p>X: {{selectedSource.x}}</p>
             <p>Y: {{ selectedSource.y }}</p>
             <p>Angle: {{selectedSource.angle}}°</p>
             <p>Inner Cone: {{selectedSource.innerCone}}°</p>
             <p>Outer Cone: {{selectedSource.outerCone}}°</p>
+            <div class="w-5/6">
+              <VueSlider v-model="selectedSource.volume" @change="changeSourceVolume" />
+            </div>
           </div>
           <div v-else>
             <p>No Source Selected</p>
           </div>
-          <button v-if="selectedSource" @click="() => { deleteSoundSource(); draw()}" class="mt-3 w-full bg-red-600 text-xs py-1 rounded hover:bg-red-500">Delete</button>
+          <button v-if="selectedSource" @click="() => { deleteSoundSource(); draw()}" class="mt-10 w-full bg-red-600 text-xs py-1 rounded hover:bg-red-500">Delete</button>
         </section>
       </aside>
     </div>
@@ -117,6 +120,7 @@ import { useActionManager } from '@/composables/useActionManager'
 import { useRoom } from '@/composables/useRoom'
 
 import ContextMenu from '@/components/ui/context/ContextMenu.vue'
+import VueSlider from 'vue-3-slider-component'
 
 // for do, undo, and redo
 const { actionStackEmpty, redoStackEmpty, registerActionHandlers, doAction, undoLastAction, redoLastAction } = useActionManager()
@@ -153,6 +157,11 @@ const canvasSoundSources = ref([])
 // for Audio Engine management
 const selectedIndex = ref(null)
 const { selectedSource, getSourceName } = useSelectedSource(canvasSoundSources, selectedIndex)
+
+const changeSourceVolume = (v) => {
+  const src = canvasSoundSources.value[selectedIndex.value];
+  src.instance.setVolume(v * 0.01)
+}
 
 // Audio Engine Hooks
 const {

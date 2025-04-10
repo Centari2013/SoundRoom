@@ -135,6 +135,14 @@ export function useSoundSource({
     playing.value = false
   }
 
+  const setVolume = (v) => {
+    audioElement.volume = v
+  }
+
+  const getVolume = () => {
+    return audioElement.volume
+  }
+
   // TODO: add volume controls
 
   return {
@@ -147,6 +155,8 @@ export function useSoundSource({
     playing,
     play,
     stop,
+    getVolume,
+    setVolume,
     dispose: () => {
       try {
         audioElement.pause()
