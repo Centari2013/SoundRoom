@@ -8,6 +8,8 @@ export function useCanvasControls({ canvas, soundSources, selectedIndex, draw, l
   let offsetY = 0
   let moveSourcePayload = null
   let moveListenerPayload = null
+  const positionsEqual = (a, b) => a.x === b.x && a.y === b.y
+
 
   const getMousePos = (e) => {
     const rect = canvas.value.getBoundingClientRect()
@@ -105,26 +107,37 @@ export function useCanvasControls({ canvas, soundSources, selectedIndex, draw, l
   const onMouseUpOrLeave = () => {
     draggingSourceIndex = null
     draggingListener = false
-
+  
     if (moveSourcePayload) {
       const src = soundSources.value[moveSourcePayload.index]
-      moveSourcePayload.to = {
+      const to = {
         x: src.instance.state.x,
         y: src.instance.state.y
       }
-      doAction("move_canvas_sound_source", moveSourcePayload)
+  
+      if (!positionsEqual(moveSourcePayload.from, to)) {
+        moveSourcePayload.to = to
+        doAction("move_canvas_sound_source", moveSourcePayload)
+      }
+  
       moveSourcePayload = null
     }
-
-    if (moveListenerPayload){
-      moveListenerPayload.to = {
+  
+    if (moveListenerPayload) {
+      const to = {
         x: listener.value.x,
         y: listener.value.y
       }
-      doAction("move_listener", moveListenerPayload)
+  
+      if (!positionsEqual(moveListenerPayload.from, to)) {
+        moveListenerPayload.to = to
+        doAction("move_listener", moveListenerPayload)
+      }
+  
       moveListenerPayload = null
     }
   }
+  
   const showContextMenu = (e) => {
     e.preventDefault()
     const { x, y } = getMousePos(e)

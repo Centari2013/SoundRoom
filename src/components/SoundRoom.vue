@@ -93,7 +93,26 @@
             <p>Inner Cone: {{selectedSource.innerCone}}°</p>
             <p>Outer Cone: {{selectedSource.outerCone}}°</p>
             <div class="w-5/6">
-              <VueSlider v-model="selectedSource.volume" @change="changeSourceVolume" />
+              <VueSlider 
+                v-model="selectedSource.volume" 
+                @drag-start="sourceVolumePayload = { 
+                  from: selectedSource.volume * 0.01,
+                  index: selectedIndex
+                  }"
+                @change="(v) => {
+                  const src = canvasSoundSources[selectedIndex]
+                  src.instance.setVolume(v * 0.01)
+                }"
+                @drag-end="() => {
+                  console.log(v)
+                  sourceVolumePayload.to = selectedSource.volume * 0.01
+                  console.log('source volume payload',sourceVolumePayload)
+                  doAction('set_sound_source_volume', sourceVolumePayload)
+                  sourceVolumePayload = null
+                  console.log(selectedSource.volume)
+                }"
+              />
+
             </div>
           </div>
           <div v-else>
@@ -158,10 +177,7 @@ const canvasSoundSources = ref([])
 const selectedIndex = ref(null)
 const { selectedSource, getSourceName } = useSelectedSource(canvasSoundSources, selectedIndex)
 
-const changeSourceVolume = (v) => {
-  const src = canvasSoundSources.value[selectedIndex.value];
-  src.instance.setVolume(v * 0.01)
-}
+
 
 // Audio Engine Hooks
 const {
@@ -260,6 +276,20 @@ registerActionHandlers(
     listener.value.x = payload.from.x
     listener.value.y = payload.from.y
     draw()
+  }
+)
+
+const sourceVolumePayload = null
+
+registerActionHandlers(
+  "set_sound_source_volume",
+  (payload) => {
+    const src = canvasSoundSources.value[payload.index]
+    src.instance.setVolume(payload.to)
+  },
+  (payload) => {
+    const src = canvasSoundSources.value[payload.index]
+    src.instance.setVolume(payload.from)
   }
 )
 

@@ -136,15 +136,17 @@ export function useSoundSource({
     playing.value = false
   }
 
+  const reactiveVolume = ref(audioElement.volume)
+
   const setVolume = (v) => {
+    reactiveVolume.value = v
     audioElement.volume = v
   }
 
-  const getVolume = () => {
-    return audioElement.volume
-  }
+  const getVolume = () => reactiveVolume.value
 
-  // TODO: integrate volume into action manager
+
+  // TODO: fix volume slider not updating
 
   return {
     sourceNode,
