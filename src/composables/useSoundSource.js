@@ -144,7 +144,7 @@ export function useSoundSource({
     return audioElement.volume
   }
 
-  // TODO: add volume controls
+  // TODO: integrate volume into action manager
 
   return {
     sourceNode,
