@@ -206,6 +206,7 @@ const { handleKeyDown } = useKeyboardControls({
   draw,
   doAction,
   undoLastAction,
+  redoLastAction,
   clamp,
   room
 })

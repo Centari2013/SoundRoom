@@ -6,6 +6,7 @@ export function useKeyboardControls({
   draw,
   doAction,
   undoLastAction,
+  redoLastAction,
   clamp, 
   room
 }){
@@ -56,16 +57,17 @@ export function useKeyboardControls({
         } else {
           selectedIndex.value = (selectedIndex.value + 1) % soundSources.value.length
         }
-        draw()
+        
         break
       case 'Delete':
       case 'Backspace':
         doAction("delete_canvas_sound_source", { index: selectedIndex.value, src: soundSources.value[selectedIndex.value] })
-        draw()
         break
       case 'u':
         undoLastAction()
-        draw()
+        break
+      case 'r':
+        redoLastAction()
         break
         
     }
