@@ -22,6 +22,7 @@ export function useAudioEngine({ soundSources, ctxRef}) {
         angle: src.angle,
         coneInner: src.coneInner ?? 60,
         coneOuter: src.coneOuter ?? 180,
+        volume: src.volume ?? 1,
         loop: true,
         ctx: ctxRef.value
       })
@@ -40,6 +41,7 @@ export function useAudioEngine({ soundSources, ctxRef}) {
       angle: src.angle ?? 0,
       coneInner: src.coneInner ?? 60,
       coneOuter: src.coneOuter ?? 180,
+      volume: src.instance?.volume ?? 1,
       loop: true,
       ctx: ctxRef.value
     })

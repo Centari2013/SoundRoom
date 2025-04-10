@@ -7,6 +7,7 @@ export function useSoundSource({
   angle = 0,
   coneInner = 360,
   coneOuter = 360,
+  volume = 1,
   loop = true,
   ctx
 }) {
@@ -25,7 +26,7 @@ export function useSoundSource({
   audioElement.src = file
   audioElement.preload = 'auto'
   audioElement.loop = loop
-  audioElement.volume = 1.0
+  audioElement.volume = volume
 
   const sourceNode = audioContext.createMediaElementSource(audioElement)
   const gainNode = audioContext.createGain()
