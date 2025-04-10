@@ -95,22 +95,9 @@
             <div class="w-5/6">
               <VueSlider 
                 v-model="selectedSource.volume" 
-                @drag-start="sourceVolumePayload = { 
-                  from: selectedSource.volume * 0.01,
-                  index: selectedIndex
-                  }"
-                @change="(v) => {
-                  const src = canvasSoundSources[selectedIndex]
-                  src.instance.setVolume(v * 0.01)
-                }"
-                @drag-end="() => {
-                  console.log(v)
-                  sourceVolumePayload.to = selectedSource.volume * 0.01
-                  console.log('source volume payload',sourceVolumePayload)
-                  doAction('set_sound_source_volume', sourceVolumePayload)
-                  sourceVolumePayload = null
-                  console.log(selectedSource.volume)
-                }"
+                @drag-start="onStart"
+                @change="onChange"
+                @drag-end="onEnd"
               />
 
             </div>
@@ -150,6 +137,7 @@ import { useDragDropAudio } from '@/composables/useDragDropAudio'
 import { useCanvasRenderer } from '@/composables/useCanvasRenderer'
 import { useSelectedSource } from '@/composables/useSelectedSource'
 import { useActionManager } from '@/composables/useActionManager'
+import { useVolumeSlider } from '@/composables/useVolumeSlider'
 import { useRoom } from '@/composables/useRoom'
 
 import ContextMenu from '@/components/ui/context/ContextMenu.vue'
@@ -191,6 +179,7 @@ const canvasSoundSources = ref([])
 const selectedIndex = ref(null)
 const { selectedSource, getSourceName } = useSelectedSource(canvasSoundSources, selectedIndex)
 
+const { onStart, onChange, onEnd } = useVolumeSlider(canvasSoundSources, selectedIndex, doAction)
 
 
 // Audio Engine Hooks
@@ -293,7 +282,6 @@ registerActionHandlers(
   }
 )
 
-const sourceVolumePayload = null
 
 registerActionHandlers(
   "set_sound_source_volume",
