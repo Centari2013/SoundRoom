@@ -2,6 +2,7 @@
 export default class SoundSource {
   constructor({
     audioContext,
+    masterGain,
     file,
     position = [0, 0, 0],
     angle = 0,
@@ -47,7 +48,7 @@ export default class SoundSource {
 
     this._sourceNode.connect(this._gainNode)
       .connect(this._pannerNode)
-      .connect(audioContext.destination)
+      .connect(masterGain ?? audioContext.destination)
 
     this._playing = false
     this._volume = volume

@@ -24,7 +24,7 @@ export function useVolumeSlider(canvasSoundSources, selectedIndex, actionManager
   const onChange = (v) => {
     const src = canvasSoundSources.value[selectedIndex.value]
     if (src?.instance) {
-      src.instance.setVolume(v * 0.01)
+      src.instance.setVolume(v)
     }
   }
 

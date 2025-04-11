@@ -11,6 +11,10 @@
             <div class="w-5/6">
               <VueSlider 
                 v-model="selectedSource.volume" 
+                :min="0" 
+                :max="1" 
+                :interval="0.01"
+                tooltip="none"
                 @drag-start="onStart"
                 @change="onChange"
                 @drag-end="onEnd"

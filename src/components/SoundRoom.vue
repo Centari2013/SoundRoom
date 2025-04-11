@@ -38,7 +38,19 @@
             @redo="actionManager.redoLastAction"
             @togglePlay="isPlaying ? audioEngine.pauseAll() : audioEngine.playAll()"
           />
-          <span class="text-xs text-neutral-500">Press 'U' to restore last deleted</span>
+          <div class="flex items-center space-x-2">
+            <span class="text-xs text-neutral-500">Master</span>
+            <VueSlider 
+              v-model="masterVolumeProxy"
+              :min="0" 
+              :max="1" 
+              :interval="0.01"
+              :width="100"
+              :height="4"
+              tooltip="none"
+              class="mr-3"
+            />
+          </div>
         </div>
 
         <!-- Canvas Area -->
@@ -81,6 +93,8 @@
 import { ref, onMounted, computed, reactive, provide } from 'vue'
 
 // UI Components
+import VueSlider from 'vue-3-slider-component'
+
 import ContextMenu from '@/components/ui/context/ContextMenu.vue'
 import ToolbarControls from '@/components/ui/controls/ToolbarControls.vue'
 import ListenerReadout from '@/components/ui/readouts/ListenerReadout.vue'
@@ -123,6 +137,10 @@ const MAX_SOURCES = 20
 
 // Audio Engine & Playback State
 const audioEngine = new AudioEngine(loadedCanvasSoundSources, canvasCtx)
+const masterVolumeProxy = computed({
+  get: () => audioEngine.masterVolume.value,
+  set: (v) => (audioEngine.masterVolume.value = v)
+})
 const isPlaying = computed(() => audioEngine.isPlaying.value)
 let audioContext = null
 

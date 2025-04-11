@@ -1,14 +1,24 @@
 // lib/AudioEngine.js
 import SoundSource from '@/lib/SoundSource';
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 
 export default class AudioEngine {
   soundSources = ref([])
+  #masterGain = null
+  #ctxRef = null
+  #audioContext = null
+  masterVolume = ref(null)
 
-  constructor( soundSources, ctxRef ) {
+  constructor( soundSources, ctxRef, volume = 1 ) {
     this.soundSources.value = soundSources  // reactive array of sources
-    this._ctxRef = ctxRef                 // reactive canvas or drawing context
-    this._audioContext = null
+    this.#ctxRef = ctxRef                 // reactive canvas or drawing context
+    this.masterVolume.value = volume
+
+    watch(this.masterVolume, (v) => {
+      if (this.#masterGain && this.#audioContext) {
+        this.#masterGain.gain.setValueAtTime(v, this.#audioContext.currentTime)
+      }
+    })
 
     // Computed: tracks if anything is playing
     this.isPlaying = computed(() =>
@@ -17,16 +27,22 @@ export default class AudioEngine {
   }
 
   getAudioContext() {
-    if (!this._audioContext) {
-      this._audioContext = new (window.AudioContext || window.webkitAudioContext)()
+    if (!this.#audioContext) {
+      this.#audioContext = new (window.AudioContext || window.webkitAudioContext)()
+
+      // Create master gain when context is created
+      this.#masterGain = this.#audioContext.createGain()
+      this.#masterGain.gain.value = this.masterVolume.value // default volume
+      this.#masterGain.connect(this.#audioContext.destination)
     }
-    return this._audioContext
+    return this.#audioContext
   }
 
   setupAudioEngine() {
     for (const src of this.soundSources.value) {
       const instance = new SoundSource({
         audioContext: this.getAudioContext(),
+        masterGain: this.#masterGain,
         file: src.audioPath,
         position: [src.x, src.y, 0],
         angle: src.angle,
@@ -34,7 +50,7 @@ export default class AudioEngine {
         coneOuter: src.coneOuter ?? 180,
         volume: src.instance?.getVolume?.() ?? 1,
         loop: true,
-        canvasContext: this._ctxRef?.value
+        canvasContext: this.#ctxRef?.value
       })
 
       src.instance = instance
@@ -47,6 +63,7 @@ export default class AudioEngine {
 
     const instance = new SoundSource({
       audioContext: this.getAudioContext(),
+      masterGain: this.#masterGain,
       file: src.audioPath,
       position: [src.x, src.y, 0],
       angle: src.angle ?? 0,
@@ -54,14 +71,14 @@ export default class AudioEngine {
       coneOuter: src.coneOuter ?? 180,
       volume: src.instance?.getVolume?.() ?? 1,
       loop: true,
-      canvasContext: this._ctxRef?.value
+      canvasContext: this.#ctxRef?.value
     })
 
     src.instance = instance
     this.soundSources.value.push(src)
 
-    if (this._audioContext?.state === 'suspended') {
-      this._audioContext.resume()
+    if (this.#audioContext?.state === 'suspended') {
+      this.#audioContext.resume()
     }
     instance.play()
   }
@@ -78,8 +95,8 @@ export default class AudioEngine {
   }
 
   playAll() {
-    if (this._audioContext?.state === 'suspended') {
-      this._audioContext.resume()
+    if (this.#audioContext?.state === 'suspended') {
+      this.#audioContext.resume()
     }
 
     this.soundSources.value.forEach(s => {
