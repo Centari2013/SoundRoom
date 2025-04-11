@@ -27,7 +27,7 @@
               {{ getSourceName(s.audioPath) }}
             </li>
           </ul>
-          <button :disabled="audioEngine.soundSources.length == 20" class="mt-4 w-full bg-neutral-300 dark:bg-neutral-800 text-xs py-1 rounded hover:bg-neutral-400 dark:hover:bg-neutral-700">
+          <button :disabled="audioEngine.soundSources.length == MAX_SOURCES" class="mt-4 w-full bg-neutral-300 dark:bg-neutral-800 text-xs py-1 rounded hover:bg-neutral-400 dark:hover:bg-neutral-700">
             + Add Source
           </button>
         </section>
@@ -168,6 +168,7 @@ const soundLibrarySources = ref([
   { audioPath: '/water.mp3' },
 ])
 const loadedCanvasSoundSources = []
+const MAX_SOURCES = 20
 
 
 // Audio Engine & Playback State
@@ -303,7 +304,7 @@ const contextMenuActions = [
   }
 ]
 
-// Audio Engine Initialization
+// Initializes all source instances with audio + connects listener to context
 function setupAudioContext() {
   audioEngine.setupAudioEngine()
   audioContext = audioEngine.getAudioContext()
