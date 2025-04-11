@@ -1,5 +1,5 @@
 // composables/useListener.js
-import { ref, computed } from 'vue'
+import { ref } from 'vue'
 
 export const listener = ref({ x: 300, y: 200, angle: 90 })
 
