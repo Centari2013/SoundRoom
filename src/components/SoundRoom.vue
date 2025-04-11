@@ -33,14 +33,7 @@
         </section>
 
         <!-- Listener Info -->
-        <section>
-          <h5 class="text-sm font-semibold uppercase text-neutral-600 dark:text-neutral-400 mb-2">Listener</h5>
-          <div class="text-xs space-y-1">
-            <p>X: {{ listener.x }}</p>
-            <p>Y: {{ listener.y }}</p>
-            <p>Angle: {{ displayListenerAngle }}°</p>
-          </div>
-        </section>
+        <ListenerReadout :listener="listener"/>
       </aside>
 
       <!-- Canvas + Controls -->
@@ -82,45 +75,12 @@
       <!-- Right Sidebar -->
       <aside class="w-64 bg-neutral-100 dark:bg-neutral-900 border-l border-neutral-300 dark:border-neutral-800 p-4 space-y-4">
         <!-- Source Details -->
-        <section>
-          <h5 class="text-sm font-semibold uppercase text-neutral-500 dark:text-neutral-400 mb-2">Selected Source</h5>
-          <div v-if="selectedSource" class="text-xs space-y-1 flex flex-col items-center">
-            <h4>{{ selectedSource.name }}</h4>
-            <p>X: {{ selectedSource.x }}</p>
-            <p>Y: {{ selectedSource.y }}</p>
-            <p>Angle: {{ selectedSource.angle }}°</p>
-            <p>Inner Cone: {{ selectedSource.innerCone }}°</p>
-            <p>Outer Cone: {{ selectedSource.outerCone }}°</p>
-            <div class="w-5/6">
-              <VueSlider 
-                v-model="selectedSource.volume" 
-                @drag-start="onStart"
-                @change="onChange"
-                @drag-end="onEnd"
-              />
-            </div>
-          </div>
-          <div v-else>
-            <p>No Source Selected</p>
-          </div>
-          <button
-            v-if="selectedSource"
-            @click="playPauseAllSound"
-            class="mt-10 w-full bg-red-600 text-xs py-1 rounded hover:bg-red-500"
-          >
-            {{ playPauseLabel }}
-          </button>
-          <button
-            v-if="selectedSource"
-            @click="actionManager.doAction(
-              'delete_canvas_sound_source', 
-              { index: selectedIndex, src: audioEngine.soundSources.value[selectedIndex] }
-              )"
-            class="mt-3 w-full bg-red-600 text-xs py-1 rounded hover:bg-red-500"
-          >
-            Delete
-          </button>
-        </section>
+        <SoundSourcePanel 
+          :listener="listener"
+          :audioEngine="audioEngine"
+          :actionManager="actionManager"
+          :selectedIndex="selectedIndex"
+        />
       </aside>
     </div>
   </div>
@@ -129,12 +89,13 @@
 <script setup>
 // Imports
 // Core Imports
-import { ref, onMounted, computed, reactive } from 'vue'
+import { ref, onMounted, computed, reactive, provide } from 'vue'
 
 // UI Components
 import ContextMenu from '@/components/ui/context/ContextMenu.vue'
 import ToolbarControls from '@/components/ui/controls/ToolbarControls.vue'
-import VueSlider from 'vue-3-slider-component'
+import ListenerReadout from '@/components/ui/readouts/ListenerReadout.vue'
+import SoundSourcePanel from '@/components/ui/panels/SoundSourcePanel.vue'
 
 // Audio / Canvas / State Classes
 import Listener from '@/lib/Listener'
@@ -148,7 +109,6 @@ import { useKeyboardControls } from '@/composables/useKeyboardControls'
 import { useDragDropAudio } from '@/composables/useDragDropAudio'
 import { useCanvasRenderer } from '@/composables/useCanvasRenderer'
 import { useSelectedSource } from '@/composables/useSelectedSource'
-import { useVolumeSlider } from '@/composables/useVolumeSlider'
 
 
 // Global State & Reactive References
@@ -160,9 +120,10 @@ const draggedSource = ref(null)
 const room = new Room()
 
 const listener = reactive(new Listener())
-const displayListenerAngle = computed(() => ((listener.angle % 360 + 360) % 360))
+
 
 const selectedIndex = ref(null)
+provide('selectedIndex', selectedIndex)
 const soundLibrarySources = ref([
   { audioPath: '/ambient.mp3' },
   { audioPath: '/water.mp3' },
@@ -175,14 +136,7 @@ const MAX_SOURCES = 20
 const audioEngine = new AudioEngine(loadedCanvasSoundSources, canvasCtx)
 const isPlaying = computed(() => audioEngine.isPlaying.value)
 let audioContext = null
-const playPauseLabel = computed(() => { 
-              const src = audioEngine.soundSources.value[selectedIndex.value]
-              return src.instance.playing ? "Pause" : "Play"
-            })
-const playPauseAllSound = () => { 
-              const src = audioEngine.soundSources.value[selectedIndex.value]
-              src.instance.playing ? src.instance.stop() : src.instance.play()
-            }
+
 
 // Action Manager Setup
 const actionManager = new ActionManager()
@@ -192,7 +146,7 @@ const redoStackEmpty = computed(() => actionManager.redoStackEmpty.value)
 
 // Selected Source Logic
 const { selectedSource, getSourceName } = useSelectedSource(audioEngine.soundSources, selectedIndex)
-const { onStart, onChange, onEnd } = useVolumeSlider(audioEngine.soundSources, selectedIndex, actionManager)
+
 
 // Canvas Rendering & Drag-Drop Logic
 const { draw } = useCanvasRenderer({

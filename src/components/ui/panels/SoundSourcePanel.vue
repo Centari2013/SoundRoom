@@ -1,0 +1,76 @@
+<template>
+  <section>
+          <h5 class="text-sm font-semibold uppercase text-neutral-500 dark:text-neutral-400 mb-2">Selected Source</h5>
+          <div v-if="selectedSource" class="text-xs space-y-1 flex flex-col items-center">
+            <h4>{{ selectedSource.name }}</h4>
+            <p>X: {{ selectedSource.x }}</p>
+            <p>Y: {{ selectedSource.y }}</p>
+            <p>Angle: {{ selectedSource.angle }}°</p>
+            <p>Inner Cone: {{ selectedSource.innerCone }}°</p>
+            <p>Outer Cone: {{ selectedSource.outerCone }}°</p>
+            <div class="w-5/6">
+              <VueSlider 
+                v-model="selectedSource.volume" 
+                @drag-start="onStart"
+                @change="onChange"
+                @drag-end="onEnd"
+              />
+            </div>
+          </div>
+          <div v-else>
+            <p>No Source Selected</p>
+          </div>
+          <button
+            v-if="selectedSource"
+            @click="playPauseSource"
+            class="mt-10 w-full bg-red-600 text-xs py-1 rounded hover:bg-red-500"
+          >
+            {{ playPauseLabel }}
+          </button>
+          <button
+            v-if="selectedSource"
+            @click="actionManager.doAction(
+              'delete_canvas_sound_source', 
+              { index: selectedIndex, src: audioEngine.soundSources.value[selectedIndex] }
+              )"
+            class="mt-3 w-full bg-red-600 text-xs py-1 rounded hover:bg-red-500"
+          >
+            Delete
+          </button>
+        </section>
+</template>
+
+<script setup>
+import { computed, inject } from 'vue';
+
+import VueSlider from 'vue-3-slider-component'
+
+import { useSelectedSource } from '@/composables/useSelectedSource';
+import { useVolumeSlider } from '@/composables/useVolumeSlider'
+
+
+const props = defineProps({
+  listener: Object,
+  audioEngine: Object,
+  actionManager: Object,
+})
+
+const listener = props.listener;
+const audioEngine = props.audioEngine;
+const selectedIndex = inject('selectedIndex');
+const actionManager = props.actionManager;
+
+const { selectedSource } = useSelectedSource(audioEngine.soundSources, selectedIndex)
+const { onStart, onChange, onEnd } = useVolumeSlider(audioEngine.soundSources, selectedIndex, actionManager)
+
+const playPauseLabel = computed(() => { 
+              const src = audioEngine.soundSources.value[selectedIndex.value]
+              return src.instance.playing ? "Pause" : "Play"
+            })
+const playPauseSource = () => { 
+              const src = audioEngine.soundSources.value[selectedIndex.value]
+              src.instance.playing ? src.instance.stop() : src.instance.play()
+            }
+
+const displayListenerAngle = computed(() => ((listener.angle % 360 + 360) % 360))
+</script>
