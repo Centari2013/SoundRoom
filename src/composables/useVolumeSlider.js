@@ -1,7 +1,4 @@
 // src/composables/useVolumeSlider.js
-
-import { ref } from "vue"
-
 export function useVolumeSlider(canvasSoundSources, selectedIndex, actionManager) {
   actionManager.registerActionHandlers(
     "set_sound_source_volume",
