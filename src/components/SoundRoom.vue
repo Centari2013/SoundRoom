@@ -75,7 +75,7 @@
       <!-- Right Sidebar -->
       <aside class="w-64 bg-neutral-100 dark:bg-neutral-900 border-l border-neutral-300 dark:border-neutral-800 p-4 space-y-4">
         <!-- Source Details -->
-        <SoundSourcePanel 
+        <SelectedSourcePanel 
           :listener="listener"
           :audioEngine="audioEngine"
           :actionManager="actionManager"
@@ -95,7 +95,7 @@ import { ref, onMounted, computed, reactive, provide } from 'vue'
 import ContextMenu from '@/components/ui/context/ContextMenu.vue'
 import ToolbarControls from '@/components/ui/controls/ToolbarControls.vue'
 import ListenerReadout from '@/components/ui/readouts/ListenerReadout.vue'
-import SoundSourcePanel from '@/components/ui/panels/SoundSourcePanel.vue'
+import SelectedSourcePanel from '@/components/ui/panels/SelectedSourcePanel.vue'
 
 // Audio / Canvas / State Classes
 import Listener from '@/lib/Listener'
