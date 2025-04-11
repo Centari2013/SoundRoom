@@ -59,6 +59,10 @@ export default class AudioEngine {
 
     src.instance = instance
     this.soundSources.value.push(src)
+
+    if (this._audioContext?.state === 'suspended') {
+      this._audioContext.resume()
+    }
     instance.play()
   }
 
