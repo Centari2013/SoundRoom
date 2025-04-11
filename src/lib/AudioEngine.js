@@ -1,5 +1,5 @@
 // lib/AudioEngine.js
-import { useSoundSource } from '@/composables/useSoundSource'
+import SoundSource from '@/lib/SoundSource';
 import { computed, ref } from 'vue'
 
 export default class AudioEngine {
@@ -25,7 +25,7 @@ export default class AudioEngine {
 
   setupAudioEngine() {
     for (const src of this.soundSources.value) {
-      const instance = useSoundSource({
+      const instance = new SoundSource({
         audioContext: this.getAudioContext(),
         file: src.audioPath,
         position: [src.x, src.y, 0],
@@ -34,7 +34,7 @@ export default class AudioEngine {
         coneOuter: src.coneOuter ?? 180,
         volume: src.instance?.getVolume?.() ?? 1,
         loop: true,
-        ctx: this._ctxRef?.value
+        canvasContext: this._ctxRef?.value
       })
 
       src.instance = instance
@@ -45,7 +45,7 @@ export default class AudioEngine {
     const src = payload.src
     src.index = payload.index ?? this.soundSources.value.length
 
-    const instance = useSoundSource({
+    const instance = new SoundSource({
       audioContext: this.getAudioContext(),
       file: src.audioPath,
       position: [src.x, src.y, 0],
@@ -54,7 +54,7 @@ export default class AudioEngine {
       coneOuter: src.coneOuter ?? 180,
       volume: src.instance?.getVolume?.() ?? 1,
       loop: true,
-      ctx: this._ctxRef?.value
+      canvasContext: this._ctxRef?.value
     })
 
     src.instance = instance
