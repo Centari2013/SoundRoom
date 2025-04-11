@@ -2,10 +2,12 @@
 export default class Listener {
   _angle = 90
   _audioContext = null
+  _canvasContext
 
-  constructor(x = 300, y = 200) {
+  constructor(x = 300, y = 200, angle=90) {
     this.x = x
     this.y = y
+    //this._angle = angle
   }
 
   get angle() {
@@ -21,8 +23,8 @@ export default class Listener {
     this._audioContext = audioContext
   }
 
-  setCanvasContext(canvasContext) {
-    this._canvasContext = canvasContext
+  setCanvasContext(canvasContextRef) {
+    this._canvasContext = canvasContextRef.value
   }
 
   updateAudio() {
@@ -42,20 +44,20 @@ export default class Listener {
     )
   }
 
-  draw(ctx) {
-    ctx.beginPath()
-    ctx.arc(this.x, this.y, 10, 0, Math.PI * 2)
-    ctx.fillStyle = '#00f'
-    ctx.fill()
+  draw() {
+    this._canvasContext.beginPath()
+    this._canvasContext.arc(this.x, this.y, 10, 0, Math.PI * 2)
+    this._canvasContext.fillStyle = '#00f'
+    this._canvasContext.fill()
 
     const angleRad = (this._angle * Math.PI) / 180
     const dx = Math.cos(angleRad) * 20
     const dy = Math.sin(angleRad) * 20
-    ctx.beginPath()
-    ctx.moveTo(this.x, this.y)
-    ctx.lineTo(this.x - dx, this.y - dy)
-    ctx.strokeStyle = '#fff'
-    ctx.stroke()
+    this._canvasContext.beginPath()
+    this._canvasContext.moveTo(this.x, this.y)
+    this._canvasContext.lineTo(this.x - dx, this.y - dy)
+    this._canvasContext.strokeStyle = '#fff'
+    this._canvasContext.stroke()
 
     this.updateAudio()
   }

@@ -1,7 +1,7 @@
 <template>
     <div class="space-x-2">
       <button
-      :disabled="!canPLay"
+      :disabled="!canPlay"
       @click="$emit('togglePlay')"
       class="px-3 py-1 rounded text-sm bg-neutral-200 dark:bg-neutral-800 hover:bg-neutral-300 dark:hover:bg-neutral-700"
       >
@@ -28,7 +28,7 @@
 
 <script setup>
 defineProps({
-  canPLay: Boolean,
+  canPlay: Boolean,
   canUndo: Boolean,
   canRedo: Boolean,
   playing: Boolean

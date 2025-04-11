@@ -27,7 +27,7 @@
               {{ getSourceName(s.audioPath) }}
             </li>
           </ul>
-          <button :disabled="canvasSoundSources.length == 20" class="mt-4 w-full bg-neutral-300 dark:bg-neutral-800 text-xs py-1 rounded hover:bg-neutral-400 dark:hover:bg-neutral-700">
+          <button :disabled="audioEngine.soundSources.length == 20" class="mt-4 w-full bg-neutral-300 dark:bg-neutral-800 text-xs py-1 rounded hover:bg-neutral-400 dark:hover:bg-neutral-700">
             + Add Source
           </button>
         </section>
@@ -48,13 +48,13 @@
         <!-- Toolbar -->
         <div class="flex items-center justify-between p-4 border-b border-neutral-300 dark:border-neutral-800 bg-neutral-100 dark:bg-neutral-900">
           <ToolbarControls
-            :canPLay="canvasSoundSources.length > 0"
+            :canPlay="audioEngine.soundSources.value.length > 0"
             :canUndo="!actionStackEmpty"
             :canRedo="!redoStackEmpty"
-            :playing="playingAudio"
+            :playing="isPlaying"
             @undo="undoLastAction"
             @redo="redoLastAction"
-            @togglePlay="playingAudio ? pauseAll() : playAll()"
+            @togglePlay="isPlaying ? audioEngine.pauseAll() : audioEngine.playAll()"
           />
           <span class="text-xs text-neutral-500">Press 'U' to restore last deleted</span>
         </div>
@@ -103,20 +103,20 @@
           <button
             v-if="selectedSource"
             @click="() => { 
-              const src = canvasSoundSources[selectedIndex]
+              const src = audioEngine.soundSources.value[selectedIndex]
               src.instance.playing ? src.instance.stop() : src.instance.play()
             }"
             class="mt-10 w-full bg-red-600 text-xs py-1 rounded hover:bg-red-500"
           >
             {{ computed(() => { 
-              const src = canvasSoundSources[selectedIndex]
+              const src = audioEngine.soundSources.value[selectedIndex]
               return src.instance.playing ? "Pause" : "Play"
             }) }}
           </button>
           <button
             v-if="selectedSource"
             @click="() => { 
-              doAction('delete_canvas_sound_source', { index: selectedIndex, src: canvasSoundSources[selectedIndex] })
+              doAction('delete_canvas_sound_source', { index: selectedIndex, src: audioEngine.soundSources[selectedIndex] })
             }"
             class="mt-3 w-full bg-red-600 text-xs py-1 rounded hover:bg-red-500"
           >
@@ -131,9 +131,8 @@
 <script setup>
 // Imports
 import { ref, onMounted, computed, reactive } from 'vue'
-import Listener from '../lib/Listener'
+
 import { useCanvasControls } from '@/composables/useCanvasControls'
-import { useAudioEngine } from '@/composables/useAudioEngine'
 import { useKeyboardControls } from '@/composables/useKeyboardControls'
 import { useDragDropAudio } from '@/composables/useDragDropAudio'
 import { useCanvasRenderer } from '@/composables/useCanvasRenderer'
@@ -145,6 +144,9 @@ import { useRoom } from '@/composables/useRoom'
 import ContextMenu from '@/components/ui/context/ContextMenu.vue'
 import ToolbarControls from '@/components/ui/controls/ToolbarControls.vue'
 import VueSlider from 'vue-3-slider-component'
+
+import Listener from '@/lib/Listener'
+import AudioEngine from '@/lib/AudioEngine'
 
 // for do, undo, and redo
 const { actionStackEmpty, redoStackEmpty, registerActionHandlers, doAction, undoLastAction, redoLastAction } = useActionManager()
@@ -166,15 +168,19 @@ const soundLibrarySources = ref([
   { audioPath: '/water.mp3' },
 ])
 
-const canvasSoundSources = ref([])
+const loadedCanvasSoundSources = []
 
 const selectedIndex = ref(null)
-const { selectedSource, getSourceName } = useSelectedSource(canvasSoundSources, selectedIndex)
+const audioEngine = new AudioEngine(loadedCanvasSoundSources, canvasCtx)
+const isPlaying = computed(() => audioEngine.isPlaying.value)
 
-const { onStart, onChange, onEnd } = useVolumeSlider(canvasSoundSources, selectedIndex, doAction, registerActionHandlers)
+const { selectedSource, getSourceName } = useSelectedSource(audioEngine.soundSources, selectedIndex)
+
+const { onStart, onChange, onEnd } = useVolumeSlider(audioEngine.soundSources, selectedIndex, doAction, registerActionHandlers)
 
 // Audio Engine Hooks
-const {
+
+/* const {
   setupAudioEngine,
   addSoundSource,
   deleteSoundSource,
@@ -183,13 +189,13 @@ const {
   pauseAll,
   playingAudio
 } = useAudioEngine({
-  soundSources: canvasSoundSources,
+  soundSources: audioEngine.soundSources,
   ctxRef: canvasCtx
-})
+}) */
 
 // Canvas Drawing Logic
 const { draw } = useCanvasRenderer({
-  soundSources: canvasSoundSources,
+  soundSources: audioEngine.soundSources,
   ctxRef: canvasCtx,
   selectedIndex,
   listener,
@@ -209,7 +215,7 @@ const { handleDragStart, handleDrop } = useDragDropAudio({
 const { handleKeyDown } = useKeyboardControls({
   listener,
   selectedIndex,
-  soundSources: canvasSoundSources,
+  soundSources: audioEngine.soundSources,
   draw,
   doAction,
   undoLastAction,
@@ -220,8 +226,8 @@ const { handleKeyDown } = useKeyboardControls({
 
 // Audio Initialization
 const setupAudioContext = () => {
-  setupAudioEngine()
-  audioContext = getAudioContext()
+  audioEngine.setupAudioEngine()
+  audioContext = audioEngine.getAudioContext()
   listener.setAudioContext(audioContext)
   //listener.draw()
 }
@@ -229,25 +235,25 @@ const setupAudioContext = () => {
 // Set Action Handlers
 registerActionHandlers(
   "add_canvas_sound_source", 
-  (payload) => { addSoundSource(payload); draw() }, 
-  (payload) => { deleteSoundSource(payload); draw() }
+  (payload) => { audioEngine.addSoundSource(payload); draw() }, 
+  (payload) => { audioEngine.deleteSoundSource(payload); draw() }
 )
 registerActionHandlers(
   "delete_canvas_sound_source", 
-  (payload) => { deleteSoundSource(payload); draw() }, 
-  (payload) => { addSoundSource(payload); draw() }
+  (payload) => { audioEngine.deleteSoundSource(payload); draw() }, 
+  (payload) => { audioEngine.addSoundSource(payload); draw() }
 )
 registerActionHandlers(
   "move_canvas_sound_source",
   (payload) => {
-    const src = canvasSoundSources.value[payload.index]
+    const src = audioEngine.soundSources.value[payload.index]
     src.instance.state.x = payload.to.x
     src.instance.state.y = payload.to.y
     src.instance.updateAudio()
     draw()
   },
   (payload) => {
-    const src = canvasSoundSources.value[payload.index]
+    const src = audioEngine.soundSources.value[payload.index]
     src.instance.state.x = payload.from.x
     src.instance.state.y = payload.from.y
     src.instance.updateAudio()
@@ -272,18 +278,18 @@ const contextMenu = ref(null)
 const contextMenuActions = [
   {
     label: computed(() => {
-      const src = canvasSoundSources.value[selectedIndex.value]
+      const src = audioEngine.soundSources.value[selectedIndex.value]
       return src.instance.playing ? "Pause" : "Play"
     }),
     function: () => {
-      const src = canvasSoundSources.value[selectedIndex.value]
+      const src = audioEngine.soundSources.value[selectedIndex.value]
       src.instance.playing ? src.instance.stop() : src.instance.play()
     }
   },
   {
     label: 'Delete',
     function: () => {
-      doAction("delete_canvas_sound_source", { index: selectedIndex.value, src: canvasSoundSources.value[selectedIndex.value] })
+      doAction("delete_canvas_sound_source", { index: selectedIndex.value, src: audioEngine.soundSources.value[selectedIndex.value] })
       contextMenu.value.visible = false
     }
   }
@@ -292,11 +298,11 @@ const contextMenuActions = [
 // Mount Hook
 onMounted(() => {
   canvasCtx.value = canvas.value.getContext('2d')
-
+  listener.setCanvasContext(canvasCtx)
   useCanvasControls({
     canvas,
     ctx: canvasCtx,
-    soundSources: canvasSoundSources,
+    soundSources: audioEngine.soundSources,
     selectedIndex,
     draw,
     listener,
