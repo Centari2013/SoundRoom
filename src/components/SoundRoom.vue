@@ -133,8 +133,21 @@
 
 <script setup>
 // Imports
+// Core Imports
 import { ref, onMounted, computed, reactive } from 'vue'
 
+// UI Components
+import ContextMenu from '@/components/ui/context/ContextMenu.vue'
+import ToolbarControls from '@/components/ui/controls/ToolbarControls.vue'
+import VueSlider from 'vue-3-slider-component'
+
+// Audio / Canvas / State Classes
+import Listener from '@/lib/Listener'
+import AudioEngine from '@/lib/AudioEngine'
+import Room from '@/lib/Room'
+import ActionManager from '@/lib/ActionManager'
+
+// Composables
 import { useCanvasControls } from '@/composables/useCanvasControls'
 import { useKeyboardControls } from '@/composables/useKeyboardControls'
 import { useDragDropAudio } from '@/composables/useDragDropAudio'
@@ -142,53 +155,42 @@ import { useCanvasRenderer } from '@/composables/useCanvasRenderer'
 import { useSelectedSource } from '@/composables/useSelectedSource'
 import { useVolumeSlider } from '@/composables/useVolumeSlider'
 
-import ContextMenu from '@/components/ui/context/ContextMenu.vue'
-import ToolbarControls from '@/components/ui/controls/ToolbarControls.vue'
-import VueSlider from 'vue-3-slider-component'
 
-import Listener from '@/lib/Listener'
-import AudioEngine from '@/lib/AudioEngine'
-import Room from '@/lib/Room'
-import ActionManager from '@/lib/ActionManager'
-
-// for do, undo, and redo
-const actionManager = new ActionManager()
-const actionStackEmpty = computed(() => actionManager.actionStackEmpty.value)
-const redoStackEmpty = computed(() => actionManager.redoStackEmpty.value)
-
-// Listener Setup
-const listener = reactive(new Listener())
-const displayListenerAngle = computed(() => ((listener.angle % 360 + 360) % 360))
-
-// Canvas and Drawing Context
+// Global State & Reactive References
 const canvas = ref(null)
 const canvasCtx = ref(null)
-let audioContext = null
+const contextMenu = ref(null)
+const draggedSource = ref(null)
 
 const room = new Room()
 
-// Data and State
+const listener = reactive(new Listener())
+const displayListenerAngle = computed(() => ((listener.angle % 360 + 360) % 360))
+
+const selectedIndex = ref(null)
 const soundLibrarySources = ref([
   { audioPath: '/ambient.mp3' },
   { audioPath: '/water.mp3' },
 ])
-
 const loadedCanvasSoundSources = []
 
-const selectedIndex = ref(null)
 
-// Audio Engine 
+// Audio Engine & Playback State
 const audioEngine = new AudioEngine(loadedCanvasSoundSources, canvasCtx)
 const isPlaying = computed(() => audioEngine.isPlaying.value)
+let audioContext = null
 
+// Action Manager Setup
+const actionManager = new ActionManager()
+const actionStackEmpty = computed(() => actionManager.actionStackEmpty.value)
+const redoStackEmpty = computed(() => actionManager.redoStackEmpty.value)
+
+
+// Selected Source Logic
 const { selectedSource, getSourceName } = useSelectedSource(audioEngine.soundSources, selectedIndex)
-
 const { onStart, onChange, onEnd } = useVolumeSlider(audioEngine.soundSources, selectedIndex, actionManager)
 
-
-
-
-// Canvas Drawing Logic
+// Canvas Rendering & Drag-Drop Logic
 const { draw } = useCanvasRenderer({
   soundSources: audioEngine.soundSources,
   ctxRef: canvasCtx,
@@ -197,7 +199,6 @@ const { draw } = useCanvasRenderer({
   room
 })
 
-const draggedSource = ref(null)
 const { handleDragStart, handleDrop } = useDragDropAudio({
   draggedSource,
   canvasRef: canvas,
@@ -205,7 +206,7 @@ const { handleDragStart, handleDrop } = useDragDropAudio({
   draw
 })
 
-// Keyboard Controls
+// Keyboard Interaction
 const { handleKeyDown } = useKeyboardControls({
   listener,
   selectedIndex,
@@ -215,43 +216,55 @@ const { handleKeyDown } = useKeyboardControls({
   room
 })
 
-// Audio Initialization
-const setupAudioContext = () => {
-  audioEngine.setupAudioEngine()
-  audioContext = audioEngine.getAudioContext()
-  listener.setAudioContext(audioContext)
-  //listener.draw()
+// Action Manager Registration
+function registerAction(name, doFn, undoFn) {
+  actionManager.registerActionHandlers(name, doFn, undoFn)
 }
 
-// Set Action Handlers
-actionManager.registerActionHandlers(
-  "add_canvas_sound_source", 
-  (payload) => { audioEngine.addSoundSource(payload); draw() }, 
-  (payload) => { audioEngine.deleteSoundSource(payload); draw() }
-)
-actionManager.registerActionHandlers(
-  "delete_canvas_sound_source", 
-  (payload) => { audioEngine.deleteSoundSource(payload); draw() }, 
-  (payload) => { audioEngine.addSoundSource(payload); draw() }
-)
-actionManager.registerActionHandlers(
-  "move_canvas_sound_source",
+registerAction(
+  "add_canvas_sound_source",
   (payload) => {
-    const src = audioEngine.soundSources.value[payload.index]
-    src.instance.state.x = payload.to.x
-    src.instance.state.y = payload.to.y
-    src.instance.updateAudio()
+    audioEngine.addSoundSource(payload)
     draw()
   },
   (payload) => {
-    const src = audioEngine.soundSources.value[payload.index]
-    src.instance.state.x = payload.from.x
-    src.instance.state.y = payload.from.y
-    src.instance.updateAudio()
+    audioEngine.deleteSoundSource(payload)
     draw()
   }
 )
-actionManager.registerActionHandlers(
+
+registerAction(
+  "delete_canvas_sound_source",
+  (payload) => {
+    audioEngine.deleteSoundSource(payload)
+    draw()
+  },
+  (payload) => {
+    audioEngine.addSoundSource(payload)
+    draw()
+  }
+)
+
+const moveSoundSource = (src, coords) => {
+  src.instance.state.x = coords.x
+  src.instance.state.y = coords.y
+  src.instance.updateAudio()
+  draw()
+}
+
+registerAction(
+  "move_canvas_sound_source",
+  (payload) => {
+    const src = audioEngine.soundSources.value[payload.index]
+    moveSoundSource(src, payload.to)
+  },
+  (payload) => {
+    const src = audioEngine.soundSources.value[payload.index]
+    moveSoundSource(src, payload.from)
+  }
+)
+
+registerAction(
   "move_listener",
   (payload) => {
     listener.x = payload.to.x
@@ -265,7 +278,8 @@ actionManager.registerActionHandlers(
   }
 )
 
-const contextMenu = ref(null)
+// Context Menu Actions
+
 const contextMenuActions = [
   {
     label: computed(() => {
@@ -301,11 +315,10 @@ onMounted(() => {
     contextMenu
   })
 
-  setupAudioContext()
+  audioEngine.setupAudioEngine()
+  audioContext = audioEngine.getAudioContext()
+  listener.setAudioContext(audioContext)
   draw()
 })
 </script>
 
-<style scoped>
-/* Tailwind handles all styling */
-</style>
