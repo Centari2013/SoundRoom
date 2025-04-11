@@ -62,11 +62,14 @@
         <!-- Canvas Area -->
         <div class="flex-1 bg-neutral-200 dark:bg-black flex items-center justify-center">
           <ContextMenu ref="contextMenu" :functionList="contextMenuActions" />
-          <div class="w-[600px] h-[400px] border-2 border-neutral-400 dark:border-neutral-700 flex items-center justify-center">
+          <div 
+            class="border-2 border-neutral-400 dark:border-neutral-700 flex items-center justify-center"
+            :class="`w-[${room.width}px] h-[${room.height}px]`"
+          >
             <canvas
               ref="canvas"
-              width="600"
-              height="400"
+              :width="room.width"
+              :height="room.height"
               @dragover.prevent
               @drop="handleDrop"
               @keydown="handleKeyDown"
