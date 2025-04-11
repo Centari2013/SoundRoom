@@ -151,7 +151,7 @@ const { actionStackEmpty, redoStackEmpty, registerActionHandlers, doAction, undo
 
 // Listener Setup
 const { listener, setAudioContext, draw: drawListener } = createListenerTools()
-const displayListenerAngle = computed(() => ((listener.value.angle % 360 + 360) % 360))
+const displayListenerAngle = computed(() => ((listener.angle % 360 + 360) % 360))
 
 // Canvas and Drawing Context
 const canvas = ref(null)
@@ -258,13 +258,13 @@ registerActionHandlers(
 registerActionHandlers(
   "move_listener",
   (payload) => {
-    listener.value.x = payload.to.x
-    listener.value.y = payload.to.y
+    listener.x = payload.to.x
+    listener.y = payload.to.y
     draw()
   },
   (payload) => {
-    listener.value.x = payload.from.x
-    listener.value.y = payload.from.y
+    listener.x = payload.from.x
+    listener.y = payload.from.y
     draw()
   }
 )

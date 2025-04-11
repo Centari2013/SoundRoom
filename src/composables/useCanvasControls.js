@@ -46,16 +46,16 @@ export function useCanvasControls({ canvas, soundSources, selectedIndex, draw, l
   }
 
   const trySelectListener = (mouseX, mouseY) => {
-    const dx = mouseX - listener.value.x
-    const dy = mouseY - listener.value.y
+    const dx = mouseX - listener.x
+    const dy = mouseY - listener.y
     if (Math.sqrt(dx * dx + dy * dy) <= 20) {
       offsetX = dx
       offsetY = dy
       draggingListener = true
       moveListenerPayload = {
        from: {
-          x: listener.value.x,
-          y: listener.value.y
+          x: listener.x,
+          y: listener.y
         }
       }
       return true
@@ -89,8 +89,8 @@ export function useCanvasControls({ canvas, soundSources, selectedIndex, draw, l
     const { x, y } = getMousePos(e)
 
     if (draggingListener) {
-      listener.value.x = x - offsetX
-      listener.value.y = y - offsetY
+      listener.x = x - offsetX
+      listener.y = y - offsetY
       draw()
     }
 
@@ -125,8 +125,8 @@ export function useCanvasControls({ canvas, soundSources, selectedIndex, draw, l
   
     if (moveListenerPayload) {
       const to = {
-        x: listener.value.x,
-        y: listener.value.y
+        x: listener.x,
+        y: listener.y
       }
   
       if (!positionsEqual(moveListenerPayload.from, to)) {

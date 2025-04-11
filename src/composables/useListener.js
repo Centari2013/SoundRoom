@@ -1,11 +1,35 @@
 // composables/useListener.js
-import { ref } from 'vue'
-
-export const listener = ref({ x: 300, y: 200, angle: 90 })
+import { reactive } from 'vue'
 
 export function createListenerTools() {
+  let _angle = 90 // private-ish var
+
+  const listener = reactive({
+    x: 300,
+    y: 200,
+
+    get angle() {
+      return _angle
+    },
+
+    updateAngle(newAngle) {
+      _angle = newAngle
+      updateListener()
+    }
+  })
+
+  Object.defineProperty(listener, 'angle', {
+    configurable: false,
+    enumerable: true,
+    get() {
+      return _angle
+    },
+    set() {
+      console.warn('Don’t touch angle directly. Use updateAngle().')
+    }
+  })
+
   let audioContextRef = null
-  // TODO: draw listener angle line based on dark/light mode
 
   const setAudioContext = (ctx) => {
     audioContextRef = ctx
@@ -14,11 +38,11 @@ export function createListenerTools() {
   const updateListener = () => {
     if (!audioContextRef) return
     const scale = 0.01
-    const angleRad = (listener.value.angle * Math.PI) / 180
+    const angleRad = (_angle * Math.PI) / 180
 
     audioContextRef.listener.setPosition(
-      listener.value.x * scale,
-      listener.value.y * scale,
+      listener.x * scale,
+      listener.y * scale,
       0
     )
     audioContextRef.listener.setOrientation(
@@ -33,16 +57,16 @@ export function createListenerTools() {
 
   const draw = (ctx) => {
     ctx.value.beginPath()
-    ctx.value.arc(listener.value.x, listener.value.y, 10, 0, Math.PI * 2)
+    ctx.value.arc(listener.x, listener.y, 10, 0, Math.PI * 2)
     ctx.value.fillStyle = '#00f'
     ctx.value.fill()
 
-    const angleRad = (listener.value.angle * Math.PI) / 180
+    const angleRad = (_angle * Math.PI) / 180
     const dx = Math.cos(angleRad) * 20
     const dy = Math.sin(angleRad) * 20
     ctx.value.beginPath()
-    ctx.value.moveTo(listener.value.x, listener.value.y)
-    ctx.value.lineTo(listener.value.x - dx, listener.value.y - dy)
+    ctx.value.moveTo(listener.x, listener.y)
+    ctx.value.lineTo(listener.x - dx, listener.y - dy)
     ctx.value.strokeStyle = '#fff'
     ctx.value.stroke()
 

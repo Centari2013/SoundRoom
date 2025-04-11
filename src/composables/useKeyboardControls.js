@@ -17,25 +17,26 @@ export function useKeyboardControls({
     switch (e.key) {
       case 'ArrowUp':
       case 'w':
-        listener.value.y = clamp(listener.value.y - speed, 0, room.height)
+        listener.y = clamp(listener.y - speed, 0, room.height)
         break
       case 'ArrowDown':
       case 's':
-        listener.value.y = clamp(listener.value.y + speed, 0, room.height)
+        listener.y = clamp(listener.y + speed, 0, room.height)
         break
       case 'ArrowLeft':
       case 'a':
-        listener.value.x = clamp(listener.value.x - speed, 0, room.width)
+        listener.x = clamp(listener.x - speed, 0, room.width)
         break
       case 'ArrowRight':
       case 'd':
-        listener.value.x = clamp(listener.value.x + speed, 0, room.width)
+        listener.x = clamp(listener.x + speed, 0, room.width)
         break
       case 'q':
-        listener.value.angle -= rotationStep
+        //TODO: integrate action manager into angle changes
+        listener.updateAngle(listener.angle - rotationStep)
         break
       case 'e':
-        listener.value.angle += rotationStep
+        listener.updateAngle(listener.angle + rotationStep)
         break
       case 'z':
         if (selectedIndex.value !== null) {

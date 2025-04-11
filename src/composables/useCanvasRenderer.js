@@ -22,8 +22,8 @@ export function useCanvasRenderer({ soundSources, ctxRef, selectedIndex, listene
       }
     })
 
-    listener.value.x = clamp(listener.value.x, 0, room.width)
-    listener.value.y = clamp(listener.value.y, 0, room.height)
+    listener.x = clamp(listener.x, 0, room.width)
+    listener.y = clamp(listener.y, 0, room.height)
     drawListener(ctxRef)
   }
 
