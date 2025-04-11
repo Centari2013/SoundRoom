@@ -2,11 +2,13 @@
 
 import { computed } from "vue";
 
+export function getSourceName(path) {
+  const file = path.split('/').pop()
+  return file.replace(/\.[^/.]+$/, '')
+}
+
 export function useSelectedSource(soundSources, selectedIndex) {
-  const getSourceName = (path) => {
-    const file = path.split('/').pop()
-    return file.replace(/\.[^/.]+$/, '')
-  }
+
 
   const selectedSource = computed(() => {
     const index = selectedIndex.value
@@ -27,5 +29,5 @@ export function useSelectedSource(soundSources, selectedIndex) {
     }
   })
 
-  return { selectedSource, getSourceName }
+  return { selectedSource }
 }

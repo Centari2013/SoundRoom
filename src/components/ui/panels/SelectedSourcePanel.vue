@@ -72,5 +72,4 @@ const playPauseSource = () => {
               src.instance.playing ? src.instance.stop() : src.instance.play()
             }
 
-const displayListenerAngle = computed(() => ((listener.angle % 360 + 360) % 360))
 </script>
