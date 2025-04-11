@@ -111,15 +111,12 @@
             }"
             class="mt-10 w-full bg-red-600 text-xs py-1 rounded hover:bg-red-500"
           >
-            {{ computed(() => { 
-              const src = audioEngine.soundSources.value[selectedIndex]
-              return src.instance.playing ? "Pause" : "Play"
-            }) }}
+            {{ playPauseLabel }}
           </button>
           <button
             v-if="selectedSource"
             @click="() => { 
-              actionManager.doAction('delete_canvas_sound_source', { index: selectedIndex, src: audioEngine.soundSources[selectedIndex] })
+              actionManager.doAction('delete_canvas_sound_source', { index: selectedIndex, src: audioEngine.soundSources.value[selectedIndex] })
             }"
             class="mt-3 w-full bg-red-600 text-xs py-1 rounded hover:bg-red-500"
           >
@@ -179,6 +176,10 @@ const loadedCanvasSoundSources = []
 const audioEngine = new AudioEngine(loadedCanvasSoundSources, canvasCtx)
 const isPlaying = computed(() => audioEngine.isPlaying.value)
 let audioContext = null
+const playPauseLabel = computed(() => { 
+              const src = audioEngine.soundSources.value[selectedIndex.value]
+              return src.instance.playing ? "Pause" : "Play"
+            })
 
 // Action Manager Setup
 const actionManager = new ActionManager()
@@ -300,6 +301,14 @@ const contextMenuActions = [
   }
 ]
 
+// Audio Engine Initialization
+function setupAudioContext() {
+  audioEngine.setupAudioEngine()
+  audioContext = audioEngine.getAudioContext()
+  listener.setAudioContext(audioContext)
+}
+
+
 // Mount Hook
 onMounted(() => {
   canvasCtx.value = canvas.value.getContext('2d')
@@ -315,9 +324,7 @@ onMounted(() => {
     contextMenu
   })
 
-  audioEngine.setupAudioEngine()
-  audioContext = audioEngine.getAudioContext()
-  listener.setAudioContext(audioContext)
+  setupAudioContext()
   draw()
 })
 </script>
