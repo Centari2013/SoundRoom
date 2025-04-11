@@ -4,9 +4,7 @@ export function useKeyboardControls({
   selectedIndex, 
   soundSources, 
   draw,
-  doAction,
-  undoLastAction,
-  redoLastAction, 
+  actionManager,
   room
 }){
   const handleKeyDown = async (e) => {
@@ -61,13 +59,13 @@ export function useKeyboardControls({
         break
       case 'Delete':
       case 'Backspace':
-        doAction("delete_canvas_sound_source", { index: selectedIndex.value, src: soundSources.value[selectedIndex.value] })
+        actionManager.doAction("delete_canvas_sound_source", { index: selectedIndex.value, src: soundSources.value[selectedIndex.value] })
         break
       case 'u':
-        undoLastAction()
+        actionManager.undoLastAction()
         break
       case 'r':
-        redoLastAction()
+        actionManager.redoLastAction()
         break
         
     }

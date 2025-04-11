@@ -1,6 +1,6 @@
 // src/composables/useCanvasControls.js
 
-export function useCanvasControls({ canvas, soundSources, selectedIndex, draw, listener, doAction, contextMenu }) {
+export function useCanvasControls({ canvas, soundSources, selectedIndex, draw, listener, actionManager, contextMenu }) {
   // --- Internal state ---
   let draggingListener = false
   let draggingSourceIndex = null
@@ -117,7 +117,7 @@ export function useCanvasControls({ canvas, soundSources, selectedIndex, draw, l
   
       if (!positionsEqual(moveSourcePayload.from, to)) {
         moveSourcePayload.to = to
-        doAction("move_canvas_sound_source", moveSourcePayload)
+        actionManager.doAction("move_canvas_sound_source", moveSourcePayload)
       }
   
       moveSourcePayload = null
@@ -131,7 +131,7 @@ export function useCanvasControls({ canvas, soundSources, selectedIndex, draw, l
   
       if (!positionsEqual(moveListenerPayload.from, to)) {
         moveListenerPayload.to = to
-        doAction("move_listener", moveListenerPayload)
+        actionManager.doAction("move_listener", moveListenerPayload)
       }
   
       moveListenerPayload = null

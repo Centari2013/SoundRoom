@@ -2,8 +2,8 @@
 
 import { ref } from "vue"
 
-export function useVolumeSlider(canvasSoundSources, selectedIndex, doAction, registerActionHandlers) {
-  registerActionHandlers(
+export function useVolumeSlider(canvasSoundSources, selectedIndex, actionManager) {
+  actionManager.registerActionHandlers(
     "set_sound_source_volume",
     (payload) => {
       const src = canvasSoundSources.value[payload.index]
@@ -33,7 +33,7 @@ export function useVolumeSlider(canvasSoundSources, selectedIndex, doAction, reg
 
   const onEnd = () => {
     volumePayload.to = canvasSoundSources.value[selectedIndex.value].instance.getVolume()
-    doAction("set_sound_source_volume", volumePayload)
+    actionManager.doAction("set_sound_source_volume", volumePayload)
     volumePayload.value = null
   }
 

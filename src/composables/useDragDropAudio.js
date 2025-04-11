@@ -1,5 +1,5 @@
 // useDragDropAudio.js
-export function useDragDropAudio({ draggedSource, canvasRef, doAction, draw }) {
+export function useDragDropAudio({ draggedSource, canvasRef, actionManager, draw }) {
   const handleDragStart = (e, source) => {
     draggedSource.value = source
   }
@@ -18,7 +18,7 @@ export function useDragDropAudio({ draggedSource, canvasRef, doAction, draw }) {
       coneInner: 360,
       coneOuter: 360
     }
-    doAction("add_canvas_sound_source", { src })
+    actionManager.doAction("add_canvas_sound_source", { src })
 
     draw()
   }

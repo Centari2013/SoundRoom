@@ -52,8 +52,8 @@
             :canUndo="!actionStackEmpty"
             :canRedo="!redoStackEmpty"
             :playing="isPlaying"
-            @undo="undoLastAction"
-            @redo="redoLastAction"
+            @undo="actionManager.undoLastAction"
+            @redo="actionManager.redoLastAction"
             @togglePlay="isPlaying ? audioEngine.pauseAll() : audioEngine.playAll()"
           />
           <span class="text-xs text-neutral-500">Press 'U' to restore last deleted</span>
@@ -116,7 +116,7 @@
           <button
             v-if="selectedSource"
             @click="() => { 
-              doAction('delete_canvas_sound_source', { index: selectedIndex, src: audioEngine.soundSources[selectedIndex] })
+              actionManager.doAction('delete_canvas_sound_source', { index: selectedIndex, src: audioEngine.soundSources[selectedIndex] })
             }"
             class="mt-3 w-full bg-red-600 text-xs py-1 rounded hover:bg-red-500"
           >
@@ -137,7 +137,6 @@ import { useKeyboardControls } from '@/composables/useKeyboardControls'
 import { useDragDropAudio } from '@/composables/useDragDropAudio'
 import { useCanvasRenderer } from '@/composables/useCanvasRenderer'
 import { useSelectedSource } from '@/composables/useSelectedSource'
-import { useActionManager } from '@/composables/useActionManager'
 import { useVolumeSlider } from '@/composables/useVolumeSlider'
 
 import ContextMenu from '@/components/ui/context/ContextMenu.vue'
@@ -147,9 +146,12 @@ import VueSlider from 'vue-3-slider-component'
 import Listener from '@/lib/Listener'
 import AudioEngine from '@/lib/AudioEngine'
 import Room from '@/lib/Room'
+import ActionManager from '@/lib/ActionManager'
 
 // for do, undo, and redo
-const { actionStackEmpty, redoStackEmpty, registerActionHandlers, doAction, undoLastAction, redoLastAction } = useActionManager()
+const actionManager = new ActionManager()
+const actionStackEmpty = computed(() => actionManager.actionStackEmpty.value)
+const redoStackEmpty = computed(() => actionManager.redoStackEmpty.value)
 
 // Listener Setup
 const listener = reactive(new Listener())
@@ -178,7 +180,7 @@ const isPlaying = computed(() => audioEngine.isPlaying.value)
 
 const { selectedSource, getSourceName } = useSelectedSource(audioEngine.soundSources, selectedIndex)
 
-const { onStart, onChange, onEnd } = useVolumeSlider(audioEngine.soundSources, selectedIndex, doAction, registerActionHandlers)
+const { onStart, onChange, onEnd } = useVolumeSlider(audioEngine.soundSources, selectedIndex, actionManager)
 
 
 
@@ -196,7 +198,7 @@ const draggedSource = ref(null)
 const { handleDragStart, handleDrop } = useDragDropAudio({
   draggedSource,
   canvasRef: canvas,
-  doAction,
+  actionManager,
   draw
 })
 
@@ -206,9 +208,7 @@ const { handleKeyDown } = useKeyboardControls({
   selectedIndex,
   soundSources: audioEngine.soundSources,
   draw,
-  doAction,
-  undoLastAction,
-  redoLastAction,
+  actionManager,
   room
 })
 
@@ -221,17 +221,17 @@ const setupAudioContext = () => {
 }
 
 // Set Action Handlers
-registerActionHandlers(
+actionManager.registerActionHandlers(
   "add_canvas_sound_source", 
   (payload) => { audioEngine.addSoundSource(payload); draw() }, 
   (payload) => { audioEngine.deleteSoundSource(payload); draw() }
 )
-registerActionHandlers(
+actionManager.registerActionHandlers(
   "delete_canvas_sound_source", 
   (payload) => { audioEngine.deleteSoundSource(payload); draw() }, 
   (payload) => { audioEngine.addSoundSource(payload); draw() }
 )
-registerActionHandlers(
+actionManager.registerActionHandlers(
   "move_canvas_sound_source",
   (payload) => {
     const src = audioEngine.soundSources.value[payload.index]
@@ -248,7 +248,7 @@ registerActionHandlers(
     draw()
   }
 )
-registerActionHandlers(
+actionManager.registerActionHandlers(
   "move_listener",
   (payload) => {
     listener.x = payload.to.x
@@ -277,7 +277,7 @@ const contextMenuActions = [
   {
     label: 'Delete',
     function: () => {
-      doAction("delete_canvas_sound_source", { index: selectedIndex.value, src: audioEngine.soundSources.value[selectedIndex.value] })
+      actionManager.doAction("delete_canvas_sound_source", { index: selectedIndex.value, src: audioEngine.soundSources.value[selectedIndex.value] })
       contextMenu.value.visible = false
     }
   }
@@ -294,7 +294,7 @@ onMounted(() => {
     selectedIndex,
     draw,
     listener,
-    doAction,
+    actionManager,
     contextMenu
   })
 
