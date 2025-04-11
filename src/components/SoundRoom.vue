@@ -48,12 +48,18 @@
       <main class="flex-1 flex flex-col">
         <!-- Toolbar -->
         <div class="flex items-center justify-between p-4 border-b border-neutral-300 dark:border-neutral-800 bg-neutral-100 dark:bg-neutral-900">
-          <div class="space-x-2">
-            <button :disabled="canvasSoundSources.length == 0" @click="playingAudio ? pauseAll() : playAll()" class="px-3 py-1 rounded text-sm bg-neutral-200 dark:bg-neutral-800 hover:bg-neutral-300 dark:hover:bg-neutral-700">{{playingAudio ? "Pause All" : "Play All"}}</button>
-            
-            <button @click="undoLastAction" :disabled="actionStackEmpty" class="px-3 py-1 rounded text-sm bg-neutral-200 dark:bg-neutral-800 hover:bg-neutral-300 dark:hover:bg-neutral-700">Undo</button>
-            <button @click="redoLastAction" :disabled="redoStackEmpty" class="px-3 py-1 rounded text-sm bg-neutral-200 dark:bg-neutral-800 hover:bg-neutral-300 dark:hover:bg-neutral-700">Redo</button>
-          </div>
+          
+            <ToolbarControls
+              :canPLay="canvasSoundSources.length > 0"
+              :canUndo="!actionStackEmpty"
+              :canRedo="!redoStackEmpty"
+              :playing="playingAudio"
+              @undo="undoLastAction"
+              @redo="redoLastAction"
+              @togglePlay="playingAudio ? pauseAll() : playAll()"
+            />
+
+        
           <span class="text-xs text-neutral-500">Press 'U' to restore last deleted</span>
         </div>
 
@@ -139,6 +145,7 @@ import { useVolumeSlider } from '@/composables/useVolumeSlider'
 import { useRoom } from '@/composables/useRoom'
 
 import ContextMenu from '@/components/ui/context/ContextMenu.vue'
+import ToolbarControls from '@/components/ui/controls/ToolbarControls.vue'
 import VueSlider from 'vue-3-slider-component'
 
 // for do, undo, and redo
@@ -177,7 +184,7 @@ const canvasSoundSources = ref([])
 const selectedIndex = ref(null)
 const { selectedSource, getSourceName } = useSelectedSource(canvasSoundSources, selectedIndex)
 
-const { onStart, onChange, onEnd } = useVolumeSlider(canvasSoundSources, selectedIndex, doAction)
+const { onStart, onChange, onEnd } = useVolumeSlider(canvasSoundSources, selectedIndex, doAction, registerActionHandlers)
 
 
 // Audio Engine Hooks
@@ -281,17 +288,7 @@ registerActionHandlers(
 )
 
 
-registerActionHandlers(
-  "set_sound_source_volume",
-  (payload) => {
-    const src = canvasSoundSources.value[payload.index]
-    src.instance.setVolume(payload.to)
-  },
-  (payload) => {
-    const src = canvasSoundSources.value[payload.index]
-    src.instance.setVolume(payload.from)
-  }
-)
+
 
 
 const contextMenu = ref(null)
