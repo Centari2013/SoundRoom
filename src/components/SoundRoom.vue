@@ -67,6 +67,7 @@
               @dragover.prevent
               @drop="handleDrop"
               @keydown="handleKeyDown"
+              @keyup="handleKeyUp"
               tabindex="0"
             />
           </div>
@@ -168,7 +169,7 @@ const { handleDragStart, handleDrop } = useDragDropAudio({
 })
 
 // Keyboard Interaction
-const { handleKeyDown } = useKeyboardControls({
+const { handleKeyDown, handleKeyUp } = useKeyboardControls({
   listener,
   selectedIndex,
   soundSources: audioEngine.soundSources,

@@ -7,11 +7,32 @@ export function useKeyboardControls({
   actionManager,
   room
 }){
+
+  const rotationKeys = new Set()
+  let angleStart = null
+  actionManager.registerActionHandlers(
+    "rotate_listener_angle",
+    (payload) => {
+      listener.updateAngle(payload.to)
+      draw()
+    },
+    (payload) => {
+      listener.updateAngle(payload.from)
+      draw()
+    }
+  )
+
   const handleKeyDown = async (e) => {
+    const key = e.key
     const speed = 5
     const rotationStep = 5
+    
+    if ((key == 'q' || key == 'e') && !rotationKeys.has(key)) {
+      rotationKeys.add(key)
+      angleStart = listener.angle;
+    }
   
-    switch (e.key) {
+    switch (key) {
       case 'ArrowUp':
       case 'w':
         listener.y = room.clamp(listener.y - speed, 0, room.height)
@@ -72,7 +93,27 @@ export function useKeyboardControls({
     draw()
   }
 
+  const handleKeyUp = (event) => {
+    const key = event.key.toLowerCase()
+  
+    if ((key === 'q' || key === 'e') && rotationKeys.has(key)) {
+      rotationKeys.delete(key)
+  
+      const angleEnd = listener.angle
+  
+      if (angleStart !== null && angleStart !== angleEnd) {
+        actionManager.doAction("rotate_listener_angle", {
+          from: angleStart,
+          to: angleEnd
+        })
+      }
+  
+      angleStart = null
+    }
+  }
+
   return {
-    handleKeyDown
+    handleKeyDown,
+    handleKeyUp
   }
 }
