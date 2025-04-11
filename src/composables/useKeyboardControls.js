@@ -6,8 +6,7 @@ export function useKeyboardControls({
   draw,
   doAction,
   undoLastAction,
-  redoLastAction,
-  clamp, 
+  redoLastAction, 
   room
 }){
   const handleKeyDown = async (e) => {
@@ -17,19 +16,19 @@ export function useKeyboardControls({
     switch (e.key) {
       case 'ArrowUp':
       case 'w':
-        listener.y = clamp(listener.y - speed, 0, room.height)
+        listener.y = room.clamp(listener.y - speed, 0, room.height)
         break
       case 'ArrowDown':
       case 's':
-        listener.y = clamp(listener.y + speed, 0, room.height)
+        listener.y = room.clamp(listener.y + speed, 0, room.height)
         break
       case 'ArrowLeft':
       case 'a':
-        listener.x = clamp(listener.x - speed, 0, room.width)
+        listener.x = room.clamp(listener.x - speed, 0, room.width)
         break
       case 'ArrowRight':
       case 'd':
-        listener.x = clamp(listener.x + speed, 0, room.width)
+        listener.x = room.clamp(listener.x + speed, 0, room.width)
         break
       case 'q':
         //TODO: integrate action manager into angle changes

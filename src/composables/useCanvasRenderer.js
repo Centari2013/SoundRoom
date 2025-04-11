@@ -1,4 +1,4 @@
-export function useCanvasRenderer({ soundSources, ctxRef, selectedIndex, listener, room, clamp }) {
+export function useCanvasRenderer({ soundSources, ctxRef, selectedIndex, listener, room }) {
   const draw = () => {
     const ctx = ctxRef.value
     ctx.clearRect(0, 0, room.width, room.height)
@@ -6,8 +6,8 @@ export function useCanvasRenderer({ soundSources, ctxRef, selectedIndex, listene
     soundSources.value.forEach((src, i) => {
       if (src.instance) {
         const state = src.instance.state
-        state.x = clamp(state.x, 0, room.width)
-        state.y = clamp(state.y, 0, room.height)
+        state.x = room.clamp(state.x, 0, room.width)
+        state.y = room.clamp(state.y, 0, room.height)
         Object.assign(src, { x: state.x, y: state.y, angle: state.angle })
         src.instance.updateAudio()
         src.instance.draw()
@@ -21,9 +21,9 @@ export function useCanvasRenderer({ soundSources, ctxRef, selectedIndex, listene
         }
       }
     })
-
-    listener.x = clamp(listener.x, 0, room.width)
-    listener.y = clamp(listener.y, 0, room.height)
+    
+    listener.x = room.clamp(listener.x, 0, room.width)
+    listener.y = room.clamp(listener.y, 0, room.height)
     listener.draw(ctx)
   }
 

@@ -139,7 +139,6 @@ import { useCanvasRenderer } from '@/composables/useCanvasRenderer'
 import { useSelectedSource } from '@/composables/useSelectedSource'
 import { useActionManager } from '@/composables/useActionManager'
 import { useVolumeSlider } from '@/composables/useVolumeSlider'
-import { useRoom } from '@/composables/useRoom'
 
 import ContextMenu from '@/components/ui/context/ContextMenu.vue'
 import ToolbarControls from '@/components/ui/controls/ToolbarControls.vue'
@@ -147,6 +146,7 @@ import VueSlider from 'vue-3-slider-component'
 
 import Listener from '@/lib/Listener'
 import AudioEngine from '@/lib/AudioEngine'
+import Room from '@/lib/Room'
 
 // for do, undo, and redo
 const { actionStackEmpty, redoStackEmpty, registerActionHandlers, doAction, undoLastAction, redoLastAction } = useActionManager()
@@ -160,7 +160,7 @@ const canvas = ref(null)
 const canvasCtx = ref(null)
 let audioContext = null
 
-const { room, clamp } = useRoom()
+const room = new Room()
 
 // Data and State
 const soundLibrarySources = ref([
@@ -171,6 +171,8 @@ const soundLibrarySources = ref([
 const loadedCanvasSoundSources = []
 
 const selectedIndex = ref(null)
+
+// Audio Engine 
 const audioEngine = new AudioEngine(loadedCanvasSoundSources, canvasCtx)
 const isPlaying = computed(() => audioEngine.isPlaying.value)
 
@@ -178,20 +180,8 @@ const { selectedSource, getSourceName } = useSelectedSource(audioEngine.soundSou
 
 const { onStart, onChange, onEnd } = useVolumeSlider(audioEngine.soundSources, selectedIndex, doAction, registerActionHandlers)
 
-// Audio Engine Hooks
 
-/* const {
-  setupAudioEngine,
-  addSoundSource,
-  deleteSoundSource,
-  getAudioContext,
-  playAll,
-  pauseAll,
-  playingAudio
-} = useAudioEngine({
-  soundSources: audioEngine.soundSources,
-  ctxRef: canvasCtx
-}) */
+
 
 // Canvas Drawing Logic
 const { draw } = useCanvasRenderer({
@@ -199,8 +189,7 @@ const { draw } = useCanvasRenderer({
   ctxRef: canvasCtx,
   selectedIndex,
   listener,
-  room,
-  clamp
+  room
 })
 
 const draggedSource = ref(null)
@@ -220,7 +209,6 @@ const { handleKeyDown } = useKeyboardControls({
   doAction,
   undoLastAction,
   redoLastAction,
-  clamp,
   room
 })
 
