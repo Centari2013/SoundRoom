@@ -26,7 +26,6 @@
             >
               {{ getSourceName(s.audioPath) }}
             </li>
-
           </ul>
           <button :disabled="canvasSoundSources.length == 20" class="mt-4 w-full bg-neutral-300 dark:bg-neutral-800 text-xs py-1 rounded hover:bg-neutral-400 dark:hover:bg-neutral-700">
             + Add Source
@@ -48,28 +47,21 @@
       <main class="flex-1 flex flex-col">
         <!-- Toolbar -->
         <div class="flex items-center justify-between p-4 border-b border-neutral-300 dark:border-neutral-800 bg-neutral-100 dark:bg-neutral-900">
-          
-            <ToolbarControls
-              :canPLay="canvasSoundSources.length > 0"
-              :canUndo="!actionStackEmpty"
-              :canRedo="!redoStackEmpty"
-              :playing="playingAudio"
-              @undo="undoLastAction"
-              @redo="redoLastAction"
-              @togglePlay="playingAudio ? pauseAll() : playAll()"
-            />
-
-        
+          <ToolbarControls
+            :canPLay="canvasSoundSources.length > 0"
+            :canUndo="!actionStackEmpty"
+            :canRedo="!redoStackEmpty"
+            :playing="playingAudio"
+            @undo="undoLastAction"
+            @redo="redoLastAction"
+            @togglePlay="playingAudio ? pauseAll() : playAll()"
+          />
           <span class="text-xs text-neutral-500">Press 'U' to restore last deleted</span>
         </div>
 
         <!-- Canvas Area -->
         <div class="flex-1 bg-neutral-200 dark:bg-black flex items-center justify-center">
-          <ContextMenu
-            ref="contextMenu"
-            :functionList="contextMenuActions"
-          />
-
+          <ContextMenu ref="contextMenu" :functionList="contextMenuActions" />
           <div class="w-[600px] h-[400px] border-2 border-neutral-400 dark:border-neutral-700 flex items-center justify-center">
             <canvas
               ref="canvas"
@@ -91,11 +83,11 @@
           <h5 class="text-sm font-semibold uppercase text-neutral-500 dark:text-neutral-400 mb-2">Selected Source</h5>
           <div v-if="selectedSource" class="text-xs space-y-1 flex flex-col items-center">
             <h4>{{ selectedSource.name }}</h4>
-            <p>X: {{selectedSource.x}}</p>
+            <p>X: {{ selectedSource.x }}</p>
             <p>Y: {{ selectedSource.y }}</p>
-            <p>Angle: {{selectedSource.angle}}°</p>
-            <p>Inner Cone: {{selectedSource.innerCone}}°</p>
-            <p>Outer Cone: {{selectedSource.outerCone}}°</p>
+            <p>Angle: {{ selectedSource.angle }}°</p>
+            <p>Inner Cone: {{ selectedSource.innerCone }}°</p>
+            <p>Outer Cone: {{ selectedSource.outerCone }}°</p>
             <div class="w-5/6">
               <VueSlider 
                 v-model="selectedSource.volume" 
@@ -103,27 +95,33 @@
                 @change="onChange"
                 @drag-end="onEnd"
               />
-
             </div>
           </div>
           <div v-else>
             <p>No Source Selected</p>
           </div>
-          <button v-if="selectedSource" 
-          @click="() => { 
-            const src = canvasSoundSources[selectedIndex]
-            src.instance.playing ? src.instance.stop() : src.instance.play()
-          }" 
-          class="mt-10 w-full bg-red-600 text-xs py-1 rounded hover:bg-red-500">
-            {{ computed(() => {const src = canvasSoundSources[selectedIndex]
-          return src.instance.playing ? "Pause" : "Play"}) }}
+          <button
+            v-if="selectedSource"
+            @click="() => { 
+              const src = canvasSoundSources[selectedIndex]
+              src.instance.playing ? src.instance.stop() : src.instance.play()
+            }"
+            class="mt-10 w-full bg-red-600 text-xs py-1 rounded hover:bg-red-500"
+          >
+            {{ computed(() => { 
+              const src = canvasSoundSources[selectedIndex]
+              return src.instance.playing ? "Pause" : "Play"
+            }) }}
           </button>
-          <button v-if="selectedSource" 
-          @click="() => { 
-            doAction('delete_canvas_sound_source',{index: selectedIndex, src: canvasSoundSources[selectedIndex]})
-          }" 
-            class="mt-3 w-full bg-red-600 text-xs py-1 rounded hover:bg-red-500">Delete</button>
-        
+          <button
+            v-if="selectedSource"
+            @click="() => { 
+              doAction('delete_canvas_sound_source', { index: selectedIndex, src: canvasSoundSources[selectedIndex] })
+            }"
+            class="mt-3 w-full bg-red-600 text-xs py-1 rounded hover:bg-red-500"
+          >
+            Delete
+          </button>
         </section>
       </aside>
     </div>
@@ -155,7 +153,6 @@ const { actionStackEmpty, redoStackEmpty, registerActionHandlers, doAction, undo
 const { listener, setAudioContext, draw: drawListener } = createListenerTools()
 const displayListenerAngle = computed(() => ((listener.value.angle % 360 + 360) % 360))
 
-
 // Canvas and Drawing Context
 const canvas = ref(null)
 const ctx = ref(null)
@@ -164,28 +161,17 @@ let audioContext = null
 const { room, clamp } = useRoom()
 
 // Data and State
-
-// for populating sound library
 const soundLibrarySources = ref([
   { audioPath: '/ambient.mp3' },
   { audioPath: '/water.mp3' },
-  // Add more templates
 ])
 
-// for playing in canvas
 const canvasSoundSources = ref([])
-/* const soundSources = ref([
-    { x: 100, y: 100, angle: 0, audioPath: '/ambient.mp3'},
-    { x: 500, y: 0, angle: 90, audioPath: '/water.mp3', coneInner: 360, coneOuter: 360 }
-  ])
- */
 
-// for Audio Engine management
 const selectedIndex = ref(null)
 const { selectedSource, getSourceName } = useSelectedSource(canvasSoundSources, selectedIndex)
 
 const { onStart, onChange, onEnd } = useVolumeSlider(canvasSoundSources, selectedIndex, doAction, registerActionHandlers)
-
 
 // Audio Engine Hooks
 const {
@@ -200,8 +186,6 @@ const {
   soundSources: canvasSoundSources,
   ctxRef: ctx
 })
-
-
 
 // Canvas Drawing Logic
 const { draw } = useCanvasRenderer({
@@ -246,15 +230,14 @@ const setupAudioContext = () => {
 // Set Action Handlers
 registerActionHandlers(
   "add_canvas_sound_source", 
-  (payload) => {addSoundSource(payload); draw()}, 
+  (payload) => { addSoundSource(payload); draw() }, 
   (payload) => { deleteSoundSource(payload); draw() }
 )
 registerActionHandlers(
   "delete_canvas_sound_source", 
   (payload) => { deleteSoundSource(payload); draw() }, 
-  (payload) => {addSoundSource(payload); draw()}
+  (payload) => { addSoundSource(payload); draw() }
 )
-
 registerActionHandlers(
   "move_canvas_sound_source",
   (payload) => {
@@ -272,7 +255,6 @@ registerActionHandlers(
     draw()
   }
 )
-
 registerActionHandlers(
   "move_listener",
   (payload) => {
@@ -287,47 +269,26 @@ registerActionHandlers(
   }
 )
 
-
-
-
-
 const contextMenu = ref(null)
 const contextMenuActions = [
-      {
-        label: computed(() => {
-          const src = canvasSoundSources.value[selectedIndex.value]
-          return src.instance.playing ? "Pause" : "Play"
-        }),
-        function: () => {
-         const src = canvasSoundSources.value[selectedIndex.value]
-         src.instance.playing ? src.instance.stop() : src.instance.play()
-        }
-      },
-      {
-        label: 'Delete',
-        function: () => {
-          doAction("delete_canvas_sound_source", {index: selectedIndex.value, src: canvasSoundSources.value[selectedIndex.value]})
-          contextMenu.value.visible = false
-        }
-      },
-      /* {
-        label: sourceHasCone(source) ? 'Remove Cone' : 'Add Cone',
-        function: () => {
-          toggleCone(source)
-          contextMenu.visible = false
-        }
-      },
-      {
-        label: 'Replace Sound',
-        function: () => {
-          openSoundPicker(source)
-          contextMenu.visible = false
-        }
-      } */
-  ]
-
-
-
+  {
+    label: computed(() => {
+      const src = canvasSoundSources.value[selectedIndex.value]
+      return src.instance.playing ? "Pause" : "Play"
+    }),
+    function: () => {
+      const src = canvasSoundSources.value[selectedIndex.value]
+      src.instance.playing ? src.instance.stop() : src.instance.play()
+    }
+  },
+  {
+    label: 'Delete',
+    function: () => {
+      doAction("delete_canvas_sound_source", { index: selectedIndex.value, src: canvasSoundSources.value[selectedIndex.value] })
+      contextMenu.value.visible = false
+    }
+  }
+]
 
 // Mount Hook
 onMounted(() => {
