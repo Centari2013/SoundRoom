@@ -105,19 +105,17 @@
           </div>
           <button
             v-if="selectedSource"
-            @click="() => { 
-              const src = audioEngine.soundSources.value[selectedIndex]
-              src.instance.playing ? src.instance.stop() : src.instance.play()
-            }"
+            @click="playPauseAllSound"
             class="mt-10 w-full bg-red-600 text-xs py-1 rounded hover:bg-red-500"
           >
             {{ playPauseLabel }}
           </button>
           <button
             v-if="selectedSource"
-            @click="() => { 
-              actionManager.doAction('delete_canvas_sound_source', { index: selectedIndex, src: audioEngine.soundSources.value[selectedIndex] })
-            }"
+            @click="actionManager.doAction(
+              'delete_canvas_sound_source', 
+              { index: selectedIndex, src: audioEngine.soundSources.value[selectedIndex] }
+              )"
             class="mt-3 w-full bg-red-600 text-xs py-1 rounded hover:bg-red-500"
           >
             Delete
@@ -180,6 +178,10 @@ const playPauseLabel = computed(() => {
               const src = audioEngine.soundSources.value[selectedIndex.value]
               return src.instance.playing ? "Pause" : "Play"
             })
+const playPauseAllSound = () => { 
+              const src = audioEngine.soundSources.value[selectedIndex.value]
+              src.instance.playing ? src.instance.stop() : src.instance.play()
+            }
 
 // Action Manager Setup
 const actionManager = new ActionManager()
