@@ -130,8 +130,8 @@
 
 <script setup>
 // Imports
-import { ref, onMounted, computed } from 'vue'
-import { createListenerTools } from '@/composables/useListener'
+import { ref, onMounted, computed, reactive } from 'vue'
+import Listener from '../lib/Listener'
 import { useCanvasControls } from '@/composables/useCanvasControls'
 import { useAudioEngine } from '@/composables/useAudioEngine'
 import { useKeyboardControls } from '@/composables/useKeyboardControls'
@@ -150,12 +150,12 @@ import VueSlider from 'vue-3-slider-component'
 const { actionStackEmpty, redoStackEmpty, registerActionHandlers, doAction, undoLastAction, redoLastAction } = useActionManager()
 
 // Listener Setup
-const { listener, setAudioContext, draw: drawListener } = createListenerTools()
+const listener = reactive(new Listener())
 const displayListenerAngle = computed(() => ((listener.angle % 360 + 360) % 360))
 
 // Canvas and Drawing Context
 const canvas = ref(null)
-const ctx = ref(null)
+const canvasCtx = ref(null)
 let audioContext = null
 
 const { room, clamp } = useRoom()
@@ -184,16 +184,15 @@ const {
   playingAudio
 } = useAudioEngine({
   soundSources: canvasSoundSources,
-  ctxRef: ctx
+  ctxRef: canvasCtx
 })
 
 // Canvas Drawing Logic
 const { draw } = useCanvasRenderer({
   soundSources: canvasSoundSources,
-  ctxRef: ctx,
+  ctxRef: canvasCtx,
   selectedIndex,
   listener,
-  drawListener,
   room,
   clamp
 })
@@ -223,8 +222,8 @@ const { handleKeyDown } = useKeyboardControls({
 const setupAudioContext = () => {
   setupAudioEngine()
   audioContext = getAudioContext()
-  setAudioContext(audioContext)
-  draw()
+  listener.setAudioContext(audioContext)
+  //listener.draw()
 }
 
 // Set Action Handlers
@@ -292,12 +291,11 @@ const contextMenuActions = [
 
 // Mount Hook
 onMounted(() => {
-  ctx.value = canvas.value.getContext('2d')
-  draw()
+  canvasCtx.value = canvas.value.getContext('2d')
 
   useCanvasControls({
     canvas,
-    ctx,
+    ctx: canvasCtx,
     soundSources: canvasSoundSources,
     selectedIndex,
     draw,
@@ -307,6 +305,7 @@ onMounted(() => {
   })
 
   setupAudioContext()
+  draw()
 })
 </script>
 

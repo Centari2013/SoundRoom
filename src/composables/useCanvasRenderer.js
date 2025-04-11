@@ -1,4 +1,4 @@
-export function useCanvasRenderer({ soundSources, ctxRef, selectedIndex, listener, drawListener, room, clamp }) {
+export function useCanvasRenderer({ soundSources, ctxRef, selectedIndex, listener, room, clamp }) {
   const draw = () => {
     const ctx = ctxRef.value
     ctx.clearRect(0, 0, room.width, room.height)
@@ -24,7 +24,7 @@ export function useCanvasRenderer({ soundSources, ctxRef, selectedIndex, listene
 
     listener.x = clamp(listener.x, 0, room.width)
     listener.y = clamp(listener.y, 0, room.height)
-    drawListener(ctxRef)
+    listener.draw(ctx)
   }
 
   return { draw }
