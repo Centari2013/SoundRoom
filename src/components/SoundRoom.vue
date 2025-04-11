@@ -60,10 +60,8 @@
         <!-- Canvas Area -->
         <div class="flex-1 bg-neutral-200 dark:bg-black flex items-center justify-center">
           <ContextMenu
-            :visible="contextMenu.visible"
-            :pos="contextMenu.pos"
-            :functionList="contextMenu.actions"
-            @close="contextMenu.visible = false"
+            ref="contextMenu"
+            :functionList="contextMenuActions"
           />
 
           <div class="w-[600px] h-[400px] border-2 border-neutral-400 dark:border-neutral-700 flex items-center justify-center">
@@ -295,13 +293,9 @@ registerActionHandlers(
   }
 )
 
-const contextMenu = ref({
-  visible: ref(false),
-  pos: { x: 0, y: 0 },
-  actions: []
-})
 
-contextMenu.value.actions = [
+const contextMenu = ref(null)
+const contextMenuActions = [
       {
         label: computed(() => {
           const src = canvasSoundSources.value[selectedIndex.value]

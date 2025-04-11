@@ -3,7 +3,7 @@
     v-if="visible"
     :style="{ top: `${pos.y}px`, left: `${pos.x}px` }"
     class="absolute z-50 bg-white dark:bg-neutral-800 border-none rounded shadow p-2 text-sm"
-    @mouseleave="$emit('close')"
+    @mouseleave="visible = false"
   >
     <ul class="space-y-1">
       <li
@@ -19,11 +19,22 @@
 </template>
 
 <script setup>
+import { ref } from 'vue';
+
 defineProps({
-  visible: Boolean,
-  pos: Object,
   functionList: Array
 })
 
-defineEmits(['close'])
+const visible = ref(false)
+const pos = ref({x: 0, y: 0})
+
+const show = (newPos) => {
+  pos.value = newPos
+  visible.value = true
+}
+
+defineExpose({
+  visible,
+  show
+})
 </script>

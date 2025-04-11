@@ -145,8 +145,7 @@ export function useCanvasControls({ canvas, soundSources, selectedIndex, draw, l
   
     if (!target) return;
 
-    contextMenu.value.visible = true
-    contextMenu.value.pos = { x: e.clientX, y: e.clientY }
+    contextMenu.value.show({ x: e.clientX, y: e.clientY })
     
   }
 
