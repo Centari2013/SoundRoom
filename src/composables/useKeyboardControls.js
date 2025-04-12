@@ -25,6 +25,24 @@ export function useKeyboardControls({
     }
   )
 
+  actionManager.registerActionHandlers(
+    "rotate_source_angle",
+    (payload) => {
+      if (selectedSource.value !== null) {
+        selectedSource.value.instance.state.angle = payload.to
+        selectedSource.value.instance.updateAudio()
+      }
+      draw()
+    },
+    (payload) => {
+      if (selectedSource.value !== null) {
+        selectedSource.value.instance.state.angle = payload.from
+        selectedSource.value.instance.updateAudio()
+      }
+      draw()
+    }
+  )
+
   const handleKeyDown = async (e) => {
     const key = e.key
     const speed = 5
@@ -37,7 +55,7 @@ export function useKeyboardControls({
 
     if ((key == 'z' || key == 'c') && !rotationKeys.has(key)) {
       rotationKeys.add(key)
-      //sourceAngleStart = .angle;
+      sourceAngleStart = selectedSource.value.instance.state.angle;
     }
   
     switch (key) {
@@ -106,19 +124,37 @@ export function useKeyboardControls({
   
     if ((key === 'q' || key === 'e') && rotationKeys.has(key)) {
       rotationKeys.delete(key)
+      const listenerAngleEnd = listener.angle
   
-      const angleEnd = listener.angle
-  
-      if (listenerAngleStart !== null && listenerAngleStart !== angleEnd) {
+      if (listenerAngleStart !== null && listenerAngleStart !== listenerAngleEnd) {
         actionManager.doAction("rotate_listener_angle", {
           from: listenerAngleStart,
-          to: angleEnd
+          to: listenerAngleEnd
         })
       }
   
       listenerAngleStart = null
     }
+  
+    if ((key === 'c' || key === 'z') && rotationKeys.has(key)) {
+      rotationKeys.delete(key)
+  
+      if (selectedSource.value !== null) {
+        const sourceAngleEnd = selectedSource.value.instance.state.angle
+  
+        if (sourceAngleStart !== null && sourceAngleStart !== sourceAngleEnd) {
+          actionManager.doAction("rotate_source_angle", {
+            from: sourceAngleStart,
+            to: sourceAngleEnd
+          })
+        }
+      }
+  
+      sourceAngleStart = null
+    }
   }
+  
+  
 
   return {
     handleKeyDown,

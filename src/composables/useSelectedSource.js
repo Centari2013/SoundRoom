@@ -15,15 +15,12 @@ export function useSelectedSource(soundSources, selectedIndex) {
 
   const selectedSource = computed(() => {
     if (!rawSource.value) return null
-    const src = rawSource.value
-    const name = getSourceName(src.audioPath)
-    const state = src.instance?.state
-    let angle = state?.angle ?? src.angle
-    angle = (angle % 360 + 360) % 360
+    const name = getSourceName(rawSource.value.audioPath)
+    
     return {
       name,
       index: selectedIndex.value,
-      volume: src.instance.getVolume(),
+      volume: rawSource.value.instance.getVolume(),
       ...rawSource.value
     }
   })

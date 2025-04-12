@@ -59,6 +59,7 @@ export default class AudioEngine {
 
   addSoundSource(payload) {
     const src = payload.src
+
     src.index = payload.index ?? this.soundSources.value.length
 
     const instance = new SoundSource({

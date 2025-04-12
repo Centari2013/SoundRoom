@@ -15,8 +15,8 @@ export function useDragDropAudio({ draggedSource, canvasRef, actionManager, draw
       y: dropY,
       angle: 0,
       audioPath: draggedSource.value.audioPath,
-      coneInner: 360,
-      coneOuter: 360
+      coneInner: draggedSource.value.coneInner,
+      coneOuter: draggedSource.value.coneOuter
     }
     actionManager.doAction("add_canvas_sound_source", { src })
 
