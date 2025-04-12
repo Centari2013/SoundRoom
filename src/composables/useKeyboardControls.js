@@ -2,7 +2,8 @@
 export function useKeyboardControls({ 
   listener, 
   selectedIndex, 
-  soundSources, 
+  soundSources,
+  selectedSource, 
   draw,
   actionManager,
   room
@@ -64,15 +65,15 @@ export function useKeyboardControls({
         listener.updateAngle(listener.angle + rotationStep)
         break
       case 'z':
-        if (selectedIndex.value !== null) {
-          soundSources.value[selectedIndex.value].instance.state.angle -= rotationStep
-          soundSources.value[selectedIndex.value].instance.updateAudio()
+        if (selectedSource.value !== null) {
+          selectedSource.value.instance.state.angle -= rotationStep
+          selectedSource.value.instance.updateAudio()
         }
         break
       case 'c':
-        if (selectedIndex.value !== null) {
-          soundSources.value[selectedIndex.value].instance.state.angle += rotationStep
-          soundSources.value[selectedIndex.value].instance.updateAudio()
+        if (selectedSource.value !== null) {
+          selectedSource.value.instance.state.angle += rotationStep
+          selectedSource.value.instance.updateAudio()
         }
         break
       case 'Tab':
@@ -87,7 +88,7 @@ export function useKeyboardControls({
         break
       case 'Delete':
       case 'Backspace':
-        actionManager.doAction("delete_canvas_sound_source", { index: selectedIndex.value, src: soundSources.value[selectedIndex.value] })
+        actionManager.doAction("delete_canvas_sound_source", { index: selectedSource.value.index, src: selectedSource.value })
         break
       case 'u':
         actionManager.undoLastAction()

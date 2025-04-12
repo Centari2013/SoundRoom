@@ -172,6 +172,7 @@ const { handleDragStart, handleDrop } = useDragDropAudio({
 const { handleKeyDown, handleKeyUp } = useKeyboardControls({
   listener,
   selectedIndex,
+  selectedSource,
   soundSources: audioEngine.soundSources,
   draw,
   actionManager,
@@ -245,18 +246,16 @@ registerAction(
 const contextMenuActions = [
   {
     label: computed(() => {
-      const src = audioEngine.soundSources.value[selectedIndex.value]
-      return src.instance.playing ? "Pause" : "Play"
+      return selectedSource.value.instance.playing ? "Pause" : "Play"
     }),
     function: () => {
-      const src = audioEngine.soundSources.value[selectedIndex.value]
-      src.instance.playing ? src.instance.stop() : src.instance.play()
+      selectedSource.value.instance.playing ? selectedSource.value.instance.stop() : selectedSource.value.instance.play()
     }
   },
   {
     label: 'Delete',
     function: () => {
-      actionManager.doAction("delete_canvas_sound_source", { index: selectedIndex.value, src: audioEngine.soundSources.value[selectedIndex.value] })
+      actionManager.doAction("delete_canvas_sound_source", { index: selectedSource.value.index, src: selectedSource.value })
       contextMenu.value.visible = false
     }
   }
@@ -278,7 +277,7 @@ onMounted(() => {
     canvas,
     ctx: canvasCtx,
     soundSources: audioEngine.soundSources,
-    selectedIndex,
+    selectedIndex, // selected index set in here!
     draw,
     listener,
     actionManager,
