@@ -79,7 +79,6 @@
         <!-- Source Details -->
         <SelectedSourcePanel 
           :listener="listener"
-          :audioEngine="audioEngine"
           :actionManager="actionManager"
           :selectedSource="selectedSource"
         />

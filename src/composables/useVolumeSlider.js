@@ -1,5 +1,5 @@
 // src/composables/useVolumeSlider.js
-export function useVolumeSlider(canvasSoundSources, selectedSource, actionManager) {
+export function useVolumeSlider(selectedSource, actionManager) {
   actionManager.registerActionHandlers(
     "set_sound_source_volume",
     (payload) => {
