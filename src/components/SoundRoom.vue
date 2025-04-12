@@ -81,7 +81,7 @@
           :listener="listener"
           :audioEngine="audioEngine"
           :actionManager="actionManager"
-          :selectedIndex="selectedIndex"
+          :selectedSource="selectedSource"
         />
       </aside>
     </div>
@@ -113,6 +113,7 @@ import { useCanvasControls } from '@/composables/useCanvasControls'
 import { useKeyboardControls } from '@/composables/useKeyboardControls'
 import { useDragDropAudio } from '@/composables/useDragDropAudio'
 import { useCanvasRenderer } from '@/composables/useCanvasRenderer'
+import { useSelectedSource } from '@/composables/useSelectedSource';
 
 
 // Global State & Reactive References
@@ -144,8 +145,8 @@ const masterVolumeProxy = computed({
 })
 const isPlaying = computed(() => audioEngine.isPlaying.value)
 let audioContext = null
-
-
+const { selectedSource } = useSelectedSource(audioEngine.soundSources, selectedIndex)
+provide('selectedSource', selectedSource)
 // Action Manager Setup
 const actionManager = new ActionManager()
 const actionStackEmpty = computed(() => actionManager.actionStackEmpty.value)

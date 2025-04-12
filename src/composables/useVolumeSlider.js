@@ -1,14 +1,12 @@
 // src/composables/useVolumeSlider.js
-export function useVolumeSlider(canvasSoundSources, selectedIndex, actionManager) {
+export function useVolumeSlider(canvasSoundSources, selectedSource, actionManager) {
   actionManager.registerActionHandlers(
     "set_sound_source_volume",
     (payload) => {
-      const src = canvasSoundSources.value[payload.index]
-      src.instance.setVolume(payload.to)
+      selectedSource.value.instance.setVolume(payload.to)
     },
     (payload) => {
-      const src = canvasSoundSources.value[payload.index]
-      src.instance.setVolume(payload.from)
+      selectedSource.value.instance.setVolume(payload.from)
     }
   )
 
@@ -16,20 +14,19 @@ export function useVolumeSlider(canvasSoundSources, selectedIndex, actionManager
 
   const onStart = () => {
     volumePayload = {
-      from: canvasSoundSources.value[selectedIndex.value].instance.getVolume(),
-      index: selectedIndex.value
+      from: selectedSource.value.instance.getVolume(),
+      index: selectedSource.value.index
     }
   }
 
   const onChange = (v) => {
-    const src = canvasSoundSources.value[selectedIndex.value]
-    if (src?.instance) {
-      src.instance.setVolume(v)
+    if (selectedSource.value) {
+      selectedSource.value.instance.setVolume(v)
     }
   }
 
   const onEnd = () => {
-    volumePayload.to = canvasSoundSources.value[selectedIndex.value].instance.getVolume()
+    volumePayload.to = selectedSource.value.instance.getVolume()
     actionManager.doAction("set_sound_source_volume", volumePayload)
     volumePayload.value = null
   }

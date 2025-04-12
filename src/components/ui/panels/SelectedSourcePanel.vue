@@ -49,7 +49,7 @@ import { computed, inject } from 'vue';
 
 import VueSlider from 'vue-3-slider-component'
 
-import { useSelectedSource } from '@/composables/useSelectedSource';
+
 import { useVolumeSlider } from '@/composables/useVolumeSlider'
 
 
@@ -57,23 +57,22 @@ const props = defineProps({
   listener: Object,
   audioEngine: Object,
   actionManager: Object,
+  selectedSource: Object
 })
 
-const listener = props.listener;
+const selectedSource = inject('selectedSource');
 const audioEngine = props.audioEngine;
 const selectedIndex = inject('selectedIndex');
 const actionManager = props.actionManager;
 
-const { selectedSource } = useSelectedSource(audioEngine.soundSources, selectedIndex)
-const { onStart, onChange, onEnd } = useVolumeSlider(audioEngine.soundSources, selectedIndex, actionManager)
 
-const playPauseLabel = computed(() => { 
-              const src = audioEngine.soundSources.value[selectedIndex.value]
-              return src.instance.playing ? "Pause" : "Play"
+const { onStart, onChange, onEnd } = useVolumeSlider(audioEngine.soundSources, selectedSource, actionManager)
+
+const playPauseLabel = computed(() => {
+              return selectedSource.value.instance.playing ? "Pause" : "Play"
             })
 const playPauseSource = () => { 
-              const src = audioEngine.soundSources.value[selectedIndex.value]
-              src.instance.playing ? src.instance.stop() : src.instance.play()
+              selectedSource.value.instance.playing ? selectedSource.value.instance.stop() : selectedSource.value.instance.play()
             }
 
 </script>

@@ -9,7 +9,9 @@ export function useKeyboardControls({
 }){
 
   const rotationKeys = new Set()
-  let angleStart = null
+  let listenerAngleStart = null
+  let sourceAngleStart = null
+
   actionManager.registerActionHandlers(
     "rotate_listener_angle",
     (payload) => {
@@ -29,7 +31,12 @@ export function useKeyboardControls({
     
     if ((key == 'q' || key == 'e') && !rotationKeys.has(key)) {
       rotationKeys.add(key)
-      angleStart = listener.angle;
+      listenerAngleStart = listener.angle;
+    }
+
+    if ((key == 'z' || key == 'c') && !rotationKeys.has(key)) {
+      rotationKeys.add(key)
+      //sourceAngleStart = .angle;
     }
   
     switch (key) {
@@ -101,14 +108,14 @@ export function useKeyboardControls({
   
       const angleEnd = listener.angle
   
-      if (angleStart !== null && angleStart !== angleEnd) {
+      if (listenerAngleStart !== null && listenerAngleStart !== angleEnd) {
         actionManager.doAction("rotate_listener_angle", {
-          from: angleStart,
+          from: listenerAngleStart,
           to: angleEnd
         })
       }
   
-      angleStart = null
+      listenerAngleStart = null
     }
   }
 
