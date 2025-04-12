@@ -76,7 +76,6 @@ export function useKeyboardControls({
         listener.x = room.clamp(listener.x + speed, 0, room.width)
         break
       case 'q':
-        //TODO: integrate action manager into angle changes
         listener.updateAngle(listener.angle - rotationStep)
         break
       case 'e':
