@@ -82,6 +82,8 @@ export default class AudioEngine {
       this.#audioContext.resume()
     }
     instance.play()
+
+    console.log(this.soundSources.value)
   }
 
   deleteSoundSource(payload) {

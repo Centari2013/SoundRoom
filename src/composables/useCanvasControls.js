@@ -9,6 +9,8 @@ export function useCanvasControls({ canvas, soundSources, selectedIndex, draw, l
   let moveSourcePayload = null
   let moveListenerPayload = null
   const positionsEqual = (a, b) => a.x === b.x && a.y === b.y
+  let hoveringRotationHandleIndex = null
+  let draggingRotationHandleIndex = null
 
 
   const getMousePos = (e) => {
@@ -66,7 +68,10 @@ export function useCanvasControls({ canvas, soundSources, selectedIndex, draw, l
   const onMouseDown = (e) => {
     if (e.button === 2) return // ignore right-click
     const { x, y } = getMousePos(e)
-  
+    if (hoveringRotationHandleIndex !== null) {
+      draggingRotationHandleIndex = hoveringRotationHandleIndex
+      return
+    }
     // prioritize sound sources first
     if (trySelectSoundSource(x, y)) {
       draw()
@@ -99,6 +104,31 @@ export function useCanvasControls({ canvas, soundSources, selectedIndex, draw, l
       const state = src.instance.state
       state.x = x - offsetX
       state.y = y - offsetY
+      src.instance.updateAudio()
+      draw()
+    }
+
+    const ROTATION_HANDLE_RADIUS = 8
+    hoveringRotationHandleIndex = null
+
+    soundSources.value.forEach((src, i) => {
+      if (!src.instance) return
+      const { x: rotationX, y: rotationY } = src.instance.getRotationHandlePos()
+      const dx = rotationX - x
+      const dy = rotationY - y
+      const dist = Math.sqrt(dx * dx + dy * dy)
+      if (dist < ROTATION_HANDLE_RADIUS) {
+        hoveringRotationHandleIndex = i
+      }
+    })
+
+    if (draggingRotationHandleIndex !== null) {
+      const src = soundSources.value[draggingRotationHandleIndex]
+      const center = { x: src.instance.state.x, y: src.instance.state.y }
+      const dx = x - center.x
+      const dy = y - center.y
+      const angle = Math.atan2(dy, dx) * (180 / Math.PI)
+      src.instance.state.angle = angle
       src.instance.updateAudio()
       draw()
     }
@@ -136,6 +166,7 @@ export function useCanvasControls({ canvas, soundSources, selectedIndex, draw, l
   
       moveListenerPayload = null
     }
+    draggingRotationHandleIndex = null
   }
   
   const showContextMenu = (e) => {

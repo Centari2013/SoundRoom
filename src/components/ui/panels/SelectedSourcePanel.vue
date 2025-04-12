@@ -70,7 +70,7 @@ const playPauseSource = () => {
 };
 
 
-const displaySourceAngle = computed(() => ((selectedSource.value.angle % 360 + 360) % 360));
+const displaySourceAngle = computed(() => Math.round((selectedSource.value.angle % 360 + 360) % 360));
 const cleanSourceXY = computed(() => ({
   x: Math.round(selectedSource.value.x),
   y: Math.round(selectedSource.value.y)

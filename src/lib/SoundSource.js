@@ -108,22 +108,7 @@ export default class SoundSource {
     const radAngle = this._rad(angle)
     const coneLength = 80
 
-    // Outer cone
-    if (coneOuter < 360) {
-      ctx.beginPath()
-      ctx.moveTo(x, y)
-      ctx.lineTo(
-        x + Math.cos(radAngle - this._rad(coneOuter / 2)) * coneLength,
-        y + Math.sin(radAngle - this._rad(coneOuter / 2)) * coneLength
-      )
-      ctx.lineTo(
-        x + Math.cos(radAngle + this._rad(coneOuter / 2)) * coneLength,
-        y + Math.sin(radAngle + this._rad(coneOuter / 2)) * coneLength
-      )
-      ctx.closePath()
-      ctx.fillStyle = 'rgba(255, 0, 0, 0.2)'
-      ctx.fill()
-    }
+
 
     // Inner cone
     if (coneInner < 360) {
@@ -158,6 +143,36 @@ export default class SoundSource {
       ctx.strokeStyle = '#fff'
       ctx.lineWidth = 2
       ctx.stroke()
+    }
+
+    // Rotation handle
+    const handle = this.getRotationHandlePos()
+    ctx.beginPath()
+    ctx.arc(handle.x, handle.y, 6, 0, Math.PI * 2)
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.6)'
+    ctx.fill()
+    ctx.lineWidth = 1.5
+    ctx.strokeStyle = '#000'
+    ctx.stroke()
+  }
+
+  getRotationHandlePos() {
+    const { x, y, angle, coneInner, coneOuter } = this.state
+    const radAngle = this._rad(angle)
+    const coneLength = 80
+  
+    // If there's a cone, place handle at tip of the inner cone (or outer)
+    if (coneInner < 360 || coneOuter < 360) {
+      return {
+        x: x + Math.cos(radAngle) * coneLength,
+        y: y + Math.sin(radAngle) * coneLength
+      }
+    }
+  
+    // If no cone, place handle a bit away from the circle center
+    return {
+      x: x + Math.cos(radAngle) * 30,
+      y: y + Math.sin(radAngle) * 30
     }
   }
 
