@@ -49,7 +49,6 @@ function handleClick(fn) {
 }
 
 function onGlobalClick(e) {
-  console.log(e)
   if (visible.value && menu.value && !menu.value.contains(e.target)) {
     hide();
   }
