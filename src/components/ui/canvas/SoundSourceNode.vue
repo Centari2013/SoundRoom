@@ -14,7 +14,7 @@
   <v-wedge
     v-if="hasOuterCone"
     :angle="coneOuter"
-    :rotation="angle-coneOuter / 2" 
+    :rotation="-coneOuter / 2" 
     :radius="50"
     fill="rgba(255, 100, 100, 0.05)"
     shadowColor="rgba(255, 100, 100, 0.2)"
@@ -25,7 +25,7 @@
   <v-wedge
     v-if="hasInnerCone"
     :angle="coneInner"
-    :rotation="angle-coneInner / 2"
+    :rotation="-coneInner / 2"
     :radius="50"
     fill="rgba(255, 120, 120, 0.2)"
   />
@@ -60,7 +60,7 @@
 </template>
 
 <script setup>
-import { computed, ref } from 'vue'
+import { computed } from 'vue'
 
 const props = defineProps({
   source: Object,
