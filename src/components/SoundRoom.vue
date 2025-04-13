@@ -55,7 +55,6 @@
 
         <!-- Canvas Area -->
         <div class="flex-1 bg-neutral-200 dark:bg-black flex items-center justify-center">
-          <ContextMenu ref="contextMenu" :functionList="contextMenuActions" />
           <div 
             ref="stageWrapper"
             class="border-2 border-neutral-400 dark:border-neutral-700 flex items-center justify-center"
@@ -69,10 +68,7 @@
 
           <v-stage
             :config="{ width: room.width, height: room.height }"
-            @mousedown="() => {}"
-            @mousemove="() => {}"
-            @mouseup="() => {}"
-            @contextmenu.prevent="() => {}"
+            @contextmenu="(e) => e.evt.preventDefault()"
           >
           <v-layer ref="mainLayer" @click="handleStageClick">
             <SoundSourceNode
@@ -119,7 +115,6 @@ import { ref, onMounted, computed, reactive, provide } from 'vue'
 // UI Components
 import VueSlider from 'vue-3-slider-component'
 
-import ContextMenu from '@/components/ui/context/ContextMenu.vue'
 import ToolbarControls from '@/components/ui/controls/ToolbarControls.vue'
 import ListenerReadout from '@/components/ui/readouts/ListenerReadout.vue'
 import SelectedSourcePanel from '@/components/ui/panels/SelectedSourcePanel.vue'
@@ -140,9 +135,7 @@ import { useSelectedSource } from '@/composables/useSelectedSource';
 
 
 // Global State & Reactive References
-const canvas = ref(null)
 const canvasCtx = ref(null)
-const contextMenu = ref(null)
 const draggedSource = ref(null)
 
 const room = new Room()
@@ -249,28 +242,6 @@ registerAction(
     moveSoundSource(src, payload.from)
   }
 )
-
-
-
-// Context Menu Actions
-
-const contextMenuActions = [
-  {
-    label: computed(() => {
-      return selectedSource.value.instance.playing ? "Pause" : "Play"
-    }),
-    function: () => {
-      selectedSource.value.instance.playing ? selectedSource.value.instance.stop() : selectedSource.value.instance.play()
-    }
-  },
-  {
-    label: 'Delete',
-    function: () => {
-      actionManager.doAction("delete_canvas_sound_source", { index: selectedSource.value.index, src: selectedSource.value })
-      contextMenu.value.visible = false
-    }
-  }
-]
 
 // Initializes all source instances with audio + connects listener to context
 function setupAudioContext() {

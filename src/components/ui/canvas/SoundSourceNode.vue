@@ -1,13 +1,14 @@
 <template>
+  <ContextMenu ref="contextMenu" :functionList="contextMenuActions" />
   <v-group
   :x="source.x"
   :y="source.y"
   :draggable="true"
   :rotation="angle"
   @dragmove="onDragMove"
-  @click="onClick"
   @mousedown="onMouseDown"
   @mouseup="onMouseUp"
+  @contextmenu="showContextMenu"
   name="sound-node"
 >
   <!-- Outer Cone -->
@@ -18,7 +19,7 @@
     :radius="50"
     fill="rgba(255, 100, 100, 0.05)"
     shadowColor="rgba(255, 100, 100, 0.2)"
-    shadowBlur="12"
+    :shadowBlur="12"
   />
 
   <!-- Inner Cone -->
@@ -51,7 +52,7 @@
   :radius="6"
   fill="rgba(255, 255, 255, 0.6)"
   stroke="#000"
-  strokeWidth="1.5"
+  :strokeWidth="1.5"
   @mousedown="() => {}"
 />
 
@@ -60,7 +61,9 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { ref, computed } from 'vue'
+
+import ContextMenu from '@/components/ui/context/ContextMenu.vue'
 
 const props = defineProps({
   source: Object,
@@ -69,11 +72,13 @@ const props = defineProps({
   index: Number,
   selected: Boolean
 })
-console.log(props.source)
+
 const actionManager = props.actionManager
 const room = props.room
 const source = props.source
 const emit = defineEmits(['select'])
+
+const contextMenu = ref(null)
 
 
 const hasCone = computed(() => source.coneInner < 360 || source.coneOuter < 360)
@@ -86,9 +91,7 @@ const angle = computed(() => source.instance.state.angle)
 
 let moveSourcePayload = null
 const positionsEqual = (a, b) => a.x === b.x && a.y === b.y
-function onClick(e){
-  
-}
+
 
 function onMouseDown(e) {
   if (e.button === 2) return // TODO: integrate context menu
@@ -122,4 +125,27 @@ function onMouseUp(){
 
   moveSourcePayload = null
 }
+
+// Context Menu 
+function showContextMenu(e){
+  e.evt.preventDefault();
+  contextMenu.value.visible = true;
+}
+const contextMenuActions = [
+  {
+    label: computed(() => {
+      return source.instance.playing ? "Pause" : "Play"
+    }),
+    function: () => {
+      source.instance.playing ? source.instance.stop() : source.instance.play()
+    }
+  },
+  {
+    label: 'Delete',
+    function: () => {
+      actionManager.doAction("delete_canvas_sound_source", { index: source.index, src: source })
+      contextMenu.value.visible = false
+    }
+  }
+]
 </script>
