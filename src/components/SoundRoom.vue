@@ -158,7 +158,7 @@ const MAX_SOURCES = 20
 function handleStageClick(e) {
   const clickedNode = e.target;
   // if not a SoundSourceNode
-  if (clickedNode.attrs.name != 'sound-node') {
+  if (clickedNode.getAttr('name') != 'sound-node') {
     selectedIndex.value = null;
   }
 }
@@ -254,7 +254,13 @@ function setupAudioContext() {
 function showContextMenu(e){
   e.evt.preventDefault();
   e.evt.stopPropagation(); // stop context menu from never showing
-  contextMenu.value.show({x: e.evt.clientX, y: e.evt.clientY});
+  const clickedNode = e.target;
+  // if not a SoundSourceNode
+  if (clickedNode.getAttr('name') == 'sound-node') {
+    contextMenu.value.show({x: e.evt.clientX, y: e.evt.clientY});
+  }
+  
+  
 }
 const contextMenuActions = [
   {

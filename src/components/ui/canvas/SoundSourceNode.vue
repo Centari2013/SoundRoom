@@ -29,7 +29,7 @@
   />
 
   <!-- Source Dot -->
-  <v-circle @click="() => emit('select', props.index)"
+  <v-circle @mousedown="() => emit('select', props.index)"
     :radius="10"
     :fill="props.selected ? '#ff0' : '#f00'"
     name="sound-node"
@@ -52,8 +52,6 @@
   fill="rgba(255, 255, 255, 0.6)"
   stroke="#000"
   :strokeWidth="1.5"
-  @mouseover="handleMouseOver"
-  @mouseout="handleMouseOut"
 />
 
 </v-group>

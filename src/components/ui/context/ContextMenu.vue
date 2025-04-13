@@ -27,7 +27,7 @@
 import { ref, onMounted, onUnmounted } from 'vue';
 
 const props = defineProps({
-  functionList: Array
+  functionList: Array,
 });
 
 const visible = ref(false);
@@ -49,6 +49,7 @@ function handleClick(fn) {
 }
 
 function onGlobalClick(e) {
+  console.log(e)
   if (visible.value && menu.value && !menu.value.contains(e.target)) {
     hide();
   }
