@@ -57,19 +57,43 @@
         <div class="flex-1 bg-neutral-200 dark:bg-black flex items-center justify-center">
           <ContextMenu ref="contextMenu" :functionList="contextMenuActions" />
           <div 
+            ref="stageWrapper"
             class="border-2 border-neutral-400 dark:border-neutral-700 flex items-center justify-center"
             :class="`w-[${room.width}px] h-[${room.height}px]`"
+            @dragover.prevent
+            @drop="handleDrop"
+            @keydown="onKeyDown"
+            @keyup="onKeyUp"
+            tabindex="0" 
           >
-            <canvas
-              ref="canvas"
-              :width="room.width"
-              :height="room.height"
-              @dragover.prevent
-              @drop="handleDrop"
-              @keydown="handleKeyDown"
-              @keyup="handleKeyUp"
-              tabindex="0"
+
+          <v-stage
+            :config="{ width: room.width, height: room.height }"
+            @mousedown="() => {}"
+            @mousemove="() => {}"
+            @mouseup="() => {}"
+            @contextmenu.prevent="() => {}"
+          >
+          <v-layer ref="mainLayer" @click="handleStageClick">
+            <SoundSourceNode
+              v-for="(src, i) in audioEngine.soundSources.value"
+              :key="i"
+              :source="src"
+              :selected="i === selectedIndex"
+              :actionManager="actionManager"
+              :room="room"
+              :index="i"
+              @select="selectedIndex = $event"
             />
+            <ListenerNode
+              :listener="listener"
+              :actionManager="actionManager"
+              :room="room"
+            />
+          </v-layer>
+
+          </v-stage>
+
           </div>
         </div>
       </main>
@@ -100,6 +124,8 @@ import ToolbarControls from '@/components/ui/controls/ToolbarControls.vue'
 import ListenerReadout from '@/components/ui/readouts/ListenerReadout.vue'
 import SelectedSourcePanel from '@/components/ui/panels/SelectedSourcePanel.vue'
 import DraggableSourcePanel from '@/components/ui/panels/DraggableSourcePanel.vue'
+import ListenerNode from '@/components/ui/canvas/ListenerNode.vue';
+import SoundSourceNode from '@/components/ui/canvas/SoundSourceNode.vue';
 
 // Audio / Canvas / State Classes
 import Listener from '@/lib/Listener'
@@ -108,10 +134,8 @@ import Room from '@/lib/Room'
 import ActionManager from '@/lib/ActionManager'
 
 // Composables
-import { useCanvasControls } from '@/composables/useCanvasControls'
 import { useKeyboardControls } from '@/composables/useKeyboardControls'
 import { useDragDropAudio } from '@/composables/useDragDropAudio'
-import { useCanvasRenderer } from '@/composables/useCanvasRenderer'
 import { useSelectedSource } from '@/composables/useSelectedSource';
 
 
@@ -130,10 +154,24 @@ const selectedIndex = ref(null)
 provide('selectedIndex', selectedIndex)
 const soundLibrarySources = ref([
   { audioPath: '/ambient.mp3', coneInner: 60,  coneOuter: 300},
-  { audioPath: '/water.mp3' },
+  { audioPath: '/water.mp3', coneInner:360, coneOuter:360 },
 ])
 const loadedCanvasSoundSources = []
 const MAX_SOURCES = 20
+function handleStageClick(e) {
+  // TODO: fix source deselect
+  // If click target has no parent node or isn't a group,
+  // it's likely a click on empty space
+  const clickedShape = e.target
+  if (clickedShape === e.currentTarget) {
+    // Clicked on the layer itself — empty space
+    selectedIndex.value = null
+    return
+  }
+
+
+}
+
 
 
 // Audio Engine & Playback State
@@ -152,29 +190,20 @@ const actionStackEmpty = computed(() => actionManager.actionStackEmpty.value)
 const redoStackEmpty = computed(() => actionManager.redoStackEmpty.value)
 
 
-// Canvas Rendering & Drag-Drop Logic
-const { draw } = useCanvasRenderer({
-  soundSources: audioEngine.soundSources,
-  ctxRef: canvasCtx,
-  selectedIndex,
-  listener,
-  room
-})
-
+// Drag-Drop Logic
+const stageWrapper = ref(null)
 const { handleDragStart, handleDrop } = useDragDropAudio({
   draggedSource,
-  canvasRef: canvas,
   actionManager,
-  draw
+  stageWrapper
 })
 
 // Keyboard Interaction
-const { handleKeyDown, handleKeyUp } = useKeyboardControls({
+const { onKeyDown, onKeyUp } = useKeyboardControls({
   listener,
   selectedIndex,
   selectedSource,
   soundSources: audioEngine.soundSources,
-  draw,
   actionManager,
   room
 })
@@ -188,11 +217,11 @@ registerAction(
   "add_canvas_sound_source",
   (payload) => {
     audioEngine.addSoundSource(payload)
-    draw()
+    listener.updateAudio()
   },
   (payload) => {
     audioEngine.deleteSoundSource(payload)
-    draw()
+    listener.updateAudio()
   }
 )
 
@@ -200,11 +229,9 @@ registerAction(
   "delete_canvas_sound_source",
   (payload) => {
     audioEngine.deleteSoundSource(payload)
-    draw()
   },
   (payload) => {
     audioEngine.addSoundSource(payload)
-    draw()
   }
 )
 
@@ -212,7 +239,7 @@ const moveSoundSource = (src, coords) => {
   src.instance.state.x = coords.x
   src.instance.state.y = coords.y
   src.instance.updateAudio()
-  draw()
+  listener.updateAudio()
 }
 
 registerAction(
@@ -227,19 +254,7 @@ registerAction(
   }
 )
 
-registerAction(
-  "move_listener",
-  (payload) => {
-    listener.x = payload.to.x
-    listener.y = payload.to.y
-    draw()
-  },
-  (payload) => {
-    listener.x = payload.from.x
-    listener.y = payload.from.y
-    draw()
-  }
-)
+
 
 // Context Menu Actions
 
@@ -271,21 +286,8 @@ function setupAudioContext() {
 
 // Mount Hook
 onMounted(() => {
-  canvasCtx.value = canvas.value.getContext('2d')
-  listener.setCanvasContext(canvasCtx)
-  useCanvasControls({
-    canvas,
-    ctx: canvasCtx,
-    soundSources: audioEngine.soundSources,
-    selectedIndex, // selected index set in here!
-    draw,
-    listener,
-    actionManager,
-    contextMenu
-  })
 
   setupAudioContext()
-  draw()
 })
 </script>
 

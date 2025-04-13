@@ -15,5 +15,5 @@ const props = defineProps({
   listener: Object
 })
 
-const displayListenerAngle = computed(() => ((props.listener.angle % 360 + 360) % 360))
+const displayListenerAngle = computed(() => (((props.listener.angle - 180) % 360 + 360) % 360))
 </script>

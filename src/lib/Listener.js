@@ -1,6 +1,6 @@
 // lib/Listener.js
 export default class Listener {
-  _angle = 90
+  _angle = 180
   _audioContext = null
   _canvasContext
 
@@ -31,7 +31,8 @@ export default class Listener {
     if (!this._audioContext) return
 
     const scale = 0.01
-    const angleRad = (this._angle * Math.PI) / 180
+    const angleRad = ((this._angle - 90) * Math.PI) / 180;
+
 
     this._audioContext.listener.setPosition(this.x * scale, this.y * scale, 0)
     this._audioContext.listener.setOrientation(

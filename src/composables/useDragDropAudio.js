@@ -1,15 +1,16 @@
 // useDragDropAudio.js
-export function useDragDropAudio({ draggedSource, canvasRef, actionManager, draw }) {
+export function useDragDropAudio({ draggedSource, actionManager, stageWrapper}) {
   const handleDragStart = (e, source) => {
     draggedSource.value = source
   }
 
-  const handleDrop = (e) => {
+  function handleDrop(e) {
     if (!draggedSource.value) return
-
-    const canvasBounds = canvasRef.value.getBoundingClientRect()
-    const dropX = e.clientX - canvasBounds.left
-    const dropY = e.clientY - canvasBounds.top
+  
+    const wrapperBounds = stageWrapper.value.getBoundingClientRect()
+    const dropX = e.clientX - wrapperBounds.left
+    const dropY = e.clientY - wrapperBounds.top
+  
     const src = {
       x: dropX,
       y: dropY,
@@ -18,10 +19,10 @@ export function useDragDropAudio({ draggedSource, canvasRef, actionManager, draw
       coneInner: draggedSource.value.coneInner,
       coneOuter: draggedSource.value.coneOuter
     }
+  
     actionManager.doAction("add_canvas_sound_source", { src })
-
-    draw()
   }
+  
 
   return { handleDragStart, handleDrop }
 }

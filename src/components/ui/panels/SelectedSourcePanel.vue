@@ -35,7 +35,7 @@
       v-if="selectedSource"
       @click="actionManager.doAction(
         'delete_canvas_sound_source', 
-        { index: selectedIndex, src: selectedSource }
+        { index: selectedSource.index, src: selectedSource }
       )"
       class="mt-3 w-full bg-red-600 text-xs py-1 rounded hover:bg-red-500"
     >
@@ -56,7 +56,6 @@ const props = defineProps({
 });
 
 const selectedSource = inject('selectedSource');
-const selectedIndex = inject('selectedIndex');
 const actionManager = props.actionManager;
 
 const { onStart, onChange, onEnd } = useVolumeSlider(selectedSource, actionManager);
@@ -70,9 +69,9 @@ const playPauseSource = () => {
 };
 
 
-const displaySourceAngle = computed(() => Math.round((selectedSource.value.angle % 360 + 360) % 360));
+const displaySourceAngle = computed(() => Math.round((selectedSource.value.instance.state.angle % 360 + 360) % 360));
 const cleanSourceXY = computed(() => ({
-  x: Math.round(selectedSource.value.x),
-  y: Math.round(selectedSource.value.y)
+  x: Math.round(selectedSource.value.instance.state.x),
+  y: Math.round(selectedSource.value.instance.state.y)
   }));
 </script>

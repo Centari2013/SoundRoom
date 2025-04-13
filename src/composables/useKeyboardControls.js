@@ -3,8 +3,7 @@ export function useKeyboardControls({
   listener, 
   selectedIndex, 
   soundSources,
-  selectedSource, 
-  draw,
+  selectedSource,
   actionManager,
   room
 }){
@@ -12,16 +11,29 @@ export function useKeyboardControls({
   const rotationKeys = new Set()
   let listenerAngleStart = null
   let sourceAngleStart = null
+  
+
+  actionManager.registerActionHandlers(
+    "move_listener",
+    (payload) => {
+      listener.x = payload.to.x
+      listener.y = payload.to.y
+    },
+    (payload) => {
+      listener.x = payload.from.x
+      listener.y = payload.from.y
+    }
+  )
 
   actionManager.registerActionHandlers(
     "rotate_listener_angle",
     (payload) => {
       listener.updateAngle(payload.to)
-      draw()
+      listener.updateAudio()
     },
     (payload) => {
       listener.updateAngle(payload.from)
-      draw()
+      listener.updateAudio()
     }
   )
 
@@ -31,19 +43,19 @@ export function useKeyboardControls({
       if (selectedSource.value !== null) {
         selectedSource.value.instance.state.angle = payload.to
         selectedSource.value.instance.updateAudio()
+        listener.updateAudio()
       }
-      draw()
     },
     (payload) => {
       if (selectedSource.value !== null) {
         selectedSource.value.instance.state.angle = payload.from
         selectedSource.value.instance.updateAudio()
+        listener.updateAudio()
       }
-      draw()
     }
   )
 
-  const handleKeyDown = async (e) => {
+  const onKeyDown = async (e) => {
     const key = e.key
     const speed = 5
     const rotationStep = 5
@@ -113,12 +125,13 @@ export function useKeyboardControls({
       case 'r':
         actionManager.redoLastAction()
         break
-        
+      
     }
-    draw()
+
+    listener.updateAudio()
   }
 
-  const handleKeyUp = (event) => {
+  const onKeyUp = (event) => {
     const key = event.key.toLowerCase()
   
     if ((key === 'q' || key === 'e') && rotationKeys.has(key)) {
@@ -156,7 +169,7 @@ export function useKeyboardControls({
   
 
   return {
-    handleKeyDown,
-    handleKeyUp
+    onKeyDown,
+    onKeyUp
   }
 }
