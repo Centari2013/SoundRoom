@@ -1,5 +1,4 @@
 <template>
-  <ContextMenu ref="contextMenu" :functionList="contextMenuActions" />
   <v-group
   :x="source.x"
   :y="source.y"
@@ -63,8 +62,6 @@
 <script setup>
 import { ref, computed } from 'vue'
 
-import ContextMenu from '@/components/ui/context/ContextMenu.vue'
-
 const props = defineProps({
   source: Object,
   actionManager: Object,
@@ -77,8 +74,6 @@ const actionManager = props.actionManager
 const room = props.room
 const source = props.source
 const emit = defineEmits(['select'])
-
-const contextMenu = ref(null)
 
 
 const hasCone = computed(() => source.coneInner < 360 || source.coneOuter < 360)
@@ -93,8 +88,7 @@ let moveSourcePayload = null
 const positionsEqual = (a, b) => a.x === b.x && a.y === b.y
 
 
-function onMouseDown(e) {
-  if (e.button === 2) return // TODO: integrate context menu
+function onMouseDown(_e) {
   moveSourcePayload = {
     index: props.index,
     from: {
@@ -126,26 +120,5 @@ function onMouseUp(){
   moveSourcePayload = null
 }
 
-// Context Menu 
-function showContextMenu(e){
-  e.evt.preventDefault();
-  contextMenu.value.visible = true;
-}
-const contextMenuActions = [
-  {
-    label: computed(() => {
-      return source.instance.playing ? "Pause" : "Play"
-    }),
-    function: () => {
-      source.instance.playing ? source.instance.stop() : source.instance.play()
-    }
-  },
-  {
-    label: 'Delete',
-    function: () => {
-      actionManager.doAction("delete_canvas_sound_source", { index: source.index, src: source })
-      contextMenu.value.visible = false
-    }
-  }
-]
+
 </script>

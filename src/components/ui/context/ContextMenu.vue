@@ -29,7 +29,9 @@ const visible = ref(false)
 const pos = ref({x: 0, y: 0})
 
 const show = (newPos) => {
+  console.log("Before", pos.value)
   pos.value = newPos
+  console.log("After", pos.value)
   visible.value = true
 }
 
