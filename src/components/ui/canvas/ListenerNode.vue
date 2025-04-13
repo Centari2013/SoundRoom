@@ -47,8 +47,6 @@ const listener = props.listener
 const actionManager = props.actionManager
 const room = props.room
 
-const radAngle = computed(() => (listener.angle * Math.PI / 180))
-
 const positionsEqual = (a, b) => a.x === b.x && a.y === b.y
 let moveListenerPayload = null
 

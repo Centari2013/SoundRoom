@@ -168,11 +168,7 @@ function handleStageClick(e) {
     selectedIndex.value = null
     return
   }
-
-
 }
-
-
 
 // Audio Engine & Playback State
 const audioEngine = new AudioEngine(loadedCanvasSoundSources, canvasCtx)

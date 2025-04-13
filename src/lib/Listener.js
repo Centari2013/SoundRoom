@@ -44,22 +44,4 @@ export default class Listener {
       1
     )
   }
-
-  draw() {
-    this._canvasContext.beginPath()
-    this._canvasContext.arc(this.x, this.y, 10, 0, Math.PI * 2)
-    this._canvasContext.fillStyle = '#00f'
-    this._canvasContext.fill()
-
-    const angleRad = (this._angle * Math.PI) / 180
-    const dx = Math.cos(angleRad) * 20
-    const dy = Math.sin(angleRad) * 20
-    this._canvasContext.beginPath()
-    this._canvasContext.moveTo(this.x, this.y)
-    this._canvasContext.lineTo(this.x - dx, this.y - dy)
-    this._canvasContext.strokeStyle = '#fff'
-    this._canvasContext.stroke()
-
-    this.updateAudio()
-  }
 }
