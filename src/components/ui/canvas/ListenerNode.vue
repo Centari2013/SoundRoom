@@ -15,7 +15,6 @@
   />
 
 <!-- Direction Line -->
-<!-- Match raw canvas: draw line pointing BACKWARDS from angle -->
 <v-line
   :points="[0, 0, 0, 20]"
   stroke="#fff"
