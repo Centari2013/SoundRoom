@@ -31,6 +31,7 @@ export default class Listener {
     if (!this._audioContext) return
 
     const scale = 0.01
+    // subtracted 90 degrees to have listener facing 'up' in room
     const angleRad = ((this._angle - 90) * Math.PI) / 180;
 
 

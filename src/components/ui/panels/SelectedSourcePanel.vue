@@ -68,8 +68,8 @@ const playPauseSource = () => {
   selectedSource.value.instance.playing ? selectedSource.value.instance.stop() : selectedSource.value.instance.play();
 };
 
-
-const displaySourceAngle = computed(() => Math.round((selectedSource.value.instance.state.angle % 360 + 360) % 360));
+// added 90 degress to trick users into thinking that soundsource and listener are on the same rotational offset
+const displaySourceAngle = computed(() => Math.round(((selectedSource.value.instance.state.angle + 90) % 360 + 360) % 360));
 const cleanSourceXY = computed(() => ({
   x: Math.round(selectedSource.value.instance.state.x),
   y: Math.round(selectedSource.value.instance.state.y)
