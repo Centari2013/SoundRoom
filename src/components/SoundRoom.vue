@@ -154,7 +154,7 @@ const selectedIndex = ref(null)
 provide('selectedIndex', selectedIndex)
 const soundLibrarySources = ref([
   { audioPath: '/ambient.mp3', coneInner: 60,  coneOuter: 300},
-  { audioPath: '/water.mp3', coneInner:360, coneOuter:360 },
+  { audioPath: '/water.mp3', coneInner:60, coneOuter:180 },
 ])
 const loadedCanvasSoundSources = []
 const MAX_SOURCES = 20

@@ -3,18 +3,18 @@
   :x="source.x"
   :y="source.y"
   :draggable="true"
+  :rotation="angle"
   @dragmove="onDragMove"
   @click="onClick"
   @mousedown="onMouseDown"
   @mouseup="onMouseUp"
-  :rotation="angle"
   name="sound-node"
 >
   <!-- Outer Cone -->
   <v-wedge
     v-if="hasOuterCone"
     :angle="coneOuter"
-    :rotation="angle - coneOuter / 2"
+    :rotation="angle-coneOuter / 2" 
     :radius="50"
     fill="rgba(255, 100, 100, 0.05)"
     shadowColor="rgba(255, 100, 100, 0.2)"
@@ -25,7 +25,7 @@
   <v-wedge
     v-if="hasInnerCone"
     :angle="coneInner"
-    :rotation="angle - coneInner / 2"
+    :rotation="angle-coneInner / 2"
     :radius="50"
     fill="rgba(255, 120, 120, 0.2)"
   />
@@ -36,24 +36,25 @@
     :fill="props.selected ? '#ff0' : '#f00'"
   />
 
-  <!-- Direction Line -->
-  <v-line
-    v-if="hasCone"
-    :points="[0, 0, Math.cos(radAngle) * 14, Math.sin(radAngle) * 14]"
-    stroke="#fff"
-    :strokeWidth="2"
-  />
+  <!-- Direction Line (should point right in base state) -->
+<v-line
+  v-if="hasCone"
+  :points="[0, 0, 14, 0]" 
+  stroke="#fff"
+  :strokeWidth="2"
+/>
 
-  <!-- Rotation Handle -->
-  <v-circle
-    :x="Math.cos(radAngle) * 50"
-    :y="Math.sin(radAngle) * 50"
-    :radius="6"
-    fill="rgba(255, 255, 255, 0.6)"
-    stroke="#000"
-    strokeWidth="1.5"
-    @mousedown="() => {}"
-  />
+<!-- Rotation Handle (also right in base state) -->
+<v-circle
+  :x="50" 
+  :y="0"  
+  :radius="6"
+  fill="rgba(255, 255, 255, 0.6)"
+  stroke="#000"
+  strokeWidth="1.5"
+  @mousedown="() => {}"
+/>
+
 </v-group>
 
 </template>
@@ -74,7 +75,7 @@ const room = props.room
 const source = props.source
 const emit = defineEmits(['select'])
 
-const radAngle = computed(() => (source.instance.state.angle * Math.PI) / 360)
+//TODO: fix audio cones
 
 
 const hasCone = computed(() => source.coneInner < 360 || source.coneOuter < 360)

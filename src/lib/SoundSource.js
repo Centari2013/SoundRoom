@@ -80,7 +80,7 @@ export default class SoundSource {
   }
 
   updateAudio() {
-    const angleRad = this._rad(this.state.angle);
+    const angleRad = this._rad(this.state.angle - 90);
     const x = this.state.x * this._scale;
     const y = this.state.y * this._scale;
 
