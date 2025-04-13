@@ -60,12 +60,19 @@ function onMouseDown(e) {
 }
 
 function onDragMove(e) {
-  //TODO: fix clamp functionality
   const pos = e.target.position()
-  listener.x = room.clamp(pos.x, 0, room.width)
-  listener.y = room.clamp(pos.y, 0, room.height)
+
+  const clampedX = room.clamp(pos.x, 0, room.width)
+  const clampedY = room.clamp(pos.y, 0, room.height)
+
+  // force node back inside bounds
+  e.target.position({ x: clampedX, y: clampedY })
+
+  listener.x = clampedX
+  listener.y = clampedY
   listener.updateAudio()
 }
+
 
 function onMouseUp(){
   const to = {
