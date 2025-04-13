@@ -29,7 +29,10 @@
   />
 
   <!-- Source Dot -->
-  <v-circle @mousedown="() => emit('select', props.index)"
+  <v-circle 
+  @mousedown="emit('select', props.index)"
+  @mouseover="setCursor($event, 'pointer')"
+  @mouseout="setCursor($event,'default')"
     :radius="10"
     :fill="props.selected ? '#ff0' : '#f00'"
     name="sound-node"
@@ -124,6 +127,12 @@ function onMouseUp(){
   moveSourcePayload = null
 }
 
-// TODO: add pointer hover
+function setCursor(e, type) {
+  const stage = e.target.getStage();
+  if (stage) {
+    stage.container().style.cursor = type;
+  }
+}
+
 
 </script>

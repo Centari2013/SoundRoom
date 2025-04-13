@@ -7,6 +7,8 @@
   @dragmove="onDragMove"
   @mousedown="onMouseDown"
   @mouseup="onMouseUp"
+  @mouseover="setCursor($event, 'pointer')"
+  @mouseout="setCursor($event,'default')"
 >
   <!-- Listener Dot -->
   <v-circle
@@ -87,5 +89,13 @@ function onMouseUp(){
 
   moveListenerPayload = null
 }
+
+function setCursor(e, type) {
+  const stage = e.target.getStage();
+  if (stage) {
+    stage.container().style.cursor = type;
+  }
+}
+
 
 </script>
