@@ -75,8 +75,6 @@ const room = props.room
 const source = props.source
 const emit = defineEmits(['select'])
 
-//TODO: fix audio cones
-
 
 const hasCone = computed(() => source.coneInner < 360 || source.coneOuter < 360)
 const hasInnerCone = computed(() => source.instance.state.coneInner < 360)
