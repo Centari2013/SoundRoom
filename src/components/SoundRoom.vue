@@ -65,12 +65,13 @@
             @keyup="onKeyUp"
             tabindex="0" 
           >
-          <ContextMenu ref="contextMenu" :functionList="contextMenuActions" />
+          <ContextMenu ref="contextMenu" :functionList="contextMenuActions"/>
           <v-stage
             :config="{ width: room.width, height: room.height }"
             @contextmenu="(e) => e.evt.preventDefault()"
+            @mousedown="handleStageClick"
           >
-          <v-layer ref="mainLayer" @click="handleStageClick">
+          <v-layer ref="mainLayer">
             <SoundSourceNode
               v-for="(src, i) in audioEngine.soundSources.value"
               :key="i"
@@ -155,14 +156,10 @@ const soundLibrarySources = ref([
 const loadedCanvasSoundSources = []
 const MAX_SOURCES = 20
 function handleStageClick(e) {
-  // TODO: fix source deselect
-  // If click target has no parent node or isn't a group,
-  // it's likely a click on empty space
-  const clickedShape = e.target
-  if (clickedShape === e.currentTarget) {
-    // Clicked on the layer itself — empty space
-    selectedIndex.value = null
-    return
+  const clickedNode = e.target;
+  // if not a SoundSourceNode
+  if (clickedNode.attrs.name != 'sound-node') {
+    selectedIndex.value = null;
   }
 }
 
@@ -255,13 +252,14 @@ function setupAudioContext() {
 
 // Context Menu 
 function showContextMenu(e){
-  console.log("RIGHT CLICK WORKS");
-  //e.evt.preventDefault();
+  e.evt.preventDefault();
+  e.evt.stopPropagation(); // stop context menu from never showing
   contextMenu.value.show({x: e.evt.clientX, y: e.evt.clientY});
 }
 const contextMenuActions = [
   {
     label: computed(() => {
+      if (!selectedSource.value) return
       return selectedSource.value.instance.playing ? "Pause" : "Play"
     }),
     function: () => {

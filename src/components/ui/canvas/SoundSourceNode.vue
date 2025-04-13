@@ -7,8 +7,6 @@
   @dragmove="onDragMove"
   @mousedown="onMouseDown"
   @mouseup="onMouseUp"
-  @contextmenu="showContextMenu"
-  name="sound-node"
 >
   <!-- Outer Cone -->
   <v-wedge
@@ -34,6 +32,8 @@
   <v-circle @click="() => emit('select', props.index)"
     :radius="10"
     :fill="props.selected ? '#ff0' : '#f00'"
+    name="sound-node"
+    class="curosr-pointer"
   />
 
   <!-- Direction Line (should point right in base state) -->
@@ -52,7 +52,8 @@
   fill="rgba(255, 255, 255, 0.6)"
   stroke="#000"
   :strokeWidth="1.5"
-  @mousedown="() => {}"
+  @mouseover="handleMouseOver"
+  @mouseout="handleMouseOut"
 />
 
 </v-group>
@@ -60,7 +61,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { computed } from 'vue'
 
 const props = defineProps({
   source: Object,
@@ -120,5 +121,6 @@ function onMouseUp(){
   moveSourcePayload = null
 }
 
+// TODO: add pointer hover
 
 </script>
