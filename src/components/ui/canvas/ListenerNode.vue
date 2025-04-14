@@ -2,6 +2,7 @@
   <v-group
   :x="listener.x"
   :y="listener.y"
+  :draggable="true"
   :rotation="listener.angle"
 >
   <!-- Listener Dot -->
