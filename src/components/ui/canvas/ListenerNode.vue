@@ -14,16 +14,36 @@
       @mouseup="onListenerMouseUp"
     />
 
-    <!-- Direction Line -->
-    <v-line
-      :points="[0, 0, 0, 20]"
-      stroke="#fff"
-      :strokeWidth="2"
+    <!-- Direction Diamond -->
+    <v-shape
+      :sceneFunc="(ctx, shape) => {
+        ctx.beginPath();
+        ctx.moveTo(0, 0);  // top
+        ctx.lineTo(7, 5);   // right
+        ctx.lineTo(0, 30);   // bottom
+        ctx.lineTo(-7, 5);  // left
+        ctx.closePath();
+        ctx.fillStrokeShape(shape);
+      }"
       :rotation="listener.angle"
-      :hitStrokeWidth="10"
+      fill="#fff"
+      stroke="#000"
+      :strokeWidth="1"
+    />
+    <!-- Rotation Hitbox -->
+    <v-arc
+      :x="Math.cos(toRad(listener.angle + 90)) * 7"
+      :y="Math.sin(toRad(listener.angle + 90)) * 7"
+      :innerRadius="0"
+      :outerRadius="25"
+      :angle="180"
+      :rotation="listener.angle"
+      fill="transparent"
       @mousedown="onHandleMouseDown"
       @mouseup="onHandleMouseUp"
     />
+
+
   </v-group>
 </template>
 
@@ -39,6 +59,10 @@ const actionManager = props.actionManager;
 const room = props.room;
 
 const positionsEqual = (a, b) => a.x === b.x && a.y === b.y;
+function toRad(deg) {
+  return deg * (Math.PI / 180);
+}
+
 let moveListenerPayload = null;
 
 let initialMouseAngle = null;
