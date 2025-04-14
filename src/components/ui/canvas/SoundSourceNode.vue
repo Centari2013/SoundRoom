@@ -133,6 +133,6 @@ function setCursor(e, type) {
     stage.container().style.cursor = type;
   }
 }
-
+// TODO: add rotation drag
 
 </script>
