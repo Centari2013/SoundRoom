@@ -4,10 +4,11 @@
   :y="listener.y"
   :draggable="true"
   :rotation="listener.angle"
+  @dragmove="onDragMove"
 >
   <!-- Listener Dot -->
   <v-circle
-  @dragmove="onDragMove"
+  
   @mousedown="onMouseDown"
   @mouseup="onMouseUp"
   @mouseover="setCursor($event, 'pointer')"
