@@ -40,8 +40,8 @@
 
           <!-- Preview Button -->
           <SoundPreviewCircle
-            :src="sound.previewUrl"
-            :duration="sound.duration"
+            :src="'/water.mp3'"
+            :duration="15"
             class="mb-3"
           />
 

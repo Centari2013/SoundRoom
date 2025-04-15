@@ -8,16 +8,18 @@
   <!-- Progress Ring -->
   <svg class="absolute top-0 left-0 w-full h-full transform -rotate-90 z-0">
     <circle
-      cx="50%"
-      cy="50%"
-      r="45%"
-      fill="none"
-      stroke="currentColor"
-      stroke-width="3"
-      :stroke-dasharray="circumference"
-      :stroke-dashoffset="dashOffset"
-      class="text-blue-600"
-    />
+  ref="circleRef"
+  cx="50%"
+  cy="50%"
+  r="45%"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="3"
+  :stroke-dasharray="circumference"
+  :stroke-dashoffset="dashOffset"
+  class="text-blue-600"
+/>
+
   </svg>
 
   <!-- Icon -->
@@ -34,11 +36,11 @@
 </template>
 
 <script setup>
-import { ref, onUnmounted, computed, watch } from 'vue'
+import { ref, onUnmounted, computed, watch, onMounted, nextTick } from 'vue'
 
 const props = defineProps({
   src: String,
-  duration: Number // in seconds
+  duration: Number
 })
 
 const audio = new Audio()
@@ -48,12 +50,21 @@ const isPlaying = ref(false)
 const progress = ref(0)
 
 let rafId = null
-
-const circumference = 2 * Math.PI * 45
-const dashOffset = computed(() => circumference * (1 - progress.value))
-
 let timeoutId = null
-const PREVIEW_DURATION = 15
+
+const circleRef = ref(null)
+const radius = ref(0)
+const circumference = computed(() => 2 * Math.PI * radius.value)
+const dashOffset = computed(() => circumference.value * (1 - progress.value))
+
+onMounted(() => {
+  nextTick(() => {
+    if (circleRef.value) {
+      const bbox = circleRef.value.getBBox()
+      radius.value = bbox.r || bbox.width / 2
+    }
+  })
+})
 
 function togglePlay() {
   if (isPlaying.value) {
@@ -66,31 +77,35 @@ function togglePlay() {
       setupProgressTracking()
     })
 
-    timeoutId = setTimeout(stopPlayback, PREVIEW_DURATION * 1000)
+    timeoutId = setTimeout(stopPlayback, props.duration * 1000)
   }
 }
 
 function setupProgressTracking() {
-  audio.ontimeupdate = () => {
-    if (!isPlaying.value) return
-    progress.value = Math.min(audio.currentTime / PREVIEW_DURATION, 1)
+  function updateProgress() {
+    if (!audio.paused && isPlaying.value) {
+      const ratio = Math.min(audio.currentTime / props.duration, 1)
+      progress.value = ratio
+      rafId = requestAnimationFrame(updateProgress)
+    }
   }
-}
 
+  rafId = requestAnimationFrame(updateProgress)
+}
 
 function stopPlayback() {
   audio.pause()
-  audio.ontimeupdate = null
   clearTimeout(timeoutId)
+  cancelAnimationFrame(rafId)
   isPlaying.value = false
-  progress.value = 0 // reset here only
+  progress.value = 0
 }
-
 
 onUnmounted(() => {
   stopPlayback()
 })
 </script>
+
 
 <style scoped>
 circle {
