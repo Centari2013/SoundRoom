@@ -12,7 +12,9 @@
         {{ getSourceName(s.audioPath) }}
       </li>
     </ul>
-    <button :disabled="audioEngine.soundSources.length == MAX_SOURCES" class="mt-4 w-full bg-neutral-300 dark:bg-neutral-800 text-xs py-1 rounded hover:bg-neutral-400 dark:hover:bg-neutral-700">
+    <button :disabled="audioEngine.soundSources.length == MAX_SOURCES"
+    @click="addSourceClick"
+     class="mt-4 w-full bg-neutral-300 dark:bg-neutral-800 text-xs py-1 rounded hover:bg-neutral-400 dark:hover:bg-neutral-700">
       + Add Source
     </button>
   </section>
@@ -25,7 +27,8 @@ const props = defineProps({
   librarySources: Array,
   MAX_SOURCES: Number,
   audioEngine: Object,
-  handleDragStart: Function
+  handleDragStart: Function,
+  addSourceClick: Function
 })
 
 const librarySources = props.librarySources

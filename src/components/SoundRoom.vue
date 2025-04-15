@@ -11,6 +11,11 @@
 
     <!-- Main Layout -->
     <div class="flex flex-1 overflow-hidden">
+      <SoundLibrary 
+      :isLibraryOpen="isLibraryOpen" 
+      :sounds="[]"
+      @close="isLibraryOpen = false"
+      />
       <!-- Left Sidebar -->
       <aside class="w-64 bg-neutral-200 dark:bg-neutral-900 border-r border-neutral-400 dark:border-neutral-800 p-4 space-y-6">
         <!-- Sound Sources -->
@@ -19,6 +24,7 @@
           :MAX_SOURCES="MAX_SOURCES"
           :audioEngine="audioEngine"
           :handleDragStart="handleDragStart"
+          :addSourceClick="() => {isLibraryOpen = true}"
         />
 
         <!-- Listener Info -->
@@ -121,6 +127,7 @@ import SelectedSourcePanel from '@/components/ui/panels/SelectedSourcePanel.vue'
 import DraggableSourcePanel from '@/components/ui/panels/DraggableSourcePanel.vue'
 import ListenerNode from '@/components/ui/canvas/ListenerNode.vue'
 import SoundSourceNode from '@/components/ui/canvas/SoundSourceNode.vue'
+import SoundLibrary from '@/components/ui/modals/SoundLibrary.vue'
 
 // Core Classes
 import Listener from '@/lib/Listener'
@@ -134,6 +141,11 @@ import { useDragDropAudio } from '@/composables/useDragDropAudio'
 import { useSelectedSource } from '@/composables/useSelectedSource'
 
 
+
+// ===================================
+// Library
+// ===================================
+const isLibraryOpen = ref(false)
 // ===================================
 // Global Refs & Reactive State
 // ===================================
