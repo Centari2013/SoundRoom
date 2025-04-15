@@ -150,7 +150,6 @@ function onHandleMouseMove(e) {
   const newAngle = initialListenerAngle + delta;
 
   listener.updateAngle(newAngle);
-  console.log(newAngle)
   listener.updateAudio();
 }
 
