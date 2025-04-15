@@ -1,18 +1,16 @@
 <template>
   <v-group
-  :x="source.x"
-  :y="source.y"
-  :draggable="true"
-  :rotation="angle"
-  @dragmove="onDragMove"
-  @mousedown="onMouseDown"
-  @mouseup="onMouseUp"
+  :x="source.instance.state.x"
+  :y="source.instance.state.y"
+  @mouseover="setCursor($event, 'pointer')"
+  @mouseout="setCursor($event, 'default')"
+  @dragmove="onSourceDragMove"
 >
   <!-- Outer Cone -->
   <v-wedge
     v-if="hasOuterCone"
     :angle="coneOuter"
-    :rotation="-coneOuter / 2" 
+    :rotation="(-coneOuter / 2) + source.instance.state.angle" 
     :radius="50"
     fill="rgba(255, 100, 100, 0.05)"
     shadowColor="rgba(255, 100, 100, 0.2)"
@@ -23,39 +21,55 @@
   <v-wedge
     v-if="hasInnerCone"
     :angle="coneInner"
-    :rotation="-coneInner / 2"
+    :rotation="(-coneInner / 2) + source.instance.state.angle"
     :radius="50"
     fill="rgba(255, 120, 120, 0.2)"
   />
 
   <!-- Source Dot -->
   <v-circle 
-  @mousedown="emit('select', props.index)"
-  @mouseover="setCursor($event, 'pointer')"
-  @mouseout="setCursor($event,'default')"
     :radius="10"
     :fill="props.selected ? '#ff0' : '#f00'"
-    name="sound-node"
-    class="curosr-pointer"
+    name="sound-node-part"
+    @mousedown="onSourceMouseDown"
+    @mouseup="onSourceMouseUp"
   />
 
-  <!-- Direction Line (should point right in base state) -->
-<v-line
-  v-if="hasCone"
-  :points="[0, 0, 14, 0]" 
-  stroke="#fff"
-  :strokeWidth="2"
-/>
-
-<!-- Rotation Handle (also right in base state) -->
-<v-circle
-  :x="50" 
-  :y="0"  
-  :radius="6"
-  fill="rgba(255, 255, 255, 0.6)"
-  stroke="#000"
-  :strokeWidth="1.5"
-/>
+  <!-- Direction Diamond -->
+   
+  <v-shape
+      v-if="hasCone"
+      :sceneFunc="(ctx, shape) => {
+        ctx.beginPath();
+        ctx.moveTo(0, 0);  // top
+        ctx.lineTo(7, 5);   // right
+        ctx.lineTo(0, 30);   // bottom
+        ctx.lineTo(-7, 5);  // left
+        ctx.closePath();
+        ctx.fillStrokeShape(shape);
+      }"
+      :rotation="source.instance.state.angle - 90"
+      fill="#fff"
+      stroke="#000"
+      :strokeWidth="1"
+      @mousedown="onSourceMouseDown"
+      @mouseup="onSourceMouseUp"
+      name="sound-node-part"
+    />
+    <!-- Rotation Hitbox -->
+    <v-arc
+    v-if="hasCone"
+      :x="Math.cos(toRad(source.instance.state.angle)) * 7"
+      :y="Math.sin(toRad(source.instance.state.angle)) * 7"
+      :innerRadius="0"
+      :outerRadius="25"
+      :angle="135"
+      :rotation="source.instance.state.angle - 90 + 20"
+      fill="green"
+      @mousedown="onHandleMouseDown"
+      @mouseup="onHandleMouseUp"
+      name="sound-node-part"
+    />
 
 </v-group>
 
@@ -84,13 +98,65 @@ const hasOuterCone = computed(() => source.instance.state.coneOuter < 360)
 
 const coneInner = computed(() => source.instance.state.coneInner)
 const coneOuter = computed(() => source.instance.state.coneOuter)
-const angle = computed(() => source.instance.state.angle)
+
+
+let initialMouseAngle = null;
+let initialSourceAngle = null;
 
 let moveSourcePayload = null
+
 const positionsEqual = (a, b) => a.x === b.x && a.y === b.y
+function toRad(deg) {
+  return deg * (Math.PI / 180);
+}
+// --- Cursor Styling ---
+function setCursor(e, type) {
+  const stage = e.target.getStage();
+  if (stage) {
+    stage.container().style.cursor = type;
+  }
+}
+
+// TODO: fix source deselection bug
+let mouseDownPos = null;
+let isDragging = false;
 
 
-function onMouseDown(_e) {
+function onSourceMouseDown(e) {
+  emit('select', props.index)
+  e.evt.stopPropagation();
+
+  const stage = e.target.getStage();
+  const mousePos = stage.getPointerPosition();
+  mouseDownPos = { ...mousePos };
+  isDragging = false;
+
+  const group = e.target.getParent();
+
+  // temporarily allow draggable to let Konva process movement
+  group.draggable(true);
+
+  stage.on("mousemove.sourceDragDetect", () => {
+    const currentPos = stage.getPointerPosition();
+    const dx = currentPos.x - mouseDownPos.x;
+    const dy = currentPos.y - mouseDownPos.y;
+
+    if (!isDragging && (Math.abs(dx) > 5 || Math.abs(dy) > 5)) {
+      isDragging = true;
+      group.startDrag();
+    }
+  });
+
+  stage.on("mouseup.sourceDragDetect", () => {
+    stage.off("mousemove.sourceDragDetect");
+    stage.off("mouseup.sourceDragDetect");
+
+    if (!isDragging) {
+      group.draggable(false); // didn't actually drag
+    }
+    onSourceMouseUp(e);
+  });
+
   moveSourcePayload = {
     index: props.index,
     from: {
@@ -100,7 +166,8 @@ function onMouseDown(_e) {
   }
 }
 
-function onDragMove(e) {
+
+function onSourceDragMove(e) {
   const pos = e.target.position()
   const clampedX = room.clamp(pos.x, 0, room.width)
   const clampedY = room.clamp(pos.y, 0, room.height)
@@ -113,13 +180,13 @@ function onDragMove(e) {
   source.instance.updateAudio()
 }
 
-function onMouseUp(){
+function onSourceMouseUp(e){
   const to = {
     x: source.instance.state.x,
     y: source.instance.state.y
   }
 
-  if (!positionsEqual(moveSourcePayload.from, to)) {
+  if (moveSourcePayload && !positionsEqual(moveSourcePayload.from, to)) {
     moveSourcePayload.to = to
     actionManager.doAction("move_canvas_sound_source", moveSourcePayload)
   }
@@ -127,12 +194,55 @@ function onMouseUp(){
   moveSourcePayload = null
 }
 
-function setCursor(e, type) {
+
+// --- Rotation Logic ---
+
+function onHandleMouseDown(e) {
+  emit('select', props.index)
+  e.evt.stopPropagation();
+
+  initialSourceAngle = source.instance.state.angle;
+
   const stage = e.target.getStage();
-  if (stage) {
-    stage.container().style.cursor = type;
-  }
+  const mousePos = stage.getPointerPosition();
+  const dx = mousePos.x - source.instance.state.x;
+  const dy = mousePos.y - source.instance.state.y;
+  initialMouseAngle = Math.atan2(dy, dx) * (180 / Math.PI);
+
+  stage.on("mousemove.sourceRotate", onHandleMouseMove);
+  stage.on("mouseup.sourceRotate", () => {
+    onHandleMouseUp();
+    stage.off("mousemove.sourceRotate");
+    stage.off("mouseup.sourceRotate");
+  });
 }
-// TODO: add rotation drag
+
+function onHandleMouseMove(e) {
+  const stage = e.target.getStage();
+  const mousePos = stage.getPointerPosition();
+  const dx = mousePos.x - source.instance.state.x;
+  const dy = mousePos.y - source.instance.state.y;
+  const currentMouseAngle = Math.atan2(dy, dx) * (180 / Math.PI);
+
+  const delta = currentMouseAngle - initialMouseAngle;
+  const newAngle = initialSourceAngle + delta;
+  source.instance.state.angle = newAngle;
+
+  
+  source.instance.updateAudio();
+}
+
+function onHandleMouseUp() {
+  const finalSourceAngle = source.instance.state.angle;
+
+  if (initialSourceAngle !== null && initialSourceAngle !== finalSourceAngle) {
+    actionManager.doAction("rotate_source_angle", {
+      from: initialSourceAngle,
+      to: finalSourceAngle
+    });
+  }
+
+  initialSourceAngle = null;
+}
 
 </script>

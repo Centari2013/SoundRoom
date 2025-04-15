@@ -44,10 +44,7 @@ export default class AudioEngine {
         audioContext: this.getAudioContext(),
         masterGain: this.#masterGain,
         file: src.audioPath,
-        position: [src.x, src.y, 0],
-        angle: src.angle,
-        coneInner: src.coneInner ?? 60,
-        coneOuter: src.coneOuter ?? 180,
+        state: src.state,
         volume: src.instance?.getVolume?.() ?? 1,
         loop: true,
         canvasContext: this.#ctxRef?.value
@@ -61,16 +58,13 @@ export default class AudioEngine {
     const src = payload.src
 
     src.index = payload.index ?? this.soundSources.value.length
-
+    console.log(src.state)
     const instance = new SoundSource({
       audioContext: this.getAudioContext(),
       masterGain: this.#masterGain,
       file: src.audioPath,
-      position: [src.x, src.y, 0],
-      angle: src.angle ?? 0,
-      coneInner: src.coneInner ?? 60,
-      coneOuter: src.coneOuter ?? 180,
-      volume: src.instance?.getVolume?.() ?? 1,
+      state: src.state,
+      volume: src.volume ?? 1,
       loop: true,
       canvasContext: this.#ctxRef?.value
     })
@@ -89,7 +83,8 @@ export default class AudioEngine {
     const index = payload.src.index
     const src = this.soundSources.value[index]
     const instance = src?.instance
-
+    // save instance volume to payload
+    payload.src.volume = instance?.getVolume()
     instance?.stop?.()
     instance?.dispose?.()
 

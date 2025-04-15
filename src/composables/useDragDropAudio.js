@@ -1,3 +1,5 @@
+import { reactive } from "vue"
+
 // useDragDropAudio.js
 export function useDragDropAudio({ draggedSource, actionManager, stageWrapper}) {
   const handleDragStart = (e, source) => {
@@ -12,15 +14,17 @@ export function useDragDropAudio({ draggedSource, actionManager, stageWrapper}) 
     const dropY = e.clientY - wrapperBounds.top
   
     const src = {
-      x: dropX,
-      y: dropY,
-      angle: 0,
+      state: reactive({
+        x: dropX,
+        y: dropY,
+        angle: 0,
+        coneInner: draggedSource.value.coneInner,
+        coneOuter: draggedSource.value.coneOuter
+      }),
       audioPath: draggedSource.value.audioPath,
-      coneInner: draggedSource.value.coneInner,
-      coneOuter: draggedSource.value.coneOuter
     }
   
-    actionManager.doAction("add_canvas_sound_source", { src })
+    actionManager.doAction("add_canvas_sound_source", { src: src })
   }
   
 

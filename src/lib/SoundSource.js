@@ -1,24 +1,17 @@
 // lib/SoundSource.js
+
+import { reactive } from "vue";
 export default class SoundSource {
   constructor({
     audioContext,
     masterGain,
     file,
-    position = [0, 0, 0],
-    angle = 0,
-    coneInner = 360,
-    coneOuter = 360,
+    state,
     volume = 1,
     loop = true,
     canvasContext
   }) {
-    this.state = {
-      x: position[0],
-      y: position[1],
-      angle,
-      coneInner,
-      coneOuter
-    };
+    this.state = state;
 
     this._rad = (deg) => (deg * Math.PI) / 180;
     this._scale = 0.01;
@@ -42,8 +35,8 @@ export default class SoundSource {
     pn.refDistance = 1;
     pn.maxDistance = 10000;
     pn.rolloffFactor = 1;
-    pn.coneInnerAngle = coneInner;
-    pn.coneOuterAngle = coneOuter;
+    pn.coneInnerAngle = this.state.coneInner;
+    pn.coneOuterAngle = this.state.coneOuter;
     pn.coneOuterGain = 0.2;
 
     this._sourceNode
