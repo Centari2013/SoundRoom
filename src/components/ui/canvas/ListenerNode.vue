@@ -2,9 +2,9 @@
   <v-group
     :x="listener.x"
     :y="listener.y"
-    @dragmove="onListenerDragMove"
     @mouseover="setCursor($event, 'pointer')"
     @mouseout="setCursor($event, 'default')"
+    @dragmove="onListenerDragMove"
   >
     <!-- Listener Dot -->
     <v-circle
@@ -29,6 +29,8 @@
       fill="#fff"
       stroke="#000"
       :strokeWidth="1"
+      @mousedown="onListenerMouseDown"
+      @mouseup="onListenerMouseUp"
     />
     <!-- Rotation Hitbox -->
     <v-arc
@@ -36,9 +38,9 @@
       :y="Math.sin(toRad(listener.angle + 90)) * 7"
       :innerRadius="0"
       :outerRadius="25"
-      :angle="180"
-      :rotation="listener.angle"
-      fill="transparent"
+      :angle="135"
+      :rotation="listener.angle + 20"
+      fill="green"
       @mousedown="onHandleMouseDown"
       @mouseup="onHandleMouseUp"
     />
@@ -117,17 +119,6 @@ function onListenerMouseUp(e) {
 }
 
 // --- Rotation Logic ---
-actionManager.registerActionHandlers(
-  "rotate_listener_angle",
-  (payload) => {
-    listener.updateAngle(payload.to);
-    listener.updateAudio();
-  },
-  (payload) => {
-    listener.updateAngle(payload.from);
-    listener.updateAudio();
-  }
-);
 
 function onHandleMouseDown(e) {
   e.evt.stopPropagation();
@@ -159,6 +150,7 @@ function onHandleMouseMove(e) {
   const newAngle = initialListenerAngle + delta;
 
   listener.updateAngle(newAngle);
+  console.log(newAngle)
   listener.updateAudio();
 }
 
