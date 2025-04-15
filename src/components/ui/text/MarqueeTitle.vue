@@ -5,7 +5,6 @@
       class="text-sm font-semibold mb-3 justify-center"
       :pauseOnHover="true"
       :animate-on-overflow-only="true"
-      @on-loop-complete="setDirection"
     >
       {{ text }}
     </Vue3Marquee>
