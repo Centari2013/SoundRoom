@@ -36,7 +36,7 @@
           class="aspect-square flex flex-col items-center justify-between p-4 rounded-xl bg-neutral-100 dark:bg-neutral-800 shadow border border-neutral-300 dark:border-neutral-700"
         >
           <!-- Title -->
-          <h3 class="text-sm font-semibold text-center mb-3">{{ sound.name }}</h3>
+          <MarqueeTitle :text="sound.name"/>
 
           <!-- Preview Button -->
           <SoundPreviewCircle
@@ -79,6 +79,7 @@
 import { ref, computed, watch, nextTick } from 'vue'
 
 import SoundPreviewCircle from '@/components/ui/controls/SoundPreviewCircle.vue'
+import MarqueeTitle from '@/components/ui/text/MarqueeTitle.vue'
 
 const props = defineProps({
   isLibraryOpen: Boolean
@@ -180,4 +181,8 @@ function handleUpload(event) {
   }
 }
 </script>
-
+<style>
+.marquee-text-text {
+  margin-left: 20px;
+}
+</style>
