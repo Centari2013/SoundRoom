@@ -17,13 +17,13 @@
     <!-- Direction Diamond -->
     <v-shape
       :sceneFunc="(ctx, shape) => {
-        ctx.beginPath();
-        ctx.moveTo(0, 0);  // top
-        ctx.lineTo(7, 5);   // right
-        ctx.lineTo(0, 30);   // bottom
-        ctx.lineTo(-7, 5);  // left
-        ctx.closePath();
-        ctx.fillStrokeShape(shape);
+        ctx.beginPath()
+        ctx.moveTo(0, 0)
+        ctx.lineTo(7, 5)
+        ctx.lineTo(0, 30)
+        ctx.lineTo(-7, 5)
+        ctx.closePath()
+        ctx.fillStrokeShape(shape)
       }"
       :rotation="listener.angle"
       fill="#fff"
@@ -32,6 +32,7 @@
       @mousedown="onListenerMouseDown"
       @mouseup="onListenerMouseUp"
     />
+
     <!-- Rotation Hitbox -->
     <v-arc
       :x="Math.cos(toRad(listener.angle + 90)) * 7"
@@ -44,125 +45,123 @@
       @mousedown="onHandleMouseDown"
       @mouseup="onHandleMouseUp"
     />
-
-
   </v-group>
 </template>
 
 <script setup>
+// Props and setup
 const props = defineProps({
   listener: Object,
   actionManager: Object,
-  room: Object
-});
+  room: Object,
+})
 
-const listener = props.listener;
-const actionManager = props.actionManager;
-const room = props.room;
+const listener = props.listener
+const actionManager = props.actionManager
+const room = props.room
 
-const positionsEqual = (a, b) => a.x === b.x && a.y === b.y;
+let moveListenerPayload = null
+let initialMouseAngle = null
+let initialListenerAngle = null
+
+// Utility functions
 function toRad(deg) {
-  return deg * (Math.PI / 180);
+  return deg * (Math.PI / 180)
 }
 
-let moveListenerPayload = null;
+function positionsEqual(a, b) {
+  return a.x === b.x && a.y === b.y
+}
 
-let initialMouseAngle = null;
-let initialListenerAngle = null;
-
-// --- Cursor Styling ---
+// Cursor styling
 function setCursor(e, type) {
-  const stage = e.target.getStage();
-  if (stage) {
-    stage.container().style.cursor = type;
-  }
+  const stage = e.target.getStage()
+  if (stage) stage.container().style.cursor = type
 }
 
-// --- Listener Drag Logic ---
+// Listener movement (drag)
 function onListenerMouseDown(e) {
-  if (e.button === 2) return;
+  if (e.button === 2) return
 
-  const group = e.target.getParent();
-  group.draggable(true);
-  group.startDrag();
+  const group = e.target.getParent()
+  group.draggable(true)
+  group.startDrag()
 
   moveListenerPayload = {
-    from: { x: listener.x, y: listener.y }
-  };
+    from: { x: listener.x, y: listener.y },
+  }
 }
 
 function onListenerDragMove(e) {
-  const pos = e.target.position();
+  const pos = e.target.position()
+  const clampedX = room.clamp(pos.x, 0, room.width)
+  const clampedY = room.clamp(pos.y, 0, room.height)
 
-  const clampedX = room.clamp(pos.x, 0, room.width);
-  const clampedY = room.clamp(pos.y, 0, room.height);
+  e.target.position({ x: clampedX, y: clampedY })
 
-  e.target.position({ x: clampedX, y: clampedY });
-
-  listener.x = clampedX;
-  listener.y = clampedY;
-  listener.updateAudio();
+  listener.x = clampedX
+  listener.y = clampedY
+  listener.updateAudio()
 }
 
 function onListenerMouseUp(e) {
-  const group = e.target.getParent();
-  group.draggable(false);
+  const group = e.target.getParent()
+  group.draggable(false)
 
-  const to = { x: listener.x, y: listener.y };
+  const to = { x: listener.x, y: listener.y }
 
   if (!positionsEqual(moveListenerPayload.from, to)) {
-    moveListenerPayload.to = to;
-    actionManager.doAction("move_listener", moveListenerPayload);
+    moveListenerPayload.to = to
+    actionManager.doAction("move_listener", moveListenerPayload)
   }
 
-  moveListenerPayload = null;
+  moveListenerPayload = null
 }
 
-// --- Rotation Logic ---
-
+// Rotation handling
 function onHandleMouseDown(e) {
-  e.evt.stopPropagation();
+  e.evt.stopPropagation()
 
-  initialListenerAngle = listener.angle;
+  initialListenerAngle = listener.angle
 
-  const stage = e.target.getStage();
-  const mousePos = stage.getPointerPosition();
-  const dx = mousePos.x - listener.x;
-  const dy = mousePos.y - listener.y;
-  initialMouseAngle = Math.atan2(dy, dx) * (180 / Math.PI);
+  const stage = e.target.getStage()
+  const mousePos = stage.getPointerPosition()
+  const dx = mousePos.x - listener.x
+  const dy = mousePos.y - listener.y
+  initialMouseAngle = Math.atan2(dy, dx) * (180 / Math.PI)
 
-  stage.on("mousemove.listenerRotate", onHandleMouseMove);
+  stage.on("mousemove.listenerRotate", onHandleMouseMove)
   stage.on("mouseup.listenerRotate", () => {
-    onHandleMouseUp();
-    stage.off("mousemove.listenerRotate");
-    stage.off("mouseup.listenerRotate");
-  });
+    onHandleMouseUp()
+    stage.off("mousemove.listenerRotate")
+    stage.off("mouseup.listenerRotate")
+  })
 }
 
 function onHandleMouseMove(e) {
-  const stage = e.target.getStage();
-  const mousePos = stage.getPointerPosition();
-  const dx = mousePos.x - listener.x;
-  const dy = mousePos.y - listener.y;
-  const currentMouseAngle = Math.atan2(dy, dx) * (180 / Math.PI);
+  const stage = e.target.getStage()
+  const mousePos = stage.getPointerPosition()
+  const dx = mousePos.x - listener.x
+  const dy = mousePos.y - listener.y
+  const currentMouseAngle = Math.atan2(dy, dx) * (180 / Math.PI)
 
-  const delta = currentMouseAngle - initialMouseAngle;
-  const newAngle = initialListenerAngle + delta;
+  const delta = currentMouseAngle - initialMouseAngle
+  const newAngle = initialListenerAngle + delta
 
-  listener.updateAngle(newAngle);
-  listener.updateAudio();
+  listener.updateAngle(newAngle)
+  listener.updateAudio()
 }
 
 function onHandleMouseUp() {
-  const finalListenerAngle = listener.angle;
+  const finalAngle = listener.angle
 
-  if (initialListenerAngle !== null && initialListenerAngle !== finalListenerAngle) {
+  if (initialListenerAngle !== null && initialListenerAngle !== finalAngle) {
     actionManager.doAction("rotate_listener_angle", {
       from: initialListenerAngle,
-      to: finalListenerAngle
-    });
+      to: finalAngle,
+    })
   }
 
-  initialListenerAngle = null;
+  initialListenerAngle = null
 }
 </script>
