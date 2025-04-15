@@ -110,22 +110,19 @@
 </template>
 
 <script setup>
-// Imports
-// Core Imports
 import { ref, onMounted, computed, reactive, provide } from 'vue'
 
 // UI Components
 import VueSlider from 'vue-3-slider-component'
-
 import ContextMenu from '@/components/ui/context/ContextMenu.vue'
 import ToolbarControls from '@/components/ui/controls/ToolbarControls.vue'
 import ListenerReadout from '@/components/ui/readouts/ListenerReadout.vue'
 import SelectedSourcePanel from '@/components/ui/panels/SelectedSourcePanel.vue'
 import DraggableSourcePanel from '@/components/ui/panels/DraggableSourcePanel.vue'
-import ListenerNode from '@/components/ui/canvas/ListenerNode.vue';
-import SoundSourceNode from '@/components/ui/canvas/SoundSourceNode.vue';
+import ListenerNode from '@/components/ui/canvas/ListenerNode.vue'
+import SoundSourceNode from '@/components/ui/canvas/SoundSourceNode.vue'
 
-// Audio / Canvas / State Classes
+// Core Classes
 import Listener from '@/lib/Listener'
 import AudioEngine from '@/lib/AudioEngine'
 import Room from '@/lib/Room'
@@ -134,94 +131,131 @@ import ActionManager from '@/lib/ActionManager'
 // Composables
 import { useKeyboardControls } from '@/composables/useKeyboardControls'
 import { useDragDropAudio } from '@/composables/useDragDropAudio'
-import { useSelectedSource } from '@/composables/useSelectedSource';
+import { useSelectedSource } from '@/composables/useSelectedSource'
 
 
-// Global State & Reactive References
+// ===================================
+// Global Refs & Reactive State
+// ===================================
 const canvasCtx = ref(null)
 const draggedSource = ref(null)
 const contextMenu = ref(null)
+const stageWrapper = ref(null)
+const selectedIndex = ref(null)
+
+provide('selectedIndex', selectedIndex)
 
 const room = new Room()
-
 const listener = reactive(new Listener())
-
-
-const selectedIndex = ref(null)
-provide('selectedIndex', selectedIndex)
 const soundLibrarySources = ref([
-  { audioPath: '/ambient.mp3', coneInner: 60,  coneOuter: 300},
-  { audioPath: '/water.mp3', coneInner:360, coneOuter:360 },
+  { audioPath: '/ambient.mp3', coneInner: 60, coneOuter: 300 },
+  { audioPath: '/water.mp3', coneInner: 360, coneOuter: 360 },
 ])
-const loadedCanvasSoundSources = []
 const MAX_SOURCES = 20
-function handleStageClick(e) {
-  const clickedNode = e.target;
-  // if not a SoundSourceNode
-  if (clickedNode.getAttr('name') != 'sound-node-part') {
-    selectedIndex.value = null;
-  }
-}
+const loadedCanvasSoundSources = []
 
-// Audio Engine & Playback State
+
+// ===================================
+// Engine, State, Selection
+// ===================================
 const audioEngine = new AudioEngine(loadedCanvasSoundSources, canvasCtx)
+
 const masterVolumeProxy = computed({
   get: () => audioEngine.masterVolume.value,
-  set: (v) => (audioEngine.masterVolume.value = v)
+  set: v => (audioEngine.masterVolume.value = v),
 })
+
 const isPlaying = computed(() => audioEngine.isPlaying.value)
 let audioContext = null
+
 const { selectedSource } = useSelectedSource(audioEngine.soundSources, selectedIndex)
 provide('selectedSource', selectedSource)
-// Action Manager Setup
+
 const actionManager = new ActionManager()
 const actionStackEmpty = computed(() => actionManager.actionStackEmpty.value)
 const redoStackEmpty = computed(() => actionManager.redoStackEmpty.value)
 
 
-// Drag-Drop Logic
-const stageWrapper = ref(null)
+// ===================================
+// Handlers & Interaction Logic
+// ===================================
+// Click logic
+function handleStageClick(e) {
+  if (e.target.getAttr('name') !== 'sound-node-part') {
+    selectedIndex.value = null
+  }
+}
+
+// Context menu logic
+function showContextMenu(e) {
+  e.evt.preventDefault()
+  e.evt.stopPropagation()
+  if (e.target.getAttr('name') === 'sound-node-part') {
+    contextMenu.value.show({ x: e.evt.clientX, y: e.evt.clientY })
+  }
+}
+
+const contextMenuActions = [
+  {
+    label: computed(() =>
+      selectedSource.value?.instance.playing ? 'Pause' : 'Play'
+    ),
+    function: () => {
+      const inst = selectedSource.value.instance
+      inst.playing ? inst.stop() : inst.play()
+    },
+  },
+  {
+    label: 'Delete',
+    function: () => {
+      actionManager.doAction('delete_canvas_sound_source', {
+        index: selectedSource.value.index,
+        src: selectedSource.value,
+      })
+      contextMenu.value.visible = false
+    },
+  },
+]
+
+// Drag and drop
 const { handleDragStart, handleDrop } = useDragDropAudio({
   draggedSource,
   actionManager,
-  stageWrapper
+  stageWrapper,
 })
 
-// Keyboard Interaction
+// Keyboard controls
 const { onKeyDown, onKeyUp } = useKeyboardControls({
   listener,
   selectedIndex,
   selectedSource,
   soundSources: audioEngine.soundSources,
   actionManager,
-  room
+  room,
 })
 
-// Action Manager Registration
+
+// ===================================
+// Action Registration
+// ===================================
 function registerAction(name, doFn, undoFn) {
   actionManager.registerActionHandlers(name, doFn, undoFn)
 }
 
-registerAction(
-  "add_canvas_sound_source",
-  (payload) => {
+registerAction('add_canvas_sound_source',
+  payload => {
     audioEngine.addSoundSource(payload)
     listener.updateAudio()
   },
-  (payload) => {
+  payload => {
     audioEngine.deleteSoundSource(payload)
     listener.updateAudio()
   }
 )
 
-registerAction(
-  "delete_canvas_sound_source",
-  (payload) => {
-    audioEngine.deleteSoundSource(payload)
-  },
-  (payload) => {
-    audioEngine.addSoundSource(payload)
-  }
+registerAction('delete_canvas_sound_source',
+  payload => audioEngine.deleteSoundSource(payload),
+  payload => audioEngine.addSoundSource(payload)
 )
 
 const moveSoundSource = (src, coords) => {
@@ -231,61 +265,28 @@ const moveSoundSource = (src, coords) => {
   listener.updateAudio()
 }
 
-registerAction(
-  "move_canvas_sound_source",
-  (payload) => {
-    const src = audioEngine.soundSources.value[payload.index]
-    moveSoundSource(src, payload.to)
-  },
-  (payload) => {
-    const src = audioEngine.soundSources.value[payload.index]
-    moveSoundSource(src, payload.from)
-  }
+registerAction('move_canvas_sound_source',
+  payload => moveSoundSource(audioEngine.soundSources.value[payload.index], payload.to),
+  payload => moveSoundSource(audioEngine.soundSources.value[payload.index], payload.from)
 )
 
-// Initializes all source instances with audio + connects listener to context
+
+// ===================================
+// Audio Setup
+// ===================================
 function setupAudioContext() {
   audioEngine.setupAudioEngine()
   audioContext = audioEngine.getAudioContext()
   listener.setAudioContext(audioContext)
 }
 
-// Context Menu 
-function showContextMenu(e){
-  e.evt.preventDefault();
-  e.evt.stopPropagation(); // stop context menu from never showing
-  const clickedNode = e.target;
-  // if not a SoundSourceNode
-  if (clickedNode.getAttr('name') == 'sound-node-part') {
-    contextMenu.value.show({x: e.evt.clientX, y: e.evt.clientY});
-  }
-  
-  
-}
-const contextMenuActions = [
-  {
-    label: computed(() => {
-      if (!selectedSource.value) return
-      return selectedSource.value.instance.playing ? "Pause" : "Play"
-    }),
-    function: () => {
-      selectedSource.value.instance.playing ? selectedSource.value.instance.stop() : selectedSource.value.instance.play()
-    }
-  },
-  {
-    label: 'Delete',
-    function: () => {
-      actionManager.doAction("delete_canvas_sound_source", { index: selectedSource.value.index, src: selectedSource.value })
-      contextMenu.value.visible = false
-    }
-  }
-]
 
-
-// Mount Hook
+// ===================================
+// Lifecycle
+// ===================================
 onMounted(() => {
-
   setupAudioContext()
 })
 </script>
+
 
