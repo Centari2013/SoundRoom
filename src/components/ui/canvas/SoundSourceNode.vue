@@ -13,7 +13,7 @@
     :rotation="(-coneOuter / 2) + source.instance.state.angle" 
     :radius="50"
     fill="rgba(255, 100, 100, 0.05)"
-    shadowColor="rgba(255, 100, 100, 0.2)"
+    shadowColor="rgba(255, 100, 100, 0.7)"
     :shadowBlur="12"
   />
 
@@ -65,7 +65,7 @@
       :outerRadius="25"
       :angle="135"
       :rotation="source.instance.state.angle - 90 + 20"
-      fill="green"
+      fill="transparent"
       @mousedown="onHandleMouseDown"
       @mouseup="onHandleMouseUp"
       name="sound-node-part"
@@ -92,7 +92,7 @@ const source = props.source
 const emit = defineEmits(['select'])
 
 
-const hasCone = computed(() => source.coneInner < 360 || source.coneOuter < 360)
+const hasCone = computed(() => source.instance.state.coneInner < 360 || source.instance.state.coneOuter < 360)
 const hasInnerCone = computed(() => source.instance.state.coneInner < 360)
 const hasOuterCone = computed(() => source.instance.state.coneOuter < 360)
 
@@ -117,7 +117,6 @@ function setCursor(e, type) {
   }
 }
 
-// TODO: fix source deselection bug
 let mouseDownPos = null;
 let isDragging = false;
 

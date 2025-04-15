@@ -40,7 +40,7 @@
       :outerRadius="25"
       :angle="135"
       :rotation="listener.angle + 20"
-      fill="green"
+      fill="transparent"
       @mousedown="onHandleMouseDown"
       @mouseup="onHandleMouseUp"
     />

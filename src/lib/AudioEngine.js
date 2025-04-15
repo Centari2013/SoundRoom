@@ -58,7 +58,6 @@ export default class AudioEngine {
     const src = payload.src
 
     src.index = payload.index ?? this.soundSources.value.length
-    console.log(src.state)
     const instance = new SoundSource({
       audioContext: this.getAudioContext(),
       masterGain: this.#masterGain,
