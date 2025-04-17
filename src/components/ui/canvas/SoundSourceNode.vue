@@ -76,6 +76,8 @@
 <script setup>
 import { computed } from 'vue'
 
+// TODO: fix soundsource overlappin with cone visually, should be clickable even under cone
+
 // Props and emits
 const props = defineProps({
   source: Object,
