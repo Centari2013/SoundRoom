@@ -40,7 +40,7 @@
 
           <!-- Preview Button -->
           <SoundPreviewCircle
-            :src="'/water.mp3'"
+            :src="'/sounds/water.mp3'"
             :duration="15"
             class="mb-3"
           />
@@ -90,7 +90,8 @@ const categories = [
   { id: 'natural', label: 'Natural' },
   { id: 'urban', label: 'Human' },
   { id: 'musical', label: 'Musical' },
-  { id: 'fantasy', label: 'Fantasy / Sci-Fi' },  //split into two categories
+  { id: 'fantasy', label: 'Fantasy' },  //split into two categories
+  { id: 'sci-fi', label: 'Sci-Fi'},
   { id: 'tools', label: 'Work & Focus' },
   { id: 'layers', label: 'Atmospheric' }
 ]

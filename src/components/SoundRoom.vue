@@ -167,8 +167,8 @@ provide('selectedIndex', selectedIndex)
 const room = new Room()
 const listener = reactive(new Listener())
 const soundLibrarySources = ref([
-  { audioPath: '/ambient.mp3', coneInner: 60, coneOuter: 300 },
-  { audioPath: '/water.mp3', coneInner: 360, coneOuter: 360 },
+  { audioPath: '/sounds/ambient.mp3', coneInner: 60, coneOuter: 300 },
+  { audioPath: '/sounds/water.mp3', coneInner: 360, coneOuter: 360 },
 ])
 const MAX_SOURCES = 20
 const loadedCanvasSoundSources = []
