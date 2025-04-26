@@ -40,8 +40,8 @@
 
           <!-- Preview Button -->
           <SoundPreviewCircle
-            :src="'/sounds/water.mp3'"
-            :duration="15"
+            :src="sound.previewUrl"
+            :duration="parseTimeToSeconds(sound.duration) < 15 ? parseTimeToSeconds(sound.duration) : 15"
             class="mb-3"
           />
 
@@ -54,7 +54,7 @@
           </button>
 
           <!-- Duration -->
-          <span class="text-xs text-neutral-500 mt-2">{{ sound.duration }}s</span>
+          <span class="text-xs text-neutral-500 mt-2">{{ sound.duration }}</span>
         </div>
 
         </div>
@@ -97,57 +97,66 @@ const categories = [
 ]
 
 const sounds = [
-  // Natural
-  { id: 'rain', name: 'Rain', categoryId: 'natural', previewUrl: '/sounds/rain-preview.mp3', duration: 15 },
-  { id: 'thunder', name: 'Thunderstorms', categoryId: 'natural', previewUrl: '/sounds/thunder-preview.mp3', duration: 18 },
-  { id: 'forest', name: 'Forest / Jungle', categoryId: 'natural', previewUrl: '/sounds/forest-preview.mp3', duration: 12 },
-  { id: 'ocean', name: 'Ocean / Beach', categoryId: 'natural', previewUrl: '/sounds/ocean-preview.mp3', duration: 14 },
-  { id: 'river', name: 'River / Creek', categoryId: 'natural', previewUrl: '/sounds/river-preview.mp3', duration: 10 },
-  { id: 'wind', name: 'Wind', categoryId: 'natural', previewUrl: '/sounds/wind-preview.mp3', duration: 8 },
-  { id: 'fire', name: 'Campfire', categoryId: 'natural', previewUrl: '/sounds/fire-preview.mp3', duration: 11 },
-  { id: 'cave', name: 'Cave / Underground', categoryId: 'natural', previewUrl: '/sounds/cave-preview.mp3', duration: 13 },
+  // NATURAL
+  { "id": "water", "name": "Waterfall", "categoryId": "natural", "previewUrl": "/sounds/water.mp3", "duration": '1:46:00' },
+  { "id": "rain", "name": "Rain", "categoryId": "natural", "previewUrl": "/sounds/rain.wav", "duration": '0:57' },
+  { "id": "thunder", "name": "Thunderstorm", "categoryId": "natural", "previewUrl": "/sounds/thunder.mp3", "duration": '25:13' },
+  { "id": "forest", "name": "Forest Morning", "categoryId": "natural", "previewUrl": "/sounds/forest.wav", "duration": '2:31' },
+  { "id": "river", "name": "River Creek", "categoryId": "natural", "previewUrl": "/sounds/river.mp3", "duration": '0:09' },
+  { "id": "ocean", "name": "Ocean Waves", "categoryId": "natural", "previewUrl": "/sounds/ocean.wav", "duration": '0:48' },
+  { "id": "fire", "name": "Fireplace", "categoryId": "natural", "previewUrl": "/sounds/fire.mp3", "duration": '1:59' },
 
-  // Urban
-  { id: 'cafe', name: 'Coffee Shop', categoryId: 'urban', previewUrl: '/sounds/cafe-preview.mp3', duration: 15 },
-  { id: 'library', name: 'Library', categoryId: 'urban', previewUrl: '/sounds/library-preview.mp3', duration: 10 },
-  { id: 'traffic', name: 'City Traffic', categoryId: 'urban', previewUrl: '/sounds/traffic-preview.mp3', duration: 12 },
-  { id: 'subway', name: 'Subway / Train', categoryId: 'urban', previewUrl: '/sounds/subway-preview.mp3', duration: 14 },
-  { id: 'factory', name: 'Industrial / Factory', categoryId: 'urban', previewUrl: '/sounds/factory-preview.mp3', duration: 13 },
-  { id: 'market', name: 'Market / Crowd', categoryId: 'urban', previewUrl: '/sounds/market-preview.mp3', duration: 10 },
-  { id: 'construction', name: 'Construction', categoryId: 'urban', previewUrl: '/sounds/construction-preview.mp3', duration: 16 },
+  // URBAN
+  { "id": "cafe", "name": "Coffee Shop", "categoryId": "urban", "previewUrl": "/sounds/cafe.wav", "duration": 15 },
+  { "id": "library", "name": "Library Quiet", "categoryId": "urban", "previewUrl": "/sounds/library.wav", "duration": 12 },
+  { "id": "traffic", "name": "City Traffic", "categoryId": "urban", "previewUrl": "/sounds/traffic.wav", "duration": 13 },
+  { "id": "subway", "name": "Subway Platform", "categoryId": "urban", "previewUrl": "/sounds/subway.wav", "duration": 14 },
+  { "id": "construction", "name": "Construction Site", "categoryId": "urban", "previewUrl": "/sounds/construction.wav", "duration": 17 },
 
-  // Musical
-  { id: 'lofi', name: 'Lofi Hip-Hop', categoryId: 'musical', previewUrl: '/sounds/lofi-preview.mp3', duration: 30 },
-  { id: 'classical', name: 'Classical', categoryId: 'musical', previewUrl: '/sounds/classical-preview.mp3', duration: 25 },
-  { id: 'jazz', name: 'Jazz', categoryId: 'musical', previewUrl: '/sounds/jazz-preview.mp3', duration: 20 },
-  { id: 'ambient', name: 'Ambient / Drone', categoryId: 'musical', previewUrl: '/sounds/ambient-preview.mp3', duration: 18 },
-  { id: 'piano', name: 'Piano Solos', categoryId: 'musical', previewUrl: '/sounds/piano-preview.mp3', duration: 22 },
-  { id: 'guitar', name: 'Guitar Loops', categoryId: 'musical', previewUrl: '/sounds/guitar-preview.mp3', duration: 19 },
-  { id: 'synth', name: 'Electronic / Synth', categoryId: 'musical', previewUrl: '/sounds/synth-preview.mp3', duration: 17 },
-  { id: 'natmusic', name: 'Nature-Infused Music', categoryId: 'musical', previewUrl: '/sounds/nature-music-preview.mp3', duration: 26 },
+  // MUSICAL
+  { "id": "lofi", "name": "Lofi Chill", "categoryId": "musical", "previewUrl": "/sounds/lofi.wav", "duration": 30 },
+  { "id": "ambient", "name": "Ambient Drone", "categoryId": "musical", "previewUrl": "/sounds/ambient.wav", "duration": 25 },
+  { "id": "piano", "name": "Piano Solo", "categoryId": "musical", "previewUrl": "/sounds/piano.wav", "duration": 20 },
+  { "id": "guitar", "name": "Guitar Loop", "categoryId": "musical", "previewUrl": "/sounds/guitar.wav", "duration": 22 },
+  { "id": "classical", "name": "Classical Piece", "categoryId": "musical", "previewUrl": "/sounds/classical.wav", "duration": 28 },
+  { "id": "synth", "name": "Synthwave Loop", "categoryId": "musical", "previewUrl": "/sounds/synth.wav", "duration": 26 },
 
-  // Fantasy
-  { id: 'magic', name: 'Magical Ambience', categoryId: 'fantasy', previewUrl: '/sounds/magic-preview.mp3', duration: 12 },
-  { id: 'space', name: 'Space Station', categoryId: 'fantasy', previewUrl: '/sounds/space-preview.mp3', duration: 14 },
-  { id: 'dungeon', name: 'Dungeon Echoes', categoryId: 'fantasy', previewUrl: '/sounds/dungeon-preview.mp3', duration: 10 },
-  { id: 'alien', name: 'Alien World', categoryId: 'fantasy', previewUrl: '/sounds/alien-preview.mp3', duration: 13 },
-  { id: 'tavern', name: 'Medieval Tavern', categoryId: 'fantasy', previewUrl: '/sounds/tavern-preview.mp3', duration: 15 },
-  { id: 'haunted', name: 'Haunted / Paranormal', categoryId: 'fantasy', previewUrl: '/sounds/haunted-preview.mp3', duration: 11 },
+  // FANTASY
+  { "id": "magic", "name": "Magical Ambience", "categoryId": "fantasy", "previewUrl": "/sounds/magic.wav", "duration": 14 },
+  { "id": "dungeon", "name": "Dungeon Echoes", "categoryId": "fantasy", "previewUrl": "/sounds/dungeon.wav", "duration": 13 },
+  { "id": "haunted", "name": "Haunted Hallway", "categoryId": "fantasy", "previewUrl": "/sounds/haunted.wav", "duration": 12 },
+  { "id": "tavern", "name": "Medieval Tavern", "categoryId": "fantasy", "previewUrl": "/sounds/tavern.wav", "duration": 16 },
 
-  // Tools
-  { id: 'white', name: 'White Noise', categoryId: 'tools', previewUrl: '/sounds/white-noise-preview.mp3', duration: 30 },
-  { id: 'pink', name: 'Pink Noise', categoryId: 'tools', previewUrl: '/sounds/pink-noise-preview.mp3', duration: 30 },
-  { id: 'brown', name: 'Brown Noise', categoryId: 'tools', previewUrl: '/sounds/brown-noise-preview.mp3', duration: 30 },
-  { id: 'binaural', name: 'Binaural Beats', categoryId: 'tools', previewUrl: '/sounds/binaural-preview.mp3', duration: 20 },
-  { id: 'static', name: 'Focused Static', categoryId: 'tools', previewUrl: '/sounds/static-preview.mp3', duration: 18 },
+  // SCI-FI
+  { "id": "space", "name": "Space Station", "categoryId": "sci-fi", "previewUrl": "/sounds/space.wav", "duration": 15 },
+  { "id": "alien", "name": "Alien World", "categoryId": "sci-fi", "previewUrl": "/sounds/alien.wav", "duration": 13 },
+  { "id": "computer", "name": "Computer Beeps", "categoryId": "sci-fi", "previewUrl": "/sounds/computer.wav", "duration": 10 },
+  { "id": "teleport", "name": "Teleport Glitch", "categoryId": "sci-fi", "previewUrl": "/sounds/teleport.wav", "duration": 11 },
 
-  // Layers
-  { id: 'hum', name: 'Low Hum / Engine', categoryId: 'layers', previewUrl: '/sounds/hum-preview.mp3', duration: 14 },
-  { id: 'bass', name: 'Deep Bass Rumble', categoryId: 'layers', previewUrl: '/sounds/bass-preview.mp3', duration: 13 },
-  { id: 'high', name: 'High-pitched Textures', categoryId: 'layers', previewUrl: '/sounds/high-texture-preview.mp3', duration: 9 },
-  { id: 'chimes', name: 'Wind Chimes', categoryId: 'layers', previewUrl: '/sounds/chimes-preview.mp3', duration: 10 },
-  { id: 'clock', name: 'Clock Ticks / Time Loops', categoryId: 'layers', previewUrl: '/sounds/clock-preview.mp3', duration: 11 },
+  // TOOLS (WORK & FOCUS)
+  { "id": "white", "name": "White Noise", "categoryId": "tools", "previewUrl": "/sounds/white.wav", "duration": 30 },
+  { "id": "pink", "name": "Pink Noise", "categoryId": "tools", "previewUrl": "/sounds/pink.wav", "duration": 30 },
+  { "id": "brown", "name": "Brown Noise", "categoryId": "tools", "previewUrl": "/sounds/brown.wav", "duration": 30 },
+  { "id": "binaural", "name": "Binaural Beats", "categoryId": "tools", "previewUrl": "/sounds/binaural.wav", "duration": 20 },
+
+  // LAYERS (ATMOSPHERIC)
+  { "id": "hum", "name": "Low Engine Hum", "categoryId": "layers", "previewUrl": "/sounds/hum.wav", "duration": 15 },
+  { "id": "bass", "name": "Deep Bass Rumble", "categoryId": "layers", "previewUrl": "/sounds/bass.wav", "duration": 14 },
+  { "id": "high", "name": "High Frequency Buzz", "categoryId": "layers", "previewUrl": "/sounds/high.wav", "duration": 9 },
+  { "id": "chimes", "name": "Wind Chimes", "categoryId": "layers", "previewUrl": "/sounds/chimes.wav", "duration": 10 },
+  { "id": "clock", "name": "Clock Ticking", "categoryId": "layers", "previewUrl": "/sounds/clock.wav", "duration": 11 }
 ]
+
+function parseTimeToSeconds(timeStr) {
+  const parts = timeStr.split(':').map(Number).reverse()
+  let seconds = 0
+
+  if (parts.length >= 1) seconds += parts[0]   // seconds
+  if (parts.length >= 2) seconds += parts[1] * 60   // minutes
+  if (parts.length >= 3) seconds += parts[2] * 3600 // hours
+
+  return seconds
+}
 
 const activeCategory = ref(categories?.[0]?.id || '')
 const gridScroll = ref(null)
