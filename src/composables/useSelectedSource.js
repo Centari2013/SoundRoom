@@ -18,13 +18,13 @@ export function useSelectedSource(soundSources, selectedIndex) {
     if (index == null || index < 0 || index >= soundSources.value.length) return null
   
     const raw = soundSources.value[index]
-    const name = getSourceName(raw.audioPath)
+    const name = getSourceName(raw.name)
   
     return {
       name,
       index,
       volume: raw.instance.getVolume(),
-      audioPath: raw.audioPath,
+      //audioPath: raw.audioPath,
       instance: raw.instance,
       state: raw.state
     }

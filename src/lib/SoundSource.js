@@ -18,9 +18,8 @@ export default class SoundSource {
 
     this._audioContext = audioContext;
     this._ctx = canvasContext;
-
-    this._audioElement = new Audio();
-    this._audioElement.src = file;
+    console.log(file)
+    this._audioElement = new Audio(file);
     this._audioElement.preload = 'auto';
     this._audioElement.loop = loop;
     this._audioElement.volume = volume;

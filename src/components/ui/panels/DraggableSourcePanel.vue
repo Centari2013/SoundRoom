@@ -4,12 +4,11 @@
     <ul class="space-y-2 text-sm">
       <li
         v-for="s in librarySources"
-        :key="s.audioPath"
         class="cursor-move bg-neutral-300 dark:bg-neutral-700 p-1 rounded text-center"
         draggable="true"
         @dragstart="(e) => handleDragStart(e, s)"
       >
-        {{ getSourceName(s.audioPath) }}
+        {{ getSourceName(s.name) }}
       </li>
     </ul>
     <button :disabled="audioEngine.soundSources.length == MAX_SOURCES"

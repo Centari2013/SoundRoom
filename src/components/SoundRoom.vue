@@ -19,6 +19,7 @@
       :isLibraryOpen="isLibraryOpen" 
       :sounds="[]"
       @close="isLibraryOpen = false"
+      @load="(source) => {soundLibrarySources.push(source)}"
       />
       <!-- Left Sidebar -->
       <aside class="w-64 bg-neutral-200 dark:bg-neutral-900 border-r border-neutral-400 dark:border-neutral-800 p-4 space-y-6">
@@ -166,10 +167,7 @@ provide('selectedIndex', selectedIndex)
 
 const room = new Room()
 const listener = reactive(new Listener())
-const soundLibrarySources = ref([
-  { audioPath: '/sounds/ambient.mp3', coneInner: 60, coneOuter: 300 },
-  { audioPath: '/sounds/water.mp3', coneInner: 360, coneOuter: 360 },
-])
+const soundLibrarySources = ref([])
 const MAX_SOURCES = 20
 const loadedCanvasSoundSources = []
 

@@ -36,25 +36,25 @@
           class="aspect-square flex flex-col items-center justify-between p-4 rounded-xl bg-neutral-100 dark:bg-neutral-800 shadow border border-neutral-300 dark:border-neutral-700"
         >
           <!-- Title -->
-          <MarqueeTitle :text="sound.name"/>
+          <MarqueeTitle :text="getSourceName(sound.name)"/>
 
           <!-- Preview Button -->
           <SoundPreviewCircle
-            :src="sound.previewUrl"
-            :duration="parseTimeToSeconds(sound.duration) < 15 ? parseTimeToSeconds(sound.duration) : 15"
-            class="mb-3"
+            :src="sound.name"
+            :category="activeCategory"
+            :sendAudioUp="sound.send"
+            @sendAudio="handleAudioSent"
           />
 
           <!-- Load Button -->
           <button
             class="text-xs bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 transition-colors"
-            @click="loadSound(sound)"
+            @click="sound.send = true"
           >
             Load
           </button>
 
-          <!-- Duration -->
-          <span class="text-xs text-neutral-500 mt-2">{{ sound.duration }}</span>
+          
         </div>
 
         </div>
@@ -78,16 +78,24 @@
 <script setup>
 import { ref, computed, watch, nextTick } from 'vue'
 
+import { supabase } from '@/utils/supabase'
+
 import SoundPreviewCircle from '@/components/ui/controls/SoundPreviewCircle.vue'
 import MarqueeTitle from '@/components/ui/text/MarqueeTitle.vue'
+import { getSourceName } from '@/composables/useSelectedSource'
 
 const props = defineProps({
   isLibraryOpen: Boolean
 })
 const emit = defineEmits(['close', 'load', 'upload'])
 
+function handleAudioSent({ blobUrl, name, category }) {
+  
+  emit('load', { audioPath: blobUrl, name, category: category })
+}
+
 const categories = [
-  { id: 'natural', label: 'Natural' },
+  { id: 'nature', label: 'Nature' },
   { id: 'urban', label: 'Human' },
   { id: 'musical', label: 'Musical' },
   { id: 'fantasy', label: 'Fantasy' },  //split into two categories
@@ -97,14 +105,14 @@ const categories = [
 ]
 
 const sounds = [
-  // NATURAL
-  { "id": "water", "name": "Waterfall", "categoryId": "natural", "previewUrl": "/sounds/water.mp3", "duration": '1:46:00' },
-  { "id": "rain", "name": "Rain", "categoryId": "natural", "previewUrl": "/sounds/rain.wav", "duration": '0:57' },
-  { "id": "thunder", "name": "Thunderstorm", "categoryId": "natural", "previewUrl": "/sounds/thunder.mp3", "duration": '25:13' },
-  { "id": "forest", "name": "Forest Morning", "categoryId": "natural", "previewUrl": "/sounds/forest.wav", "duration": '2:31' },
-  { "id": "river", "name": "River Creek", "categoryId": "natural", "previewUrl": "/sounds/river.mp3", "duration": '0:09' },
-  { "id": "ocean", "name": "Ocean Waves", "categoryId": "natural", "previewUrl": "/sounds/ocean.wav", "duration": '0:48' },
-  { "id": "fire", "name": "Fireplace", "categoryId": "natural", "previewUrl": "/sounds/fire.mp3", "duration": '1:59' },
+  // NATURE
+  { "id": "water", "name": "Waterfall", "categoryId": "nature", "previewUrl": "/sounds/water.mp3", "duration": '1:46:00' },
+  { "id": "rain", "name": "Rain", "categoryId": "nature", "previewUrl": "/sounds/rain.wav", "duration": '0:57' },
+  { "id": "thunder", "name": "Thunderstorm", "categoryId": "nature", "previewUrl": "/sounds/thunder.mp3", "duration": '25:13' },
+  { "id": "forest", "name": "Forest Morning", "categoryId": "nature", "previewUrl": "/sounds/forest.wav", "duration": '2:31' },
+  { "id": "river", "name": "River Creek", "categoryId": "nature", "previewUrl": "/sounds/river.mp3", "duration": '0:09' },
+  { "id": "ocean", "name": "Ocean Waves", "categoryId": "nature", "previewUrl": "/sounds/ocean.wav", "duration": '0:48' },
+  { "id": "fire", "name": "Fireplace", "categoryId": "nature", "previewUrl": "/sounds/fire.mp3", "duration": '1:59' },
 
   // URBAN
   { "id": "cafe", "name": "Coffee Shop", "categoryId": "urban", "previewUrl": "/sounds/cafe.wav", "duration": 15 },
@@ -147,42 +155,39 @@ const sounds = [
   { "id": "clock", "name": "Clock Ticking", "categoryId": "layers", "previewUrl": "/sounds/clock.wav", "duration": 11 }
 ]
 
-function parseTimeToSeconds(timeStr) {
-  const parts = timeStr.split(':').map(Number).reverse()
-  let seconds = 0
-
-  if (parts.length >= 1) seconds += parts[0]   // seconds
-  if (parts.length >= 2) seconds += parts[1] * 60   // minutes
-  if (parts.length >= 3) seconds += parts[2] * 3600 // hours
-
-  return seconds
-}
 
 const activeCategory = ref(categories?.[0]?.id || '')
 const gridScroll = ref(null)
 
 const isLoading = ref(false)
-
-watch(activeCategory, async () => {
+const filteredSounds = ref([])
+watch(activeCategory, async (newCategory) => {
   isLoading.value = true
   await nextTick()
   gridScroll.value?.scrollTo({ top: 0 })
 
-  // Simulate async fetch
-  await new Promise(resolve => setTimeout(resolve, 500)) // replace with actual fetch
+  const sounds = await listCategoryFiles(newCategory)
+  filteredSounds.value = sounds
+
   isLoading.value = false
-})
+}, { immediate: true })
 
 
 
-
-const filteredSounds = computed(() =>
-  sounds.filter(s => s.categoryId === activeCategory.value)
-)
-
-function loadSound(sound) {
-  emit('load', sound)
+async function listCategoryFiles(category){
+  const { data, error } = await supabase
+    .storage
+    .from(category)
+    .list()
+  if (error) {
+  console.error('Failed to list files:', error)
+  return []
+  }
+  return data
 }
+
+
+
 
 function handleUpload(event) {
   const file = event.target.files?.[0]
