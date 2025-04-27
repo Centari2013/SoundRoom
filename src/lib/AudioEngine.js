@@ -84,8 +84,7 @@ export default class AudioEngine {
     const instance = src?.instance
     // save instance volume to payload
     payload.src.volume = instance?.getVolume()
-    instance?.stop?.()
-    instance?.dispose?.()
+    instance.dispose()
 
     this.soundSources.value.splice(index, 1)
   }
@@ -107,4 +106,21 @@ export default class AudioEngine {
       }
     })
   }
+
+  dispose() {
+    this.pauseAll()
+    this.soundSources.value.forEach(s => s.instance.dispose())
+    this.soundSources.value.length = 0
+  
+    if (this.#masterGain) {
+      this.#masterGain.disconnect()
+      this.#masterGain = null
+    }
+  
+    if (this.#audioContext) {
+      this.#audioContext.close()
+      this.#audioContext = null
+    }
+  }
+  
 }

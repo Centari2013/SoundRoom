@@ -18,7 +18,7 @@ export default class SoundSource {
 
     this._audioContext = audioContext;
     this._ctx = canvasContext;
-    console.log(file)
+    
     this._audioElement = new Audio(file);
     this._audioElement.preload = 'auto';
     this._audioElement.loop = loop;
@@ -95,13 +95,30 @@ export default class SoundSource {
 
   dispose() {
     try {
-      this._audioElement.pause();
-      this._audioElement.src = '';
-      this._sourceNode.disconnect();
-      this._gainNode.disconnect();
-      this._pannerNode.disconnect();
+      if (this._audioElement) {
+        this._audioElement.pause()
+        if (this._audioElement.src.startsWith('blob:')) {
+          URL.revokeObjectURL(this._audioElement.src)
+        }
+        this._audioElement.src = ''
+        this._audioElement.load()
+        this._audioElement = null
+      }
+  
+      this._sourceNode?.disconnect()
+      this._gainNode?.disconnect()
+      this._pannerNode?.disconnect()
+  
+      this._sourceNode = null
+      this._gainNode = null
+      this._pannerNode = null
+  
+      this._ctx = null
+      this._audioContext = null
+      this.state = null
     } catch (err) {
-      console.warn('Failed to clean up sound source:', err);
+      console.warn('Failed to clean up sound source:', err)
     }
   }
+  
 }

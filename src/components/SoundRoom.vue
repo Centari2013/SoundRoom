@@ -121,7 +121,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed, reactive, provide } from 'vue'
+import { ref, onMounted, computed, reactive, provide, onUnmounted } from 'vue'
 
 // UI Components
 import VueSlider from 'vue-3-slider-component'
@@ -303,6 +303,10 @@ function setupAudioContext() {
 // ===================================
 onMounted(() => {
   setupAudioContext()
+})
+
+onUnmounted(() => {
+  audioEngine.dispose()
 })
 </script>
 
