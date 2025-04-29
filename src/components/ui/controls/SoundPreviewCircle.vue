@@ -43,8 +43,7 @@ import { ref, onUnmounted, computed, watch, onMounted, nextTick } from 'vue'
 import { supabase } from '@/utils/supabase'
 
 const props = defineProps({
-  src: String,
-  category: String,
+  soundData: Object,
   sendAudioUp: Boolean,
 })
 
@@ -65,14 +64,12 @@ const dashOffset = computed(() => circumference.value * (1 - progress.value))
 const duration = ref(15)
 const emit = defineEmits(['sendAudio'])
 
-function emitAudio() {
-  if (audio) {
-    emit('sendAudio', {
-      blobUrl,
-      name: props.src,
-      category: props.category
-    })
+async function emitAudio() {
+  if (!blobUrl){
+    await downloadAudio(false)
   }
+  emit('sendAudio', { ...props.soundData, blobUrl })
+  
 }
 
 watch(() => props.sendAudioUp, (newValue) => {
@@ -95,25 +92,10 @@ function formatSecondsToTime(totalSeconds) {
 
 
 onMounted(async () => {
-  const { data: fileData, error: fileError } = await supabase
-    .storage
-    .from(props.category)
-    .download(props.src)
+  const duration_seconds = props.soundData.duration_seconds
+  audioDuration.value = formatSecondsToTime(duration_seconds)
+  duration.value = duration.value > duration_seconds ? duration_seconds : duration.value
 
-  if (fileError) {
-    console.error(`Failed to download ${props.src}:`, fileError)
-    return
-  }
-
-  blobUrl = URL.createObjectURL(fileData)
-  audio = new Audio(blobUrl)
-  audio.preload = 'auto'
-
-  // Listen for when metadata (including duration) is ready
-  audio.addEventListener('loadedmetadata', () => {
-    audioDuration.value = formatSecondsToTime(audio.duration)
-    duration.value = duration.value > audio.duration ? Math.floor(audio.duration) : duration.value
-  }, { once: true })
 
   nextTick(() => {
     if (circleRef.value) {
@@ -123,10 +105,35 @@ onMounted(async () => {
   })
 })
 
-function togglePlay() {
+async function downloadAudio(populateAudio=true) {
+  const { data: fileData, error: fileError } = await supabase
+    .storage
+    .from(props.soundData.bucket)
+    .download(props.soundData.path)
+
+    if (fileError) {
+      console.error(`Failed to download ${props.src}:`, fileError)
+      return
+    }
+
+    blobUrl = URL.createObjectURL(fileData)
+    
+    if (populateAudio) {
+      audio = new Audio(blobUrl)
+      audio.preload = 'auto'
+
+      // Handle natural end of audio (shorter than preview window)
+      audio.addEventListener('ended', () => {
+        stopPlayback()
+      })
+    }
+}
+
+async function togglePlay() {
   if (isPlaying.value) {
     stopPlayback()
   } else {
+    await downloadAudio(),
     audio.currentTime = 0
     audio.play().then(() => {
       isPlaying.value = true
@@ -150,26 +157,28 @@ function setupProgressTracking() {
 }
 
 function stopPlayback() {
+  if (!audio) return
+
   audio.pause()
+  audio.removeAttribute('src') //stops global media playback
+  audio.load()
+
   clearTimeout(timeoutId)
   cancelAnimationFrame(rafId)
+
   isPlaying.value = false
   progress.value = 0
+
+  if (blobUrl) {
+    URL.revokeObjectURL(blobUrl)
+    blobUrl = null
+  }
+
+  audio = null
 }
 
 onUnmounted(() => {
   stopPlayback()
-
-  if (audio) {
-    audio.src = ''
-    audio.load()
-    audio = null
-  }
-
-  if (blobUrl && !props.sendAudioUp) {
-    URL.revokeObjectURL(blobUrl)
-    blobUrl = null
-  }
 })
 
 </script>

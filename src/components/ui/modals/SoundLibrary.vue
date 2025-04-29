@@ -40,8 +40,7 @@
 
           <!-- Preview Button -->
           <SoundPreviewCircle
-            :src="sound.name"
-            :category="activeCategory"
+            :soundData="sound"
             :sendAudioUp="sound.send"
             @sendAudio="handleAudioSent"
           />
@@ -89,9 +88,9 @@ const props = defineProps({
 })
 const emit = defineEmits(['close', 'load', 'upload'])
 
-function handleAudioSent({ blobUrl, name, category }) {
+function handleAudioSent({ blobUrl, name, coneInner, coneOuter }) {
   
-  emit('load', { audioPath: blobUrl, name, category: category })
+  emit('load', { audioPath: blobUrl, name, coneInner, coneOuter })
 }
 
 const categories = [
@@ -176,12 +175,12 @@ watch(activeCategory, async (newCategory) => {
 
 async function listCategoryFiles(category){
   const { data, error } = await supabase
-    .storage
-    .from(category)
-    .list()
+    .from('sound_files')
+    .select()
+    .eq('bucket', activeCategory.value)
   if (error) {
-  console.error('Failed to list files:', error)
-  return []
+    console.error('Failed to list files:', error)
+    return []
   }
   return data
 }
