@@ -63,14 +63,16 @@ const circumference = computed(() => 2 * Math.PI * radius.value)
 const dashOffset = computed(() => circumference.value * (1 - progress.value))
 const duration = ref(15)
 const emit = defineEmits(['sendAudio'])
+const hasBeenPromoted = ref(false)
 
 async function emitAudio() {
-  if (!blobUrl){
+  if (!blobUrl) {
     await downloadAudio(false)
   }
+  hasBeenPromoted.value = true
   emit('sendAudio', { ...props.soundData, blobUrl })
-  
 }
+
 
 watch(() => props.sendAudioUp, (newValue) => {
   if (newValue) {
@@ -160,7 +162,7 @@ function stopPlayback() {
   if (!audio) return
 
   audio.pause()
-  audio.removeAttribute('src') //stops global media playback
+  audio.removeAttribute('src')
   audio.load()
 
   clearTimeout(timeoutId)
@@ -169,13 +171,14 @@ function stopPlayback() {
   isPlaying.value = false
   progress.value = 0
 
-  if (blobUrl) {
+  if (blobUrl && !hasBeenPromoted.value) {
     URL.revokeObjectURL(blobUrl)
     blobUrl = null
   }
 
   audio = null
 }
+
 
 onUnmounted(() => {
   stopPlayback()
