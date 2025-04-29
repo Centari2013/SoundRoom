@@ -88,14 +88,14 @@ const props = defineProps({
 })
 const emit = defineEmits(['close', 'load', 'upload'])
 
-function handleAudioSent({ blobUrl, name, coneInner, coneOuter }) {
+function handleAudioSent({ blobUrl, name, cone_inner, cone_outer }) {
   
-  emit('load', { audioPath: blobUrl, name, coneInner, coneOuter })
+  emit('load', { audioPath: blobUrl, name, coneInner: cone_inner, coneOuter: cone_outer })
 }
 
 const categories = [
   { id: 'nature', label: 'Nature' },
-  { id: 'urban', label: 'Human' },
+  { id: 'human', label: 'Human' },
   { id: 'musical', label: 'Musical' },
   { id: 'fantasy', label: 'Fantasy' },  //split into two categories
   { id: 'sci-fi', label: 'Sci-Fi'},
