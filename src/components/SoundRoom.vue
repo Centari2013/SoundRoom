@@ -30,6 +30,10 @@
           :audioEngine="audioEngine"
           :handleDragStart="handleDragStart"
           :addSourceClick="() => {isLibraryOpen = true}"
+          @deleteSource="(src) => {
+            const i = soundLibrarySources.findIndex(s => s.name === src.name)
+            if (i !== -1) soundLibrarySources.splice(i, 1)
+          }"
         />
 
         <!-- Listener Info -->

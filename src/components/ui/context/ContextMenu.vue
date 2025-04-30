@@ -6,7 +6,6 @@
       position: 'fixed',
       top: `${pos.y}px`,
       left: `${pos.x}px`,
-      zIndex: 1000
     }"
     class="context-menu bg-white dark:bg-neutral-800 rounded shadow p-2 text-sm border border-neutral-300 dark:border-neutral-700"
   >
@@ -73,5 +72,9 @@ defineExpose({
 <style scoped>
 .context-menu {
   min-width: 100px;
+  z-index: 999999 !important;
+  position: fixed !important;
+  display: block !important;
 }
+
 </style>
