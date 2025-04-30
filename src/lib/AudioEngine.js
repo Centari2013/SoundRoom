@@ -70,7 +70,7 @@ export default class AudioEngine {
 
     src.instance = instance
     this.soundSources.value.push(src)
-
+    console.log(this.soundSources)
     if (this.#audioContext?.state === 'suspended') {
       this.#audioContext.resume()
     }

@@ -42,7 +42,7 @@
           <SoundPreviewCircle
             :soundData="sound"
             :sendAudioUp="sound.send"
-            @sendAudio="handleAudioSent"
+            @sendAudio="(soundData) => {handleAudioSent(soundData, sound)}"
           />
 
           <!-- Load Button -->
@@ -88,9 +88,9 @@ const props = defineProps({
 })
 const emit = defineEmits(['close', 'load', 'upload'])
 
-function handleAudioSent({ blobUrl, name, cone_inner, cone_outer }) {
-  
-  emit('load', { audioPath: blobUrl, name, coneInner: cone_inner, coneOuter: cone_outer })
+function handleAudioSent({ blobUrl, name, cone_inner, cone_outer, id }, sound) {
+  sound.send = false
+  emit('load', { audioPath: blobUrl, name, coneInner: cone_inner, coneOuter: cone_outer, libraryId: id })
 }
 
 const categories = [
@@ -173,7 +173,7 @@ watch(activeCategory, async (newCategory) => {
 
 
 
-async function listCategoryFiles(category){
+async function listCategoryFiles(){
   const { data, error } = await supabase
     .from('sound_files')
     .select()

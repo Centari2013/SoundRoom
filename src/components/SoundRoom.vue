@@ -19,7 +19,7 @@
       :isLibraryOpen="isLibraryOpen" 
       :sounds="[]"
       @close="isLibraryOpen = false"
-      @load="(source) => {soundLibrarySources.push(source)}"
+      @load="(source) => {soundLibrarySources.find(s => s.libraryId == source.libraryId) ? null: soundLibrarySources.push(source)}"
       />
       <!-- Left Sidebar -->
       <aside class="w-64 bg-neutral-200 dark:bg-neutral-900 border-r border-neutral-400 dark:border-neutral-800 p-4 space-y-6">
@@ -30,10 +30,7 @@
           :audioEngine="audioEngine"
           :handleDragStart="handleDragStart"
           :addSourceClick="() => {isLibraryOpen = true}"
-          @deleteSource="(src) => {
-            const i = soundLibrarySources.findIndex(s => s.name === src.name)
-            if (i !== -1) soundLibrarySources.splice(i, 1)
-          }"
+          @deleteSource="deleteDraggableSource"
         />
 
         <!-- Listener Info -->
@@ -244,6 +241,28 @@ const { handleDragStart, handleDrop } = useDragDropAudio({
   actionManager,
   stageWrapper,
 })
+
+function deleteDraggableSource(src){
+
+  //TODO: add library sound source removal and addition to action manager
+  // Remove from the source list UI
+  const i = soundLibrarySources.value.find(s => s.libraryId == src.libraryId)
+  if (i !== -1) soundLibrarySources.value.splice(i, 1)
+
+  // Find all sound sources on the canvas with the same libraryId
+  const matches = audioEngine.soundSources.value
+    .map((aes, idx) => ({ aes, index: idx }))
+    .filter(entry => entry.aes.libraryId === src.libraryId)
+
+  // Dispatch an action for each one to ensure undo/redo support
+  for (const match of matches.reverse()) {
+    // reverse to prevent index shift issues when modifying array
+    actionManager.doAction('delete_canvas_sound_source', {
+      index: match.index,
+      src: match.aes
+    })
+  }
+}
 
 // Keyboard controls
 const { onKeyDown, onKeyUp } = useKeyboardControls({
