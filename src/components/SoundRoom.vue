@@ -19,7 +19,7 @@
       :isLibraryOpen="isLibraryOpen" 
       :sounds="[]"
       @close="isLibraryOpen = false"
-      @load="(source) => {soundLibrarySources.find(s => s.libraryId == source.libraryId) ? null: soundLibrarySources.push(source)}"
+      @load="(src) => {actionManager.doAction('add_draggable_sound_source', { src })}"
       />
       <!-- Left Sidebar -->
       <aside class="w-64 bg-neutral-200 dark:bg-neutral-900 border-r border-neutral-400 dark:border-neutral-800 p-4 space-y-6">
@@ -30,7 +30,7 @@
           :audioEngine="audioEngine"
           :handleDragStart="handleDragStart"
           :addSourceClick="() => {isLibraryOpen = true}"
-          @deleteSource="deleteDraggableSource"
+          @deleteSource="handleDeleteLibrarySource"
         />
 
         <!-- Listener Info -->
@@ -147,6 +147,9 @@ import { useKeyboardControls } from '@/composables/useKeyboardControls'
 import { useDragDropAudio } from '@/composables/useDragDropAudio'
 import { useSelectedSource } from '@/composables/useSelectedSource'
 
+// Supabase
+import {supabase} from '@/utils/supabase'
+
 // ===================================
 // Help Modal
 // ===================================
@@ -242,12 +245,11 @@ const { handleDragStart, handleDrop } = useDragDropAudio({
   stageWrapper,
 })
 
-function deleteDraggableSource(src){
+function handleDeleteLibrarySource(src){
 
   //TODO: add library sound source removal and addition to action manager
-  // Remove from the source list UI
-  const i = soundLibrarySources.value.find(s => s.libraryId == src.libraryId)
-  if (i !== -1) soundLibrarySources.value.splice(i, 1)
+  //TODO: fix revocation of blob killing multiple nodes
+  actionManager.doAction('delete_draggable_sound_source', { src })
 
   // Find all sound sources on the canvas with the same libraryId
   const matches = audioEngine.soundSources.value
@@ -294,8 +296,14 @@ registerAction('add_canvas_sound_source',
 )
 
 registerAction('delete_canvas_sound_source',
-  payload => audioEngine.deleteSoundSource(payload),
-  payload => audioEngine.addSoundSource(payload)
+  payload => {
+    audioEngine.deleteSoundSource(payload)
+    listener.updateAudio()
+  },
+  payload => {
+    audioEngine.addSoundSource(payload)
+    listener.updateAudio()
+  }
 )
 
 const moveSoundSource = (src, coords) => {
@@ -310,6 +318,28 @@ registerAction('move_canvas_sound_source',
   payload => moveSoundSource(audioEngine.soundSources.value[payload.index], payload.from)
 )
 
+const deleteDraggableSoundSource = (src) => {
+  // Remove from the source list UI
+  const i = soundLibrarySources.value.find(s => s.libraryId == src.libraryId)
+  if (i !== -1) soundLibrarySources.value.splice(i, 1)
+  return i
+}
+
+const addDraggableSoundSource = (src, index) => {
+  if (index) soundLibrarySources.value.find(s => s.libraryId == src.libraryId) ? null : soundLibrarySources.value.splice(index, 0, src);
+  else soundLibrarySources.value.push(src)
+  console.log(src)
+}
+
+registerAction('delete_draggable_sound_source',
+  payload => {payload.index = deleteDraggableSoundSource(payload.src)},
+  payload => addDraggableSoundSource(payload.src, payload.index)
+)
+
+registerAction('add_draggable_sound_source',
+  payload => addDraggableSoundSource(payload.src, payload.index),
+  payload => {payload.index = deleteDraggableSoundSource(payload.src)},
+)
 
 // ===================================
 // Audio Setup

@@ -9,15 +9,12 @@
 
     <h5 class="text-sm font-semibold uppercase text-neutral-600 dark:text-neutral-400 mb-2">Sound Sources</h5>
     <ul class="space-y-2 text-sm">
-      <li
-        v-for="s in librarySources"
-        class="cursor-move bg-neutral-300 dark:bg-neutral-700 p-1 rounded text-center"
-        draggable="true"
-        @dragstart="(e) => handleDragStart(e, s)"
-        @contextmenu="(e) => openContextMenu(e, s)"
-      >
-        {{ getSourceName(s.name) }}
-      </li>
+      <LibrarySource 
+      v-for="s in librarySources"
+      :librarySource="s" 
+      @contextmenu="(e) => openContextMenu(e, s)"
+      @dragstart="(e) => handleDragStart(e, s)"
+      />
     </ul>
     <button :disabled="audioEngine.soundSources.length == MAX_SOURCES"
     @click="addSourceClick"
@@ -30,7 +27,7 @@
 <script setup>
 import { ref } from 'vue'
 
-import { getSourceName } from '@/composables/useSelectedSource'
+import LibrarySource from '@/components/ui/panels/parts/librarySource.vue'
 import ContextMenu from '@/components/ui/context/ContextMenu.vue'
 
 const props = defineProps({

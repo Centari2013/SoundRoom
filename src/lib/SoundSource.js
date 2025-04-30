@@ -97,10 +97,6 @@ export default class SoundSource {
     try {
       if (this._audioElement) {
         this._audioElement.pause()
-        if (this._audioElement.src.startsWith('blob:')) {
-          URL.revokeObjectURL(this._audioElement.src)
-        }
-        this._audioElement.src = ''
         this._audioElement.load()
         this._audioElement = null
       }
