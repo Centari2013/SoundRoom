@@ -147,11 +147,12 @@ function setupProgressTracking() {
 
 function stopPlayback() {
   if (!audio) return
+  audio.removeEventListener('ended', stopPlayback)
 
   audio.pause()
   audio.removeAttribute('src')
   audio.load()
-  audio.removeEventListener('ended', handleEnded)
+  
 
   clearTimeout(timeoutId)
   cancelAnimationFrame(rafId)
