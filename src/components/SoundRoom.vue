@@ -1,13 +1,7 @@
 <template>
   <div class="min-h-screen min-w-screen bg-white text-neutral-900 dark:bg-neutral-950 dark:text-white flex flex-col">
     <!-- Header -->
-    <header class="px-6 py-4 border-b border-neutral-300 dark:border-neutral-800 flex items-center justify-between">
-      <h1 class="text-xl font-bold tracking-wide">SoundRoom</h1>
-      <nav class="space-x-4">
-        <button v-if="false" class="px-3 py-1 text-sm rounded hover:bg-neutral-200 dark:hover:bg-neutral-800">Settings</button>
-        <button @click="isHelpOpen = true" class="px-3 py-1 text-sm rounded hover:bg-neutral-200 dark:hover:bg-neutral-800">Help</button>
-      </nav>
-    </header>
+    <HeaderBar @openHelp="isHelpOpen = true" />
 
     <!-- Main Layout -->
     <div class="flex flex-1 overflow-hidden">
@@ -135,6 +129,7 @@ import ListenerNode from '@/components/ui/canvas/ListenerNode.vue'
 import SoundSourceNode from '@/components/ui/canvas/SoundSourceNode.vue'
 import SoundLibrary from '@/components/ui/modals/SoundLibrary.vue'
 import Help from '@/components/ui/modals/Help.vue'
+import HeaderBar from '@/components/SoundRoom/HeaderBar.vue'
 
 // Core Classes
 import Listener from '@/lib/Listener'
