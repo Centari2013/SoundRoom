@@ -1,6 +1,6 @@
 // lib/AudioEngine.js
 import SoundSource from '@/lib/SoundSource';
-import { computed, ref, watch } from 'vue'
+import { computed, ref, watch, reactive } from 'vue'
 
 export default class AudioEngine {
   soundSources = ref([])
@@ -74,21 +74,26 @@ export default class AudioEngine {
       this.#audioContext.resume()
     }
     instance.play()
-    console.log('Add', src)
   }
 
   deleteSoundSource(payload) {
-    
     const index = payload.src.index
     const src = this.soundSources.value[index]
     const instance = src?.instance
-    // save instance volume to payload
-    payload.src.volume = instance?.getVolume()
-    instance.dispose()
 
+    const finalVolume = instance?.getVolume()
+    instance?.dispose()
     this.soundSources.value.splice(index, 1)
-    console.log('Delete', payload)
+
+    return {
+      state: reactive(Object.assign({}, src.state)),
+      audioPath: src.audioPath,
+      name: src.name,
+      libraryId: src.libraryId,
+      volume: finalVolume
+    }
   }
+
 
   playAll() {
     if (this.#audioContext?.state === 'suspended') {

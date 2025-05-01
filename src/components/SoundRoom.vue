@@ -19,7 +19,7 @@
       :isLibraryOpen="isLibraryOpen" 
       :sounds="[]"
       @close="isLibraryOpen = false"
-      @load="(src) => {actionManager.doAction('add_draggable_sound_source', { src })}"
+      @load="handleAddLibrarySoundSource"
       />
       <!-- Left Sidebar -->
       <aside class="w-64 bg-neutral-200 dark:bg-neutral-900 border-r border-neutral-400 dark:border-neutral-800 p-4 space-y-6">
@@ -148,7 +148,8 @@ import { useDragDropAudio } from '@/composables/useDragDropAudio'
 import { useSelectedSource } from '@/composables/useSelectedSource'
 
 // Supabase
-import {supabase} from '@/utils/supabase'
+import downloadAudio from '@/utils/downloadAudio'
+
 
 // ===================================
 // Help Modal
@@ -158,6 +159,13 @@ const isHelpOpen = ref(false)
 // Library
 // ===================================
 const isLibraryOpen = ref(false)
+const handleAddLibrarySoundSource = async (src) => {
+  await actionManager.doAction('add_draggable_sound_source', { src })
+}
+function handleDeleteLibrarySource(src){
+ actionManager.doAction('delete_draggable_sound_source', { src })
+}
+
 // ===================================
 // Global Refs & Reactive State
 // ===================================
@@ -245,26 +253,7 @@ const { handleDragStart, handleDrop } = useDragDropAudio({
   stageWrapper,
 })
 
-function handleDeleteLibrarySource(src){
 
-  //TODO: add library sound source removal and addition to action manager
-  //TODO: fix revocation of blob killing multiple nodes
-  actionManager.doAction('delete_draggable_sound_source', { src })
-
-  // Find all sound sources on the canvas with the same libraryId
-  const matches = audioEngine.soundSources.value
-    .map((aes, idx) => ({ aes, index: idx }))
-    .filter(entry => entry.aes.libraryId === src.libraryId)
-
-  // Dispatch an action for each one to ensure undo/redo support
-  for (const match of matches.reverse()) {
-    // reverse to prevent index shift issues when modifying array
-    actionManager.doAction('delete_canvas_sound_source', {
-      index: match.index,
-      src: match.aes
-    })
-  }
-}
 
 // Keyboard controls
 const { onKeyDown, onKeyUp } = useKeyboardControls({
@@ -286,6 +275,7 @@ function registerAction(name, doFn, undoFn) {
 
 registerAction('add_canvas_sound_source',
   payload => {
+    payload.src.audioPath = soundLibrarySources.value.find(s => s.libraryId == payload.src.libraryId).audioPath
     audioEngine.addSoundSource(payload)
     listener.updateAudio()
   },
@@ -318,27 +308,58 @@ registerAction('move_canvas_sound_source',
   payload => moveSoundSource(audioEngine.soundSources.value[payload.index], payload.from)
 )
 
-const deleteDraggableSoundSource = (src) => {
+const deleteDraggableSoundSource = (payload) => {
   // Remove from the source list UI
-  const i = soundLibrarySources.value.find(s => s.libraryId == src.libraryId)
-  if (i !== -1) soundLibrarySources.value.splice(i, 1)
-  return i
+  const i = soundLibrarySources.value.findIndex(s => s.libraryId == payload.src.libraryId)
+  payload.src = soundLibrarySources.value[i]
+  soundLibrarySources.value.splice(i, 1)
+  payload.index = i
+
+  // Find all sound sources on the canvas with the same libraryId
+  const matches = audioEngine.soundSources.value
+    .map((aes, idx) => ({ aes, index: idx }))
+    .filter(entry => entry.aes.libraryId === payload.src.libraryId)
+
+    payload.soundNodes = []
+    // Dispatch an action for each one to ensure undo/redo support
+    for (const match of matches.reverse()) {
+      // reverse to prevent index shift issues when modifying array
+      
+      const deletedNode = audioEngine.deleteSoundSource({ index: match.index, src: match.aes })
+      payload.soundNodes.push({ index: match.index, src: deletedNode })
+    }
 }
 
-const addDraggableSoundSource = (src, index) => {
-  if (index) soundLibrarySources.value.find(s => s.libraryId == src.libraryId) ? null : soundLibrarySources.value.splice(index, 0, src);
-  else soundLibrarySources.value.push(src)
-  console.log(src)
+const addDraggableSoundSource = async (payload) => {
+  // download blob and renistate draggable source
+  const { blobUrl } = await downloadAudio(payload.src.bucket, payload.src.path, false)
+  payload.src.audioPath = blobUrl
+  const exists = soundLibrarySources.value.find(s => s.libraryId === payload.src.libraryId)
+  if (!exists) {
+    if (payload.index != null && payload.index !== -1) {
+      soundLibrarySources.value.splice(payload.index, 0, payload.src)
+    } else {
+      soundLibrarySources.value.push(payload.src)
+    }
+  }
+
+
+  // recreate old sound nodes with new blob
+  payload.soundNodes?.forEach(s => {
+    s.src.audioPath = blobUrl
+    audioEngine.addSoundSource(s)
+  });
 }
+
 
 registerAction('delete_draggable_sound_source',
-  payload => {payload.index = deleteDraggableSoundSource(payload.src)},
-  payload => addDraggableSoundSource(payload.src, payload.index)
+  payload => deleteDraggableSoundSource(payload),
+  async payload => await addDraggableSoundSource(payload)
 )
 
 registerAction('add_draggable_sound_source',
-  payload => addDraggableSoundSource(payload.src, payload.index),
-  payload => {payload.index = deleteDraggableSoundSource(payload.src)},
+  async payload => await addDraggableSoundSource(payload),
+  payload => deleteDraggableSoundSource(payload),
 )
 
 // ===================================
