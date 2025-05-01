@@ -8,8 +8,7 @@ export function useDragDropAudio({ draggedSource, actionManager, stageWrapper}) 
 
   function handleDrop(e) {
     if (!draggedSource.value) return
-  
-    const wrapperBounds = stageWrapper.value.getBoundingClientRect()
+    const wrapperBounds = stageWrapper.value.stageRef.getBoundingClientRect()
     const dropX = e.clientX - wrapperBounds.left
     const dropY = e.clientY - wrapperBounds.top
   

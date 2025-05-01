@@ -56,44 +56,21 @@
 
         <!-- Canvas Area -->
         <div class="flex-1 bg-neutral-200 dark:bg-black flex items-center justify-center">
-          <div 
-            ref="stageWrapper"
-            class="border-2 border-neutral-400 dark:border-neutral-700 flex items-center justify-center"
-            :class="`w-[${room.width}px] h-[${room.height}px]`"
-            @dragover.prevent
-            @drop="handleDrop"
-            @keydown="onKeyDown"
-            @keyup="onKeyUp"
-            tabindex="0" 
-          >
-          <ContextMenu ref="contextMenuRef" :functionList="contextMenuActions"/>
-          <v-stage
-            :config="{ width: room.width, height: room.height }"
-            @contextmenu="(e) => e.evt.preventDefault()"
-            @mousedown="handleStageClick"
-          >
-          <v-layer ref="mainLayer">
-            <SoundSourceNode
-              v-for="(src, i) in audioEngine.soundSources.value"
-              :key="i"
-              :source="src"
-              :selected="i === selectedIndex"
-              :actionManager="actionManager"
-              :room="room"
-              :index="i"
-              @select="selectedIndex = $event"
-              @contextmenu="showContextMenu"
-            />
-            <ListenerNode
-              :listener="listener"
-              :actionManager="actionManager"
-              :room="room"
-            />
-          </v-layer>
-
-          </v-stage>
-
-          </div>
+          <MainCanvasStage 
+          ref="stageWrapper"
+          :room="room"
+          :handleDrop="handleDrop"
+          :onKeyDown="onKeyDown"
+          :onKeyUp="onKeyUp"
+          :contextMenuActions="contextMenuActions"
+          :showContextMenu="showContextMenu"
+          :actionManager="actionManager"
+          :selectedIndex="selectedIndex"
+          :listener="listener"
+          :audioEngine="audioEngine"
+          :handleStageClick="handleStageClick"
+          @selectNode="(e) => { selectedIndex = e }"
+          />
         </div>
       </main>
 
@@ -113,6 +90,7 @@ import { ref, onMounted, computed, reactive, provide, onUnmounted } from 'vue'
 
 // UI Components
 import VueSlider from 'vue-3-slider-component'
+
 import ContextMenu from '@/components/ui/context/ContextMenu.vue'
 import ToolbarControls from '@/components/ui/controls/ToolbarControls.vue'
 import SelectedSourcePanel from '@/components/ui/panels/SelectedSourcePanel.vue'
@@ -123,7 +101,7 @@ import Help from '@/components/ui/modals/Help.vue'
 import HeaderBar from '@/components/SoundRoom/HeaderBar.vue'
 import SidebarLeft from '@/components/SoundRoom/SidebarLeft.vue'
 import SidebarRight from '@/components/SoundRoom/SidebarRight.vue'
-
+import MainCanvasStage from '@/components/SoundRoom/MainCanvasStage.vue'
 // Core Classes
 import Listener from '@/lib/Listener'
 import AudioEngine from '@/lib/AudioEngine'
@@ -211,7 +189,7 @@ const { showContextMenu, contextMenuActions } = useContextMenuLogic(selectedSour
 const { handleDragStart, handleDrop } = useDragDropAudio({
   draggedSource,
   actionManager,
-  stageWrapper,
+  stageWrapper
 })
 
 
