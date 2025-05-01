@@ -12,7 +12,7 @@
       :angle="coneOuter"
       :rotation="(-coneOuter / 2) + source.instance.state.angle"
       :radius="50"
-      fill="rgba(255, 100, 100, 0.05)"
+      fill="rgba(255, 100, 100, 0.2)"
       shadowColor="rgba(255, 100, 100, 0.7)"
       :shadowBlur="12"
     />
