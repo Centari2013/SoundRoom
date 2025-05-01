@@ -66,7 +66,7 @@
             @keyup="onKeyUp"
             tabindex="0" 
           >
-          <ContextMenu ref="contextMenu" :functionList="contextMenuActions"/>
+          <ContextMenu ref="contextMenuRef" :functionList="contextMenuActions"/>
           <v-stage
             :config="{ width: room.width, height: room.height }"
             @contextmenu="(e) => e.evt.preventDefault()"
@@ -135,6 +135,8 @@ import { useKeyboardControls } from '@/composables/useKeyboardControls'
 import { useDragDropAudio } from '@/composables/useDragDropAudio'
 import { useSelectedSource } from '@/composables/useSelectedSource'
 import { setupAudioContext } from '@/composables/useAudioSetup'
+import { useContextMenuLogic } from '@/composables/useContextMenuLogic'
+
 // Supabase
 import downloadAudio from '@/utils/downloadAudio'
 
@@ -159,7 +161,7 @@ function handleDeleteLibrarySource(src){
 // ===================================
 const canvasCtx = ref(null)
 const draggedSource = ref(null)
-const contextMenu = ref(null)
+const contextMenuRef = ref(null)
 const stageWrapper = ref(null)
 const selectedIndex = ref(null)
 
@@ -203,36 +205,8 @@ function handleStageClick(e) {
   }
 }
 
-// Context menu logic
-function showContextMenu(e) {
-  e.evt.preventDefault()
-  e.evt.stopPropagation()
-  if (e.target.getAttr('name') === 'sound-node-part') {
-    contextMenu.value.show({ x: e.evt.clientX, y: e.evt.clientY })
-  }
-}
+const { showContextMenu, contextMenuActions } = useContextMenuLogic(selectedSource, contextMenuRef, actionManager)
 
-const contextMenuActions = [
-  {
-    label: computed(() =>
-      selectedSource.value?.instance.playing ? 'Pause' : 'Play'
-    ),
-    function: () => {
-      const inst = selectedSource.value.instance
-      inst.playing ? inst.stop() : inst.play()
-    },
-  },
-  {
-    label: 'Delete',
-    function: () => {
-      actionManager.doAction('delete_canvas_sound_source', {
-        index: selectedSource.value.index,
-        src: selectedSource.value,
-      })
-      contextMenu.value.visible = false
-    },
-  },
-]
 
 // Drag and drop
 const { handleDragStart, handleDrop } = useDragDropAudio({
