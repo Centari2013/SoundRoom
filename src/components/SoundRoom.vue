@@ -98,14 +98,12 @@
       </main>
 
       <!-- Right Sidebar -->
-      <aside class="w-64 bg-neutral-100 dark:bg-neutral-900 border-l border-neutral-300 dark:border-neutral-800 p-4 space-y-4">
-        <!-- Source Details -->
-        <SelectedSourcePanel 
-          :listener="listener"
-          :actionManager="actionManager"
-          :selectedSource="selectedSource"
-        />
-      </aside>
+      <SidebarRight
+        :listener="listener"
+        :actionManager="actionManager"
+        :selectedSource="selectedSource"
+      />
+      
     </div>
   </div>
 </template>
@@ -124,6 +122,7 @@ import SoundLibrary from '@/components/ui/modals/SoundLibrary.vue'
 import Help from '@/components/ui/modals/Help.vue'
 import HeaderBar from '@/components/SoundRoom/HeaderBar.vue'
 import SidebarLeft from '@/components/SoundRoom/SidebarLeft.vue'
+import SidebarRight from '@/components/SoundRoom/SidebarRight.vue'
 
 // Core Classes
 import Listener from '@/lib/Listener'
@@ -261,7 +260,7 @@ const { onKeyDown, onKeyUp } = useKeyboardControls({
 function registerAction(name, doFn, undoFn) {
   actionManager.registerActionHandlers(name, doFn, undoFn)
 }
-
+//TODO: fix blob on delete and add
 registerAction('add_canvas_sound_source',
   payload => {
     payload.src.audioPath = soundLibrarySources.value.find(s => s.libraryId == payload.src.libraryId).audioPath
