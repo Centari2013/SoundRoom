@@ -40,7 +40,7 @@
 
 <script setup>
 import { ref, onUnmounted, computed, watch, onMounted, nextTick } from 'vue'
-import { supabase } from '@/utils/supabase'
+import downloadAudio from '@/utils/downloadAudio'
 
 const props = defineProps({
   soundData: Object,
@@ -67,10 +67,20 @@ const hasBeenPromoted = ref(false)
 
 async function emitAudio() {
   if (!blobUrl) {
-    await downloadAudio(false)
+    ({ blobUrl, audio } = await downloadAudio(props.soundData.bucket, props.soundData.path, false, stopPlayback))
   }
   hasBeenPromoted.value = true
-  emit('sendAudio', { ...props.soundData, blobUrl })
+  const { cone_inner, cone_outer, id, ...rest } = props.soundData
+
+  const source = {
+    audioPath: blobUrl,
+    coneInner: cone_inner,
+    coneOuter: cone_outer,
+    libraryId: id,
+    ...rest
+  }
+
+  emit('sendAudio', { ...source, blobUrl })
 }
 
 
@@ -107,35 +117,12 @@ onMounted(async () => {
   })
 })
 
-async function downloadAudio(populateAudio=true) {
-  const { data: fileData, error: fileError } = await supabase
-    .storage
-    .from(props.soundData.bucket)
-    .download(props.soundData.path)
-
-    if (fileError) {
-      console.error(`Failed to download ${props.src}:`, fileError)
-      return
-    }
-
-    blobUrl = URL.createObjectURL(fileData)
-    
-    if (populateAudio) {
-      audio = new Audio(blobUrl)
-      audio.preload = 'auto'
-
-      // Handle natural end of audio (shorter than preview window)
-      audio.addEventListener('ended', () => {
-        stopPlayback()
-      })
-    }
-}
 
 async function togglePlay() {
   if (isPlaying.value) {
     stopPlayback()
   } else {
-    await downloadAudio(),
+    ({ blobUrl, audio } = await downloadAudio(props.soundData.bucket, props.soundData.path, true, stopPlayback))
     audio.currentTime = 0
     audio.play().then(() => {
       isPlaying.value = true
@@ -164,6 +151,7 @@ function stopPlayback() {
   audio.pause()
   audio.removeAttribute('src')
   audio.load()
+  audio.removeEventListener('ended', handleEnded)
 
   clearTimeout(timeoutId)
   cancelAnimationFrame(rafId)

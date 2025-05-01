@@ -52,7 +52,6 @@ function openContextMenu(e, source) {
   e.stopPropagation();
   
   contextSound.value = source
-  console.log(e)
   menuRef.value.show({ x: e.clientX, y: e.clientY })
 }
 

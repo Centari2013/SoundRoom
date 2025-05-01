@@ -23,14 +23,14 @@ export default class ActionManager {
     this._actionMap[actionName] = { doAction, undoAction }
   }
 
-  doAction(actionName, payload = null) {
+  async doAction(actionName, payload = null) {
     const action = this._actionMap[actionName]
     if (!action) {
       console.warn(`No registered action for "${actionName}"`)
       return
     }
 
-    action.doAction?.(payload)
+    await action.doAction?.(payload)
     this._actionStack.value.push({ name: actionName, payload })
 
     if (this._actionStack.value.length > this.#MAX_STACK) {
@@ -40,7 +40,7 @@ export default class ActionManager {
     this._redoStack.value.length = 0
   }
 
-  undoLastAction() {
+  async undoLastAction() {
     if (this.actionStackEmpty.value) return
 
     const { name, payload } = this._actionStack.value.pop()
@@ -51,7 +51,7 @@ export default class ActionManager {
       return
     }
 
-    action.undoAction?.(payload)
+    await action.undoAction?.(payload)
     this._redoStack.value.push({ name, payload })
 
     if (this._redoStack.value.length > this.#MAX_STACK) {
@@ -59,7 +59,7 @@ export default class ActionManager {
     }
   }
 
-  redoLastAction() {
+  async redoLastAction() {
     if (this.redoStackEmpty.value) return
 
     const { name, payload } = this._redoStack.value.pop()
@@ -70,7 +70,7 @@ export default class ActionManager {
       return
     }
 
-    action.doAction?.(payload)
+    await action.doAction?.(payload)
     this._actionStack.value.push({ name, payload })
   }
 
