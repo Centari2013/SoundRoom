@@ -16,20 +16,15 @@
       @load="handleAddLibrarySoundSource"
       />
       <!-- Left Sidebar -->
-      <aside class="w-64 bg-neutral-200 dark:bg-neutral-900 border-r border-neutral-400 dark:border-neutral-800 p-4 space-y-6">
-        <!-- Sound Sources -->
-        <DraggableSourcePanel 
-          :librarySources="soundLibrarySources"
-          :MAX_SOURCES="MAX_SOURCES"
-          :audioEngine="audioEngine"
-          :handleDragStart="handleDragStart"
-          :addSourceClick="() => {isLibraryOpen = true}"
-          @deleteSource="handleDeleteLibrarySource"
-        />
-
-        <!-- Listener Info -->
-        <ListenerReadout :listener="listener"/>
-      </aside>
+      <SidebarLeft 
+        :soundLibrarySources="soundLibrarySources"
+        :MAX_SOURCES="MAX_SOURCES"
+        :audioEngine="audioEngine"
+        :handleDragStart="handleDragStart"
+        :addSourceClick="() => {isLibraryOpen = true}"
+        :listener="listener"
+        @deleteSource="handleDeleteLibrarySource"
+      />
 
       <!-- Canvas + Controls -->
       <main class="flex-1 flex flex-col">
@@ -130,6 +125,7 @@ import SoundSourceNode from '@/components/ui/canvas/SoundSourceNode.vue'
 import SoundLibrary from '@/components/ui/modals/SoundLibrary.vue'
 import Help from '@/components/ui/modals/Help.vue'
 import HeaderBar from '@/components/SoundRoom/HeaderBar.vue'
+import SidebarLeft from '@/components/SoundRoom/SidebarLeft.vue'
 
 // Core Classes
 import Listener from '@/lib/Listener'

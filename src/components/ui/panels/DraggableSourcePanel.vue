@@ -38,10 +38,6 @@ const props = defineProps({
   addSourceClick: Function
 })
 
-const librarySources = props.librarySources
-const MAX_SOURCES = props.MAX_SOURCES
-const audioEngine = props.audioEngine
-
 const emit = defineEmits(['deleteSource'])
 
 const menuRef = ref(null)
