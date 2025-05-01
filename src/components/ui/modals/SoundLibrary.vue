@@ -3,14 +3,14 @@
     <div class="bg-white dark:bg-neutral-950 rounded-2xl w-[80vw] h-[80vh] flex overflow-hidden shadow-2xl border border-neutral-300 dark:border-neutral-800">
       
       <!-- Left Sidebar: Categories -->
-      <aside class="w-60 bg-neutral-100 dark:bg-neutral-900 border-r border-neutral-300 dark:border-neutral-800 p-4 space-y-3 overflow-y-auto">
+      <aside class="w-60 bg-neutral-200 dark:bg-neutral-900 border-r border-neutral-300 dark:border-neutral-800 p-4 space-y-3 overflow-y-auto">
         <h2 class="font-bold text-sm mb-2">Categories</h2>
         <button
           v-for="cat in categories"
           :key="cat.id"
           @click="activeCategory = cat.id"
           :class="[
-            'w-full text-left px-3 py-2 rounded text-sm',
+            'w-full text-left px-3 py-2 rounded text-sm sound-lib-button',
             activeCategory === cat.id
               ? 'bg-neutral-200 dark:bg-neutral-800 font-semibold'
               : 'hover:bg-neutral-200 dark:hover:bg-neutral-800'
@@ -47,7 +47,7 @@
 
           <!-- Load Button -->
           <button
-            class="text-xs bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 transition-colors"
+            class="sound-lib-button text-xs  px-3 py-1 rounded hover:bg-blue-700 transition-colors"
             @click="sound.send = true"
           >
             Load
@@ -75,7 +75,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, nextTick } from 'vue'
+import { ref, watch, nextTick } from 'vue'
 
 import { supabase } from '@/utils/supabase'
 
@@ -198,5 +198,11 @@ function handleUpload(event) {
 <style>
 .marquee-text-text {
   margin-left: 20px;
+}
+@media (prefers-color-scheme: light) {
+  .sound-lib-button {
+    background-color: #ffffff;
+  }
+
 }
 </style>
