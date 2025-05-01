@@ -56,7 +56,7 @@ export default class AudioEngine {
 
   addSoundSource(payload) {
     const src = payload.src
-    console.log('Add', src)
+    
     src.index = payload.index ?? this.soundSources.value.length
     const instance = new SoundSource({
       audioContext: this.getAudioContext(),
@@ -69,16 +69,16 @@ export default class AudioEngine {
     })
 
     src.instance = instance
-    this.soundSources.value.push(src)
+    this.soundSources.value.splice(src.index, 0, src)
     if (this.#audioContext?.state === 'suspended') {
       this.#audioContext.resume()
     }
     instance.play()
-
+    console.log('Add', src)
   }
 
   deleteSoundSource(payload) {
-    console.log('Delete', payload)
+    
     const index = payload.src.index
     const src = this.soundSources.value[index]
     const instance = src?.instance
@@ -87,6 +87,7 @@ export default class AudioEngine {
     instance.dispose()
 
     this.soundSources.value.splice(index, 1)
+    console.log('Delete', payload)
   }
 
   playAll() {
