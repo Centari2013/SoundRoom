@@ -5,23 +5,23 @@
 
     <!-- Main Layout -->
     <div class="flex flex-1 overflow-hidden">
-      <Help 
-      :isHelpOpen="isHelpOpen"
-      @close="isHelpOpen = false"
+      
+      <Help :isHelpOpen="isHelpOpen" @close="isHelpOpen = false" />
+      
+      <SoundLibrary
+        :isLibraryOpen="isLibraryOpen"
+        :sounds="[]"
+        @close="isLibraryOpen = false"
+        @load="handleAddLibrarySoundSource"
       />
-      <SoundLibrary 
-      :isLibraryOpen="isLibraryOpen" 
-      :sounds="[]"
-      @close="isLibraryOpen = false"
-      @load="handleAddLibrarySoundSource"
-      />
+      
       <!-- Left Sidebar -->
       <SidebarLeft 
         :soundLibrarySources="soundLibrarySources"
         :MAX_SOURCES="MAX_SOURCES"
         :audioEngine="audioEngine"
         :handleDragStart="handleDragStart"
-        :addSourceClick="() => {isLibraryOpen = true}"
+        :addSourceClick="() => { isLibraryOpen = true }"
         :listener="listener"
         @deleteSource="handleDeleteLibrarySource"
       />
@@ -57,19 +57,19 @@
         <!-- Canvas Area -->
         <div class="flex-1 bg-neutral-200 dark:bg-black flex items-center justify-center">
           <MainCanvasStage 
-          ref="stageWrapper"
-          :room="room"
-          :handleDrop="handleDrop"
-          :onKeyDown="onKeyDown"
-          :onKeyUp="onKeyUp"
-          :contextMenuActions="contextMenuActions"
-          :showContextMenu="showContextMenu"
-          :actionManager="actionManager"
-          :selectedIndex="selectedIndex"
-          :listener="listener"
-          :audioEngine="audioEngine"
-          :handleStageClick="handleStageClick"
-          @selectNode="(e) => { selectedIndex = e }"
+            ref="stageWrapper"
+            :room="room"
+            :handleDrop="handleDrop"
+            :onKeyDown="onKeyDown"
+            :onKeyUp="onKeyUp"
+            :contextMenuActions="contextMenuActions"
+            :showContextMenu="showContextMenu"
+            :actionManager="actionManager"
+            :selectedIndex="selectedIndex"
+            :listener="listener"
+            :audioEngine="audioEngine"
+            :handleStageClick="handleStageClick"
+            @selectNode="e => { selectedIndex = e }"
           />
         </div>
       </main>
@@ -86,22 +86,18 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed, reactive, provide, onUnmounted } from 'vue'
+import { ref, computed, reactive, provide, onMounted, onUnmounted } from 'vue'
 
 // UI Components
 import VueSlider from 'vue-3-slider-component'
-
-import ContextMenu from '@/components/ui/context/ContextMenu.vue'
 import ToolbarControls from '@/components/ui/controls/ToolbarControls.vue'
-import SelectedSourcePanel from '@/components/ui/panels/SelectedSourcePanel.vue'
-import ListenerNode from '@/components/ui/canvas/ListenerNode.vue'
-import SoundSourceNode from '@/components/ui/canvas/SoundSourceNode.vue'
 import SoundLibrary from '@/components/ui/modals/SoundLibrary.vue'
 import Help from '@/components/ui/modals/Help.vue'
 import HeaderBar from '@/components/SoundRoom/HeaderBar.vue'
 import SidebarLeft from '@/components/SoundRoom/SidebarLeft.vue'
 import SidebarRight from '@/components/SoundRoom/SidebarRight.vue'
 import MainCanvasStage from '@/components/SoundRoom/MainCanvasStage.vue'
+
 // Core Classes
 import Listener from '@/lib/Listener'
 import AudioEngine from '@/lib/AudioEngine'
@@ -116,33 +112,13 @@ import { setupAudioContext } from '@/composables/useAudioSetup'
 import { useContextMenuLogic } from '@/composables/useContextMenuLogic'
 import { registerCanvasActions, registerDraggableActions } from '@/composables/useSoundRoomActions'
 
-
-
-// ===================================
-// Help Modal
-// ===================================
+// State
 const isHelpOpen = ref(false)
-// ===================================
-// Library
-// ===================================
 const isLibraryOpen = ref(false)
-const handleAddLibrarySoundSource = async (src) => {
-  await actionManager.doAction('add_draggable_sound_source', { src })
-}
-function handleDeleteLibrarySource(src){
- actionManager.doAction('delete_draggable_sound_source', { src })
-}
-
-// ===================================
-// Global Refs & Reactive State
-// ===================================
-const canvasCtx = ref(null)
+const selectedIndex = ref(null)
 const draggedSource = ref(null)
 const contextMenuRef = ref(null)
 const stageWrapper = ref(null)
-const selectedIndex = ref(null)
-
-provide('selectedIndex', selectedIndex)
 
 const room = new Room()
 const listener = reactive(new Listener())
@@ -150,51 +126,51 @@ const soundLibrarySources = ref([])
 const MAX_SOURCES = 20
 const loadedCanvasSoundSources = []
 
-
-// ===================================
-// Engine, State, Selection
-// ===================================
-const audioEngine = new AudioEngine(loadedCanvasSoundSources, canvasCtx)
-
+const audioEngine = new AudioEngine(loadedCanvasSoundSources)
+const isPlaying = computed(() => audioEngine.isPlaying.value)
 const masterVolumeProxy = computed({
   get: () => audioEngine.masterVolume.value,
   set: v => (audioEngine.masterVolume.value = v),
 })
 
-const isPlaying = computed(() => audioEngine.isPlaying.value)
-let audioContext = null
-
-const { selectedSource } = useSelectedSource(audioEngine.soundSources, selectedIndex)
-provide('selectedSource', selectedSource)
-
+// Actions
 const actionManager = new ActionManager()
 const actionStackEmpty = computed(() => actionManager.actionStackEmpty.value)
 const redoStackEmpty = computed(() => actionManager.redoStackEmpty.value)
 
+// Selection
+const { selectedSource } = useSelectedSource(audioEngine.soundSources, selectedIndex)
+provide('selectedIndex', selectedIndex)
+provide('selectedSource', selectedSource)
 
-// ===================================
-// Handlers & Interaction Logic
-// ===================================
-// Click logic
+// Event Handlers
 function handleStageClick(e) {
   if (e.target.getAttr('name') !== 'sound-node-part') {
     selectedIndex.value = null
   }
 }
 
-const { showContextMenu, contextMenuActions } = useContextMenuLogic(selectedSource, contextMenuRef, actionManager)
+const handleAddLibrarySoundSource = async (src) => {
+  await actionManager.doAction('add_draggable_sound_source', { src })
+}
 
+function handleDeleteLibrarySource(src) {
+  actionManager.doAction('delete_draggable_sound_source', { src })
+}
 
-// Drag and drop
+// Composable Logic
 const { handleDragStart, handleDrop } = useDragDropAudio({
   draggedSource,
   actionManager,
   stageWrapper
 })
 
+const { showContextMenu, contextMenuActions } = useContextMenuLogic(
+  selectedSource,
+  contextMenuRef,
+  actionManager
+)
 
-
-// Keyboard controls
 const { onKeyDown, onKeyUp } = useKeyboardControls({
   listener,
   selectedIndex,
@@ -207,9 +183,8 @@ const { onKeyDown, onKeyUp } = useKeyboardControls({
 registerCanvasActions(audioEngine, actionManager, listener, soundLibrarySources)
 registerDraggableActions(audioEngine, actionManager, soundLibrarySources)
 
-// ===================================
 // Lifecycle
-// ===================================
+let audioContext = null
 onMounted(() => {
   audioContext = setupAudioContext(audioEngine, listener)
 })
@@ -218,5 +193,3 @@ onUnmounted(() => {
   audioEngine.dispose()
 })
 </script>
-
-
