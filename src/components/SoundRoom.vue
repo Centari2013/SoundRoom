@@ -134,7 +134,7 @@ import ActionManager from '@/lib/ActionManager'
 import { useKeyboardControls } from '@/composables/useKeyboardControls'
 import { useDragDropAudio } from '@/composables/useDragDropAudio'
 import { useSelectedSource } from '@/composables/useSelectedSource'
-
+import { setupAudioContext } from '@/composables/useAudioSetup'
 // Supabase
 import downloadAudio from '@/utils/downloadAudio'
 
@@ -350,21 +350,13 @@ registerAction('add_draggable_sound_source',
   payload => deleteDraggableSoundSource(payload),
 )
 
-// ===================================
-// Audio Setup
-// ===================================
-function setupAudioContext() {
-  audioEngine.setupAudioEngine()
-  audioContext = audioEngine.getAudioContext()
-  listener.setAudioContext(audioContext)
-}
 
 
 // ===================================
 // Lifecycle
 // ===================================
 onMounted(() => {
-  setupAudioContext()
+  audioContext =setupAudioContext(audioEngine, listener)
 })
 
 onUnmounted(() => {
