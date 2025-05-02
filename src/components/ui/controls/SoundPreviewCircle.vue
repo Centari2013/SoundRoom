@@ -45,6 +45,7 @@ import downloadAudio from '@/utils/downloadAudio'
 const props = defineProps({
   soundData: Object,
   sendAudioUp: Boolean,
+  currentlyPlayingId: String
 })
 
 let audio = null
@@ -62,7 +63,7 @@ const radius = ref(0)
 const circumference = computed(() => 2 * Math.PI * radius.value)
 const dashOffset = computed(() => circumference.value * (1 - progress.value))
 const duration = ref(15)
-const emit = defineEmits(['sendAudio'])
+const emit = defineEmits(['sendAudio', 'updateCurrent'])
 const hasBeenPromoted = ref(false)
 
 async function emitAudio() {
@@ -89,6 +90,13 @@ watch(() => props.sendAudioUp, (newValue) => {
     emitAudio()
   }
 })
+
+watch(() => props.currentlyPlayingId, (newId) => {
+  if (newId !== props.soundData.id && isPlaying.value) {
+    stopPlayback()
+  }
+})
+
 
 function formatSecondsToTime(totalSeconds) {
   const hours = Math.floor(totalSeconds / 3600)
@@ -128,6 +136,7 @@ async function togglePlay() {
       isPlaying.value = true
       setupProgressTracking()
     })
+    emit('updateCurrent', props.soundData.id)
 
     timeoutId = setTimeout(stopPlayback, duration.value * 1000)
   }

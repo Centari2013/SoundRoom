@@ -42,7 +42,9 @@
           <SoundPreviewCircle
             :soundData="sound"
             :sendAudioUp="sound.send"
+            :currentlyPlayingId="currentlyPlayingId"
             @sendAudio="(soundData) => {handleAudioSent(soundData, sound)}"
+            @updateCurrent="currentlyPlayingId = $event"
           />
 
           <!-- Load Button -->
@@ -102,23 +104,11 @@ const categories = [
   { id: 'tools', label: 'Work & Focus' },
   { id: 'layers', label: 'Atmospheric' }
 ]
-
+//TODO: fix button selection color not triggering 
+//TODO: fix play/pause triggered by OS
 const sounds = [
-  // NATURE
-  { "id": "water", "name": "Waterfall", "categoryId": "nature", "previewUrl": "/sounds/water.mp3", "duration": '1:46:00' },
-  { "id": "rain", "name": "Rain", "categoryId": "nature", "previewUrl": "/sounds/rain.wav", "duration": '0:57' },
-  { "id": "thunder", "name": "Thunderstorm", "categoryId": "nature", "previewUrl": "/sounds/thunder.mp3", "duration": '25:13' },
-  { "id": "forest", "name": "Forest Morning", "categoryId": "nature", "previewUrl": "/sounds/forest.wav", "duration": '2:31' },
-  { "id": "river", "name": "River Creek", "categoryId": "nature", "previewUrl": "/sounds/river.mp3", "duration": '0:09' },
-  { "id": "ocean", "name": "Ocean Waves", "categoryId": "nature", "previewUrl": "/sounds/ocean.wav", "duration": '0:48' },
-  { "id": "fire", "name": "Fireplace", "categoryId": "nature", "previewUrl": "/sounds/fire.mp3", "duration": '1:59' },
-
-  // URBAN
-  { "id": "cafe", "name": "Coffee Shop", "categoryId": "urban", "previewUrl": "/sounds/cafe.wav", "duration": 15 },
-  { "id": "library", "name": "Library Quiet", "categoryId": "urban", "previewUrl": "/sounds/library.wav", "duration": 12 },
-  { "id": "traffic", "name": "City Traffic", "categoryId": "urban", "previewUrl": "/sounds/traffic.wav", "duration": 13 },
+  
   { "id": "subway", "name": "Subway Platform", "categoryId": "urban", "previewUrl": "/sounds/subway.wav", "duration": 14 },
-  { "id": "construction", "name": "Construction Site", "categoryId": "urban", "previewUrl": "/sounds/construction.wav", "duration": 17 },
 
   // MUSICAL
   { "id": "lofi", "name": "Lofi Chill", "categoryId": "musical", "previewUrl": "/sounds/lofi.wav", "duration": 30 },
@@ -153,6 +143,8 @@ const sounds = [
   { "id": "chimes", "name": "Wind Chimes", "categoryId": "layers", "previewUrl": "/sounds/chimes.wav", "duration": 10 },
   { "id": "clock", "name": "Clock Ticking", "categoryId": "layers", "previewUrl": "/sounds/clock.wav", "duration": 11 }
 ]
+
+const currentlyPlayingId = ref(null)
 
 
 const activeCategory = ref(categories?.[0]?.id || '')
