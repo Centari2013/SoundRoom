@@ -7,28 +7,25 @@ export function registerCanvasActions(audioEngine, actionManager, listener, soun
     src.instance.updateAudio()
     listener.updateAudio()
   }
-  //TODO: fix blob (src.audioPath) on delete and add
+  const addSoundSource = (payload) => {
+    payload.src.audioPath = soundLibrarySources.value.find(s => s.libraryId === payload.src.libraryId).audioPath
+    audioEngine.addSoundSource(payload)
+    listener.updateAudio()
+  }
+
+  const deleteSoundSource = (payload) => {
+    payload.src = audioEngine.deleteSoundSource(payload)
+    listener.updateAudio()
+  }
+
   actionManager.registerActionHandlers('add_canvas_sound_source',
-    payload => {
-      payload.src.audioPath = soundLibrarySources.value.find(s => s.libraryId === payload.src.libraryId).audioPath
-      audioEngine.addSoundSource(payload)
-      listener.updateAudio()
-    },
-    payload => {
-      audioEngine.deleteSoundSource(payload)
-      listener.updateAudio()
-    }
+    addSoundSource,
+    deleteSoundSource
   )
 
   actionManager.registerActionHandlers('delete_canvas_sound_source',
-    payload => {
-      audioEngine.deleteSoundSource(payload)
-      listener.updateAudio()
-    },
-    payload => {
-      audioEngine.addSoundSource(payload)
-      listener.updateAudio()
-    }
+    deleteSoundSource,
+    addSoundSource
   )
 
   actionManager.registerActionHandlers('move_canvas_sound_source',
