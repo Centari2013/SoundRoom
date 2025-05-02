@@ -2,8 +2,6 @@
   <v-group
     :x="source.instance.state.x"
     :y="source.instance.state.y"
-    @mouseover="setCursor($event, 'pointer')"
-    @mouseout="setCursor($event, 'default')"
     @dragmove="onSourceDragMove"
   >
     <!-- Outer Cone -->
@@ -15,6 +13,7 @@
       fill="rgba(255, 100, 100, 0.2)"
       shadowColor="rgba(255, 100, 100, 0.7)"
       :shadowBlur="12"
+      :listening="false"
     />
 
     <!-- Inner Cone -->
@@ -24,6 +23,7 @@
       :rotation="(-coneInner / 2) + source.instance.state.angle"
       :radius="50"
       fill="rgba(255, 120, 120, 0.2)"
+      :listening="false"
     />
 
     <!-- Source Dot -->
@@ -33,6 +33,8 @@
       name="sound-node-part"
       @mousedown="onSourceMouseDown"
       @mouseup="onSourceMouseUp"
+      @mouseover="setCursor($event, 'pointer')"
+      @mouseout="setCursor($event, 'default')"
     />
 
     <!-- Direction Diamond -->
@@ -53,6 +55,8 @@
       :strokeWidth="1"
       @mousedown="onSourceMouseDown"
       @mouseup="onSourceMouseUp"
+      @mouseover="setCursor($event, 'pointer')"
+      @mouseout="setCursor($event, 'default')"
       name="sound-node-part"
     />
 
@@ -68,6 +72,8 @@
       fill="transparent"
       @mousedown="onHandleMouseDown"
       @mouseup="onHandleMouseUp"
+      @mouseover="setCursor($event, 'pointer')"
+      @mouseout="setCursor($event, 'default')"
       name="sound-node-part"
     />
   </v-group>
@@ -75,8 +81,6 @@
 
 <script setup>
 import { computed } from 'vue'
-
-// TODO: fix soundsource overlappin with cone visually, should be clickable even under cone
 
 // Props and emits
 const props = defineProps({
