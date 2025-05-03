@@ -99,37 +99,13 @@ const categories = [
   { id: 'nature', label: 'Nature' },
   { id: 'human', label: 'Human' },
   { id: 'musical', label: 'Musical' },
-  { id: 'fantasy', label: 'Fantasy' },  //split into two categories
-  { id: 'sci-fi', label: 'Sci-Fi'},
   { id: 'tools', label: 'Work & Focus' },
-  { id: 'layers', label: 'Atmospheric' }
+  { id: 'atmospheric', label: 'Atmospheric' },
+  { id: 'misc', label: 'Misc' }
 ]
 //TODO: fix button selection color not triggering 
 //TODO: fix play/pause triggered by OS
 const sounds = [
-  
-  { "id": "subway", "name": "Subway Platform", "categoryId": "urban", "previewUrl": "/sounds/subway.wav", "duration": 14 },
-
-  // MUSICAL
-  { "id": "lofi", "name": "Lofi Chill", "categoryId": "musical", "previewUrl": "/sounds/lofi.wav", "duration": 30 },
-  { "id": "ambient", "name": "Ambient Drone", "categoryId": "musical", "previewUrl": "/sounds/ambient.wav", "duration": 25 },
-  { "id": "piano", "name": "Piano Solo", "categoryId": "musical", "previewUrl": "/sounds/piano.wav", "duration": 20 },
-  { "id": "guitar", "name": "Guitar Loop", "categoryId": "musical", "previewUrl": "/sounds/guitar.wav", "duration": 22 },
-  { "id": "classical", "name": "Classical Piece", "categoryId": "musical", "previewUrl": "/sounds/classical.wav", "duration": 28 },
-  { "id": "synth", "name": "Synthwave Loop", "categoryId": "musical", "previewUrl": "/sounds/synth.wav", "duration": 26 },
-
-  // FANTASY
-  { "id": "magic", "name": "Magical Ambience", "categoryId": "fantasy", "previewUrl": "/sounds/magic.wav", "duration": 14 },
-  { "id": "dungeon", "name": "Dungeon Echoes", "categoryId": "fantasy", "previewUrl": "/sounds/dungeon.wav", "duration": 13 },
-  { "id": "haunted", "name": "Haunted Hallway", "categoryId": "fantasy", "previewUrl": "/sounds/haunted.wav", "duration": 12 },
-  { "id": "tavern", "name": "Medieval Tavern", "categoryId": "fantasy", "previewUrl": "/sounds/tavern.wav", "duration": 16 },
-
-  // SCI-FI
-  { "id": "space", "name": "Space Station", "categoryId": "sci-fi", "previewUrl": "/sounds/space.wav", "duration": 15 },
-  { "id": "alien", "name": "Alien World", "categoryId": "sci-fi", "previewUrl": "/sounds/alien.wav", "duration": 13 },
-  { "id": "computer", "name": "Computer Beeps", "categoryId": "sci-fi", "previewUrl": "/sounds/computer.wav", "duration": 10 },
-  { "id": "teleport", "name": "Teleport Glitch", "categoryId": "sci-fi", "previewUrl": "/sounds/teleport.wav", "duration": 11 },
-
   // TOOLS (WORK & FOCUS)
   { "id": "white", "name": "White Noise", "categoryId": "tools", "previewUrl": "/sounds/white.wav", "duration": 30 },
   { "id": "pink", "name": "Pink Noise", "categoryId": "tools", "previewUrl": "/sounds/pink.wav", "duration": 30 },
