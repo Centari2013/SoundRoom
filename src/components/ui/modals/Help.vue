@@ -5,7 +5,7 @@
       <!-- Absolute Floating Header -->
       <div class="absolute top-0 left-0 right-0 z-10 flex justify-between items-center px-6 py-4 bg-white/50 dark:bg-neutral-950/50 backdrop-blur-md border-b border-neutral-300 dark:border-neutral-800">
         <h1 class="text-2xl font-bold tracking-tight">Welcome to SoundRoom</h1>
-        <button @click="() => {$emit('close'); formSubmitted = false;}" class="text-sm underline hover:text-neutral-600 dark:hover:text-neutral-400">Close</button>
+        <button @click="() => {$emit('close'); formSubmitted = false; resetFAQ()}" class="text-sm underline hover:text-neutral-600 dark:hover:text-neutral-400">Close</button>
       </div>
 
       <!-- Scrollable Content -->
@@ -21,9 +21,11 @@
         <section>
             <h2 class="text-lg font-semibold mb-2">Getting Started</h2>
             <ul class="list-disc list-inside space-y-1">
-              <li>Open the Sound Library using the left sidebar.</li>
+              <li>Click <strong>+ Add Source</strong> in the left panel to add sounds to your personal library.</li>
+              <li>You can add up to <strong>20</strong> library sources at a time.</li>
               <li>Drag a sound onto the canvas to place it.</li>
-              <li>Each sound can be moved and rotated independently.</li>
+              <li>You can place up to <strong>30</strong> sound nodes in your room.</li>
+              <li>Each placed node can be individually rotated, moved, and adjusted.</li>
             </ul>
           </section>
 
@@ -55,11 +57,6 @@
           </section>
 
           <section>
-            <h2 class="text-lg font-semibold mb-2">Uploading Your Own Sounds</h2>
-            <p class="text-neutral-500 italic">Not yet implemented!</p>
-          </section>
-
-          <section>
             <h2 class="text-lg font-semibold mb-2">Tips for Better Sound Design</h2>
             <ul class="list-disc list-inside space-y-1">
               <li>Layer different sounds for depth and richness.</li>
@@ -67,6 +64,31 @@
               <li>Use silence strategically for contrast and impact.</li>
             </ul>
           </section>
+
+          <section>
+            <h2 class="text-lg font-semibold mb-4 border-b border-neutral-300 dark:border-neutral-800 pb-1">FAQ</h2>
+            <ul class=" dark:divide-neutral-800">
+              <li
+                v-for="(faq, i) in faqs"
+                :key="i"
+                class="py-1"
+              >
+                <button
+                  @click="faq.open = !faq.open"
+                  class="w-full text-left font-medium text-neutral-800 dark:text-neutral-200 focus:outline-none transition-colors"
+                >
+                  {{ faq.question }}
+                </button>
+                <p
+                  v-if="faq.open"
+                  class="mt-2 text-sm text-neutral-600 dark:text-neutral-400 leading-snug italic indent-3"
+                >
+                  {{ faq.answer }}
+                </p>
+              </li>
+            </ul>
+          </section>
+
 
         <!-- Contact Form or Thank You -->
         <section>
@@ -145,7 +167,6 @@ const form = ref({
   message: ''
 })
 
-
 const formSubmitted = ref(false)
 
 async function handleSubmit() {
@@ -181,5 +202,37 @@ async function handleSubmit() {
     alert('Something went wrong. Please try again later.')
   }
 }
+
+const faqs = ref([
+  {
+    question: 'What file types can I upload?',
+    answer: 'Currently, uploading is not available. When implemented, MP3 and WAV will be supported.',
+    open: false
+  },
+  {
+    question: 'Can I save multiple rooms?',
+    answer: 'Not yet. Scene saving is a planned feature for future updates.',
+    open: false
+  },
+  {
+    question: 'How do I export my soundscape?',
+    answer: 'Export functionality will come later. For now, you can recreate setups manually.',
+    open: false
+  },
+  {
+    question: 'Can I connect Spotify or YouTube?',
+    answer: 'Direct integration is not supported, but background audio layering is planned.',
+    open: false
+  },
+  {
+    question: 'What else is planned?',
+    answer: 'Many things! But if you have any suggestions, feel free to reach out using the form below!',
+    open: false
+  }
+])
+
+const resetFAQ = () => {
+  faqs.value.forEach(f => f.open = false)
+} 
 
 </script>
