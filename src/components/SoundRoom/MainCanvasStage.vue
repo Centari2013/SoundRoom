@@ -1,6 +1,6 @@
 <template>
   <div
-  ref="stageRef"
+    ref="stageRef"
     class="border-2 border-neutral-400 dark:border-neutral-700 flex items-center justify-center"
     :class="`w-[${room.width}px] h-[${room.height}px]`"
     @dragover.prevent
@@ -9,7 +9,7 @@
     @keyup="onKeyUp"
     tabindex="0"
   >
-    <ContextMenu ref="contextMenu" :functionList="contextMenuActions" />
+    <ContextMenu ref="contextMenuRef" :functionList="contextMenuActions" />
     <v-stage :config="{ width: room.width, height: room.height }" @contextmenu="(e) => e.evt.preventDefault()" @mousedown="handleStageClick">
       <v-layer ref="mainLayer">
         <SoundSourceNode
@@ -53,7 +53,7 @@ const props = defineProps([
 defineEmits(['selectNode'])
 
 const stageRef = ref(null)
+const contextMenuRef = ref(null)
 
-
-defineExpose({ stageRef })
+defineExpose({ stageRef, contextMenuRef })
 </script>

@@ -1,11 +1,11 @@
 import { computed } from 'vue'
 
-export function useContextMenuLogic(selectedSource, contextMenuRef, actionManager) {
+export function useContextMenuLogic(selectedSource, stageWrapperRef, actionManager) {
   function showContextMenu(e) {
     e.evt.preventDefault()
     e.evt.stopPropagation()
     if (e.target.getAttr('name') === 'sound-node-part') {
-      contextMenuRef.value.show({ x: e.evt.clientX, y: e.evt.clientY })
+      stageWrapperRef.value.contextMenuRef.show({ x: e.evt.clientX, y: e.evt.clientY })
     }
   }
 
@@ -26,7 +26,7 @@ export function useContextMenuLogic(selectedSource, contextMenuRef, actionManage
           index: selectedSource.value.index,
           src: selectedSource.value,
         })
-        contextMenuRef.value.visible = false
+        stageWrapperRef.value.contextMenuRef.visible = false
       },
     },
   ]

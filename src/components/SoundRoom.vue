@@ -117,7 +117,6 @@ const isHelpOpen = ref(false)
 const isLibraryOpen = ref(false)
 const selectedIndex = ref(null)
 const draggedSource = ref(null)
-const contextMenuRef = ref(null)
 const stageWrapper = ref(null)
 
 const room = new Room()
@@ -168,7 +167,7 @@ const { handleDragStart, handleDrop } = useDragDropAudio({
 
 const { showContextMenu, contextMenuActions } = useContextMenuLogic(
   selectedSource,
-  contextMenuRef,
+  stageWrapper,
   actionManager
 )
 
