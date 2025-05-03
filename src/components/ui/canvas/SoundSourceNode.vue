@@ -3,6 +3,7 @@
     :x="source.instance.state.x"
     :y="source.instance.state.y"
     @dragmove="onSourceDragMove"
+    ref="groupRef"
   >
     <!-- Outer Cone -->
     <v-wedge
@@ -80,7 +81,7 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 
 // Props and emits
 const props = defineProps({
@@ -90,6 +91,8 @@ const props = defineProps({
   index: Number,
   selected: Boolean
 })
+
+//TODO: add source name label
 
 const emit = defineEmits(['select'])
 
@@ -249,4 +252,7 @@ function onHandleMouseUp() {
 
   initialSourceAngle = null
 }
+
+const groupRef = ref(null)
+defineExpose({ getNode: () => groupRef.value.getNode() })
 </script>
