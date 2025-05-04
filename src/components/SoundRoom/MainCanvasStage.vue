@@ -42,21 +42,22 @@ import ListenerNode from '@/components/ui/canvas/ListenerNode.vue'
 
 import SoundSourceLabel from '@/components/ui/text/SoundSourceLabel.vue'
 
-const props = defineProps([
-  'room',
-  'handleDrop',
-  'onKeyDown',
-  'onKeyUp',
-  'handleStageClick',
-  'contextMenuActions',
-  'showContextMenu',
-  'actionManager',
-  'selectedIndex',
-  'listener',
-  'audioEngine',
-  'stageRef',
-  'MAX_CANVAS_SOURCES'
-])
+const props = defineProps({
+  room: Object,
+  handleDrop: Function,
+  onKeyDown: Function,
+  onKeyUp: Function,
+  handleStageClick: Function,
+  contextMenuActions: Object,
+  showContextMenu: Function,
+  actionManager: Object,
+  selectedIndex: Number,
+  listener: Object,
+  audioEngine: Object,
+  stageRef: Object,
+  MAX_CANVAS_SOURCES: Number
+})
+
 defineEmits(['selectNode'])
 
 const stageRef = ref(null)
