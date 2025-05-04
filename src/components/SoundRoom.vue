@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen min-w-screen bg-white text-neutral-900 dark:bg-neutral-950 dark:text-white flex flex-col">
+  <div class="h-screen min-w-screen bg-white text-neutral-900 dark:bg-neutral-950 dark:text-white flex flex-col">
     <!-- Header -->
     <HeaderBar @openHelp="isHelpOpen = true" />
 
@@ -19,7 +19,6 @@
       <SidebarLeft 
         :soundLibrarySources="soundLibrarySources"
         :MAX_SOURCES="MAX_LIB_SOURCES"
-        :audioEngine="audioEngine"
         :handleDragStart="handleDragStart"
         :addSourceClick="() => { isLibraryOpen = true }"
         :listener="listener"
@@ -111,7 +110,7 @@ import { useDragDropAudio } from '@/composables/useDragDropAudio'
 import { useSelectedSource } from '@/composables/useSelectedSource'
 import { setupAudioContext } from '@/composables/useAudioSetup'
 import { useContextMenuLogic } from '@/composables/useContextMenuLogic'
-import { registerCanvasActions, registerDraggableActions } from '@/composables/useSoundRoomActions'
+import { registerCanvasActions, registerDraggableActions, setMaxLibSources } from '@/composables/useSoundRoomActions'
 
 // State
 const isHelpOpen = ref(false)
@@ -184,7 +183,7 @@ const { onKeyDown, onKeyUp } = useKeyboardControls({
 
 registerCanvasActions(audioEngine, actionManager, listener, soundLibrarySources)
 registerDraggableActions(audioEngine, actionManager, soundLibrarySources)
-
+setMaxLibSources(MAX_LIB_SOURCES)
 // Lifecycle
 let audioContext = null
 onMounted(() => {

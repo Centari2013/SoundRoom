@@ -34,6 +34,9 @@ export function registerCanvasActions(audioEngine, actionManager, listener, soun
   )
 }
 
+let MAX_LIB_SOURCES = null
+export function setMaxLibSources(limit){MAX_LIB_SOURCES = limit};
+
 export function registerDraggableActions(audioEngine, actionManager, soundLibrarySources) {
   const deleteDraggableSoundSource = (payload) => {
     // Remove from the source list UI
@@ -57,7 +60,14 @@ export function registerDraggableActions(audioEngine, actionManager, soundLibrar
       }
   }
 
+  
   const addDraggableSoundSource = async (payload) => {
+    if (MAX_LIB_SOURCES){
+      if (soundLibrarySources.value.length == MAX_LIB_SOURCES){
+        window.alert(`Limit of ${MAX_LIB_SOURCES} library source${MAX_LIB_SOURCES == 1 ? '' : 's'} reached.`)
+        return
+      }
+    }
     // download blob and renistate draggable source
     const { blobUrl } = await downloadAudio(payload.src.bucket, payload.src.path, false)
     payload.src.audioPath = blobUrl
