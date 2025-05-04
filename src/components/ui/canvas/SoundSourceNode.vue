@@ -92,8 +92,6 @@ const props = defineProps({
   selected: Boolean
 })
 
-//TODO: add source name label
-
 const emit = defineEmits(['select'])
 
 const source = props.source
