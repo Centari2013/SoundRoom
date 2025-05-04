@@ -50,9 +50,9 @@
           <!-- Load Button -->
           <button
             class="sound-lib-button text-xs  px-3 py-1 rounded hover:bg-blue-700 transition-colors"
-            @click="sound.send = true"
+            @click="()=>{toggleAddSource(sound)}"
           >
-            Load
+            {{soundLibrarySources.find(s => s.libraryId == sound.id) ? 'Remove' : 'Load' }}
           </button>
 
           
@@ -86,9 +86,10 @@ import MarqueeTitle from '@/components/ui/text/MarqueeTitle.vue'
 import { getSourceName } from '@/composables/useSelectedSource'
 
 const props = defineProps({
-  isLibraryOpen: Boolean
+  isLibraryOpen: Boolean,
+  soundLibrarySources: Object,
 })
-const emit = defineEmits(['close', 'load', 'upload'])
+const emit = defineEmits(['close', 'load', 'upload', 'delete'])
 
 function handleAudioSent(source, sound) {
   sound.send = false
@@ -106,20 +107,16 @@ const categories = [
 ]
 //TODO: fix button selection color not triggering 
 //TODO: fix play/pause triggered by OS
-const sounds = [
-  // TOOLS (WORK & FOCUS)
-  { "id": "white", "name": "White Noise", "categoryId": "tools", "previewUrl": "/sounds/white.wav", "duration": 30 },
-  { "id": "pink", "name": "Pink Noise", "categoryId": "tools", "previewUrl": "/sounds/pink.wav", "duration": 30 },
-  { "id": "brown", "name": "Brown Noise", "categoryId": "tools", "previewUrl": "/sounds/brown.wav", "duration": 30 },
-  { "id": "binaural", "name": "Binaural Beats", "categoryId": "tools", "previewUrl": "/sounds/binaural.wav", "duration": 20 },
 
-  // LAYERS (ATMOSPHERIC)
-  { "id": "hum", "name": "Low Engine Hum", "categoryId": "layers", "previewUrl": "/sounds/hum.wav", "duration": 15 },
-  { "id": "bass", "name": "Deep Bass Rumble", "categoryId": "layers", "previewUrl": "/sounds/bass.wav", "duration": 14 },
-  { "id": "high", "name": "High Frequency Buzz", "categoryId": "layers", "previewUrl": "/sounds/high.wav", "duration": 9 },
-  { "id": "chimes", "name": "Wind Chimes", "categoryId": "layers", "previewUrl": "/sounds/chimes.wav", "duration": 10 },
-  { "id": "clock", "name": "Clock Ticking", "categoryId": "layers", "previewUrl": "/sounds/clock.wav", "duration": 11 }
-]
+function toggleAddSource(s){
+  if (props.soundLibrarySources.find(sound => s.libraryId == sound.id)){
+    s.send = false
+    emit('delete', s)
+  }else{
+    s.send = true
+  }
+   
+}
 
 const currentlyPlayingId = ref(null)
 
