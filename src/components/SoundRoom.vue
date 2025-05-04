@@ -157,7 +157,7 @@ const handleAddLibrarySoundSource = async (src) => {
 function handleDeleteLibrarySource(src) {
   actionManager.doAction('delete_draggable_sound_source', { src })
 }
-//TODO: make sound source lib scrollable
+
 //TODO: fix play/pause not updating w OS controls 
 //TODO: possibly add sound 'events' (progressive environment, temp node playbacks, visuals etc)
 // Composable Logic
