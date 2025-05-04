@@ -16,7 +16,7 @@
       @dragstart="(e) => handleDragStart(e, s)"
       />
     </ul>
-    <button :disabled="audioEngine.soundSources.length == MAX_SOURCES"
+    <button :disabled="librarySources.length == MAX_SOURCES"
     @click="addSourceClick"
      class="mt-4 w-full bg-neutral-300 dark:bg-neutral-800 text-xs py-1 rounded hover:bg-neutral-400 dark:hover:bg-neutral-700">
       + Add Source
@@ -33,7 +33,6 @@ import ContextMenu from '@/components/ui/context/ContextMenu.vue'
 const props = defineProps({
   librarySources: Array,
   MAX_SOURCES: Number,
-  audioEngine: Object,
   handleDragStart: Function,
   addSourceClick: Function
 })
