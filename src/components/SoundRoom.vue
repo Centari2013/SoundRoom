@@ -18,7 +18,7 @@
       <!-- Left Sidebar -->
       <SidebarLeft 
         :soundLibrarySources="soundLibrarySources"
-        :MAX_SOURCES="MAX_SOURCES"
+        :MAX_SOURCES="MAX_LIB_SOURCES"
         :audioEngine="audioEngine"
         :handleDragStart="handleDragStart"
         :addSourceClick="() => { isLibraryOpen = true }"
@@ -67,6 +67,7 @@
             :actionManager="actionManager"
             :selectedIndex="selectedIndex"
             :listener="listener"
+            :MAX_CANVAS_SOURCES="MAX_CANVAS_SOURCES"
             :audioEngine="audioEngine"
             :handleStageClick="handleStageClick"
             @selectNode="e => { selectedIndex = e }"
@@ -122,7 +123,8 @@ const stageWrapper = ref(null)
 const room = new Room()
 const listener = reactive(new Listener())
 const soundLibrarySources = ref([])
-const MAX_SOURCES = 20
+const MAX_LIB_SOURCES = 20
+const MAX_CANVAS_SOURCES = 30
 const loadedCanvasSoundSources = []
 
 const audioEngine = new AudioEngine(loadedCanvasSoundSources)

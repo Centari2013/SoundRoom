@@ -4,7 +4,7 @@
     class="border-2 border-neutral-400 dark:border-neutral-700 flex items-center justify-center"
     :class="`w-[${room.width}px] h-[${room.height}px]`"
     @dragover.prevent
-    @drop="handleDrop"
+    @drop="handleCanvasDrop"
     @keydown="onKeyDown"
     @keyup="onKeyUp"
     tabindex="0"
@@ -54,13 +54,23 @@ const props = defineProps([
   'selectedIndex',
   'listener',
   'audioEngine',
-  'stageRef'
+  'stageRef',
+  'MAX_CANVAS_SOURCES'
 ])
 defineEmits(['selectNode'])
 
 const stageRef = ref(null)
 const contextMenuRef = ref(null)
 const coordsVersion = ref(0) // reactive bump trigger
+
+function handleCanvasDrop(e){
+  if (props.audioEngine.soundSourceCount == props.MAX_CANVAS_SOURCES){
+    window.alert(`Limit of ${props.MAX_CANVAS_SOURCES} sound${props.MAX_CANVAS_SOURCES == 1 ? '' : 's'} in room reached.`); 
+    return
+  }
+  props.handleDrop(e)
+
+}
 
 onMounted(() => {
   window.addEventListener('resize', updateCoords)

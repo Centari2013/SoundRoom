@@ -94,7 +94,7 @@ function handleAudioSent(source, sound) {
   sound.send = false
   emit('load', source)
 }
-
+//TODO: properly enforce MAX_LIB_SOURCES limit
 const categories = [
   { id: 'nature', label: 'Nature' },
   { id: 'human', label: 'Human' },

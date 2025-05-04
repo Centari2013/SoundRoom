@@ -9,6 +9,10 @@ export default class AudioEngine {
   #audioContext = null
   masterVolume = ref(null)
 
+  get soundSourceCount() {
+    return this.soundSources.value.length
+  }
+  
   constructor( soundSources, ctxRef, volume = 1 ) {
     this.soundSources.value = soundSources  // reactive array of sources
     this.#ctxRef = ctxRef                 // reactive canvas or drawing context
