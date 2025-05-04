@@ -26,15 +26,21 @@
         <ListenerNode :listener="listener" :actionManager="actionManager" :room="room" />
       </v-layer>
     </v-stage>
+    <SoundSourceLabel 
+    v-for="sntc in soundNodeTitleCoords"
+    v-bind="sntc"
+    />
   </div>
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 
 import ContextMenu from '@/components/ui/context/ContextMenu.vue'
 import SoundSourceNode from '@/components/ui/canvas/SoundSourceNode.vue'
 import ListenerNode from '@/components/ui/canvas/ListenerNode.vue'
+
+import SoundSourceLabel from '@/components/ui/text/SoundSourceLabel.vue'
 
 const props = defineProps([
   'room',
@@ -54,6 +60,33 @@ defineEmits(['selectNode'])
 
 const stageRef = ref(null)
 const contextMenuRef = ref(null)
+const coordsVersion = ref(0) // reactive bump trigger
+
+onMounted(() => {
+  window.addEventListener('resize', updateCoords)
+})
+onUnmounted(() => {
+  window.removeEventListener('resize', updateCoords)
+})
+
+function updateCoords() {
+  coordsVersion.value++
+}
+
+
+const soundNodeTitleCoords = computed(() => {
+  coordsVersion.value // makes it reactive to resize
+  return props.audioEngine.soundSources.value.map(sn => {          
+  const stagePos = stageRef.value.getBoundingClientRect();
+  return {
+        x: stagePos.left + sn.instance.state.x,
+        y: stagePos.top + sn.instance.state.y + 20, //20 is to account for directional arrow
+        name: sn.name
+      }
+});
+})
+
+
 
 defineExpose({ stageRef, contextMenuRef })
 </script>

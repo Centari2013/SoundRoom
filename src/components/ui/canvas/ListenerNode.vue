@@ -20,7 +20,7 @@
         ctx.beginPath()
         ctx.moveTo(0, 0)
         ctx.lineTo(7, 5)
-        ctx.lineTo(0, 30)
+        ctx.lineTo(0, 25)
         ctx.lineTo(-7, 5)
         ctx.closePath()
         ctx.fillStrokeShape(shape)

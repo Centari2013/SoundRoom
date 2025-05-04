@@ -45,7 +45,7 @@
         ctx.beginPath();
         ctx.moveTo(0, 0);
         ctx.lineTo(7, 5);
-        ctx.lineTo(0, 30);
+        ctx.lineTo(0, 25);
         ctx.lineTo(-7, 5);
         ctx.closePath();
         ctx.fillStrokeShape(shape);
@@ -254,5 +254,5 @@ function onHandleMouseUp() {
 }
 
 const groupRef = ref(null)
-defineExpose({ getNode: () => groupRef.value.getNode() })
+defineExpose({ getNode: () => groupRef.value.getNode(), name: props.source.name })
 </script>
