@@ -94,7 +94,8 @@ function handleAudioSent(source, sound) {
   sound.send = false
   emit('load', source)
 }
-//TODO: properly enforce MAX_LIB_SOURCES limit
+//TODO: toggle load button if source in lib/make removable from lib from here
+
 const categories = [
   { id: 'nature', label: 'Nature' },
   { id: 'human', label: 'Human' },
