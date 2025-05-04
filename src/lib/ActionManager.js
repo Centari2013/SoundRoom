@@ -12,7 +12,7 @@ export default class ActionManager {
     this.actionStackEmpty = computed(() => this._actionStack.value.length === 0)
     this.redoStackEmpty = computed(() => this._redoStack.value.length === 0)
   
-    // 👇 bind methods so "this" is always correct
+    // bind methods so "this" is always correct
     this.doAction = this.doAction.bind(this)
     this.undoLastAction = this.undoLastAction.bind(this)
     this.redoLastAction = this.redoLastAction.bind(this)
