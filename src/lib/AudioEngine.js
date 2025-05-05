@@ -69,9 +69,9 @@ export default class AudioEngine {
         album: 'SoundRoom Noise',
         artwork: [
           {
-            src: 'logo.webp',
+            src: 'SoundRoom.png',
             sizes: '512x512',
-            type: 'image/webp'
+            type: 'image/png'
           }
         ]
       })
@@ -141,9 +141,9 @@ export default class AudioEngine {
         album: 'SoundRoom Noise',
         artwork: [
           {
-            src: 'logo.webp',
+            src: 'SoundRoom.png',
             sizes: '512x512',
-            type: 'image/webp'
+            type: 'image/png'
           }
         ]
       })
