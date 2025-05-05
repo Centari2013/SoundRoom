@@ -92,7 +92,7 @@ watch(() => props.sendAudioUp, (newValue) => {
 })
 
 watch(() => props.currentlyPlayingId, (newId) => {
-  if (newId !== props.soundData.id && isPlaying.value) {
+  if (newId !== props.soundData.libraryId && isPlaying.value) {
     stopPlayback()
   }
 })
@@ -136,7 +136,7 @@ async function togglePlay() {
       isPlaying.value = true
       setupProgressTracking()
     })
-    emit('updateCurrent', props.soundData.id)
+    emit('updateCurrent', props.soundData.libraryId)
 
     timeoutId = setTimeout(stopPlayback, duration.value * 1000)
   }
