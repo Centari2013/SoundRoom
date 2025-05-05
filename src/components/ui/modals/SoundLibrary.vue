@@ -100,8 +100,7 @@ const categories = [
   { id: 'atmospheric', label: 'Atmospheric' },
   { id: 'misc', label: 'Misc' }
 ]
- 
-//TODO: fix play/pause triggered by OS
+
 
 function toggleAddSource(s){
   if (props.soundLibrarySources.find(sound => s.libraryId == sound.libraryId)){

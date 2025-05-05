@@ -56,6 +56,30 @@ export default class AudioEngine {
 
       src.instance = instance
     }
+
+    if ('mediaSession' in navigator) {
+      navigator.mediaSession.setActionHandler('play', () => {
+        this.playAll()
+      })
+    
+      navigator.mediaSession.setActionHandler('pause', () => {
+        this.pauseAll()
+      })
+    
+      navigator.mediaSession.metadata = new MediaMetadata({
+        title: 'SoundRoom',
+        artist: 'Various',
+        album: 'SoundRoom Noise',
+        artwork: [
+          {
+            src: 'logo.webp',
+            sizes: '512x512',
+            type: 'image/webp'
+          }
+        ]
+      })
+    }
+    
   }
 
   addSoundSource(payload) {
@@ -103,11 +127,30 @@ export default class AudioEngine {
     if (this.#audioContext?.state === 'suspended') {
       this.#audioContext.resume()
     }
-
+  
     this.soundSources.value.forEach(s => {
       s.instance?.play?.()
     })
+  
+    if ('mediaSession' in navigator) {
+      navigator.mediaSession.playbackState = 'playing'
+      navigator.mediaSession.metadata = new MediaMetadata({
+        title: 'SoundRoom',
+        artist: 'Various',
+        album: 'SoundRoom Noise',
+        artwork: [
+          {
+            src: 'logo.webp',
+            sizes: '512x512',
+            type: 'image/webp'
+          }
+        ]
+      })
+    }
+  
+    this.isPlaying.value = true
   }
+  
 
   pauseAll() {
     this.soundSources.value.forEach(s => {
@@ -115,6 +158,10 @@ export default class AudioEngine {
         s.instance.stop()
       }
     })
+    if ('mediaSession' in navigator) {
+      navigator.mediaSession.playbackState = 'paused'
+    }
+    
   }
 
   dispose() {
