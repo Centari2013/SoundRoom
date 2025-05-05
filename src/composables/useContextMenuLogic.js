@@ -1,4 +1,4 @@
-import { computed } from 'vue'
+import { computed, toRaw } from 'vue'
 
 export function useContextMenuLogic(selectedSource, stageWrapperRef, actionManager) {
   function showContextMenu(e) {
@@ -26,10 +26,23 @@ export function useContextMenuLogic(selectedSource, stageWrapperRef, actionManag
           index: selectedSource.value.index,
           src: selectedSource.value,
         })
-        stageWrapperRef.value.contextMenuRef.visible = false
-      },
-      //TODO: add option to duplicate nodes
+        //stageWrapperRef.value.contextMenuRef.visible = false
+      }
     },
+    {
+      //TODO: add option to duplicate nodes
+      label: 'Duplicate',
+      function: () => {
+        const src = structuredClone(toRaw(selectedSource))
+        src.state.x += 5
+        src.state.y +=5
+
+        actionManager.doAction('add_canvas_sound_source', {
+          index: null,
+          src
+        })
+      }
+    }
   ]
 
   return {
