@@ -9,12 +9,8 @@
           v-for="cat in categories"
           :key="cat.id"
           @click="activeCategory = cat.id"
-          :class="[
-            'w-full text-left px-3 py-2 rounded text-sm sound-lib-button',
-            activeCategory === cat.id
-              ? 'bg-neutral-200 dark:bg-neutral-800 font-semibold'
-              : 'hover:bg-neutral-200 dark:hover:bg-neutral-800'
-          ]"
+          :class="['sound-lib-button', { active: activeCategory === cat.id }]"
+
         >
           {{ cat.label }}
         </button>
@@ -49,7 +45,7 @@
 
           <!-- Load Button -->
           <button
-            class="sound-lib-button text-xs  px-3 py-1 rounded hover:bg-blue-700 transition-colors"
+            class="load-button text-xs px-3 py-1 rounded hover:bg-blue-700 transition-colors"
             @click="()=>{toggleAddSource(sound)}"
           >
             {{soundLibrarySources.find(s => s.libraryId == sound.libraryId) ? 'Remove' : 'Load' }}
@@ -104,7 +100,7 @@ const categories = [
   { id: 'atmospheric', label: 'Atmospheric' },
   { id: 'misc', label: 'Misc' }
 ]
-//TODO: fix button selection color not triggering 
+ 
 //TODO: fix play/pause triggered by OS
 
 function toggleAddSource(s){
@@ -167,10 +163,47 @@ function handleUpload(event) {
 .marquee-text-text {
   margin-left: 20px;
 }
+
 @media (prefers-color-scheme: light) {
-  .sound-lib-button {
+  .load-button {
     background-color: #ffffff;
   }
 
 }
+
+/* Base button styling */
+.sound-lib-button {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem; /* text-sm */
+  border-radius: 0.375rem; /* rounded */
+  transition: background-color 0.2s;
+}
+
+/* Hover state */
+.sound-lib-button:hover {
+  background-color: #e5e5e5; /* neutral-200 */
+}
+
+@media (prefers-color-scheme: dark) {
+  .sound-lib-button:hover {
+    background-color: #1f2937; /* neutral-800 */
+  }
+}
+
+/* Active/selected state */
+.sound-lib-button.active {
+  font-weight: 600;
+  background-color: #d4d4d4; /* neutral-200 */
+}
+
+@media (prefers-color-scheme: dark) {
+  .sound-lib-button.active {
+    background-color: #1f2937; /* neutral-800 */
+  }
+}
+
+
 </style>
