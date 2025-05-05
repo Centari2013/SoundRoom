@@ -26,7 +26,6 @@ export function useContextMenuLogic(selectedSource, stageWrapperRef, actionManag
           index: selectedSource.value.index,
           src: selectedSource.value,
         })
-        //stageWrapperRef.value.contextMenuRef.visible = false
       }
     },
     {
