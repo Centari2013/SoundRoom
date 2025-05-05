@@ -123,7 +123,7 @@ const room = new Room()
 const listener = reactive(new Listener())
 const soundLibrarySources = ref([])
 const MAX_LIB_SOURCES = 20
-const MAX_CANVAS_SOURCES = 1
+const MAX_CANVAS_SOURCES = 30
 const loadedCanvasSoundSources = []
 
 const audioEngine = new AudioEngine(loadedCanvasSoundSources)
