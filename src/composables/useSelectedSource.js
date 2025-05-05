@@ -21,12 +21,8 @@ export function useSelectedSource(soundSources, selectedIndex) {
     const name = getSourceName(raw.name)
   
     return {
-      name,
-      index,
+      ...raw,
       volume: raw.instance.getVolume(),
-      //audioPath: raw.audioPath,
-      instance: raw.instance,
-      state: raw.state
     }
   })
   
