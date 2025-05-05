@@ -8,10 +8,7 @@ export default class AudioEngine {
   #ctxRef = null
   #audioContext = null
   masterVolume = ref(null)
-
-  get soundSourceCount() {
-    return this.soundSources.value.length
-  }
+  #MAX_SOURCE_COUNT = 30
   
   constructor( soundSources, ctxRef, volume = 1 ) {
     this.soundSources.value = soundSources  // reactive array of sources
@@ -83,6 +80,10 @@ export default class AudioEngine {
   }
 
   addSoundSource(payload) {
+    if (this.maxSourceCountReached){
+      window.alert(`Limit of ${this.#MAX_SOURCE_COUNT} sound${this.#MAX_SOURCE_COUNT == 1 ? '' : 's'} in room reached.`); 
+      return
+    }
     const src = payload.src
     
     src.index = payload.index ?? this.soundSources.value.length
@@ -178,6 +179,21 @@ export default class AudioEngine {
       this.#audioContext.close()
       this.#audioContext = null
     }
+  }
+
+  set maxSourceCount(count){
+    this.#MAX_SOURCE_COUNT = count
+  }
+  get maxSourceCount() {
+    return this.#MAX_SOURCE_COUNT
+  }
+
+  get maxSourceCountReached(){
+    return this.soundSourceCount == this.maxSourceCount
+  }
+
+  get soundSourceCount() {
+    return this.soundSources.value.length
   }
   
 }

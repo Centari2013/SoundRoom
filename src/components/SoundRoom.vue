@@ -67,7 +67,6 @@
             :actionManager="actionManager"
             :selectedIndex="selectedIndex"
             :listener="listener"
-            :MAX_CANVAS_SOURCES="MAX_CANVAS_SOURCES"
             :audioEngine="audioEngine"
             :handleStageClick="handleStageClick"
             @selectNode="e => { selectedIndex = e }"
@@ -124,10 +123,11 @@ const room = new Room()
 const listener = reactive(new Listener())
 const soundLibrarySources = ref([])
 const MAX_LIB_SOURCES = 20
-const MAX_CANVAS_SOURCES = 30
+const MAX_CANVAS_SOURCES = 1
 const loadedCanvasSoundSources = []
 
 const audioEngine = new AudioEngine(loadedCanvasSoundSources)
+audioEngine.maxSourceCount = MAX_CANVAS_SOURCES
 const isPlaying = computed(() => audioEngine.isPlaying.value)
 const masterVolumeProxy = computed({
   get: () => audioEngine.masterVolume.value,
