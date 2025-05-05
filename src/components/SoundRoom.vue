@@ -18,6 +18,7 @@
       
       <!-- Left Sidebar -->
       <SidebarLeft 
+        class="min-w-[7.5rem] max-w-64 w-[20%] flex-shrink"
         :soundLibrarySources="soundLibrarySources"
         :MAX_SOURCES="MAX_LIB_SOURCES"
         :handleDragStart="handleDragStart"
@@ -76,9 +77,10 @@
 
       <!-- Right Sidebar -->
       <SidebarRight
-        :listener="listener"
-        :actionManager="actionManager"
-        :selectedSource="selectedSource"
+      class="min-w-[7.5rem] max-w-64 w-[20%] flex-shrink"
+      :listener="listener"
+      :actionManager="actionManager"
+      :selectedSource="selectedSource"
       />
       
     </div>

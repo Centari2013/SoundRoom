@@ -1,5 +1,5 @@
 <template>
-  <aside class="flex flex-col h-full w-64 bg-neutral-200 dark:bg-neutral-900 border-r border-neutral-400 dark:border-neutral-800 p-4 space-y-6">
+  <aside class="flex flex-col h-full bg-neutral-200 dark:bg-neutral-900 border-r border-neutral-400 dark:border-neutral-800 p-4 space-y-6">
   <div class="min-h-[100px] max-h-3/5 overflow-hidden">
     <DraggableSourcePanel
       class="h-full"

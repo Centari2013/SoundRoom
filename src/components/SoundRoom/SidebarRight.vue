@@ -1,5 +1,5 @@
 <template>
-  <aside class="w-64 bg-neutral-100 dark:bg-neutral-900 border-l border-neutral-300 dark:border-neutral-800 p-4 space-y-4">
+  <aside class="bg-neutral-100 dark:bg-neutral-900 border-l border-neutral-300 dark:border-neutral-800 p-4 space-y-4">
     <SelectedSourcePanel :listener="listener" :actionManager="actionManager" :selectedSource="selectedSource" />
   </aside>
 </template>
