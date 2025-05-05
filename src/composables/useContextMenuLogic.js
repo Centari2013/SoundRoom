@@ -28,6 +28,7 @@ export function useContextMenuLogic(selectedSource, stageWrapperRef, actionManag
         })
         stageWrapperRef.value.contextMenuRef.visible = false
       },
+      //TODO: add option to duplicate nodes
     },
   ]
 
