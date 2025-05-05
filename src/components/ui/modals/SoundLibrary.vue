@@ -52,7 +52,7 @@
             class="sound-lib-button text-xs  px-3 py-1 rounded hover:bg-blue-700 transition-colors"
             @click="()=>{toggleAddSource(sound)}"
           >
-            {{soundLibrarySources.find(s => s.libraryId == sound.id) ? 'Remove' : 'Load' }}
+            {{soundLibrarySources.find(s => s.libraryId == sound.libraryId) ? 'Remove' : 'Load' }}
           </button>
 
           
@@ -95,7 +95,6 @@ function handleAudioSent(source, sound) {
   sound.send = false
   emit('load', source)
 }
-//TODO: toggle load button if source in lib/make removable from lib from here
 
 const categories = [
   { id: 'nature', label: 'Nature' },
@@ -109,7 +108,7 @@ const categories = [
 //TODO: fix play/pause triggered by OS
 
 function toggleAddSource(s){
-  if (props.soundLibrarySources.find(sound => s.libraryId == sound.id)){
+  if (props.soundLibrarySources.find(sound => s.libraryId == sound.libraryId)){
     s.send = false
     emit('delete', s)
   }else{
@@ -132,7 +131,10 @@ watch(activeCategory, async (newCategory) => {
   gridScroll.value?.scrollTo({ top: 0 })
 
   const sounds = await listCategoryFiles(newCategory)
-  filteredSounds.value = sounds
+  filteredSounds.value = sounds.map(({id, ...rest})=>({
+    libraryId: id,
+    ...rest
+  }))
 
   isLoading.value = false
 }, { immediate: true })
