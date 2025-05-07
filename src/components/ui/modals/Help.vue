@@ -21,7 +21,7 @@
         <section>
             <h2 class="text-lg font-semibold mb-2">Getting Started</h2>
             <ul class="list-disc list-inside space-y-1">
-              <li>Click <strong>+ Add Source</strong> in the left panel to add sounds to your personal library.</li>
+              <li>Click <strong>+ Add Source</strong> in the left panel to add sounds to the sound source panel.</li>
               <li>You can add up to <strong>20</strong> library sources at a time.</li>
               <li>Drag a sound onto the canvas to place it.</li>
               <li>You can place up to <strong>30</strong> sound nodes in your room.</li>
@@ -33,7 +33,7 @@
             <h2 class="text-lg font-semibold mb-2">Moving the Listener</h2>
             <ul class="list-disc list-inside space-y-1">
               <li>Use <strong>WASD</strong> or the <strong>Arrow Keys</strong> to move the Listener.</li>
-              <li>Use <strong>Q</strong> and <strong>E</strong> to rotate the Listener’s direction.</li>
+              <li>Use <strong>Q</strong> and <strong>E</strong> to rotate the Listener's direction.</li>
             </ul>
           </section>
 
