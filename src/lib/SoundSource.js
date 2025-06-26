@@ -1,6 +1,5 @@
 // lib/SoundSource.js
 
-import { reactive } from "vue";
 export default class SoundSource {
   constructor({
     audioContext,
