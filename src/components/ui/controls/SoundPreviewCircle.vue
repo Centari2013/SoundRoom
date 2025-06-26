@@ -58,7 +58,7 @@ const progress = ref(0)
 let rafId = null
 let timeoutId = null
 
-const circleRef = ref(null)
+const circleRef = ref(null) // ref to progress ring svg circle element
 const radius = ref(0)
 const circumference = computed(() => 2 * Math.PI * radius.value)
 const dashOffset = computed(() => circumference.value * (1 - progress.value))
@@ -85,13 +85,13 @@ async function emitAudio() {
 }
 
 
-watch(() => props.sendAudioUp, (newValue) => {
+watch(() => props.sendAudioUp, (newValue) => { // send downloaded audio up to add to draggable sources when signaled
   if (newValue) {
-    emitAudio()
+    emitAudio() 
   }
 })
 
-watch(() => props.currentlyPlayingId, (newId) => {
+watch(() => props.currentlyPlayingId, (newId) => { // stop sound playback when new sound is played
   if (newId !== props.soundData.libraryId && isPlaying.value) {
     stopPlayback()
   }
@@ -169,7 +169,7 @@ function stopPlayback() {
   isPlaying.value = false
   progress.value = 0
 
-  if (blobUrl && !hasBeenPromoted.value) {
+  if (blobUrl && !hasBeenPromoted.value) { // revoke blob to free up memory only if blob has not been piped up to draggable sources
     URL.revokeObjectURL(blobUrl)
     blobUrl = null
   }
