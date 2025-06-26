@@ -15,5 +15,6 @@ const props = defineProps({
   listener: Object
 })
 
+// normalizes the angle of the listener into a 0–359° range, rotating the origin from the default right (0°) to top (0°)
 const displayListenerAngle = computed(() => Math.round(((props.listener.angle - 180) % 360 + 360) % 360))
 </script>
