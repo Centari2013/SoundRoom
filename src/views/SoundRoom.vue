@@ -61,17 +61,19 @@
         <div class="flex-1 bg-neutral-200 dark:bg-black flex items-center justify-center">
           <MainCanvasStage 
             ref="stageWrapper"
-            :room="room"
-            :handleDrop="handleDrop"
-            :onKeyDown="onKeyDown"
-            :onKeyUp="onKeyUp"
-            :contextMenuActions="contextMenuActions"
-            :showContextMenu="showContextMenu"
-            :actionManager="actionManager"
-            :selectedIndex="selectedIndex"
-            :listener="listener"
-            :audioEngine="audioEngine"
-            :handleStageClick="handleStageClick"
+            v-bind="{
+              room,
+              handleDrop,
+              onKeyDown,
+              onKeyUp,
+              contextMenuActions,
+              showContextMenu,
+              actionManager,
+              selectedIndex,
+              listener,
+              audioEngine,
+              handleStageClick
+            }"
             @selectNode="e => { selectedIndex = e }"
           />
         </div>
