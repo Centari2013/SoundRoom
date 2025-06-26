@@ -4,9 +4,10 @@ export default class Listener {
   _audioContext = null
   _canvasContext
 
-  constructor(x = 300, y = 200) {
+  constructor(x = 300, y = 200, angle = 180) {
     this.x = x
     this.y = y
+    this._angle = angle
   }
 
   get angle() {
