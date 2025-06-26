@@ -5,9 +5,11 @@
 
     <!-- Main Layout -->
     <div class="flex flex-1 overflow-hidden">
-      
-      <Help :isHelpOpen="isHelpOpen" @close="isHelpOpen = false" />
-      
+      <Help
+        :isHelpOpen="isHelpOpen"
+        @close="isHelpOpen = false"
+      />
+
       <SoundLibrary
         :isLibraryOpen="isLibraryOpen"
         :soundLibrarySources="soundLibrarySources"
@@ -15,7 +17,7 @@
         @load="handleAddLibrarySoundSource"
         @delete="handleDeleteLibrarySource"
       />
-      
+
       <!-- Left Sidebar -->
       <SidebarLeft 
         class="min-w-[7.5rem] max-w-64 w-[20%] flex-shrink"
@@ -77,12 +79,11 @@
 
       <!-- Right Sidebar -->
       <SidebarRight
-      class="min-w-[7.5rem] max-w-64 w-[20%] flex-shrink"
-      :listener="listener"
-      :actionManager="actionManager"
-      :selectedSource="selectedSource"
+        class="min-w-[7.5rem] max-w-64 w-[20%] flex-shrink"
+        :listener="listener"
+        :actionManager="actionManager"
+        :selectedSource="selectedSource"
       />
-      
     </div>
   </div>
 </template>
@@ -133,6 +134,7 @@ const loadedCanvasSoundSources = []
 
 const audioEngine = new AudioEngine(loadedCanvasSoundSources)
 audioEngine.maxSourceCount = MAX_CANVAS_SOURCES
+
 const isPlaying = computed(() => audioEngine.isPlaying.value)
 const masterVolumeProxy = computed({
   get: () => audioEngine.masterVolume.value,
@@ -145,7 +147,10 @@ const actionStackEmpty = computed(() => actionManager.actionStackEmpty.value)
 const redoStackEmpty = computed(() => actionManager.redoStackEmpty.value)
 
 // Selection
-const { selectedSource } = useSelectedSource(audioEngine.soundSources, selectedIndex)
+const { selectedSource } = useSelectedSource(
+  audioEngine.soundSources,
+  selectedIndex
+)
 provide('selectedIndex', selectedIndex)
 provide('selectedSource', selectedSource)
 
@@ -162,8 +167,8 @@ const handleAddLibrarySoundSource = async (src) => {
 
 function handleDeleteLibrarySource(src) {
   actionManager.doAction('delete_draggable_sound_source', { src })
-} 
-//TODO: possibly add sound 'events' (progressive environment, temp node playbacks, visuals etc)
+}
+
 // Composable Logic
 const { handleDragStart, handleDrop } = useDragDropAudio({
   draggedSource,
@@ -189,6 +194,7 @@ const { onKeyDown, onKeyUp } = useKeyboardControls({
 registerCanvasActions(audioEngine, actionManager, listener, soundLibrarySources)
 registerDraggableActions(audioEngine, actionManager, soundLibrarySources)
 setMaxLibSources(MAX_LIB_SOURCES)
+
 // Lifecycle
 let audioContext = null
 onMounted(() => {
