@@ -70,7 +70,7 @@ export function registerDraggableActions(audioEngine, actionManager, soundLibrar
   
   const addDraggableSoundSource = async (payload) => {
     if (maxLibSourcesReached(soundLibrarySources)) return;
-    // download blob and renistate draggable source
+    // download blob and re-instate draggable source
     const { blobUrl } = await downloadAudio(payload.src.bucket, payload.src.path, false)
     payload.src.audioPath = blobUrl
     const exists = soundLibrarySources.value.find(s => s.libraryId === payload.src.libraryId)
