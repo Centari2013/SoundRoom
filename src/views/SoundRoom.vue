@@ -89,6 +89,14 @@
         :selectedSource="selectedSource"
       />
     </div>
+    <FooterBar
+      v-bind="{
+        room,
+        listener,
+        soundLibrarySources,
+        audioEngine
+      }"
+    />
   </div>
 </template>
 
@@ -107,6 +115,7 @@ import HeaderBar from '@/components/SoundRoom/HeaderBar.vue'
 import SidebarLeft from '@/components/SoundRoom/SidebarLeft.vue'
 import SidebarRight from '@/components/SoundRoom/SidebarRight.vue'
 import MainCanvasStage from '@/components/SoundRoom/MainCanvasStage.vue'
+import FooterBar from '@/components/SoundRoom/FooterBar.vue'
 
 // Core Classes
 import Listener from '@/lib/Listener'
