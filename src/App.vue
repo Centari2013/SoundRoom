@@ -5,6 +5,6 @@
 </template>
 
 <script setup>
-import SoundRoom from './components/SoundRoom.vue'
+import SoundRoom from './views/SoundRoom.vue'
 
 </script>
