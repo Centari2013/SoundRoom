@@ -23,7 +23,7 @@
           @select="$emit('selectNode', $event)"
           @contextmenu="showContextMenu"
         />
-        <ListenerNode :listener="listener" :actionManager="actionManager" :room="room" />
+        <ListenerNode v-bind="{ listener, actionManager, room }" />
       </v-layer>
     </v-stage>
     <SoundSourceLabel 
