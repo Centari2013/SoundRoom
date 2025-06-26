@@ -204,9 +204,11 @@ export default class AudioEngine {
             volume: src.instance?.getVolume?.() ?? 1,
           }
         },
-        angle: src.state.angle,
-        coneInner: src.state.coneInner,
-        coneOuter: src.state.coneOuter,
+        state: {
+          angle: src.state.angle,
+          coneInner: src.state.coneInner,
+          coneOuter: src.state.coneOuter,
+        },
         index: src.index,
       })),
       masterVolume: this.masterVolume.value,
