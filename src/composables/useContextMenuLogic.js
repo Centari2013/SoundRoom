@@ -1,11 +1,14 @@
 import { computed, toRaw, reactive } from 'vue'
 
+// Central constant for sound node part identifier
+export const SOUND_NODE_PART_NAME = 'sound-node-part'
+
 export function useContextMenuLogic(selectedSource, stageWrapperRef, actionManager) {
   function showContextMenu(e) {
     e.evt.preventDefault()
     e.evt.stopPropagation()
-    if (e.target.getAttr('name') === 'sound-node-part') {
-      stageWrapperRef.value.contextMenuRef.show({ x: e.evt.clientX, y: e.evt.clientY })
+    if (e.target.getAttr('name') === SOUND_NODE_PART_NAME) { // if part of a konva SoundSourceNode.vue group
+      stageWrapperRef.value.contextMenuRef.show({ x: e.evt.clientX, y: e.evt.clientY }) // show context menu
     }
   }
 
@@ -32,7 +35,7 @@ export function useContextMenuLogic(selectedSource, stageWrapperRef, actionManag
       label: 'Duplicate',
       function: () => {
         const {instance, ...rest} = selectedSource.value
-        const state = reactive(structuredClone(toRaw(rest.state))) // copt state to new reactive obj
+        const state = reactive(structuredClone(toRaw(rest.state))) // copy state to new reactive obj
         rest.state = null // nullified to allow cloning
         const src = structuredClone(rest)
         src.state = state

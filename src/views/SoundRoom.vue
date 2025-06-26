@@ -90,6 +90,9 @@
 <script setup>
 import { ref, computed, reactive, provide, onMounted, onUnmounted } from 'vue'
 
+// Shared constants
+const SOUND_NODE_PART_NAME = 'sound-node-part'
+
 // UI Components
 import VueSlider from 'vue-3-slider-component'
 import ToolbarControls from '@/components/ui/controls/ToolbarControls.vue'
@@ -148,8 +151,8 @@ provide('selectedSource', selectedSource)
 
 // Event Handlers
 function handleStageClick(e) {
-  if (e.target.getAttr('name') !== 'sound-node-part') {
-    selectedIndex.value = null
+  if (e.target.getAttr('name') !== SOUND_NODE_PART_NAME) { // if NOT part of a konva SoundSourceNode.vue group
+    selectedIndex.value = null // deselect sound source node
   }
 }
 
