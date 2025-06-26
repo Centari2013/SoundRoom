@@ -9,9 +9,11 @@ export default class AudioEngine {
   #audioContext = null
   masterVolume = ref(null)
   #MAX_SOURCE_COUNT = 30
+  #uninitializedSoundSources = null
   
-  constructor( soundSources, ctxRef, volume = 1 ) {
-    this.soundSources.value = soundSources  // reactive array of sources
+  constructor(uninitializedSoundSources, ctxRef, volume = 1 ) {
+    this.#uninitializedSoundSources = uninitializedSoundSources || []
+    this.soundSources.value = []  // reactive array of sources
     this.#ctxRef = ctxRef                 // reactive canvas or drawing context
     this.masterVolume.value = volume
 
@@ -40,18 +42,10 @@ export default class AudioEngine {
   }
 
   setupAudioEngine() {
-    for (const src of this.soundSources.value) {
-      const instance = new SoundSource({
-        audioContext: this.getAudioContext(),
-        masterGain: this.#masterGain,
-        file: src.audioPath,
-        state: src.state,
-        volume: src.instance?.getVolume?.() ?? 1,
-        loop: true,
-        canvasContext: this.#ctxRef?.value
+    if (this.#uninitializedSoundSources.length > 0) { // add loaded sound sources
+      this.#uninitializedSoundSources.forEach(src => {
+        this.addSoundSource(src) // saved sound sources already in payload format
       })
-
-      src.instance = instance
     }
 
     if ('mediaSession' in navigator) {
