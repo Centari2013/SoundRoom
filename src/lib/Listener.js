@@ -14,6 +14,23 @@ export default class Listener {
     return this._angle
   }
 
+  static fromJSON(json) {
+    if (json.x !== undefined && json.y !== undefined && json.angle !== undefined) {
+      const newListener = new Listener(json.x, json.y, json.angle)
+      return newListener
+    } else {
+      throw new Error('Invalid JSON format for Listener')
+    }
+  }
+
+  toJSON() {
+    return {
+      x: this.x,
+      y: this.y,
+      angle: this._angle
+    }
+  }
+
   updateAngle(newAngle) {
     this._angle = newAngle
     this.updateAudio()
