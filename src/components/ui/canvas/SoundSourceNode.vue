@@ -3,7 +3,6 @@
     :x="source.instance.state.x"
     :y="source.instance.state.y"
     @dragmove="onSourceDragMove"
-    ref="groupRef"
   >
     <!-- Outer Cone -->
     <v-wedge
@@ -134,7 +133,7 @@ let initialSourceAngle = null
 
 // Source dragging
 function onSourceMouseDown(e) {
-  emit('select', props.index)
+  emit('select', props.index) // select current SoundSourceNode to display in SelectSourcePanel.vue
   e.evt.stopPropagation()
 
   const stage = e.target.getStage()
@@ -251,6 +250,4 @@ function onHandleMouseUp() {
   initialSourceAngle = null
 }
 
-const groupRef = ref(null)
-defineExpose({ getNode: () => groupRef.value.getNode(), name: props.source.name })
 </script>
