@@ -2,6 +2,7 @@
   <v-group
     :x="listener.x"
     :y="listener.y"
+    :draggable="false"
     @mouseover="setCursor($event, 'pointer')"
     @mouseout="setCursor($event, 'default')"
     @dragmove="onListenerDragMove"
@@ -64,6 +65,9 @@ let moveListenerPayload = null
 let initialMouseAngle = null
 let initialListenerAngle = null
 
+let dragStartPos = null
+let isDragging = false
+
 // Utility functions
 function toRad(deg) {
   return deg * (Math.PI / 180)
@@ -79,19 +83,39 @@ function setCursor(e, type) {
   if (stage) stage.container().style.cursor = type
 }
 
-// Listener movement (drag)
 function onListenerMouseDown(e) {
-  // Checks if the right mouse button (button code 2) was pressed; if so, does not drag.
   if (e.button === 2) return
 
-  // e.target is one of the individual shapes in the group
-  const group = e.target.getParent() 
-  group.draggable(true)
-  group.startDrag()
+  const stage = e.target.getStage()
+  const pointer = stage.getPointerPosition()
+  dragStartPos = pointer
+  isDragging = false
 
-  moveListenerPayload = {
-    from: { x: listener.x, y: listener.y },
-  }
+  const group = e.target.getParent()
+
+  group.on("mousemove.tempDragDetect", () => {
+    const movePos = stage.getPointerPosition()
+    const dx = movePos.x - dragStartPos.x
+    const dy = movePos.y - dragStartPos.y
+    const distance = Math.sqrt(dx * dx + dy * dy)
+
+    if (distance > 4 && !isDragging) {
+      group.draggable(true)
+      group.startDrag()
+      isDragging = true
+      moveListenerPayload = {
+        from: { x: listener.x, y: listener.y },
+      }
+      group.off("mousemove.tempDragDetect")
+
+      // Important: stop drag forcibly if mouseup happens anywhere
+      stage.on("mouseup.listenerDragCleanup", () => {
+        group.stopDrag()
+        group.draggable(false)
+        stage.off("mouseup.listenerDragCleanup")
+      })
+    }
+  })
 }
 
 function onListenerDragMove(e) {
@@ -108,16 +132,20 @@ function onListenerDragMove(e) {
 
 function onListenerMouseUp(e) {
   const group = e.target.getParent()
-  group.draggable(false)
 
-  const to = { x: listener.x, y: listener.y }
+  group.off("mousemove.tempDragDetect")
 
-  if (!positionsEqual(moveListenerPayload.from, to)) {
-    moveListenerPayload.to = to
-    actionManager.doAction("move_listener", moveListenerPayload)
+  if (isDragging && moveListenerPayload) {
+    const to = { x: listener.x, y: listener.y }
+
+    if (!positionsEqual(moveListenerPayload.from, to)) {
+      moveListenerPayload.to = to
+      actionManager.doAction("move_listener", moveListenerPayload)
+    }
   }
 
   moveListenerPayload = null
+  isDragging = false
 }
 
 // Rotation handling
