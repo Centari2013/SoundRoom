@@ -1,16 +1,22 @@
 <template>
-  <div v-if="isLibraryOpen" @click.self="emit('close')" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center">
-    <div class="bg-white dark:bg-neutral-950 rounded-2xl w-[80vw] h-[80vh] flex overflow-hidden shadow-2xl border border-neutral-300 dark:border-neutral-800">
-      
+  <div
+    v-if="isLibraryOpen"
+    @click.self="emit('close')"
+    class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center"
+  >
+    <div
+      class="bg-white dark:bg-neutral-950 rounded-2xl w-[80vw] h-[80vh] flex overflow-hidden shadow-2xl border border-neutral-300 dark:border-neutral-800"
+    >
       <!-- Left Sidebar: Categories -->
-      <aside class="w-60 bg-neutral-200 dark:bg-neutral-900 border-r border-neutral-300 dark:border-neutral-800 p-4 space-y-3 overflow-y-auto">
+      <aside
+        class="w-60 bg-neutral-200 dark:bg-neutral-900 border-r border-neutral-300 dark:border-neutral-800 p-4 space-y-3 overflow-y-auto"
+      >
         <h2 class="font-bold text-sm mb-2">Categories</h2>
         <button
           v-for="cat in categories"
           :key="cat.id"
           @click="activeCategory = cat.id"
           :class="['sound-lib-button', { active: activeCategory === cat.id }]"
-
         >
           {{ cat.label }}
         </button>
@@ -19,55 +25,69 @@
       <!-- Main Content: Sound Grid -->
       <div class="flex-1 relative overflow-hidden">
         <!-- Floating Top Bar -->
-        <div class="absolute top-0 left-0 right-0 z-10 flex justify-between items-center px-6 py-4 bg-white/50 dark:bg-neutral-950/50 backdrop-blur-md border-b border-neutral-300 dark:border-neutral-800">
+        <div
+          class="absolute top-0 left-0 right-0 z-10 flex justify-between items-center px-6 py-4 bg-white/50 dark:bg-neutral-950/50 backdrop-blur-md border-b border-neutral-300 dark:border-neutral-800"
+        >
           <h2 class="text-2xl font-bold">SoundLibrary</h2>
           <button class="text-sm underline" @click="$emit('close')">Close</button>
         </div>
 
         <!-- Scrollable Sound Grid -->
-        <div ref="gridScroll" class="mt-5 place-content-start p-6 pt-20 overflow-y-auto h-full grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          <div
-          v-for="sound in filteredSounds"
-          :key="sound.id"
-          class="aspect-square flex flex-col items-center justify-between p-4 rounded-xl bg-neutral-100 dark:bg-neutral-800 shadow border border-neutral-300 dark:border-neutral-700"
+        <div
+          ref="gridScroll"
+          class="mt-5 place-content-start p-6 pt-20 overflow-y-auto h-full grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"
         >
-          <!-- Title -->
-          <MarqueeTitle :text="getSourceName(sound.name)"/>
-
-          <!-- Preview Button -->
-          <SoundPreviewCircle
-            :soundData="sound"
-            :sendAudioUp="sound.send"
-            :currentlyPlayingId="currentlyPlayingId"
-            @sendAudio="(soundData) => {handleAudioSent(soundData, sound)}"
-            @updateCurrent="currentlyPlayingId = $event"
-          />
-
-          <!-- Load Button -->
-          <button
-            class="load-button text-xs px-3 py-1 rounded hover:bg-blue-700 transition-colors"
-            @click="()=>{toggleAddSource(sound)}"
+          <div
+            v-for="sound in filteredSounds"
+            :key="sound.id"
+            class="aspect-square flex flex-col items-center justify-between p-4 rounded-xl bg-neutral-100 dark:bg-neutral-800 shadow border border-neutral-300 dark:border-neutral-700"
           >
-            {{soundLibrarySources.find(s => s.libraryId == sound.libraryId) ? 'Remove' : 'Load' }}
-          </button>
+            <!-- Title -->
+            <MarqueeTitle :text="getSourceName(sound.name)" />
 
-          
-        </div>
+            <!-- Preview Button -->
+            <SoundPreviewCircle
+              :soundData="sound"
+              :sendAudioUp="sound.send"
+              :currentlyPlayingId="currentlyPlayingId"
+              @sendAudio="(soundData) => { handleAudioSent(soundData, sound) }"
+              @updateCurrent="currentlyPlayingId = $event"
+            />
 
+            <!-- Load Button -->
+            <button
+              class="load-button text-xs px-3 py-1 rounded hover:bg-blue-700 transition-colors"
+              @click="() => { toggleAddSource(sound) }"
+            >
+              {{
+                soundLibrarySources.find(
+                  (s) => s.libraryId == sound.libraryId
+                )
+                  ? 'Remove'
+                  : 'Load'
+              }}
+            </button>
+          </div>
         </div>
       </div>
 
-
       <!-- Bottom Upload Panel -->
-      <div v-if="false" class="absolute bottom-0 left-0 right-0 p-4 bg-white dark:bg-neutral-950 border-t border-neutral-300 dark:border-neutral-800">
+      <div
+        v-if="false"
+        class="absolute bottom-0 left-0 right-0 p-4 bg-white dark:bg-neutral-950 border-t border-neutral-300 dark:border-neutral-800"
+      >
         <div class="flex justify-between items-center">
           <label class="text-sm cursor-pointer">
             Upload your own sound
-            <input type="file" accept="audio/*" class="hidden" @change="handleUpload" />
+            <input
+              type="file"
+              accept="audio/*"
+              class="hidden"
+              @change="handleUpload"
+            />
           </label>
         </div>
       </div>
-
     </div>
   </div>
 </template>
@@ -98,45 +118,46 @@ const categories = [
   { id: 'musical', label: 'Musical' },
   { id: 'tools', label: 'Work & Focus' },
   { id: 'atmospheric', label: 'Atmospheric' },
-  { id: 'misc', label: 'Misc' }
+  { id: 'misc', label: 'Misc' },
 ]
 
-
-function toggleAddSource(s){
-  if (props.soundLibrarySources.find(sound => s.libraryId == sound.libraryId)){
+function toggleAddSource(s) {
+  // if source in soundlibrarysources (draggable sources), delete, otherwise add
+  if (props.soundLibrarySources.find((sound) => s.libraryId == sound.libraryId)) {
     s.send = false
     emit('delete', s)
-  }else{
+  } else {
     s.send = true
   }
-   
 }
 
-const currentlyPlayingId = ref(null)
-
+const currentlyPlayingId = ref(null) // id of current sound playing to stop multiple previews playing at once
 
 const activeCategory = ref(categories?.[0]?.id || '')
-const gridScroll = ref(null)
+const gridScroll = ref(null) // ref to scrollable div of library sounds
 
 const isLoading = ref(false)
 const filteredSounds = ref([])
-watch(activeCategory, async (newCategory) => {
-  isLoading.value = true
-  await nextTick()
-  gridScroll.value?.scrollTo({ top: 0 })
+watch(
+  activeCategory,
+  async (newCategory) => {
+    isLoading.value = true
+    await nextTick()
+    gridScroll.value?.scrollTo({ top: 0 }) // scroll up when new category is selected
 
-  const sounds = await listCategoryFiles(newCategory)
-  filteredSounds.value = sounds.map(({id, ...rest})=>({
-    libraryId: id,
-    ...rest
-  }))
+    const sounds = await listCategoryFiles(newCategory)
+    filteredSounds.value = sounds.map(({ id, ...rest }) => ({
+      libraryId: id,
+      ...rest,
+    }))
 
-  isLoading.value = false
-}, { immediate: true })
+    isLoading.value = false
+  },
+  { immediate: true }
+) // run at least once, like a do while
 
-
-
-async function listCategoryFiles(){
+async function listCategoryFiles() {
+  // select rows of sound file info where bucket name matches active category name
   const { data, error } = await supabase
     .from('sound_files')
     .select()
@@ -148,9 +169,6 @@ async function listCategoryFiles(){
   return data
 }
 
-
-
-
 function handleUpload(event) {
   const file = event.target.files?.[0]
   if (file) {
@@ -158,6 +176,7 @@ function handleUpload(event) {
   }
 }
 </script>
+
 <style>
 .marquee-text-text {
   margin-left: 20px;
@@ -167,7 +186,6 @@ function handleUpload(event) {
   .load-button {
     background-color: #ffffff;
   }
-
 }
 
 /* Base button styling */
@@ -203,6 +221,4 @@ function handleUpload(event) {
     background-color: #1f2937; /* neutral-800 */
   }
 }
-
-
 </style>
