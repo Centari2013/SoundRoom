@@ -76,7 +76,7 @@ function updateCoords() {
 
 
 const soundNodeTitleCoords = computed(() => {
-  coordsVersion.value // makes it reactive to resize
+  coordsVersion.value // makes it reactive to window resize
   return props.audioEngine.soundSources.value.map(sn => {          
   const stagePos = stageRef.value.getBoundingClientRect();
   return {
