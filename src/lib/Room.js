@@ -13,4 +13,20 @@ export default class Room {
   clamp(val, min, max) {
     return Math.max(min, Math.min(val, max))
   }
+
+  static fromJSON(json) {
+    if (json.width && json.height) {
+      const newRoom = new Room(json.width, json.height)
+      return newRoom
+    } else {
+      throw new Error('Invalid JSON format for Room')
+    }
+  }
+
+  toJSON() {
+    return {
+      width: this.width,
+      height: this.height
+    }
+  }
 }
