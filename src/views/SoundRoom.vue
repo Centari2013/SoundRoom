@@ -134,7 +134,7 @@ const listener = reactive(new Listener())
 const soundLibrarySources = ref([])
 const MAX_LIB_SOURCES = 20
 const MAX_CANVAS_SOURCES = 30
-const loadedCanvasSoundSources = []
+const loadedCanvasSoundSources = [] // to be populated with sources loaded from last user session
 
 const audioEngine = new AudioEngine(loadedCanvasSoundSources)
 audioEngine.maxSourceCount = MAX_CANVAS_SOURCES
