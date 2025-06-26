@@ -47,6 +47,7 @@ const menuRef = ref(null)
 const contextSound = ref(null)
 
 function openContextMenu(e, source) {
+  // prevent default browser context menu
   e.preventDefault()
   e.stopPropagation();
   
