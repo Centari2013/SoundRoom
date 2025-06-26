@@ -81,9 +81,11 @@ function setCursor(e, type) {
 
 // Listener movement (drag)
 function onListenerMouseDown(e) {
+  // Checks if the right mouse button (button code 2) was pressed; if so, does not drag.
   if (e.button === 2) return
 
-  const group = e.target.getParent()
+  // e.target is one of the individual shapes in the group
+  const group = e.target.getParent() 
   group.draggable(true)
   group.startDrag()
 
