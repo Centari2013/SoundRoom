@@ -4,10 +4,9 @@ export default class Listener {
   _audioContext = null
   _canvasContext
 
-  constructor(x = 300, y = 200, angle=90) {
+  constructor(x = 300, y = 200) {
     this.x = x
     this.y = y
-    //this._angle = angle
   }
 
   get angle() {
@@ -31,9 +30,9 @@ export default class Listener {
     if (!this._audioContext) return
 
     const scale = 0.01
+    
     // subtracted 90 degrees to have listener facing 'up' in room
     const angleRad = ((this._angle - 90) * Math.PI) / 180;
-
 
     this._audioContext.listener.setPosition(this.x * scale, this.y * scale, 0)
     this._audioContext.listener.setOrientation(
