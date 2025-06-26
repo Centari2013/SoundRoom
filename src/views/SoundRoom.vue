@@ -11,8 +11,10 @@
       />
 
       <SoundLibrary
-        :isLibraryOpen="isLibraryOpen"
-        :soundLibrarySources="soundLibrarySources"
+        v-bind="{
+          isLibraryOpen,
+          soundLibrarySources
+        }"
         @close="isLibraryOpen = false"
         @load="handleAddLibrarySoundSource"
         @delete="handleDeleteLibrarySource"
