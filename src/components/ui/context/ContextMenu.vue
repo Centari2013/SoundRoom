@@ -26,7 +26,7 @@
 import { ref, onMounted, onUnmounted } from 'vue';
 
 const props = defineProps({
-  functionList: Array,
+  functionList: Array, // [{label: 'foo', function: bar}, ...]
 });
 
 const visible = ref(false);
@@ -48,7 +48,11 @@ function handleClick(fn) {
 }
 
 function onGlobalClick(e) {
-  if (visible.value && menu.value && !menu.value.contains(e.target)) {
+  if (
+    visible.value // menu is visible
+    && menu.value // menu is instantiated
+    && !menu.value.contains(e.target) // SoundSourceNode etc. not under mouse
+  ) {
     hide();
   }
 }
