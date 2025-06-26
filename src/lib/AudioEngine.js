@@ -189,4 +189,50 @@ export default class AudioEngine {
     return this.soundSources.value.length
   }
   
+  toJSON() {
+    return {
+      soundSources: this.soundSources.value.map(src => ({
+        libraryId: src.libraryId,
+        instance: {
+          state:{
+            x: src.instance.state.x,
+            y: src.instance.state.y,
+            angle: src.instance.state.angle,
+            coneInner: src.instance.state.coneInner,
+            coneOuter: src.instance.state.coneOuter,
+            isPlaying: src.instance.playing,
+            volume: src.instance?.getVolume?.() ?? 1,
+          }
+        },
+        angle: src.state.angle,
+        coneInner: src.state.coneInner,
+        coneOuter: src.state.coneOuter,
+        index: src.index,
+      })),
+      masterVolume: this.masterVolume.value,
+    }
+  }
+
+  static fromJSON(json, ctxRef) {
+    let engine = null; 
+
+    if (Array.isArray(json.soundSources)) {
+      const uninitializedSoundSources = json.soundSources.map(src => ({
+          index: src.index,
+          libraryId: src.libraryId,
+          name: '', // TODO: Load from library if available OUTSIDE of audioEngine   
+          src: {
+            state: src.instance.state,
+            audioPath: null, // TODO: Load from library if available OUTSIDE of audioEngine
+          }
+        }))
+      engine = new AudioEngine(uninitializedSoundSources, ctxRef, json.masterVolume ?? 1)
+      
+    } else {
+      throw new Error('Invalid JSON format for AudioEngine')
+    }
+
+    return engine
+  }
+
 }
