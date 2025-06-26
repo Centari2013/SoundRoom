@@ -80,13 +80,12 @@ export default class AudioEngine {
     }
     const src = payload.src
     
-    src.index = payload.index ?? this.soundSources.value.length
+    src.index = payload.index ?? this.soundSources.value.length // for proper undo and redo
     const instance = new SoundSource({
       audioContext: this.getAudioContext(),
       masterGain: this.#masterGain,
       file: src.audioPath,
       state: src.state,
-      volume: src.volume ?? 1,
       loop: true,
       canvasContext: this.#ctxRef?.value
     })
