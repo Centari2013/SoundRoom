@@ -75,11 +75,11 @@ export default class ActionManager {
   }
 
   // Optional: expose history for UI/debugging
-  get actionHistory() {
+  /* get actionHistory() {
     return this._actionStack.value
   }
 
   get redoHistory() {
     return this._redoStack.value
-  }
+  } */
 }
