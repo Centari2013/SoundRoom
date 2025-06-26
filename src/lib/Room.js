@@ -9,6 +9,7 @@ export default class Room {
     this.height = height
   }
 
+  // clamp values to be within room boundaries
   clamp(val, min, max) {
     return Math.max(min, Math.min(val, max))
   }
