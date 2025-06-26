@@ -6,7 +6,6 @@ export default class SoundSource {
     masterGain,
     file,
     state,
-    volume = 1,
     loop = true,
     canvasContext
   }) {
@@ -21,7 +20,7 @@ export default class SoundSource {
     this._audioElement = new Audio(file);
     this._audioElement.preload = 'auto';
     this._audioElement.loop = loop;
-    this._audioElement.volume = volume;
+    this._audioElement.volume = this.state.volume ?? 1;
 
     this._sourceNode = audioContext.createMediaElementSource(this._audioElement);
     this._gainNode = audioContext.createGain();
@@ -43,7 +42,12 @@ export default class SoundSource {
       .connect(masterGain ?? audioContext.destination);
 
     this._playing = false;
-    this._volume = volume;
+    this._volume = this.state.volume ?? 1; // default to 1 if not set
+
+    if (this.state.isPlaying) { // if sound was playing when saved
+      this.play()
+    }
+
   }
 
   play() {
