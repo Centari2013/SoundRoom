@@ -3,15 +3,17 @@
   <div class="min-h-[100px] max-h-3/5 overflow-hidden">
     <DraggableSourcePanel
       class="h-full"
-      :librarySources="soundLibrarySources"
-      :MAX_SOURCES="MAX_SOURCES"
-      :handleDragStart="handleDragStart"
-      :addSourceClick="addSourceClick"
+      v-bind="{
+        librarySources: soundLibrarySources,
+        MAX_SOURCES,
+        handleDragStart,
+        addSourceClick
+      }"
       @deleteSource="$emit('deleteSource', $event)"
     />
   </div>
 
-  <ListenerReadout :listener="listener" />
+  <ListenerReadout v-bind="{ listener }" />
 </aside>
 
 </template>
