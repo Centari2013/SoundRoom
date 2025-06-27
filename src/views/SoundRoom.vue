@@ -60,7 +60,7 @@
         </div>
 
         <!-- Canvas Area -->
-        <div class="flex-1 bg-neutral-200 dark:bg-black flex items-center justify-center">
+        <div class="relative flex-1 bg-neutral-200 dark:bg-black flex items-center justify-center">
           <MainCanvasStage 
             ref="stageWrapper"
             v-bind="{
@@ -78,6 +78,15 @@
             }"
             @selectNode="e => { selectedIndex = e }"
           />
+          <!-- Frosted Load/Save Overlay -->
+          <div
+            v-if="isLoadingRoom || isSavingRoom"
+            class="absolute inset-0 flex items-center justify-center backdrop-blur-sm bg-white/30 dark:bg-black/40 z-50"
+          >
+            <div class="text-xl font-medium tracking-wide text-neutral-800 dark:text-white animate-pulse">
+              {{ isLoadingRoom ? 'Loading your room...' : 'Saving your room...'}}
+            </div>
+          </div>
         </div>
       </main>
 
@@ -91,6 +100,10 @@
     <FooterBar
       @saveRoom="saveRoomLocal"
       @loadRoom="loadRoomLocal"
+      v-bind="{
+        isSaving: isSavingRoom,
+        isLoading: isLoadingRoom
+      }"
     />
   </div>
 </template>
@@ -200,7 +213,7 @@ const { onKeyDown, onKeyUp } = useKeyboardControls({
   room,
 })
 
-const { saveRoomLocal, loadRoomLocal } = useSaveAndLoadRoom({
+const { saveRoomLocal, loadRoomLocal, isLoadingRoom, isSavingRoom } = useSaveAndLoadRoom({
   room,
   listener,
   soundLibrarySources,

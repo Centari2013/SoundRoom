@@ -5,9 +5,14 @@ import { setupAudioContext } from "@/composables/useAudioSetup";
 
 import { supabase } from "@/utils/supabase";
 import { downloadMultipleAudio } from "@/utils/downloadAudio";
+import { ref } from "vue";
 
 export function useSaveAndLoadRoom({ room, listener, soundLibrarySources, audioEngine, actionManager }) {
-  function saveRoomLocal() {
+  const isLoadingRoom = ref(false);
+  const isSavingRoom = ref(false);
+
+  function saveRoomLocal() {  
+    isSavingRoom.value = true;
     const roomData = {
       room: room.value.toJSON(),
       listener: listener.value.toJSON(),
@@ -15,9 +20,13 @@ export function useSaveAndLoadRoom({ room, listener, soundLibrarySources, audioE
       audioEngine: audioEngine.value.toJSON(),
     };
     localStorage.setItem("soundRoomData", JSON.stringify(roomData));
+    setTimeout(() => {
+      isSavingRoom.value = false;
+    }, 2000);
   }
 
   async function loadRoomLocal() {
+    isLoadingRoom.value = true;
     const stored = localStorage.getItem("soundRoomData");
     if (!stored) {
       console.warn("No room data found in local storage.");
@@ -60,7 +69,11 @@ export function useSaveAndLoadRoom({ room, listener, soundLibrarySources, audioE
     audioEngine.value = AudioEngine.fromJSON(roomData.audioEngine);
 
     setupAudioContext(audioEngine, listener)
-    console.log("Loaded room data:", roomData);
+    
+    setTimeout(() => {
+      isLoadingRoom.value = false;
+    }, 2000)
+    
    
   }
 
@@ -71,11 +84,14 @@ export function useSaveAndLoadRoom({ room, listener, soundLibrarySources, audioE
       .in("id", ids);
 
     if (error) console.warn("Failed to list files:", error);
+
     return data;
   }
 
   return {
     saveRoomLocal,
     loadRoomLocal,
+    isLoadingRoom,
+    isSavingRoom,
   };
 }
