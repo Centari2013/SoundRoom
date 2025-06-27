@@ -1,5 +1,6 @@
 <template>
   <v-group
+    ref="listenerGroup"
     :x="props.listener.x"
     :y="props.listener.y"
     :draggable="false"
@@ -7,6 +8,7 @@
     @mouseout="setCursor($event, 'default')"
     @dragmove="onListenerDragMove"
   >
+
     <!-- Listener Dot -->
     <v-circle
       :radius="10"
@@ -50,6 +52,7 @@
 </template>
 
 <script setup>
+import { ref, onBeforeUnmount } from 'vue';
 // Props and setup
 const props = defineProps({
   listener: Object,
@@ -64,9 +67,11 @@ const room = props.room
 let moveListenerPayload = null
 let initialMouseAngle = null
 let initialListenerAngle = null
+let mouseMoveListener = null
+
 
 let dragStartPos = null
-let isDragging = false
+const listenerGroup = ref(null)
 
 // Utility functions
 function toRad(deg) {
@@ -84,39 +89,38 @@ function setCursor(e, type) {
 }
 
 function onListenerMouseDown(e) {
-  if (e.button === 2) return
+  if (e.button === 2) return // if right click, do nothing
 
   const stage = e.target.getStage()
-  const pointer = stage.getPointerPosition()
-  dragStartPos = pointer
-  isDragging = false
+  dragStartPos = stage.getPointerPosition()
+  moveListenerPayload = null
 
-  const group = e.target.getParent()
+  const group = listenerGroup.value?.getNode()
+  if (!group) return
 
-  group.on("mousemove.tempDragDetect", () => {
+  // Add global mousemove to detect drag
+  mouseMoveListener = (evt) => {
     const movePos = stage.getPointerPosition()
     const dx = movePos.x - dragStartPos.x
     const dy = movePos.y - dragStartPos.y
     const distance = Math.sqrt(dx * dx + dy * dy)
 
-    if (distance > 4 && !isDragging) {
+    if (distance > 4) {
       group.draggable(true)
       group.startDrag()
-      isDragging = true
+
       moveListenerPayload = {
         from: { x: props.listener.x, y: props.listener.y },
       }
-      group.off("mousemove.tempDragDetect")
 
-      // Important: stop drag forcibly if mouseup happens anywhere
-      stage.on("mouseup.listenerDragCleanup", () => {
-        group.stopDrag()
-        group.draggable(false)
-        stage.off("mouseup.listenerDragCleanup")
-      })
+      window.removeEventListener('mousemove', mouseMoveListener)
+      mouseMoveListener = null
     }
-  })
+  }
+
+  window.addEventListener('mousemove', mouseMoveListener)
 }
+
 
 function onListenerDragMove(e) {
   const pos = e.target.position()
@@ -131,11 +135,15 @@ function onListenerDragMove(e) {
 }
 
 function onListenerMouseUp(e) {
-  const group = e.target.getParent()
+  const group = listenerGroup.value?.getNode()
+  if (group) group.draggable(false)
 
-  group.off("mousemove.tempDragDetect")
+  if (mouseMoveListener) {
+    window.removeEventListener('mousemove', mouseMoveListener)
+    mouseMoveListener = null
+  }
 
-  if (isDragging && moveListenerPayload) {
+  if (moveListenerPayload) {
     const to = { x: props.listener.x, y: props.listener.y }
 
     if (!positionsEqual(moveListenerPayload.from, to)) {
@@ -145,8 +153,8 @@ function onListenerMouseUp(e) {
   }
 
   moveListenerPayload = null
-  isDragging = false
 }
+
 
 // Rotation handling
 function onHandleMouseDown(e) {
@@ -194,4 +202,12 @@ function onHandleMouseUp() {
 
   initialListenerAngle = null
 }
+
+onBeforeUnmount(() => {
+  if (mouseMoveListener) {
+    window.removeEventListener('mousemove', mouseMoveListener)
+    mouseMoveListener = null
+  }
+})
+
 </script>
