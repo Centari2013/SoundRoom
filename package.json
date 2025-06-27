@@ -11,12 +11,14 @@
   "dependencies": {
     "@supabase/supabase-js": "^2.49.7",
     "@tailwindcss/vite": "^4.1.7",
+    "@vercel/speed-insights": "^1.2.0",
     "dotenv": "^16.5.0",
     "konva": "^9.3.20",
     "tailwindcss": "^4.1.7",
     "vue": "^3.5.14",
     "vue-3-slider-component": "^1.0.2",
     "vue-konva": "^3.2.1",
+    "vue-router": "^4.5.1",
     "vue3-marquee": "^4.2.2"
   },
   "devDependencies": {
