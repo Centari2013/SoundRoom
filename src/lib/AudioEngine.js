@@ -223,11 +223,11 @@ export default class AudioEngine {
     if (Array.isArray(json.soundSources)) {
       const uninitializedSoundSources = json.soundSources.map(src => ({
           index: src.index,
-          libraryId: src.libraryId,
-          name: '', // TODO: Load from library if available OUTSIDE of audioEngine   
           src: {
+            libraryId: src.libraryId,
+            name: src.name,  
             state: src.instance.state,
-            audioPath: null, // TODO: Load from library if available OUTSIDE of audioEngine
+            audioPath: src.audioPath, 
           }
         }))
       engine = new AudioEngine(uninitializedSoundSources, json.masterVolume ?? 1)
