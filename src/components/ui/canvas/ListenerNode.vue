@@ -1,7 +1,7 @@
 <template>
   <v-group
-    :x="listener.x"
-    :y="listener.y"
+    :x="props.listener.x"
+    :y="props.listener.y"
     :draggable="false"
     @mouseover="setCursor($event, 'pointer')"
     @mouseout="setCursor($event, 'default')"
@@ -26,7 +26,7 @@
         ctx.closePath()
         ctx.fillStrokeShape(shape)
       }"
-      :rotation="listener.angle"
+      :rotation="props.listener.angle"
       fill="#fff"
       stroke="#000"
       :strokeWidth="1"
@@ -36,12 +36,12 @@
 
     <!-- Rotation Hitbox -->
     <v-arc
-      :x="Math.cos(toRad(listener.angle + 90)) * 7"
-      :y="Math.sin(toRad(listener.angle + 90)) * 7"
+      :x="Math.cos(toRad(props.listener.angle + 90)) * 7"
+      :y="Math.sin(toRad(props.listener.angle + 90)) * 7"
       :innerRadius="0"
       :outerRadius="25"
       :angle="135"
-      :rotation="listener.angle + 20"
+      :rotation="props.listener.angle + 20"
       fill="transparent"
       @mousedown="onHandleMouseDown"
       @mouseup="onHandleMouseUp"
@@ -57,7 +57,7 @@ const props = defineProps({
   room: Object,
 })
 
-const listener = props.listener
+
 const actionManager = props.actionManager
 const room = props.room
 
@@ -104,7 +104,7 @@ function onListenerMouseDown(e) {
       group.startDrag()
       isDragging = true
       moveListenerPayload = {
-        from: { x: listener.x, y: listener.y },
+        from: { x: props.listener.x, y: props.listener.y },
       }
       group.off("mousemove.tempDragDetect")
 
@@ -125,9 +125,9 @@ function onListenerDragMove(e) {
 
   e.target.position({ x: clampedX, y: clampedY })
 
-  listener.x = clampedX
-  listener.y = clampedY
-  listener.updateAudio()
+  props.listener.x = clampedX
+  props.listener.y = clampedY
+  props.listener.updateAudio()
 }
 
 function onListenerMouseUp(e) {
@@ -136,7 +136,7 @@ function onListenerMouseUp(e) {
   group.off("mousemove.tempDragDetect")
 
   if (isDragging && moveListenerPayload) {
-    const to = { x: listener.x, y: listener.y }
+    const to = { x: props.listener.x, y: props.listener.y }
 
     if (!positionsEqual(moveListenerPayload.from, to)) {
       moveListenerPayload.to = to
@@ -152,12 +152,12 @@ function onListenerMouseUp(e) {
 function onHandleMouseDown(e) {
   e.evt.stopPropagation()
 
-  initialListenerAngle = listener.angle
+  initialListenerAngle = props.listener.angle
 
   const stage = e.target.getStage()
   const mousePos = stage.getPointerPosition()
-  const dx = mousePos.x - listener.x
-  const dy = mousePos.y - listener.y
+  const dx = mousePos.x - props.listener.x
+  const dy = mousePos.y - props.listener.y
   initialMouseAngle = Math.atan2(dy, dx) * (180 / Math.PI)
 
   stage.on("mousemove.listenerRotate", onHandleMouseMove)
@@ -171,19 +171,19 @@ function onHandleMouseDown(e) {
 function onHandleMouseMove(e) {
   const stage = e.target.getStage()
   const mousePos = stage.getPointerPosition()
-  const dx = mousePos.x - listener.x
-  const dy = mousePos.y - listener.y
+  const dx = mousePos.x - props.listener.x
+  const dy = mousePos.y - props.listener.y
   const currentMouseAngle = Math.atan2(dy, dx) * (180 / Math.PI)
 
   const delta = currentMouseAngle - initialMouseAngle
   const newAngle = initialListenerAngle + delta
 
-  listener.updateAngle(newAngle)
-  listener.updateAudio()
+  props.listener.updateAngle(newAngle)
+  props.listener.updateAudio()
 }
 
 function onHandleMouseUp() {
-  const finalAngle = listener.angle
+  const finalAngle = props.listener.angle
 
   if (initialListenerAngle !== null && initialListenerAngle !== finalAngle) {
     actionManager.doAction("rotate_listener_angle", {
