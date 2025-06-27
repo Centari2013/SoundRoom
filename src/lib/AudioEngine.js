@@ -5,16 +5,14 @@ import { computed, ref, watch, reactive } from 'vue'
 export default class AudioEngine {
   soundSources = ref([])
   #masterGain = null
-  #ctxRef = null
   #audioContext = null
   masterVolume = ref(null)
   #MAX_SOURCE_COUNT = 30
   #uninitializedSoundSources = null
   
-  constructor(uninitializedSoundSources, ctxRef, volume = 1 ) {
+  constructor(uninitializedSoundSources, volume = 1 ) {
     this.#uninitializedSoundSources = uninitializedSoundSources || []
     this.soundSources.value = []  // reactive array of sources
-    this.#ctxRef = ctxRef                 // reactive canvas or drawing context
     this.masterVolume.value = volume
 
     watch(this.masterVolume, (v) => {
@@ -87,7 +85,6 @@ export default class AudioEngine {
       file: src.audioPath,
       state: src.state,
       loop: true,
-      canvasContext: this.#ctxRef?.value
     })
 
     src.instance = instance
@@ -215,7 +212,7 @@ export default class AudioEngine {
     }
   }
 
-  static fromJSON(json, ctxRef) {
+  static fromJSON(json) {
     let engine = null; 
 
     if (Array.isArray(json.soundSources)) {
@@ -228,7 +225,7 @@ export default class AudioEngine {
             audioPath: null, // TODO: Load from library if available OUTSIDE of audioEngine
           }
         }))
-      engine = new AudioEngine(uninitializedSoundSources, ctxRef, json.masterVolume ?? 1)
+      engine = new AudioEngine(uninitializedSoundSources, json.masterVolume ?? 1)
       
     } else {
       throw new Error('Invalid JSON format for AudioEngine')
