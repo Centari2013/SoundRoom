@@ -93,19 +93,19 @@ const props = defineProps({
 
 const emit = defineEmits(['select'])
 
-const source = props.source
+
 const room = props.room
 const actionManager = props.actionManager
 
 // Cone visibility logic
 const hasCone = computed(() =>
-  source.instance.state.coneInner < 360 || source.instance.state.coneOuter < 360
+  props.source.instance.state.coneInner < 360 || props.source.instance.state.coneOuter < 360
 )
-const hasInnerCone = computed(() => source.instance.state.coneInner < 360)
-const hasOuterCone = computed(() => source.instance.state.coneOuter < 360)
+const hasInnerCone = computed(() => props.source.instance.state.coneInner < 360)
+const hasOuterCone = computed(() => props.source.instance.state.coneOuter < 360)
 
-const coneInner = computed(() => source.instance.state.coneInner)
-const coneOuter = computed(() => source.instance.state.coneOuter)
+const coneInner = computed(() => props.source.instance.state.coneInner)
+const coneOuter = computed(() => props.source.instance.state.coneOuter)
 
 // Utility functions
 function toRad(deg) {
@@ -169,8 +169,8 @@ function onSourceMouseDown(e) {
   moveSourcePayload = {
     index: props.index,
     from: {
-      x: source.instance.state.x,
-      y: source.instance.state.y
+      x: props.source.instance.state.x,
+      y: props.source.instance.state.y
     }
   }
 }
@@ -182,16 +182,16 @@ function onSourceDragMove(e) {
 
   e.target.position({ x: clampedX, y: clampedY })
 
-  source.instance.state.x = clampedX
-  source.instance.state.y = clampedY
-  source.instance.updateAudio()
+  props.source.instance.state.x = clampedX
+  props.source.instance.state.y = clampedY
+  props.source.instance.updateAudio()
 }
 
 // Source drop
 function onSourceMouseUp(e) {
   const to = {
-    x: source.instance.state.x,
-    y: source.instance.state.y
+    x: props.source.instance.state.x,
+    y: props.source.instance.state.y
   }
 
   if (moveSourcePayload && !positionsEqual(moveSourcePayload.from, to)) {
@@ -207,12 +207,12 @@ function onHandleMouseDown(e) {
   emit('select', props.index)
   e.evt.stopPropagation()
 
-  initialSourceAngle = source.instance.state.angle
+  initialSourceAngle = props.source.instance.state.angle
 
   const stage = e.target.getStage()
   const mousePos = stage.getPointerPosition()
-  const dx = mousePos.x - source.instance.state.x
-  const dy = mousePos.y - source.instance.state.y
+  const dx = mousePos.x - props.source.instance.state.x
+  const dy = mousePos.y - props.source.instance.state.y
   initialMouseAngle = Math.atan2(dy, dx) * (180 / Math.PI)
 
   stage.on("mousemove.sourceRotate", onHandleMouseMove)
@@ -226,19 +226,19 @@ function onHandleMouseDown(e) {
 function onHandleMouseMove(e) {
   const stage = e.target.getStage()
   const mousePos = stage.getPointerPosition()
-  const dx = mousePos.x - source.instance.state.x
-  const dy = mousePos.y - source.instance.state.y
+  const dx = mousePos.x - props.source.instance.state.x
+  const dy = mousePos.y - props.source.instance.state.y
   const currentMouseAngle = Math.atan2(dy, dx) * (180 / Math.PI)
 
   const delta = currentMouseAngle - initialMouseAngle
   const newAngle = initialSourceAngle + delta
 
-  source.instance.state.angle = newAngle
-  source.instance.updateAudio()
+  props.source.instance.state.angle = newAngle
+  props.source.instance.updateAudio()
 }
 
 function onHandleMouseUp() {
-  const finalSourceAngle = source.instance.state.angle
+  const finalSourceAngle = props.source.instance.state.angle
 
   if (initialSourceAngle !== null && initialSourceAngle !== finalSourceAngle) {
     actionManager.doAction("rotate_source_angle", {
