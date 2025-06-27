@@ -96,13 +96,18 @@ export default class AudioEngine {
   }
 
   deleteSoundSource(payload) {
-    const index = payload.src.index
+    const index = payload.index
     const src = this.soundSources.value[index]
     const instance = src?.instance
 
     const finalVolume = instance?.getVolume()
     instance?.dispose()
     this.soundSources.value.splice(index, 1)
+
+    if (!src) {
+      console.warn("Tried to delete sound source but index", index, "was invalid.")
+      return {}
+    }
 
     return {
       state: reactive(Object.assign({}, src.state)),
