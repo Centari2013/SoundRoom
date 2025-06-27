@@ -96,7 +96,9 @@ export default class AudioEngine {
   }
 
   deleteSoundSource(payload) {
-    const index = payload.index
+
+    // crappy fix but it works! (stale state)
+    const index = this.soundSources.value[payload.index] ? payload.index : payload.src.index
     const src = this.soundSources.value[index]
     const instance = src?.instance
 
