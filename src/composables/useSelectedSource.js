@@ -5,11 +5,11 @@ export function getSourceName(path) {
   return file.replace(/\.[^/.]+$/, '');
 }
 
-export function useSelectedSource(soundSources, selectedIndex) {
+export function useSelectedSource(audioEngine, selectedIndex) {
   const selectedSource = computed(() => {
     const index = selectedIndex.value;
-    if (index == null || index < 0 || index >= soundSources.value.length) return null;
-    const raw = soundSources.value[index];
+    if (index == null || index < 0 || index >= audioEngine.value.soundSources.value.length) return null;
+    const raw = audioEngine.value.soundSources.value[index];
     return {
       ...raw,
       volume: raw.instance.getVolume(),

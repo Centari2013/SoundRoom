@@ -9,12 +9,12 @@ export function registerCanvasActions(audioEngine, actionManager, listener, soun
   }
   const addSoundSource = (payload) => {
     payload.src.audioPath = soundLibrarySources.value.find(s => s.libraryId === payload.src.libraryId).audioPath
-    audioEngine.addSoundSource(payload)
+    audioEngine.value.addSoundSource(payload)
     listener.value.updateAudio()
   }
 
   const deleteSoundSource = (payload) => {
-    payload.src = audioEngine.deleteSoundSource(payload)
+    payload.src = audioEngine.value.deleteSoundSource(payload)
     listener.value.updateAudio()
   }
 
@@ -29,8 +29,8 @@ export function registerCanvasActions(audioEngine, actionManager, listener, soun
   )
 
   actionManager.registerActionHandlers('move_canvas_sound_source',
-    payload => moveSoundSource(audioEngine.soundSources.value[payload.index], payload.to),
-    payload => moveSoundSource(audioEngine.soundSources.value[payload.index], payload.from)
+    payload => moveSoundSource(audioEngine.value.soundSources.value[payload.index], payload.to),
+    payload => moveSoundSource(audioEngine.value.soundSources.value[payload.index], payload.from)
   )
 }
 
@@ -47,30 +47,47 @@ const maxLibSourcesReached = function(soundLibrarySources){
 }
 export function registerDraggableActions(audioEngine, actionManager, soundLibrarySources) {
   const deleteDraggableSoundSource = (payload) => {
-    // Remove from the source list UI
-    const i = soundLibrarySources.value.findIndex(s => s.libraryId == payload.src.libraryId)
-    payload.src = soundLibrarySources.value[i]
-    soundLibrarySources.value.splice(i, 1)
-    payload.index = i
-  
-    // Find all sound sources on the canvas with the same libraryId
-    const matches = audioEngine.soundSources.value
-      .map((aes, idx) => ({ aes, index: idx }))
-      .filter(entry => entry.aes.libraryId === payload.src.libraryId)
-  
-      payload.soundNodes = []
-      // Dispatch an action for each one to ensure undo/redo support
-      for (const match of matches.reverse()) {
-        // reverse to prevent index shift issues when modifying array
-        
-        const deletedNode = audioEngine.deleteSoundSource({ index: match.index, src: match.aes })
-        payload.soundNodes.push({ index: match.index, src: deletedNode })
+      const originalSrc = payload.src // 🔐 store it safely
+
+      // Remove from the source list UI
+      const i = soundLibrarySources.value.findIndex(s => s.libraryId == originalSrc.libraryId)
+      if (i !== -1) {
+        soundLibrarySources.value.splice(i, 1)
+        payload.index = i
       }
-  }
+
+      console.log("Deleting draggable sound source", originalSrc)
+
+      // Find all sound sources on the canvas with the same libraryId
+      const sources = audioEngine.value.soundSources.value
+      const matchingIndices = []
+
+      // Find matching indices FIRST, in reverse
+      for (let i = sources.length - 1; i >= 0; i--) {
+        if (sources[i]?.libraryId === payload.src.libraryId) {
+          matchingIndices.push(i)
+        }
+      }
+
+      payload.soundNodes = []
+
+      for (const idx of matchingIndices) {
+        const srcToDelete = audioEngine.value.soundSources.value[idx]
+        if (srcToDelete) {
+          const deletedNode = audioEngine.value.deleteSoundSource({ index: idx, src: srcToDelete })
+          payload.soundNodes.push({ index: idx, src: deletedNode })
+        }
+      }
+
+
+      URL.revokeObjectURL(originalSrc.audioPath)
+    }
+
   
   const addDraggableSoundSource = async (payload) => {
     if (maxLibSourcesReached(soundLibrarySources)) return;
     // download blob and re-instate draggable source
+    console.log("Adding draggable sound source", payload.src);
     const { blobUrl } = await downloadAudio(payload.src.bucket, payload.src.path, false)
     payload.src.audioPath = blobUrl
     const exists = soundLibrarySources.value.find(s => s.libraryId === payload.src.libraryId)
@@ -85,7 +102,7 @@ export function registerDraggableActions(audioEngine, actionManager, soundLibrar
     // recreate old sound nodes with new blob
     payload.soundNodes?.forEach(s => {
       s.src.audioPath = blobUrl
-      audioEngine.addSoundSource(s)
+      audioEngine.value.addSoundSource(s)
     });
   }
 

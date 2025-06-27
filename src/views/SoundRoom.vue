@@ -89,18 +89,14 @@
       />
     </div>
     <FooterBar
-      v-bind="{
-        room,
-        listener,
-        soundLibrarySources,
-        audioEngine
-      }"
+      @saveRoom="saveRoomLocal"
+      @loadRoom="loadRoomLocal"
     />
   </div>
 </template>
 
 <script setup>
-import { ref, computed, reactive, provide, onMounted, onUnmounted } from 'vue'
+import { ref, computed, provide, onMounted, onUnmounted, shallowRef } from 'vue'
 
 // Shared constants
 const SOUND_NODE_PART_NAME = 'sound-node-part'
@@ -129,6 +125,7 @@ import { useSelectedSource } from '@/composables/useSelectedSource'
 import { setupAudioContext } from '@/composables/useAudioSetup'
 import { useContextMenuLogic } from '@/composables/useContextMenuLogic'
 import { registerCanvasActions, registerDraggableActions, setMaxLibSources } from '@/composables/useSoundRoomActions'
+import { useSaveAndLoadRoom } from '@/composables/useSaveAndLoadRoom';
 
 // State
 const isHelpOpen = ref(false)
@@ -144,13 +141,13 @@ const MAX_LIB_SOURCES = 20
 const MAX_CANVAS_SOURCES = 30
 const loadedCanvasSoundSources = [] // to be populated with sources loaded from last user session
 
-const audioEngine = new AudioEngine(loadedCanvasSoundSources)
-audioEngine.maxSourceCount = MAX_CANVAS_SOURCES
+const audioEngine = shallowRef(new AudioEngine(loadedCanvasSoundSources))
+audioEngine.value.maxSourceCount = MAX_CANVAS_SOURCES
 
-const isPlaying = computed(() => audioEngine.isPlaying.value)
+const isPlaying = computed(() => audioEngine.value.isPlaying.value)
 const masterVolumeProxy = computed({
-  get: () => audioEngine.masterVolume.value,
-  set: v => (audioEngine.masterVolume.value = v),
+  get: () => audioEngine.value.masterVolume.value,
+  set: v => (audioEngine.value.masterVolume.value = v),
 })
 
 // Actions
@@ -160,7 +157,7 @@ const redoStackEmpty = computed(() => actionManager.redoStackEmpty.value)
 
 // Selection
 const { selectedSource } = useSelectedSource(
-  audioEngine.soundSources,
+  audioEngine,
   selectedIndex
 )
 provide('selectedIndex', selectedIndex)
@@ -198,22 +195,29 @@ const { onKeyDown, onKeyUp } = useKeyboardControls({
   listener,
   selectedIndex,
   selectedSource,
-  soundSources: audioEngine.soundSources,
+  soundSources: audioEngine.value.soundSources,
   actionManager,
   room,
+})
+
+const { saveRoomLocal, loadRoomLocal } = useSaveAndLoadRoom({
+  room,
+  listener,
+  soundLibrarySources,
+  audioEngine, 
+  actionManager
 })
 
 registerCanvasActions(audioEngine, actionManager, listener, soundLibrarySources)
 registerDraggableActions(audioEngine, actionManager, soundLibrarySources)
 setMaxLibSources(MAX_LIB_SOURCES)
 
-// Lifecycle
-let audioContext = null
+
 onMounted(() => {
-  audioContext = setupAudioContext(audioEngine, listener)
+  setupAudioContext(audioEngine, listener)
 })
 
 onUnmounted(() => {
-  audioEngine.dispose()
+  audioEngine.value.dispose()
 })
 </script>
