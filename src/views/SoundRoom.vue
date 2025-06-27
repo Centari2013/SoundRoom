@@ -137,8 +137,8 @@ const selectedIndex = ref(null)
 const draggedSource = ref(null)
 const stageWrapper = ref(null)
 
-const room = new Room()
-const listener = reactive(new Listener())
+const room = ref(new Room())
+const listener = ref(new Listener())
 const soundLibrarySources = ref([])
 const MAX_LIB_SOURCES = 20
 const MAX_CANVAS_SOURCES = 30

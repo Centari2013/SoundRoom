@@ -5,17 +5,17 @@ export function registerCanvasActions(audioEngine, actionManager, listener, soun
     src.instance.state.x = coords.x
     src.instance.state.y = coords.y
     src.instance.updateAudio()
-    listener.updateAudio()
+    listener.value.updateAudio()
   }
   const addSoundSource = (payload) => {
     payload.src.audioPath = soundLibrarySources.value.find(s => s.libraryId === payload.src.libraryId).audioPath
     audioEngine.addSoundSource(payload)
-    listener.updateAudio()
+    listener.value.updateAudio()
   }
 
   const deleteSoundSource = (payload) => {
     payload.src = audioEngine.deleteSoundSource(payload)
-    listener.updateAudio()
+    listener.value.updateAudio()
   }
 
   actionManager.registerActionHandlers('add_canvas_sound_source',

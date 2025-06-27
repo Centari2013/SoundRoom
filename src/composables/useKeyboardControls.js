@@ -16,24 +16,24 @@ export function useKeyboardControls({
   actionManager.registerActionHandlers(
     "move_listener",
     (payload) => {
-      listener.x = payload.to.x
-      listener.y = payload.to.y
+      listener.value.x = payload.to.x
+      listener.value.y = payload.to.y
     },
     (payload) => {
-      listener.x = payload.from.x
-      listener.y = payload.from.y
+      listener.value.x = payload.from.x
+      listener.value.y = payload.from.y
     }
   )
 
   actionManager.registerActionHandlers(
     "rotate_listener_angle",
     (payload) => {
-      listener.updateAngle(payload.to)
-      listener.updateAudio()
+      listener.value.updateAngle(payload.to)
+      listener.value.updateAudio()
     },
     (payload) => {
-      listener.updateAngle(payload.from)
-      listener.updateAudio()
+      listener.value.updateAngle(payload.from)
+      listener.value.updateAudio()
     }
   )
 
@@ -43,14 +43,14 @@ export function useKeyboardControls({
       if (selectedSource.value !== null) {
         selectedSource.value.instance.state.angle = payload.to
         selectedSource.value.instance.updateAudio()
-        listener.updateAudio()
+        listener.value.updateAudio()
       }
     },
     (payload) => {
       if (selectedSource.value !== null) {
         selectedSource.value.instance.state.angle = payload.from
         selectedSource.value.instance.updateAudio()
-        listener.updateAudio()
+        listener.value.updateAudio()
       }
     }
   )
@@ -62,7 +62,7 @@ export function useKeyboardControls({
     
     if ((key == 'q' || key == 'e') && !rotationKeys.has(key)) {
       rotationKeys.add(key)
-      listenerAngleStart = listener.angle;
+      listenerAngleStart = listener.value.angle;
     }
 
     if ((key == 'z' || key == 'c') && !rotationKeys.has(key)) {
@@ -73,25 +73,25 @@ export function useKeyboardControls({
     switch (key) {
       case 'ArrowUp':
       case 'w':
-        listener.y = room.clamp(listener.y - speed, 0, room.height)
+        listener.value.y = room.value.clamp(listener.value.y - speed, 0, room.value.height)
         break
       case 'ArrowDown':
       case 's':
-        listener.y = room.clamp(listener.y + speed, 0, room.height)
+        listener.value.y = room.value.clamp(listener.value.y + speed, 0, room.value.height)
         break
       case 'ArrowLeft':
       case 'a':
-        listener.x = room.clamp(listener.x - speed, 0, room.width)
+        listener.value.x = room.value.clamp(listener.value.x - speed, 0, room.value.width)
         break
       case 'ArrowRight':
       case 'd':
-        listener.x = room.clamp(listener.x + speed, 0, room.width)
+        listener.value.x = room.value.clamp(listener.value.x + speed, 0, room.value.width)
         break
       case 'q':
-        listener.updateAngle(listener.angle - rotationStep)
+        listener.value.updateAngle(listener.value.angle - rotationStep)
         break
       case 'e':
-        listener.updateAngle(listener.angle + rotationStep)
+        listener.value.updateAngle(listener.value.angle + rotationStep)
         break
       case 'z':
         if (selectedSource.value !== null) {
@@ -128,7 +128,7 @@ export function useKeyboardControls({
       
     }
 
-    listener.updateAudio()
+    listener.value.updateAudio()
   }
 
   const onKeyUp = (event) => {
@@ -136,7 +136,7 @@ export function useKeyboardControls({
   
     if ((key === 'q' || key === 'e') && rotationKeys.has(key)) {
       rotationKeys.delete(key)
-      const listenerAngleEnd = listener.angle
+      const listenerAngleEnd = listener.value.angle
   
       if (listenerAngleStart !== null && listenerAngleStart !== listenerAngleEnd) {
         actionManager.doAction("rotate_listener_angle", {
