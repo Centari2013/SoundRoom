@@ -28,3 +28,12 @@ export default async function downloadAudio(bucket, path, populateAudio=true, st
 
     return {blobUrl, audio}
 }
+
+export async function downloadMultipleAudio(sourcesList, populateAudio = false, stopPlayback = null) {
+  const results = await Promise.all(sourcesList.map(async (src) => {
+    const result = await downloadAudio(src.bucket, src.path, populateAudio, stopPlayback);
+    return result ? { id: src.id, audioPath: result.blobUrl } : null;
+  }));
+
+  return results.filter(Boolean); // filter out any failed downloads
+}
