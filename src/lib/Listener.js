@@ -62,4 +62,9 @@ export default class Listener {
       1
     )
   }
+  dispose() {
+    this._audioContext = null;
+    this._canvasContext = null;
+  }
+
 }
