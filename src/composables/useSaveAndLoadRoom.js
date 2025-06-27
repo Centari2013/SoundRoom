@@ -11,7 +11,7 @@ export function useSaveAndLoadRoom({ room, listener, soundLibrarySources, audioE
   const isLoadingRoom = ref(false);
   const isSavingRoom = ref(false);
 
-  function saveRoomLocal() {  
+  function saveRoomLocal() {
     isSavingRoom.value = true;
     const roomData = {
       room: room.value.toJSON(),
@@ -30,51 +30,48 @@ export function useSaveAndLoadRoom({ room, listener, soundLibrarySources, audioE
     const stored = localStorage.getItem("soundRoomData");
     if (!stored) {
       console.warn("No room data found in local storage.");
-      return null;
+      isLoadingRoom.value = false;
+      return
+    } else {
+      const roomData = JSON.parse(stored);
+      const ids = roomData.soundLibrarySources.map(s => s.libraryId);
+      const dbSounds = await getSoundsFromDB(ids);
+      const downloaded = await downloadMultipleAudio(dbSounds);
+
+      const finalSources = ids.map(id => {
+        const audioPath = downloaded.find(p => p.id === id)?.audioPath;
+        const soundMatch = dbSounds.find(d => d.id === id);
+        const name = soundMatch.name;
+        const bucket = soundMatch.bucket;
+        const path = soundMatch.path;
+        if (!audioPath) console.warn(`Missing audioPath for libraryId ${id}`);
+        return { libraryId: id, audioPath, name, path, bucket };
+      });
+
+      soundLibrarySources.value = finalSources;
+
+      roomData.audioEngine.soundSources.forEach(src => {
+        const match = finalSources.find(a => a.libraryId === src.libraryId);
+        if (match) {
+          src.audioPath = match.audioPath;
+          src.name = match.name;
+        }
+      });
+
+      actionManager.clearHistory();
+
+      audioEngine.value.dispose();
+      listener.value.dispose();
+
+      room.value = Room.fromJSON(roomData.room);
+      listener.value = Listener.fromJSON(roomData.listener);
+      audioEngine.value = AudioEngine.fromJSON(roomData.audioEngine);
+
+      setupAudioContext(audioEngine, listener);
     }
-
-    const roomData = JSON.parse(stored);
-
-    const ids = roomData.soundLibrarySources.map(s => s.libraryId);
-    const dbSounds = await getSoundsFromDB(ids);
-    const downloaded = await downloadMultipleAudio(dbSounds);
-
-    const finalSources = ids.map(id => {
-      const audioPath = downloaded.find(p => p.id === id)?.audioPath;
-      const soundMatch = dbSounds.find(d => d.id === id);
-      const name = soundMatch.name;
-      const bucket = soundMatch.bucket;
-      const path = soundMatch.path;
-      if (!audioPath) console.warn(`Missing audioPath for libraryId ${id}`);
-      return { libraryId: id, audioPath, name, path, bucket };
-    });
-
-    soundLibrarySources.value = finalSources;
-
-    roomData.audioEngine.soundSources.forEach(src => {
-      const match = finalSources.find(a => a.libraryId === src.libraryId);
-      if (match) {
-        src.audioPath = match.audioPath;
-        src.name = match.name;
-      }
-    });
-
-    actionManager.clearHistory();
-
-    audioEngine.value.dispose();
-    listener.value.dispose();
-
-    room.value = Room.fromJSON(roomData.room);
-    listener.value = Listener.fromJSON(roomData.listener);
-    audioEngine.value = AudioEngine.fromJSON(roomData.audioEngine);
-
-    setupAudioContext(audioEngine, listener)
-    
     setTimeout(() => {
       isLoadingRoom.value = false;
-    }, 2000)
-    
-   
+    }, 2000);
   }
 
   async function getSoundsFromDB(ids) {
