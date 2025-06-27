@@ -56,7 +56,6 @@ export function registerDraggableActions(audioEngine, actionManager, soundLibrar
         payload.index = i
       }
 
-      console.log("Deleting draggable sound source", originalSrc)
 
       // Find all sound sources on the canvas with the same libraryId
       const sources = audioEngine.value.soundSources.value
@@ -87,7 +86,6 @@ export function registerDraggableActions(audioEngine, actionManager, soundLibrar
   const addDraggableSoundSource = async (payload) => {
     if (maxLibSourcesReached(soundLibrarySources)) return;
     // download blob and re-instate draggable source
-    console.log("Adding draggable sound source", payload.src);
     const { blobUrl } = await downloadAudio(payload.src.bucket, payload.src.path, false)
     payload.src.audioPath = blobUrl
     const exists = soundLibrarySources.value.find(s => s.libraryId === payload.src.libraryId)
