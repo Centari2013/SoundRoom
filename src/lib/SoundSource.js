@@ -6,8 +6,7 @@ export default class SoundSource {
     masterGain,
     file,
     state,
-    loop = true,
-    canvasContext
+    loop = true
   }) {
     this.state = state;
 
@@ -15,7 +14,6 @@ export default class SoundSource {
     this._scale = 0.01;
 
     this._audioContext = audioContext;
-    this._ctx = canvasContext;
     
     this._audioElement = new Audio(file);
     this._audioElement.preload = 'auto';
@@ -112,7 +110,6 @@ export default class SoundSource {
       this._gainNode = null
       this._pannerNode = null
   
-      this._ctx = null
       this._audioContext = null
       this.state = null
     } catch (err) {
