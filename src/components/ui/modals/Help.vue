@@ -1,9 +1,9 @@
 <template>
-  <div v-if="isHelpOpen" @click.self="emit('close')" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center">
+  <div v-if="isHelpOpen" @click.self="emit('close')" class="modal-backdrop">
     <div class="bg-white dark:bg-neutral-950 rounded-2xl w-[80vw] h-[80vh] relative flex flex-col overflow-hidden shadow-2xl border border-neutral-300 dark:border-neutral-800">
       
       <!-- Absolute Floating Header -->
-      <div class="absolute top-0 left-0 right-0 z-10 flex justify-between items-center px-6 py-4 bg-white/50 dark:bg-neutral-950/50 backdrop-blur-md border-b border-neutral-300 dark:border-neutral-800">
+      <div class="modal-header">
         <h1 class="text-2xl font-bold tracking-tight">Welcome to SoundRoom</h1>
         <button @click="() => {$emit('close'); formSubmitted = false; resetFAQ()}" class="text-sm underline hover:text-neutral-600 dark:hover:text-neutral-400">Close</button>
       </div>

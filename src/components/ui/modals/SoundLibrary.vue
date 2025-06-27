@@ -2,10 +2,10 @@
   <div
     v-if="isLibraryOpen"
     @click.self="emit('close')"
-    class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center"
+    class="modal-backdrop"
   >
     <div
-      class="bg-white dark:bg-neutral-950 rounded-2xl w-[80vw] h-[80vh] flex overflow-hidden shadow-2xl border border-neutral-300 dark:border-neutral-800"
+      class="modal-panel flex"
     >
       <!-- Left Sidebar: Categories -->
       <aside
