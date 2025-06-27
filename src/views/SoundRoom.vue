@@ -60,7 +60,7 @@
         </div>
 
         <!-- Canvas Area -->
-        <div class="relative flex-1 bg-neutral-200 dark:bg-black flex items-center justify-center">
+        <div class="flex-1 bg-neutral-200 dark:bg-black flex items-center justify-center">
           <MainCanvasStage 
             ref="stageWrapper"
             v-bind="{
