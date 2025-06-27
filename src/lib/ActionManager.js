@@ -74,6 +74,11 @@ export default class ActionManager {
     this._actionStack.value.push({ name, payload })
   }
 
+  clearHistory() {
+    this._actionStack.value = []
+    this._redoStack.value = []
+  }
+
   // Optional: expose history for UI/debugging
   /* get actionHistory() {
     return this._actionStack.value
