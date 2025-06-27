@@ -68,7 +68,7 @@ const hasBeenPromoted = ref(false)
 
 async function emitAudio() {
   if (!blobUrl) {
-    ({ blobUrl, audio } = await downloadAudio(props.soundData.bucket, props.soundData.path, false, stopPlayback))
+    ({ blobUrl } = await downloadAudio(props.soundData.bucket, props.soundData.path, false))
   }
   hasBeenPromoted.value = true
   const { cone_inner, cone_outer, id, ...rest } = props.soundData
