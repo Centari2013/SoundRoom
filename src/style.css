@@ -43,9 +43,11 @@ button {
   font-size: 1em;
   font-weight: 500;
   font-family: inherit;
-  background-color: #1a1a1a;
+  
   cursor: pointer;
   transition: border-color 0.25s;
+
+  @apply bg-[#d3d3d3e1] dark:bg-[#1a1a1a];
 }
 button:hover {
   border-color: #646cff;
@@ -73,6 +75,11 @@ button:disabled {
   color: #ccc;
 }
 
+input {
+  @apply w-full p-3 my-4 border-none rounded-lg dark:bg-[#333] bg-neutral-200 dark:text-white;
+}
+
+
 .modal-backdrop {
   @apply fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center;
 }
@@ -95,9 +102,7 @@ button:disabled {
   a:hover {
     color: #747bff;
   }
-  button {
-    background-color: #f9f9f9;
-  }
+ 
   button:disabled {
     background-color: #b9b9b9;
     color: #505050;
