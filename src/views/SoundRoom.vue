@@ -84,7 +84,6 @@
       <!-- Right Sidebar -->
       <SidebarRight
         class="min-w-[7.5rem] max-w-64 w-[20%] flex-shrink"
-        :listener="listener"
         :actionManager="actionManager"
         :selectedSource="selectedSource"
       />

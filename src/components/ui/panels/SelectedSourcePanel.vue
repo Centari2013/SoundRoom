@@ -50,7 +50,6 @@ import VueSlider from 'vue-3-slider-component';
 import { useVolumeSlider } from '@/composables/useVolumeSlider';
 
 const props = defineProps({
-  listener: Object,
   actionManager: Object,
   selectedSource: Object
 });
