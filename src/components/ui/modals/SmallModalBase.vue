@@ -14,7 +14,7 @@
         <button
           v-if="showCloseButton"
           @click="emit('close')"
-          class="text-sm underline hover:text-neutral-600 dark:hover:text-neutral-400"
+          class="text-sm hover:text-neutral-600 dark:hover:text-neutral-400"
         >
           Close
         </button>
