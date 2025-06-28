@@ -1,4 +1,3 @@
-<!-- LoginModal.vue -->
 <template>      
       <div class="flex flex-col w-full space-y-3">
         <input class="w-full" v-model="email" type="email" placeholder="your@email.com" />
