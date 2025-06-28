@@ -12,14 +12,14 @@
         class="w-60 bg-neutral-200 dark:bg-neutral-900 border-r border-neutral-300 dark:border-neutral-800 p-4 space-y-3 overflow-y-auto"
       >
         <h2 class="font-bold text-sm mb-2">Categories</h2>
-        <button
+        <BaseButton
           v-for="cat in categories"
           :key="cat.id"
           @click="activeCategory = cat.id"
           :class="['sound-lib-button', { active: activeCategory === cat.id }]"
         >
           {{ cat.label }}
-        </button>
+        </BaseButton>
       </aside>
 
       <!-- Main Content: Sound Grid -->
@@ -29,7 +29,7 @@
           class="absolute top-0 left-0 right-0 z-10 flex justify-between items-center px-6 py-4 bg-white/50 dark:bg-neutral-950/50 backdrop-blur-md border-b border-neutral-300 dark:border-neutral-800"
         >
           <h2 class="text-2xl font-bold">SoundLibrary</h2>
-          <button class="text-sm" @click="$emit('close')">Close</button>
+          <BaseButton class="text-sm" @click="$emit('close')">Close</BaseButton>
         </div>
 
         <!-- Scrollable Sound Grid -->
@@ -55,8 +55,8 @@
             />
 
             <!-- Load Button -->
-            <button
-              class="load-button text-xs px-3 py-1 rounded hover:bg-blue-700 transition-colors"
+            <BaseButton
+              class="load-BaseButton text-xs px-3 py-1 rounded hover:bg-blue-700 transition-colors"
               @click="() => { toggleAddSource(sound) }"
             >
               {{
@@ -66,7 +66,7 @@
                   ? 'Remove'
                   : 'Load'
               }}
-            </button>
+            </BaseButton>
           </div>
         </div>
       </div>
@@ -100,6 +100,7 @@ import { supabase } from '@/utils/supabase'
 import SoundPreviewCircle from '@/components/ui/controls/SoundPreviewCircle.vue'
 import MarqueeTitle from '@/components/ui/text/MarqueeTitle.vue'
 import { getSourceName } from '@/composables/useSelectedSource'
+import BaseButton from '@/components/ui/input/BaseButton.vue'
 
 const props = defineProps({
   isLibraryOpen: Boolean,

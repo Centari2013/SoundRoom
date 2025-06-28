@@ -1,8 +1,15 @@
 <template>
-  <aside class="bg-neutral-100 dark:bg-neutral-900 border-l border-neutral-300 dark:border-neutral-800 p-4 space-y-4">
+  <aside
+    class="bg-neutral-100 dark:bg-neutral-900 border-l border-neutral-300 dark:border-neutral-800 p-4 space-y-4"
+    role="region"
+    aria-labelledby="selected-sound-panel-label"
+  >
+    <h2 id="selected-sound-panel-label" class="sr-only">Selected Sound Settings Panel</h2>
+
     <SelectedSourcePanel v-bind="{ actionManager, selectedSource }" />
   </aside>
 </template>
+
 
 <script setup>
 import SelectedSourcePanel from '@/components/ui/panels/SelectedSourcePanel.vue'

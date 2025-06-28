@@ -1,16 +1,30 @@
-<template>
+ <template>
   <div
     ref="stageRef"
-    class="border-2 border-neutral-400 dark:border-neutral-700 flex items-center justify-center"
+    role="application"
+    tabindex="0"
+    aria-label="SoundRoom 2D audio environment. Use keyboard or mouse to interact with sound nodes."
+    class="border-2 border-neutral-400 dark:border-neutral-700 flex items-center justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
     :class="`w-[${room.width}px] h-[${room.height}px]`"
     @dragover.prevent
     @drop="handleDrop"
     @keydown="onKeyDown"
     @keyup="onKeyUp"
-    tabindex="0"
   >
-    <ContextMenu ref="contextMenuRef" :functionList="contextMenuActions" />
-    <v-stage :config="{ width: room.width, height: room.height }" @contextmenu="(e) => e.evt.preventDefault()" @mousedown="handleStageClick">
+    <!-- Context menu is visual only -->
+    <ContextMenu
+      ref="contextMenuRef"
+      :functionList="contextMenuActions"
+      aria-hidden="true"
+    />
+
+    <!-- Konva stage: purely visual, hide from screen readers -->
+    <v-stage
+      :config="{ width: room.width, height: room.height }"
+      @contextmenu="(e) => e.evt.preventDefault()"
+      @mousedown="handleStageClick"
+      aria-hidden="true"
+    >
       <v-layer ref="mainLayer">
         <SoundSourceNode
           v-for="(src, i) in audioEngine.soundSources.value"
@@ -23,12 +37,17 @@
           @select="$emit('selectNode', $event)"
           @contextmenu="showContextMenu"
         />
-        <ListenerNode v-bind="{ listener, actionManager, room }" />
+        <ListenerNode
+          v-bind="{ listener, actionManager, room }"
+        />
       </v-layer>
     </v-stage>
-    <SoundSourceLabel 
-    v-for="sntc in soundNodeTitleCoords"
-    v-bind="sntc"
+
+    <!-- Labels — depends if they're meaningful or decorative -->
+    <SoundSourceLabel
+      v-for="sntc in soundNodeTitleCoords"
+      v-bind="sntc"
+      :aria-hidden="true"
     />
   </div>
 </template>

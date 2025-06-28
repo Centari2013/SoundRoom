@@ -5,7 +5,7 @@
       <!-- Absolute Floating Header -->
       <div class="modal-header">
         <h1 class="text-2xl font-bold tracking-tight">Welcome to SoundRoom</h1>
-        <button @click="() => {formSubmitted = false; resetFAQ(); router.push('/');}" class="text-sm hover:text-neutral-600 dark:hover:text-neutral-400">Close</button>
+        <BaseButton @click="() => {formSubmitted = false; resetFAQ(); router.push('/');}" class="text-sm hover:text-neutral-600 dark:hover:text-neutral-400">Close</BaseButton>
       </div>
 
       <!-- Scrollable Content -->
@@ -73,12 +73,12 @@
                 :key="i"
                 class="py-1"
               >
-                <button
+                <BaseButton
                   @click="faq.open = !faq.open"
                   class="w-full text-left font-medium text-neutral-800 dark:text-neutral-200 focus:outline-none transition-colors"
                 >
                   {{ faq.question }}
-                </button>
+                </BaseButton>
                 <p
                   v-if="faq.open"
                   class="mt-2 text-sm text-neutral-600 dark:text-neutral-400 leading-snug italic indent-3"
@@ -132,9 +132,9 @@
                 ></textarea>
               </div>
 
-              <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm">
+              <BaseButton type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm">
                 Send Message
-              </button>
+              </BaseButton>
             </form>
           </div>
 
@@ -154,6 +154,7 @@
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+import BaseButton from '@/components/ui/input/BaseButton.vue'
 
 const emit = defineEmits(['close'])
 const router = useRouter()

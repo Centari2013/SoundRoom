@@ -5,45 +5,57 @@
   :canClickOutside="false"
   :showCloseButton="true"
   @close="router.push('/')"
+  role="dialog"
+  aria-modal="true"
+  :aria-labelledby="'modal-title'"
+>
+  <div
+    class="flex flex-col items-center justify-center text-center h-full px-6 space-y-6 w-full"
+    :aria-describedby="'modal-description'"
   >
-    <div class="flex flex-col items-center justify-center text-center h-full px-6 space-y-6 w-full">
-      <SignInView
-        v-if="mode === 'login'"
-        v-bind="{ loading, errorMessage }"
-        @signIn="signInWithEmail"
-        @googleAuth="handleGoogleAuth"
-      />
-      <SignUpView
-        v-if="mode === 'signup'"
-        v-bind="{ loading, errorMessage, signUpSuccess }"
-        @signUp="signUpNewUser"
-        @googleAuth="handleGoogleAuth"
-      />
-      <ResetView
-        v-if="mode === 'reset'"
-        @resetPassword="resetPassword"
-        @backToLogin="$emit('mode', 'login')"
-      />
+    <p id="modal-description" class="sr-only">
+      Authentication modal: {{ title }} form. Use tab to navigate form fields.
+    </p>
 
-      <RouterLink v-if="mode !== 'reset' && !signUpSuccess"
-        :to="mode === 'login' ? '/signup' : '/login'"
-        @click="emit('mode', mode === 'login' ? 'signup' : 'login')"
-        class="text-sm text-blue-500 cursor-pointer"
-        >
-        {{ mode === 'login' ? 'Don\'t have an account? Sign Up' : mode === 'signup' ? 'Have an account? Sign In' : '' }}
-      </RouterLink>
+    <!-- Authentication Views -->
+    <SignInView
+      v-if="mode === 'login'"
+      v-bind="{ loading, errorMessage }"
+      @signIn="signInWithEmail"
+      @googleAuth="handleGoogleAuth"
+    />
+    <SignUpView
+      v-if="mode === 'signup'"
+      v-bind="{ loading, errorMessage, signUpSuccess }"
+      @signUp="signUpNewUser"
+      @googleAuth="handleGoogleAuth"
+    />
+    <ResetView
+      v-if="mode === 'reset'"
+      @resetPassword="resetPassword"
+      @backToLogin="router.push('/login')"
+    />
 
-      <RouterLink
-        v-if="mode === 'login'"
-        to="/reset"
-        @click="$emit('mode', 'reset')"
-        class="text-sm text-blue-500 cursor-pointer"
-      >
-        Forgot Password?
-      </RouterLink>
-    </div>
-    
-  </SmallModalBase>
+    <!-- Mode Switch Links -->
+    <RouterLink
+      v-if="mode !== 'reset' && !signUpSuccess"
+      :to="mode === 'login' ? '/signup' : '/login'"
+      @click="emit('mode', mode === 'login' ? 'signup' : 'login')"
+      class="text-sm text-blue-500 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+    >
+      {{ mode === 'login' ? 'Don\'t have an account? Sign Up' : 'Have an account? Sign In' }}
+    </RouterLink>
+
+    <RouterLink
+      v-if="mode === 'login'"
+      to="/reset"
+      @click="$emit('mode', 'reset')"
+      class="text-sm text-blue-500 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+    >
+      Forgot Password?
+    </RouterLink>
+  </div>
+</SmallModalBase>
 
 </template>
 

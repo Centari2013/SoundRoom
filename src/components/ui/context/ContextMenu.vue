@@ -8,19 +8,26 @@
       left: `${pos.x}px`,
     }"
     class="context-menu bg-white dark:bg-neutral-800 rounded shadow p-2 text-sm border border-neutral-300 dark:border-neutral-700"
+    role="menu"
+    aria-label="Context menu"
   >
     <ul class="space-y-1">
       <li
-        v-for="f in functionList"
+        v-for="(f, i) in functionList"
         :key="f.label"
+        class="px-2 py-1 rounded cursor-pointer hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+        tabindex="0"
+        role="menuitem"
         @click="() => handleClick(f.function)"
-        class="px-2 py-1 rounded cursor-pointer hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors"
+        @keydown.enter.prevent="() => handleClick(f.function)"
+        @keydown.space.prevent="() => handleClick(f.function)"
       >
         {{ f.label }}
       </li>
     </ul>
   </div>
 </template>
+
 
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue';
