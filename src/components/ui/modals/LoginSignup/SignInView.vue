@@ -26,7 +26,7 @@
 <script setup>
 import { ref } from 'vue'
 
-import OrSpacer from '@/components/ui/modals/LoginSignup/orSpacer.vue'
+import OrSpacer from '@/components/ui/modals/LoginSignup/OrSpacer.vue'
 
 const emit = defineEmits(['googleAuth', 'signIn', 'toggleLogging'])
 
