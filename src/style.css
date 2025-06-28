@@ -75,8 +75,14 @@ button:disabled {
   color: #ccc;
 }
 
-input {
+input[type="text"],
+input[type="email"],
+input[type="password"] {
   @apply w-full p-3 border-none rounded-lg dark:bg-[#333] bg-neutral-200 dark:text-white;
+}
+
+input:disabled {
+  @apply dark:bg-neutral-700 dark:text-neutral-400 opacity-50 cursor-not-allowed bg-neutral-200 text-neutral-800;
 }
 
 

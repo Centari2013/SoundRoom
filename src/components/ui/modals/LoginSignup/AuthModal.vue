@@ -9,17 +9,19 @@
     <div class="flex flex-col items-center justify-center text-center h-full px-6 space-y-6 w-full">
       <SignInView
         v-if="mode === 'login'"
-        @signIn="resetPassword"
+        v-bind="{ loading, errorMessage }"
+        @signIn="signInWithEmail"
         @googleAuth="handleGoogleAuth"
       />
       <SignUpView
         v-if="mode === 'signup'"
+        v-bind="{ loading, errorMessage, signUpSuccess }"
         @signUp="signUpNewUser"
         @googleAuth="handleGoogleAuth"
       />
       <ResetView
         v-if="mode === 'reset'"
-        @resetPassword="signInWithEmail"
+        @resetPassword="resetPassword"
         @backToLogin="$emit('mode', 'login')"
       />
 
@@ -46,7 +48,7 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { supabase } from '@/utils/supabase'
 import { useRouter } from 'vue-router'
 import SmallModalBase from '@/components/ui/modals/SmallModalBase.vue'
@@ -62,37 +64,97 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['mode'])
-
+const loading = ref(false)
+const errorMessage = ref('')
 const router = useRouter()
 const title = computed(() => {
-  return props.mode.charAt(0).toUpperCase() + props.mode.slice(1)
+  return props.mode === 'login' ? 'Sign In' : props.mode === 'signup' ? 'Sign Up' : 'Reset Password'
 })
 
-async function signUpNewUser({ email, password }) {
-  const { error } = await supabase.auth.signUp({
+const signUpSuccess = ref(false)
+
+async function signUpNewUser({ email, password, firstName, username }) {
+  loading.value = true
+  const { data, error } = await supabase.auth.signUp({
     email,
     password,
     options: {
-      emailRedirectTo: 'http://localhost:4000',
+      emailRedirectTo: `${location.origin}/login`,
     },
-  })
+  });
 
   if (error) {
-    console.error('Error signing up:', error.message)
-    return
+    errorMessage.value = error.message;
+    console.error('Signup failed:', error.message);
+    loading.value = false;
+    return { error };
   }
+
+
+  const userId = data.user?.id;
+  if (!userId) {
+    console.warn('No user ID returned after signup.');
+    loading.value = false;
+    return { error: new Error('No user ID returned.') };
+  }
+
+  // Update public.users with extra metadata
+  const { error: updateError } = await supabase
+    .from('users')
+    .update({
+      username,
+      first_name: firstName,
+    })
+    .eq('id', userId);
+
+  if (updateError) {
+    console.error('Failed to update user metadata:', updateError.message);
+    loading.value = false;
+    return { error: updateError };
+  }
+  signUpSuccess.value = true;
+  loading.value = false;
+  return { data };
 }
 
+
 async function signInWithEmail({ email, password }) {
-  const { error } = await supabase.auth.signInWithPassword({
+  loading.value = true
+  errorMessage.value = ''
+
+  const { data, error } = await supabase.auth.signInWithPassword({
     email,
     password,
   })
+
   if (error) {
+    errorMessage.value = error.message
     console.error('Error signing in:', error.message)
+    loading.value = false
     return
   }
+
+  // Check if email is confirmed
+  if (!data.user.email_confirmed_at) {
+    errorMessage.value = 'Please verify your email before signing in.'
+    await supabase.auth.signOut()
+    loading.value = false
+    return
+  }
+
+  // Save session if needed (Supabase auto-handles localStorage by default)
+  // But if you're storing anything extra (e.g. username), fetch it now
+  const { data: profile } = await supabase
+    .from('users')
+    .select('username, avatar_url, first_name')
+    .eq('id', data.user.id)
+    .single()
+
+  // Example: redirect to home
+  router.push('/')
+  loading.value = false
 }
+
 
 async function handleGoogleAuth() {
   supabase.auth.signInWithOAuth({
