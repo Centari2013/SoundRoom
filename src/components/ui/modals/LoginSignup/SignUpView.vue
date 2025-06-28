@@ -31,7 +31,7 @@ import { ref, watch } from 'vue'
 
 import { validateEmail, validatePassword } from '@/utils/validateData'
 
-import OrSpacer from '@/components/ui/modals/LoginSignup/orSpacer.vue'
+import OrSpacer from '@/components/ui/modals/LoginSignup/OrSpacer.vue'
 
 const emit = defineEmits(['googleAuth', 'signUp', 'toggleLogging'])
 
