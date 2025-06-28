@@ -31,7 +31,7 @@
       <p v-if="password && !validPassword" class="text-red-500 text-sm">
         Password must be at least 8 characters and include an uppercase letter, a lowercase letter, a number, and a symbol.
       </p>
-
+      <span class="h-3"></span>
       <button
         class="w-full"
         @click="pageNumber = 1"
