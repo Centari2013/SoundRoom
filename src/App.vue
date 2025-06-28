@@ -2,8 +2,11 @@
 <template>
   <SpeedInsights/>
   <MobileComingSoon v-if="isMobile"/>
-  <HeaderBar/>
-  <RouterView/>
+  <div class="h-screen max-h-screen min-w-screen flex flex-col">
+    <HeaderBar/>
+    <RouterView/>
+  </div>
+  
   <portal-target name="modal" />
 </template>
 

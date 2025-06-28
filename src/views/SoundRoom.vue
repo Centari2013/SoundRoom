@@ -1,5 +1,5 @@
 <template>
-  <div class="h-screen min-w-screen bg-white text-neutral-900 dark:bg-neutral-950 dark:text-white flex flex-col">
+  <div class="h-full bg-white text-neutral-900 dark:bg-neutral-950 dark:text-white flex flex-col">
     <!-- Main Layout -->
     <div class="flex flex-1 overflow-hidden">
       
