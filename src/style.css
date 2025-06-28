@@ -75,8 +75,14 @@ button:disabled {
   color: #ccc;
 }
 
-input {
-  @apply w-full p-3 my-4 border-none rounded-lg dark:bg-[#333] bg-neutral-200 dark:text-white;
+input[type="text"],
+input[type="email"],
+input[type="password"] {
+  @apply w-full p-3 border-none rounded-lg dark:bg-[#333] bg-neutral-200 dark:text-white;
+}
+
+input:disabled {
+  @apply dark:bg-neutral-700 dark:text-neutral-400 opacity-50 cursor-not-allowed bg-neutral-200 text-neutral-800;
 }
 
 
@@ -92,6 +98,8 @@ input {
   @apply absolute top-0 left-0 right-0 z-10 flex justify-between items-center px-6 py-4
          bg-white/50 dark:bg-neutral-950/50 backdrop-blur-md border-b border-neutral-300 dark:border-neutral-800;
 }
+
+
 
 
 @media (prefers-color-scheme: light) {

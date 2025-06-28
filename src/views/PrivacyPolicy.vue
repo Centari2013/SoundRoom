@@ -1,0 +1,10 @@
+<template>
+  <div class="max-w-2xl mx-auto py-10 px-4">
+    <h1 class="text-2xl font-bold mb-4">Privacy Policy</h1>
+    <p>
+      SoundRoom is currently in pre-release testing. We are not collecting any
+      personal information beyond basic email addresses for login purposes. A
+      full privacy policy will be published prior to public launch.
+    </p>
+  </div>
+</template>

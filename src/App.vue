@@ -1,7 +1,8 @@
 <template>
   <SpeedInsights />
   <div id="app">
-    <SoundRoom />
+    <RouterView/>
+    
   </div>
 </template>
 
