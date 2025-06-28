@@ -1,13 +1,13 @@
+<!-- App.vue -->
 <template>
-  <SpeedInsights />
-  <div id="app">
-    <RouterView/>
-    
-  </div>
+  <SpeedInsights/>
+  <RouterView /> <!-- This renders SoundRoom and any children like modals -->
+  <portal-target name="modal" />
 </template>
 
+
 <script setup>
-import { SpeedInsights } from '@vercel/speed-insights/vue';
-import SoundRoom from '@/views/SoundRoom.vue'
+import { SpeedInsights } from '@vercel/speed-insights/vue'
+
 
 </script>

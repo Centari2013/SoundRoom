@@ -110,11 +110,12 @@ async function signUpNewUser({ email, password, firstName, username }) {
   if (updateError) {
     console.error('Failed to update user metadata:', updateError.message);
     loading.value = false;
-    return { error: updateError };
+    errorMessage.value = updateError.message;
+    return 
   }
   signUpSuccess.value = true;
   loading.value = false;
-  return { data };
+  return ;
 }
 
 
