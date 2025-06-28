@@ -1,14 +1,8 @@
 <template>
   <div class="h-screen min-w-screen bg-white text-neutral-900 dark:bg-neutral-950 dark:text-white flex flex-col">
-    <!-- Header -->
-    <HeaderBar @openHelp="isHelpOpen = true" />
-
     <!-- Main Layout -->
     <div class="flex flex-1 overflow-hidden">
-      <Help
-        :isHelpOpen="isHelpOpen"
-        @close="isHelpOpen = false"
-      />
+      
 
       <SoundLibrary
         v-bind="{
@@ -119,8 +113,6 @@ const SOUND_NODE_PART_NAME = 'sound-node-part'
 import VueSlider from 'vue-3-slider-component'
 import ToolbarControls from '@/components/ui/controls/ToolbarControls.vue'
 import SoundLibrary from '@/components/ui/modals/SoundLibrary.vue'
-import Help from '@/components/ui/modals/Help.vue'
-import HeaderBar from '@/components/SoundRoom/HeaderBar.vue'
 import SidebarLeft from '@/components/SoundRoom/SidebarLeft.vue'
 import SidebarRight from '@/components/SoundRoom/SidebarRight.vue'
 import MainCanvasStage from '@/components/SoundRoom/MainCanvasStage.vue'
@@ -142,7 +134,6 @@ import { registerCanvasActions, registerDraggableActions, setMaxLibSources } fro
 import { useSaveAndLoadRoom } from '@/composables/useSaveAndLoadRoom';
 
 // State
-const isHelpOpen = ref(false)
 const isLibraryOpen = ref(false)
 const selectedIndex = ref(null)
 const draggedSource = ref(null)

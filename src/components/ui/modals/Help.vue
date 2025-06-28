@@ -1,11 +1,11 @@
 <template>
-  <div v-if="isHelpOpen" @click.self="emit('close')" class="modal-backdrop">
+  <div @click.self="emit('close')" class="modal-backdrop">
     <div class="bg-white dark:bg-neutral-950 rounded-2xl w-[80vw] h-[80vh] relative flex flex-col overflow-hidden shadow-2xl border border-neutral-300 dark:border-neutral-800">
       
       <!-- Absolute Floating Header -->
       <div class="modal-header">
         <h1 class="text-2xl font-bold tracking-tight">Welcome to SoundRoom</h1>
-        <button @click="() => {$emit('close'); formSubmitted = false; resetFAQ()}" class="text-sm hover:text-neutral-600 dark:hover:text-neutral-400">Close</button>
+        <button @click="() => {formSubmitted = false; resetFAQ(); router.push('/');}" class="text-sm hover:text-neutral-600 dark:hover:text-neutral-400">Close</button>
       </div>
 
       <!-- Scrollable Content -->
@@ -153,12 +153,10 @@
 
 <script setup>
 import { ref } from 'vue'
-
-const props = defineProps({
-  isHelpOpen: Boolean
-})
+import { useRouter } from 'vue-router'
 
 const emit = defineEmits(['close'])
+const router = useRouter()
 
 // form data
 const form = ref({

@@ -1,8 +1,6 @@
 <template>
-  
-
-  <header class="px-6 py-4 border-b border-neutral-300 dark:border-neutral-800 flex items-center justify-between">
-    <h1 class="text-xl font-bold tracking-wide dark:text-gray-300">SoundRoom</h1>
+  <header class="px-6 py-4 border-b border-neutral-300 dark:border-neutral-800 dark:bg-black flex items-center justify-between">
+    <h1 class="text-xl font-bold tracking-wide dark:text-gray-300 ">SoundRoom</h1>
     <nav class="space-x-4">
       <button v-for="button in headerButtons" :key="button.label" class="px-3 py-1 text-sm rounded hover:bg-neutral-200 dark:hover:bg-neutral-800" @click="button.action">
         {{ button.label }}
@@ -25,7 +23,7 @@ const showAuthModal = ref(false);
 const authMode = ref('signup'); // 'login' | 'signup' | 'reset
 
 const headerButtons = ref([
-  { label: 'Help', action: () => emit('openHelp') },
+  { label: 'Help', action: () => router.push('/help') },
   { label: 'Sign Up', action: () => router.push('/signup') },
 ])
 

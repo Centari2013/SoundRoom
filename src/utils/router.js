@@ -5,6 +5,7 @@ import AuthModal from '@/components/ui/modals/LoginSignup/AuthModal.vue'
 import UpdatePasswordPage from '@/views/UpdatePasswordPage.vue'
 import TermsOfService from '@/views/TermsOfService.vue'
 import PrivacyPolicy from '@/views/PrivacyPolicy.vue'
+import Help from '@/components/ui/modals/Help.vue'
 
 export const router = createRouter({
   history: createWebHistory(),
@@ -27,6 +28,11 @@ export const router = createRouter({
           path: 'reset',
           component: ModalWrapper,
           props: { component: AuthModal },
+        },
+        {
+          path: 'help',
+          component: ModalWrapper,
+          props: { component: Help },
         },
       ]
     },
