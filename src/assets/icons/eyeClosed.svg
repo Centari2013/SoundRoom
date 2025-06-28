@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+  <!-- Lower eyelid arc -->
+  <path
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    stroke-width="2"
+    d="M4 12c2.5 4 13.5 4 16 0"
+  />
+  <!-- Lashes below the arc -->
+  <path stroke-linecap="round" stroke-width="2" d="M6 14l-1 2" />
+  <path stroke-linecap="round" stroke-width="2" d="M10 15l-0.5 2.5" />
+  <path stroke-linecap="round" stroke-width="2" d="M14 15l0.5 2.5" />
+  <path stroke-linecap="round" stroke-width="2" d="M18 14l1 2" />
+</svg>

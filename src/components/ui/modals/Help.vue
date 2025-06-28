@@ -5,7 +5,7 @@
       <!-- Absolute Floating Header -->
       <div class="modal-header">
         <h1 class="text-2xl font-bold tracking-tight">Welcome to SoundRoom</h1>
-        <button @click="() => {$emit('close'); formSubmitted = false; resetFAQ()}" class="text-sm underline hover:text-neutral-600 dark:hover:text-neutral-400">Close</button>
+        <button @click="() => {$emit('close'); formSubmitted = false; resetFAQ()}" class="text-sm hover:text-neutral-600 dark:hover:text-neutral-400">Close</button>
       </div>
 
       <!-- Scrollable Content -->

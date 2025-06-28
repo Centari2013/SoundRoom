@@ -3,8 +3,9 @@
     v-if="showSaveMessage"
     @close="showSaveMessage = false"
     :showCloseButton="false"
+    :title="`${mode.charAt(0).toUpperCase() + mode.slice(1)} Room`"
   >
-    <div class="flex flex-col items-center justify-center text-center h-40 px-6 space-y-6">
+    <div class="flex flex-col items-center justify-center text-center px-6 space-y-6">
       <p class="text-lg font-medium text-neutral-800 dark:text-neutral-200">
         Would you like to {{ mode }} your room?
       </p>
@@ -35,7 +36,7 @@
   
 <script setup>
 import { ref } from 'vue';
-import SmallModal from '@/components/ui/modals/SmallModal.vue';
+import SmallModal from '@/components/ui/modals/SmallModalBase.vue';
 
 const emit = defineEmits(['saveRoom','loadRoom'])
 const props = defineProps({
