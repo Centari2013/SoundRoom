@@ -1,9 +1,5 @@
 <template>
-  <AuthModal
-   v-if="showAuthModal" 
-  :mode="authMode"
-  @mode="authMode = $event"
-  @close="showAuthModal = false"/>
+  
 
   <header class="px-6 py-4 border-b border-neutral-300 dark:border-neutral-800 flex items-center justify-between">
     <h1 class="text-xl font-bold tracking-wide dark:text-gray-300">SoundRoom</h1>

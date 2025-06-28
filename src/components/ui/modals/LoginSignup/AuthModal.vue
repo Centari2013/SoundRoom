@@ -48,27 +48,34 @@
 </template>
 
 <script setup>
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { supabase } from '@/utils/supabase'
-import { useRouter } from 'vue-router'
 import SmallModalBase from '@/components/ui/modals/SmallModalBase.vue'
 import SignInView from '@/components/ui/modals/LoginSignup/SignInView.vue'
 import SignUpView from '@/components/ui/modals/LoginSignup/SignUpView.vue'
 import ResetView from '@/components/ui/modals/LoginSignup/ResetView.vue'
 
-const props = defineProps({
-  mode: {
-    type: String,
-    default: 'signup', // 'login' | 'signup' | 'reset'
+const mode = ref('login') // Default mode
+const route = useRoute()
+
+watch(
+  () => route.path,
+  (newPath) => {
+    if (newPath.includes('signup')) mode.value = 'signup'
+    else if (newPath.includes('reset')) mode.value = 'reset'
+    else mode.value = 'login'
   },
-})
+  { immediate: true } // so it runs on first load
+)
+
 
 const emit = defineEmits(['mode'])
 const loading = ref(false)
 const errorMessage = ref('')
 const router = useRouter()
 const title = computed(() => {
-  return props.mode === 'login' ? 'Sign In' : props.mode === 'signup' ? 'Sign Up' : 'Reset Password'
+  return mode.value === 'login' ? 'Sign In' : mode.value === 'signup' ? 'Sign Up' : 'Reset Password'
 })
 
 const signUpSuccess = ref(false)
