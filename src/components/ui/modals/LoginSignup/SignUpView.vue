@@ -20,6 +20,7 @@
           type="button"
           class="absolute right-3 top-1/2 transform -translate-y-1/2 cursor-pointer"
           @click="showPassword = !showPassword"
+          
         >
           <component :is="showPassword ? EyeOpen : EyeClosed" class="h-5 w-5 text-gray-500" />
         </div>

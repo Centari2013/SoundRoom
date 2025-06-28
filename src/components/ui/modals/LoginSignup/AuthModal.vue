@@ -25,12 +25,12 @@
         @backToLogin="$emit('mode', 'login')"
       />
 
-      <RouterLink v-if="mode !== 'reset'"
+      <RouterLink v-if="mode !== 'reset' && !signUpSuccess"
         :to="mode === 'login' ? '/signup' : '/login'"
         @click="emit('mode', mode === 'login' ? 'signup' : 'login')"
         class="text-sm text-blue-500 cursor-pointer"
         >
-        {{ mode === 'login' ? 'Don\'t have an account? Sign Up' : 'Have an account? Sign In' }}
+        {{ mode === 'login' ? 'Don\'t have an account? Sign Up' : mode === 'signup' ? 'Have an account? Sign In' : '' }}
       </RouterLink>
 
       <RouterLink
