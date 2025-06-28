@@ -117,10 +117,11 @@
         />
         <label for="tos" class="leading-snug">
           I agree to the
-          <a href="/terms" target="_blank" class="underline">Terms</a>
+          <RouterLink to="/terms" target="_blank" class="underline">Terms</RouterLink>
           and
-          <a href="/privacy" target="_blank" class="underline">Privacy Policy</a>.
+          <RouterLink to="/privacy" target="_blank" class="underline">Privacy Policy</RouterLink>.
         </label>
+
       </div>
 
       <div class="flex space-x-2">
