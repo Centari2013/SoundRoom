@@ -1,7 +1,7 @@
 <template>
   <div class="flex flex-col w-full">
   <label for="reset-email" class="sr-only">Email address</label>
-  <input
+  <BaseInput
     id="reset-email"
     v-if="!sent"
     class="w-full"
@@ -42,6 +42,14 @@
   >
     If you're a Roomie, you should receive a reset link in your email shortly.
   </p>
+  <p
+    v-if="errorMessage"
+    class="text-red-500 text-sm"
+    role="alert"
+    aria-live="assertive"
+  >
+    {{ errorMessage }}
+  </p>
 
   <BaseButton
     class="text-sm mt-2"
@@ -55,14 +63,31 @@
 </template>
 
 <script setup>
-import { ref, watch } from 'vue'
+import { ref, watch, computed } from 'vue'
 import { validateEmail } from '@/utils/validateData'
 import BaseButton from '@/components/ui/input/BaseButton.vue'
+import BaseInput from '@/components/ui/input/BaseInput.vue'
+
 const emit = defineEmits(['resetPassword', 'backToLogin'])
+defineProps({
+  loading: {
+    type: Boolean,
+    default: false
+  },
+  sent: {
+    type: Boolean,
+    default: false
+  },
+  errorMessage: {
+    type: String,
+    default: ''
+  }
+})
+
 
 const email = ref('')
 const validEmail = ref(true)
-const sent = ref(false)
+
 
 watch(email, (newEmail) => {
   if (newEmail.length > 0) {
@@ -71,7 +96,6 @@ watch(email, (newEmail) => {
 })
 
 const handleSendResetLink = () => {
-  sent.value = true
   emit('resetPassword', email.value)
 }
 </script>

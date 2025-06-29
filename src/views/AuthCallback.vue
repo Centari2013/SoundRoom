@@ -15,6 +15,13 @@ onMounted(async () => {
 
   if (data.session) {
     sessionStorage.setItem('justLoggedIn', 'true')
+    // Optionally, you can fetch user profile data here if needed
+    const { data: profile } = await supabase
+      .from('users')
+      .select('username, avatar_url, first_name')
+      .eq('id', data.session.user.id)
+      
+    localStorage.setItem('userProfile', JSON.stringify(profile))
     router.push('/')
   } else {
     console.error('Login failed:', error)

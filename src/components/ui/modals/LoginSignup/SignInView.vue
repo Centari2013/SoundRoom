@@ -2,7 +2,7 @@
 <template>
   <div class="flex flex-col w-full space-y-3">
   <label for="email" class="sr-only">Email</label>
-  <input
+  <BaseInput
     id="email"
     class="w-full"
     v-model="email"
@@ -14,23 +14,11 @@
 
   <label for="password" class="sr-only">Password</label>
   <div class="relative w-full">
-    <input
+    <PasswordInput
       :type="showPassword ? 'text' : 'password'"
-      id="password"
-      class="w-full"
       v-model="password"
-      placeholder="Password"
-      autocomplete="current-password"
-      required
-      aria-describedby="signin-error"
     />
-    <BaseButton
-      class="absolute right-3 top-1/2 transform -translate-y-1/2 eye-button"
-      @click="showPassword = !showPassword"
-      :aria-label="showPassword ? 'Hide password' : 'Show password'"
-    >
-      <component :is="showPassword ? EyeOpen : EyeClosed" class="h-5 w-5 text-gray-500 dark:text-gray-800" />
-    </BaseButton>
+
   </div>
 
   <span class="h-3"></span>
@@ -51,16 +39,6 @@
   >
     {{ errorMessage }}
   </span>
-
-  <OrSpacer />
-
-  <BaseButton
-    class="w-full"
-    @click="$emit('googleAuth')"
-    :disabled="loading"
-  >
-    Sign in with Google
-  </BaseButton>
 </div>
   
 </template>
@@ -68,13 +46,14 @@
 <script setup>
 import { ref } from 'vue'
 
-import OrSpacer from '@/components/ui/modals/LoginSignup/OrSpacer.vue'
 import EyeOpen from '@/assets/icons/eyeOpen.svg'
 import EyeClosed from '@/assets/icons/eyeClosed.svg'
 
 import BaseButton from '@/components/ui/input/BaseButton.vue'
+import BaseInput from '@/components/ui/input/BaseInput.vue'
+import PasswordInput from '@/components/ui/input/PasswordInput.vue' 
 
-const emit = defineEmits(['googleAuth', 'signIn', 'toggleLogging'])
+const emit = defineEmits(['signIn', 'toggleLogging'])
 
 defineProps({
   loading: {
@@ -93,7 +72,7 @@ const showPassword = ref(false)
 
 </script>
 
-<style scoped>
+<style>
 .eye-button {
   background: none;
   

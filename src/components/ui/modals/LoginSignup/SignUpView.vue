@@ -2,7 +2,7 @@
   <div class="flex flex-col w-full space-y-3">
     <template v-if="pageNumber === 0">
       <!-- Page 1: Email + Password -->
-      <input
+      <BaseInput
         class="w-full"
         v-model="email"
         type="email"
@@ -10,20 +10,12 @@
       />
 
       <div class="relative w-full">
-        <input
+        <PasswordInput
           :type="showPassword ? 'text' : 'password'"
-          class="w-full pr-12"
           v-model="password"
-          placeholder="Password"
         />
-        <div
-          type="button"
-          class="absolute right-3 top-1/2 transform -translate-y-1/2 cursor-pointer"
-          @click="showPassword = !showPassword"
-          
-        >
-          <component :is="showPassword ? EyeOpen : EyeClosed" class="h-5 w-5 text-gray-500" />
-        </div>
+    
+         
       </div>
 
       <p v-if="email && !validEmail" class="text-red-500 text-sm">
@@ -33,32 +25,21 @@
         Password must be at least 8 characters and include an uppercase letter, a lowercase letter, a number, and a symbol.
       </p>
       <span class="h-3"></span>
-      <button
+      <BaseButton
         class="w-full"
-        @click="pageNumber = 1"
+        @click="() => {pageNumber = 1;emit('hideGoogleButton', true)}"
         :disabled="!validEmail || !validPassword || !email || !password"
       >
         Continue
-      </button>
+      </BaseButton>
 
-      <OrSpacer />
-
-      <button @click="emit('googleAuth')" class="w-full">
-        Sign up with Google
-      </button>
-
-      <p class="text-xs text-neutral-400 text-center">
-        By continuing, you agree to our
-        <a href="/terms" target="_blank" class="underline">Terms</a> and
-        <a href="/privacy" target="_blank" class="underline">Privacy Policy</a>.
-      </p>
     </template>
     <template v-else-if="signUpSuccess">
       <p class="text-green-500 text-sm">Sign up successful! Please check your email to verify your account.</p>
     </template>
     <template v-if="pageNumber === 1 && !signUpSuccess">
       <!-- Page 2: Edit + TOS + more fields -->
-      <input
+      <BaseInput
         class="w-full"
         v-model="email"
         type="email"
@@ -67,27 +48,26 @@
       />
       
       <div class="relative w-full">
-        <input
+        <BaseInput
           :type="showPassword ? 'text' : 'password'"
           class="w-full pr-12"
           v-model="password"
           placeholder="Password"
           :disabled="true"
         />
-        <div
-          type="button"
+        <BaseButton
           class="absolute right-3 top-1/2 transform -translate-y-1/2 cursor-pointer"
           @click="showPassword = !showPassword"
         >
           <component :is="showPassword ? EyeOpen : EyeClosed" class="h-5 w-5 text-gray-500" />
-        </div>
+        </BaseButton>
       </div>
   
 
       <div class="flex-grow border-t border-gray-300 mt-3 mb-6"></div>
 
 
-      <input
+      <BaseInput
         class="w-full"
         v-model="firstName"
         type="text"
@@ -95,7 +75,7 @@
         :disabled="loading"
       />
       <!-- Optional extra fields -->
-      <input
+      <BaseInput
         class="w-full"
         v-model="username"
         type="text"
@@ -106,10 +86,10 @@
       <p v-if="errorMessage" class="text-red-500 text-sm">
         {{ errorMessage }}
       </p>
-      <span class="h-10"></span>
+      <span class="h-5"></span>
       <!-- TOS agreement -->
       <div class="flex justify-center space-x-2 text-xs text-neutral-400">
-        <input
+        <BaseInput
           id="tos"
           type="checkbox"
           v-model="agreedToTOS"
@@ -126,14 +106,14 @@
       </div>
 
       <div class="flex space-x-2">
-        <button :disabled="loading" class="w-full" @click="pageNumber = 0">Back</button>
-        <button
+        <BaseButton :disabled="loading" class="w-full" @click="() => {pageNumber = 0; emit('hideGoogleButton', false)}">Back</BaseButton>
+        <BaseButton
           class="w-full"
           :disabled="!validEmail || !validPassword || !agreedToTOS || loading"
           @click="emit('signUp', { email, password, firstName, username })"
         >
           Create Account
-        </button>
+        </BaseButton>
       </div>
     </template>
   </div>
@@ -142,11 +122,12 @@
 <script setup>
 import { ref, watch } from 'vue'
 import { validateEmail, validatePassword } from '@/utils/validateData'
-import OrSpacer from '@/components/ui/modals/LoginSignup/OrSpacer.vue'
 import EyeOpen from '@/assets/icons/eyeOpen.svg'
 import EyeClosed from '@/assets/icons/eyeClosed.svg'
-
-const emit = defineEmits(['googleAuth', 'signUp'])
+import BaseButton from '@/components/ui/input/BaseButton.vue'
+import BaseInput from '@/components/ui/input/BaseInput.vue'
+import PasswordInput from '@/components/ui/input/PasswordInput.vue'
+const emit = defineEmits(['hideGoogleButton', 'signUp'])
 
 defineProps({
   loading: {

@@ -51,6 +51,8 @@ const handleSignOut = async () => {
   if (error) {
     console.error('Sign out error:', error);
   } else {
+    localStorage.removeItem('userProfile'); // Clear user profile from local storage
+    console.log('User signed out successfully');
     router.push('/');
   }
 };

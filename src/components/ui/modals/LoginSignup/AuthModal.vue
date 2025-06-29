@@ -29,9 +29,26 @@
       v-bind="{ loading, errorMessage, signUpSuccess }"
       @signUp="signUpNewUser"
       @googleAuth="handleGoogleAuth"
+      @hideGoogleButton="(hide) => hideGoogleButton = hide"
     />
+    <OrSpacer v-if="mode !== 'reset' && !hideGoogleButton" />
+    <BaseButton
+      v-if="mode !== 'reset' && !hideGoogleButton"
+      class="w-full"
+      @click="handleGoogleAuth"
+      :disabled="loading"
+    >
+      Continue with Google
+    </BaseButton>
+
+    <p v-if="mode !== 'reset' && !hideGoogleButton" class="text-xs text-neutral-400 text-center">
+      By continuing, you agree to our
+      <a href="/terms" target="_blank" class="underline">Terms</a> and
+      <a href="/privacy" target="_blank" class="underline">Privacy Policy</a>.
+    </p>
     <ResetView
       v-if="mode === 'reset'"
+      v-bind="{ loading, sent, errorMessage }"
       @resetPassword="resetPassword"
       @backToLogin="router.push('/login')"
     />
@@ -64,6 +81,8 @@ import { computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { supabase } from '@/utils/supabase'
 import SmallModalBase from '@/components/ui/modals/SmallModalBase.vue'
+import BaseButton from '@/components/ui/input/BaseButton.vue'
+import OrSpacer from '@/components/ui/modals/LoginSignup/OrSpacer.vue'
 import SignInView from '@/components/ui/modals/LoginSignup/SignInView.vue'
 import SignUpView from '@/components/ui/modals/LoginSignup/SignUpView.vue'
 import ResetView from '@/components/ui/modals/LoginSignup/ResetView.vue'
@@ -84,16 +103,23 @@ watch(
 
 const emit = defineEmits(['mode'])
 const loading = ref(false)
+const sent = ref(false) // For reset password view
+const hideGoogleButton = ref(false) // To hide Google button in SignUpView
 const errorMessage = ref('')
 const router = useRouter()
 const title = computed(() => {
   return mode.value === 'login' ? 'Sign In' : mode.value === 'signup' ? 'Sign Up' : 'Reset Password'
 })
 
+const resetErrorMessage = () => {
+  errorMessage.value = ''
+}
+
 
 const signUpSuccess = ref(false)
 
 async function signUpNewUser({ email, password, firstName, username }) {
+  resetErrorMessage();
   loading.value = true;
 
   const { data, error } = await supabase.auth.signUp({
@@ -147,7 +173,7 @@ async function signUpNewUser({ email, password, firstName, username }) {
 
 async function signInWithEmail({ email, password }) {
   loading.value = true
-  errorMessage.value = ''
+  resetErrorMessage();
 
   const { data, error } = await supabase.auth.signInWithPassword({
     email,
@@ -169,13 +195,14 @@ async function signInWithEmail({ email, password }) {
     return
   }
 
-  // Save session if needed (Supabase auto-handles localStorage by default)
-  // But if you're storing anything extra (e.g. username), fetch it now
+  // If you're storing anything extra (e.g. username), fetch it now
   const { data: profile } = await supabase
     .from('users')
     .select('username, avatar_url, first_name')
     .eq('id', data.user.id)
     .single()
+
+  localStorage.setItem('userProfile', JSON.stringify(profile))
 
   // Example: redirect to home
   router.push('/')
@@ -184,6 +211,7 @@ async function signInWithEmail({ email, password }) {
 
 
 async function handleGoogleAuth() {
+  resetErrorMessage();
   await supabase.auth.signInWithOAuth({
     provider: 'google',
     options: {
@@ -199,13 +227,17 @@ async function handleGoogleAuth() {
 
 
 async function resetPassword(email) {
-  /* const { error } = await supabase.auth.resetPasswordForEmail('valid.email@supabase.io', {
-    redirectTo: 'http://localhost:4000/account/update-password',
+  resetErrorMessage();
+  loading.value = true
+  const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: `${window.location.origin}/update-password`,
   })
   if (error) {
+    errorMessage.value = error.message
     console.error('Error resetting password:', error.message)
-    return
-  } */
+  }
+  loading.value = false
+  sent.value = true
 }
 </script>
 
