@@ -99,7 +99,6 @@
   <RouterView/>
   <WelcomeOverlay
     v-if="showWelcomeOverlay"
-    text="Welcome Back"
   />
 
 </template>

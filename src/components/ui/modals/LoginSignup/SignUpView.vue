@@ -3,16 +3,20 @@
     <template v-if="pageNumber === 0">
       <!-- Page 1: Email + Password -->
       <BaseInput
+        name="email"
         class="w-full"
         v-model="email"
         type="email"
         placeholder="your@email.com"
+        autocomplete="email"
       />
 
       <div class="relative w-full">
         <PasswordInput
+          name="password"
           :type="showPassword ? 'text' : 'password'"
           v-model="password"
+          autocomplete="new-password"
         />
     
          
@@ -60,11 +64,13 @@
 
 
       <BaseInput
+        name="nickname"
         class="w-full"
         v-model="displayName"
         type="text"
         placeholder="Display Name"
         :disabled="loading"
+        autocomplete="nickname"
       />
 
       <p v-if="errorMessage" class="text-red-500 text-sm">

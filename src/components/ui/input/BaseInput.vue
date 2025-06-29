@@ -9,6 +9,7 @@
     </label>
 
     <input
+      :name="name"
       :id="id"
       :type="type"
       :placeholder="placeholder"
@@ -45,12 +46,16 @@ import { computed } from 'vue'
 const props = defineProps({
   modelValue: [String, Number],
   label: String,
+  name: String,
   type: {
     type: String,
     default: 'text',
   },
   placeholder: String,
-  autocomplete: String,
+  autocomplete: {
+    type: String,
+    default: '',
+  },
   disabled: Boolean,
   error: String,
   id: {

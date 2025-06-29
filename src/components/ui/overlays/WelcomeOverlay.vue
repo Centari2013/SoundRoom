@@ -31,7 +31,7 @@ defineProps({
   },
   subtext: {
     type: String,
-    default: ''
+    default: 'Immersive audio. Minimal distraction'
   }
 })
 

@@ -1,6 +1,7 @@
 <template>
   <div class="relative w-full">
     <BaseInput
+      :name="name"
       v-bind="inputProps"
       :type="show ? 'text' : 'password'"
       v-model="internalValue"
@@ -25,10 +26,14 @@ import EyeClosed from '@/assets/icons/eyeClosed.svg'
 
 const props = defineProps({
   modelValue: String,
+  name: String,
   // Allow all props that BaseInput supports to be passed through
   id: String,
   placeholder: String,
-  autocomplete: String,
+  autocomplete: {
+    type: String,
+    default: '', // fallback value, ensures prop exists
+  },
   disabled: Boolean,
   error: String,
   label: String,
