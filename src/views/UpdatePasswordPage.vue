@@ -49,10 +49,11 @@ async function submitNewPassword() {
     password: newPassword.value
   })
 
-  loading.value = false
+  
 
   if (updateError) {
     error.value = updateError.message
+    loading.value = false
     return
   }
 
