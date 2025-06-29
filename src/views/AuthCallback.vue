@@ -18,7 +18,7 @@ onMounted(async () => {
     // Optionally, you can fetch user profile data here if needed
     const { data: profile } = await supabase
       .from('users')
-      .select('avatar_url, first_name')
+      .select('avatar_url, display_name')
       .eq('id', data.session.user.id)
       
     localStorage.setItem('userProfile', JSON.stringify(profile))

@@ -61,9 +61,9 @@
 
       <BaseInput
         class="w-full"
-        v-model="firstName"
+        v-model="displayName"
         type="text"
-        placeholder="First Name"
+        placeholder="Display Name"
         :disabled="loading"
       />
 
@@ -93,8 +93,8 @@
         <BaseButton :disabled="loading" class="w-full" @click="() => {pageNumber = 0; emit('hideGoogleButton', false)}">Back</BaseButton>
         <BaseButton
           class="w-full"
-          :disabled="!validEmail || !validPassword || !agreedToTOS || loading || !firstName"
-          @click="emit('signUp', { email, password, firstName })"
+          :disabled="!validEmail || !validPassword || !agreedToTOS || loading || !displayName"
+          @click="emit('signUp', { email, password, displayName })"
         >
           Create Account
         </BaseButton>
@@ -128,7 +128,7 @@ defineProps({
 
 const email = ref('')
 const password = ref('')
-const firstName = ref('')
+const displayName = ref('')
 const showPassword = ref(false)
 const agreedToTOS = ref(false)
 const validEmail = ref(true)

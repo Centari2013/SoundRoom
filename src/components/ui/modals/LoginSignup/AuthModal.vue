@@ -118,7 +118,7 @@ const resetErrorMessage = () => {
 
 const signUpSuccess = ref(false)
 
-async function signUpNewUser({ email, password, firstName }) {
+async function signUpNewUser({ email, password, displayName }) {
   resetErrorMessage();
   loading.value = true;
 
@@ -152,7 +152,7 @@ async function signUpNewUser({ email, password, firstName }) {
   const { error: updateError } = await supabase
     .from('users')
     .update({
-      first_name: firstName,
+      display_name: displayName,
     })
     .eq('id', userId);
 
@@ -197,7 +197,7 @@ async function signInWithEmail({ email, password }) {
   // If you're storing anything extra (e.g. username), fetch it now
   const { data: profile } = await supabase
     .from('users')
-    .select('avatar_url, first_name')
+    .select('avatar_url, display_name')
     .eq('id', data.user.id)
     .single()
 
