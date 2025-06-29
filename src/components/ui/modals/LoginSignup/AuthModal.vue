@@ -90,10 +90,12 @@ const title = computed(() => {
   return mode.value === 'login' ? 'Sign In' : mode.value === 'signup' ? 'Sign Up' : 'Reset Password'
 })
 
+
 const signUpSuccess = ref(false)
 
 async function signUpNewUser({ email, password, firstName, username }) {
-  loading.value = true
+  loading.value = true;
+
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
@@ -102,13 +104,17 @@ async function signUpNewUser({ email, password, firstName, username }) {
     },
   });
 
-  if (error) {
-    errorMessage.value = error.message;
-    console.error('Signup failed:', error.message);
-    loading.value = false;
-    return { error };
-  }
+  const fakeUser = data?.user && data.user.identities?.length === 0;
 
+  if (error || fakeUser) {
+    const message = error?.message ?? 'User already exists. Try logging in instead.';
+
+    errorMessage.value = message;
+    console.warn('Signup failed or user exists:', message);
+
+    loading.value = false;
+    return { error: new Error(message) };
+  }
 
   const userId = data.user?.id;
   if (!userId) {
@@ -117,7 +123,6 @@ async function signUpNewUser({ email, password, firstName, username }) {
     return { error: new Error('No user ID returned.') };
   }
 
-  // Update public.users with extra metadata
   const { error: updateError } = await supabase
     .from('users')
     .update({
@@ -128,14 +133,16 @@ async function signUpNewUser({ email, password, firstName, username }) {
 
   if (updateError) {
     console.error('Failed to update user metadata:', updateError.message);
-    loading.value = false;
     errorMessage.value = updateError.message;
-    return 
+    loading.value = false;
+    return { error: updateError };
   }
+
   signUpSuccess.value = true;
   loading.value = false;
-  return ;
+  return { success: true };
 }
+
 
 
 async function signInWithEmail({ email, password }) {
