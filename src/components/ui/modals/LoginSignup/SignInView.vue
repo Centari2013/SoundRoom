@@ -7,7 +7,7 @@
     class="w-full"
     v-model="email"
     type="email"
-    placeholder="you@example.com"
+    placeholder="your@email.com"
     autocomplete="email"
     required
   />

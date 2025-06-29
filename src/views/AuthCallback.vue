@@ -1,6 +1,5 @@
 <template>
-  <div class="auth-callback">
-    <p>Completing login, please wait...</p>
+  <div class="auth-callback w-full dark:bg-black bg-white">
   </div>
 </template>
 

@@ -203,8 +203,8 @@ async function signInWithEmail({ email, password }) {
 
   localStorage.setItem('userProfile', JSON.stringify(profile))
 
-  // Example: redirect to home
-  router.push('/')
+  // Example: redirect to auth callback
+  router.push('/auth/callback')
   loading.value = false
 }
 

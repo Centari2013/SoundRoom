@@ -73,14 +73,10 @@
             @selectNode="e => { selectedIndex = e }"
           />
           <!-- Frosted Load/Save Overlay -->
-          <div
+           <PulsingOverlay
             v-if="isLoadingRoom || isSavingRoom"
-            class="absolute inset-0 flex items-center justify-center backdrop-blur-sm bg-white/30 dark:bg-black/40 z-50"
-          >
-            <div class="text-xl font-medium tracking-wide text-neutral-800 dark:text-white animate-pulse">
-              {{ isLoadingRoom ? 'Loading your room...' : 'Saving your room...'}}
-            </div>
-          </div>
+            :text="isLoadingRoom ? 'Loading your room...' : 'Saving your room...'"
+            />
         </div>
       </main>
 
@@ -101,10 +97,15 @@
     />
   </div>
   <RouterView/>
+  <WelcomeOverlay
+    v-if="showWelcomeOverlay"
+    text="Welcome Back"
+  />
+
 </template>
 
 <script setup>
-import { ref, computed, provide, onMounted, onUnmounted, shallowRef } from 'vue'
+import { ref, computed, provide, onBeforeMount, onUnmounted, shallowRef } from 'vue'
 import { useRouter } from 'vue-router'
 // Shared constants
 const SOUND_NODE_PART_NAME = 'sound-node-part'
@@ -117,6 +118,8 @@ import SidebarLeft from '@/components/SoundRoom/SidebarLeft.vue'
 import SidebarRight from '@/components/SoundRoom/SidebarRight.vue'
 import MainCanvasStage from '@/components/SoundRoom/MainCanvasStage.vue'
 import FooterBar from '@/components/SoundRoom/FooterBar.vue'
+import PulsingOverlay from '@/components/ui/overlays/PulsingOverlay.vue'
+import WelcomeOverlay from '@/components/ui/overlays/WelcomeOverlay.vue'
 
 // Core Classes
 import Listener from '@/lib/Listener'
@@ -132,6 +135,10 @@ import { setupAudioContext } from '@/composables/useAudioSetup'
 import { useContextMenuLogic } from '@/composables/useContextMenuLogic'
 import { registerCanvasActions, registerDraggableActions, setMaxLibSources } from '@/composables/useSoundRoomActions'
 import { useSaveAndLoadRoom } from '@/composables/useSaveAndLoadRoom';
+//import { useAuth } from '@/composables/useAuth'
+
+// Auth
+//const { isAuthenticated } = useAuth()
 
 // State
 const isLibraryOpen = ref(false)
@@ -217,12 +224,13 @@ registerCanvasActions(audioEngine, actionManager, listener, soundLibrarySources)
 registerDraggableActions(audioEngine, actionManager, soundLibrarySources)
 setMaxLibSources(MAX_LIB_SOURCES)
 
-
-onMounted(() => {
+const showWelcomeOverlay = ref(false)
+onBeforeMount(() => {
   if (sessionStorage.getItem('justLoggedIn') === 'true') {
     sessionStorage.removeItem('justLoggedIn')
+    showWelcomeOverlay.value = true
     const router = useRouter()
-    router.push('/welcome')
+    //router.push('/welcome')
   }
   setupAudioContext(audioEngine, listener)
 })
