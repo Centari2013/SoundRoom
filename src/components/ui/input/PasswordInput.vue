@@ -4,6 +4,7 @@
       v-bind="inputProps"
       :type="show ? 'text' : 'password'"
       v-model="internalValue"
+      placeholder="Enter your password"
     />
     <BaseButton
       class="absolute right-1 top-1/2 -translate-y-1/2 eye-button"

@@ -1,5 +1,5 @@
 <template>
-  <div class="flex flex-col w-full space-y-1">
+  <div class="flex flex-col space-y-1">
     <label
       v-if="label"
       :for="id"

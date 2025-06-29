@@ -48,19 +48,11 @@
       />
       
       <div class="relative w-full">
-        <BaseInput
+        <PasswordInput
           :type="showPassword ? 'text' : 'password'"
-          class="w-full pr-12"
           v-model="password"
-          placeholder="Password"
           :disabled="true"
         />
-        <BaseButton
-          class="absolute right-3 top-1/2 transform -translate-y-1/2 cursor-pointer"
-          @click="showPassword = !showPassword"
-        >
-          <component :is="showPassword ? EyeOpen : EyeClosed" class="h-5 w-5 text-gray-500" />
-        </BaseButton>
       </div>
   
 
@@ -72,14 +64,6 @@
         v-model="firstName"
         type="text"
         placeholder="First Name"
-        :disabled="loading"
-      />
-      <!-- Optional extra fields -->
-      <BaseInput
-        class="w-full"
-        v-model="username"
-        type="text"
-        placeholder="Username"
         :disabled="loading"
       />
 
@@ -109,8 +93,8 @@
         <BaseButton :disabled="loading" class="w-full" @click="() => {pageNumber = 0; emit('hideGoogleButton', false)}">Back</BaseButton>
         <BaseButton
           class="w-full"
-          :disabled="!validEmail || !validPassword || !agreedToTOS || loading"
-          @click="emit('signUp', { email, password, firstName, username })"
+          :disabled="!validEmail || !validPassword || !agreedToTOS || loading || !firstName"
+          @click="emit('signUp', { email, password, firstName })"
         >
           Create Account
         </BaseButton>
@@ -122,8 +106,6 @@
 <script setup>
 import { ref, watch } from 'vue'
 import { validateEmail, validatePassword } from '@/utils/validateData'
-import EyeOpen from '@/assets/icons/eyeOpen.svg'
-import EyeClosed from '@/assets/icons/eyeClosed.svg'
 import BaseButton from '@/components/ui/input/BaseButton.vue'
 import BaseInput from '@/components/ui/input/BaseInput.vue'
 import PasswordInput from '@/components/ui/input/PasswordInput.vue'
@@ -147,7 +129,6 @@ defineProps({
 const email = ref('')
 const password = ref('')
 const firstName = ref('')
-const username = ref('')
 const showPassword = ref(false)
 const agreedToTOS = ref(false)
 const validEmail = ref(true)
