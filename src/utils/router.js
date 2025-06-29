@@ -1,13 +1,8 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import SoundRoom from '@/views/SoundRoom.vue'
-import ModalWrapper from '@/components/ui/modals/ModalWrapper.vue'
-import AuthModal from '@/components/ui/modals/LoginSignup/AuthModal.vue'
-import UpdatePasswordPage from '@/views/UpdatePasswordPage.vue'
-import TermsOfService from '@/views/TermsOfService.vue'
-import PrivacyPolicy from '@/views/PrivacyPolicy.vue'
-import Help from '@/components/ui/modals/Help.vue'
+import { useAuth } from '@/composables/useAuth'
 
-export const router = createRouter({
+const router = createRouter({
   history: createWebHistory(),
   routes: [
     {
@@ -16,28 +11,46 @@ export const router = createRouter({
       children: [
         {
           path: 'login',
-          component: ModalWrapper,
-          props: { component: AuthModal },
+          component: () => import('@/components/ui/modals/ModalWrapper.vue'),
+          props: { component: () => import('@/components/ui/modals/LoginSignup/AuthModal.vue') },
         },
         {
           path: 'signup',
-          component: ModalWrapper,
-          props: { component: AuthModal },
+          component: () => import('@/components/ui/modals/ModalWrapper.vue'),
+          props: { component: () => import('@/components/ui/modals/LoginSignup/AuthModal.vue') },
         },
         {
           path: 'reset',
-          component: ModalWrapper,
-          props: { component: AuthModal },
+          component: () => import('@/components/ui/modals/ModalWrapper.vue'),
+          props: { component: () => import('@/components/ui/modals/LoginSignup/AuthModal.vue') },
         },
         {
           path: 'help',
-          component: ModalWrapper,
-          props: { component: Help },
+          component: () => import('@/components/ui/modals/ModalWrapper.vue'),
+          props: { component: () => import('@/components/ui/modals/Help.vue') },
         },
       ]
     },
-    { path: '/terms', component: TermsOfService },
-    { path: '/privacy', component: PrivacyPolicy },
-    { path: '/update-password', component: UpdatePasswordPage },
+    { path: '/terms', component: () => import('@/views/TermsOfService.vue') },
+    { path: '/privacy', component: () => import('@/views/PrivacyPolicy.vue') },
+    { path: '/update-password', component: () => import('@/views/UpdatePasswordPage.vue'), meta: { requiresAuth: true } },
+    { path: '/auth/callback', component: () => import('@/views/AuthCallback.vue') },
+    { path: '/auth/error', component: () => import('@/views/AuthError.vue') },
+    { path: '/welcome', component: () => import('@/components/ui/modals/Welcome.vue') },
   ]
 })
+
+
+// Guard setup
+router.beforeEach(async (to, from, next) => {
+  const { isAuthenticated } = await useAuth()
+
+  // Protect routes with meta.requiresAuth
+  if (to.meta.requiresAuth && !isAuthenticated.value) {
+    next({ path: '/' })
+  } else {
+    next()
+  }
+})
+
+export default router;

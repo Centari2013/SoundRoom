@@ -45,7 +45,7 @@
     >
       Save Room
     </BaseButton>
-    <BaseButton
+    <BaseButton v-if="isAuthenticated"
       @click="handleShowMessage(true, 'load')"
       :disabled="isLoading"
       class="px-3 py-2 rounded bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400"
@@ -61,6 +61,7 @@
   
 <script setup>
 import { ref } from 'vue';
+import { useAuth } from '@/composables/useAuth';
 import SmallModal from '@/components/ui/modals/SmallModalBase.vue';
 import BaseButton from '@/components/ui/input/BaseButton.vue';
 
@@ -78,6 +79,7 @@ const props = defineProps({
 
 const showSaveMessage = ref(false);
 const mode = ref('save'); // 'save' or 'load'
+const { isAuthenticated } = useAuth();
 
 const saveOptionButtons = ref([
   { label: 'Yes', action: () => {emit(`${mode.value}Room`); showSaveMessage.value = false} },

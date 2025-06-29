@@ -177,10 +177,19 @@ async function signInWithEmail({ email, password }) {
 
 
 async function handleGoogleAuth() {
-  supabase.auth.signInWithOAuth({
+  await supabase.auth.signInWithOAuth({
     provider: 'google',
-  })
+    options: {
+      redirectTo: `${window.location.origin}/auth/callback`, // Ensure this matches your OAuth redirect URI
+      scopes: 'email openid profile',
+      queryParams: {
+        access_type: 'offline', // gets provider_refresh_token
+        prompt: 'consent',      // forces consent screen (important)
+      },
+    },
+  });
 }
+
 
 async function resetPassword(email) {
   /* const { error } = await supabase.auth.resetPasswordForEmail('valid.email@supabase.io', {

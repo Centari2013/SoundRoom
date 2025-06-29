@@ -3,14 +3,19 @@
   <portal to="modal">
     <div class="modal-wrapper">
       <div class="modal w-full h-full">
-        <component :is="component" v-bind="$attrs" class="w-full" />
+        <component :is="ResolvedComponent" v-bind="$attrs" class="w-full" />
       </div>
     </div>
   </portal>
 </template>
 
 <script setup>
-defineProps(['component'])
+import { computed, defineAsyncComponent } from 'vue'
+const props = defineProps(['component'])
+
+const ResolvedComponent = computed(() =>
+  defineAsyncComponent(props.component)
+)
 </script>
 
 <style scoped>

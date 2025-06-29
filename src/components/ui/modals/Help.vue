@@ -3,7 +3,7 @@
     <div class="bg-white dark:bg-neutral-950 rounded-2xl w-[80vw] h-[80vh] relative flex flex-col overflow-hidden shadow-2xl border border-neutral-300 dark:border-neutral-800">
       
       <!-- Absolute Floating Header -->
-      <div class="modal-header">
+      <div class="modal-header-float">
         <h1 class="text-2xl font-bold tracking-tight">Welcome to SoundRoom</h1>
         <BaseButton @click="() => {formSubmitted = false; resetFAQ(); router.push('/');}" class="text-sm hover:text-neutral-600 dark:hover:text-neutral-400">Close</BaseButton>
       </div>

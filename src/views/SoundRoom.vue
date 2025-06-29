@@ -105,7 +105,7 @@
 
 <script setup>
 import { ref, computed, provide, onMounted, onUnmounted, shallowRef } from 'vue'
-
+import { useRouter } from 'vue-router'
 // Shared constants
 const SOUND_NODE_PART_NAME = 'sound-node-part'
 
@@ -219,6 +219,11 @@ setMaxLibSources(MAX_LIB_SOURCES)
 
 
 onMounted(() => {
+  if (sessionStorage.getItem('justLoggedIn') === 'true') {
+    sessionStorage.removeItem('justLoggedIn')
+    const router = useRouter()
+    router.push('/welcome')
+  }
   setupAudioContext(audioEngine, listener)
 })
 
