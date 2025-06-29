@@ -37,7 +37,6 @@ import PulsingOverlay from '@/components/ui/overlays/PulsingOverlay.vue';
 const emit = defineEmits(['openHelp', 'openSignUp'])
 
 const { isAuthenticated } = useAuth();
-console.log('HeaderBar mounted, authenticated:', isAuthenticated);
 const route = useRoute()
 const router = useRouter()
 const showAuthModal = ref(false);
@@ -63,7 +62,7 @@ const handleSignOut = async () => {
     console.error('Sign out error:', error);
   } 
   localStorage.removeItem('userProfile'); // Clear user profile from local storage
-  console.log('User signed out successfully');
+ 
 
   isLoggingOut.value = true;
   router.push('/logged-out');
