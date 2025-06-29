@@ -1,6 +1,6 @@
 <template>
   <header class="px-6 py-4 border-b border-neutral-300 dark:border-neutral-800 dark:bg-black flex items-center justify-between">
-    <h1 class="text-xl font-bold tracking-wide dark:text-gray-300 ">SoundRoom</h1>
+    <h1 class="text-xl font-bold tracking-wide dark:text-gray-300"><RouterLink to="/" style="text-decoration: none; color: inherit;">SoundRoom</RouterLink></h1>
     <nav class="space-x-4">
       <BaseButton
         v-if="!isAuthenticated"

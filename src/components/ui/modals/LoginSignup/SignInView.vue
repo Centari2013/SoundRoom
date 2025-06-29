@@ -72,12 +72,4 @@ const showPassword = ref(false)
 
 </script>
 
-<style>
-.eye-button {
-  background: none;
-  
-}
-.eye-button:focus {
-  outline: 2px solid #4a90e2; /* Focus ring color */
-}
-</style>  
+ 

@@ -49,3 +49,12 @@ const inputProps = computed(() => ({
   type: undefined // override actual `type` via `:type="show ? 'text' : 'password'"`
 }))
 </script>
+<style scoped>
+.eye-button {
+  background: none;
+  
+}
+.eye-button:focus {
+  outline: 2px solid #4a90e2; /* Focus ring color */
+}
+</style> 

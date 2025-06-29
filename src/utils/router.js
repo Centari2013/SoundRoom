@@ -33,7 +33,7 @@ const router = createRouter({
     },
     { path: '/terms', component: () => import('@/views/TermsOfService.vue') },
     { path: '/privacy', component: () => import('@/views/PrivacyPolicy.vue') },
-    { path: '/update-password', component: () => import('@/views/UpdatePasswordPage.vue'), meta: { requiresAuth: true } },
+    { path: '/update-password', component: () => import('@/views/UpdatePasswordPage.vue')},
     { path: '/auth/callback', component: () => import('@/views/AuthCallback.vue') },
     { path: '/auth/error', component: () => import('@/views/AuthError.vue') },
     { path: '/welcome', component: () => import('@/components/ui/modals/Welcome.vue') },
