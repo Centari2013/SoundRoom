@@ -79,11 +79,7 @@
     </div>
     <FooterBar
       @saveRoom="saveRoom"
-      @loadRoom="loadRoom"
-      v-bind="{
-        isSaving: isSavingRoom,
-        isLoading: isLoadingRoom
-      }"
+      v-bind="{isSaving: isSavingRoom}"
     />
   </div>
   <RouterView/>

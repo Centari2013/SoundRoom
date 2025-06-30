@@ -69,9 +69,20 @@ export function useSaveAndLoadRoom({ room, listener, soundLibrarySources, audioE
       });
   }
 
-  async function loadRoom() {
+  async function loadRoom(roomId) {
     isLoadingRoom.value = true;
-    const stored = localStorage.getItem("soundRoomData");
+    // get room data from supabase
+    const { data, error } = await supabase
+      .from("rooms")
+      .select("room_config")
+      .eq("owner_id", useAuth().user.value.id)
+      .eq("id", roomId)
+    if (error) {
+      console.error("Error loading room:", error);
+      isLoadingRoom.value = false;
+      return;
+    }
+
     if (!stored) {
       console.warn("No room data found in local storage.");
       isLoadingRoom.value = false;
