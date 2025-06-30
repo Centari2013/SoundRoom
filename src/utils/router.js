@@ -53,7 +53,7 @@ router.beforeEach(async (to, from, next) => {
   const { isAuthenticated } = await useAuth()
 
   // Protect routes with meta.requiresAuth
-  if (to.meta.requiresAuth && !isAuthenticated.value) {
+  if (to.meta.requiresAuth && !isAuthenticated) {
     next({ path: '/' })
   } else {
     next()

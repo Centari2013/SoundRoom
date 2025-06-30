@@ -25,6 +25,7 @@
       <div class="flex-1 relative overflow-hidden">
         <!-- Floating Top Bar -->
         <div
+          ref="headerBar"
           class="absolute top-0 left-0 right-0 z-10 flex justify-between items-center px-6 py-4 bg-white/50 dark:bg-neutral-950/50 backdrop-blur-md border-b border-neutral-300 dark:border-neutral-800"
         >
           <h2 class="text-2xl font-bold">RoomManager</h2>
@@ -34,9 +35,10 @@
         <!-- Scrollable Grid -->
         <div
           ref="gridScroll"
-          class="mt-5 place-content-start p-6 pt-20 overflow-y-auto h-full grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"
+          class="relative mt-5 place-content-start p-6 pt-20 overflow-y-auto h-full grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"
         >
-         <template v-if="rooms.length > 0">
+        <LoadingDiv v-if="loading" text="Getting your Rooms..." :duration="1000" @done="loading = false" :class="'mt-15'"/>
+         <template v-if="rooms.length > 0 && !loading">
           <div
             v-for="room in paginatedItems"
             :key="room.id"
@@ -53,7 +55,7 @@
 
         </template>
 
-        <template v-else>
+        <template v-else-if="!loading && rooms.length === 0">
           <div class="col-span-full text-center text-neutral-400 mt-32">
             <div class="text-xl font-semibold mb-2">No rooms yet</div>
             <div class="mb-4">Create your first ambient scene and it’ll show up here.</div>
@@ -81,12 +83,12 @@
         <div class="flex items-center justify-center w-1/2  space-x-3">
           <BaseButton
             class="px-3 py-1"
-            :disabled="currentPage === 1"
+            :disabled="currentPage === 0"
             @click="currentPage--"
           >
             ← Prev
           </BaseButton>
-          <span>Page {{ currentPage }} of {{ totalPages }}</span>
+          <span>Page {{ currentPage + 1 }} of {{ totalPages == 0 ? 1 : totalPages }}</span>
           <BaseButton
             class="px-3 py-1"
             :disabled="currentPage === totalPages"
@@ -108,6 +110,7 @@
 import { ref, computed, onMounted, watch, nextTick } from 'vue'
 import { supabase } from '@/utils/supabase'
 import BaseButton from '@/components/ui/input/BaseButton.vue'
+import LoadingDiv from '@/components/ui/loading/LoadingDiv.vue'
 import { useAuth } from '@/composables/useAuth'
 import { formatDate } from '@/utils/dateUtils'
 import { useRouter } from 'vue-router'
@@ -117,23 +120,18 @@ const buttons = ref([
   { label: 'Your Rooms', action: () => {} },
 ])
 
+const headerBar = ref(null)
 const activeButton = ref(buttons.value[0].label)
 const gridScroll = ref(null)
-const currentPage = ref(1)
+const currentPage = ref(0)
 const itemsPerPage = 12 // or 8, 16 depending on grid size
 
 // Temporary example: replace with fetched rooms
-const rooms = ref(
-  Array.from({ length: 28 }, (_, i) => ({
-    id: i + 1,
-    name: `Ambient Scene ${i + 1}`,
-    updated_at: new Date(Date.now() - i * 1000 * 60 * 60 * 5).toISOString(), // every 5 hrs older
-  }))
-)
-
+const rooms = ref([])
+const loading = ref(true)
 
 const paginatedItems = computed(() => {
-  const start = (currentPage.value - 1) * itemsPerPage
+  const start = (currentPage.value) * itemsPerPage
   return rooms.value.slice(start, start + itemsPerPage)
 })
 
@@ -160,11 +158,12 @@ onMounted(async () => {
   if (error) {
     console.error('Error fetching rooms:', error)
   } else {
-    //rooms.value = data
+    rooms.value = data
   }
 })
 
 const createNewRoom = () => {
+
 }
 
 </script>
