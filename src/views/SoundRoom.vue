@@ -119,7 +119,6 @@ import { setupAudioContext } from '@/composables/useAudioSetup'
 import { useContextMenuLogic } from '@/composables/useContextMenuLogic'
 import { registerCanvasActions, registerDraggableActions, setMaxLibSources } from '@/composables/useSoundRoomActions'
 import { useSaveAndLoadRoom } from '@/composables/useSaveAndLoadRoom';
-import { useAuth } from '@/composables/useAuth'
 
 
 // State
