@@ -59,12 +59,13 @@ export function useSaveAndLoadRoom({ room, listener, soundLibrarySources, audioE
         name: room.value.name,
         room_config: roomData
       })
-      .then(({ data, error }) => {
+      .select("id") // Ensure we get the inserted ID back
+      .single() // We expect a single row back
+      .then(({ data: id, error }) => {
         if (error) {
           console.error("Error inserting room:", error);
         } else {
-          console.log("Room inserted successfully:", data);
-          room.value.id = data[0].id; // Update the room ID with the returned ID
+          room.value.id = id; // Update the room ID with the returned ID
         }
       });
   }
@@ -72,58 +73,54 @@ export function useSaveAndLoadRoom({ room, listener, soundLibrarySources, audioE
   async function loadRoom(roomId) {
     isLoadingRoom.value = true;
     // get room data from supabase
-    const { data, error } = await supabase
+    const { data: roomData, error } = await supabase
       .from("rooms")
       .select("room_config")
       .eq("owner_id", useAuth().user.value.id)
       .eq("id", roomId)
+      .single();
     if (error) {
       console.error("Error loading room:", error);
       isLoadingRoom.value = false;
       return;
     }
+    console.log("Loaded room data:", roomData);
+    return
+    const ids = roomData.soundLibrarySources.map(s => s.libraryId);
+    const dbSounds = await getSoundsFromDB(ids);
+    const downloaded = await downloadMultipleAudio(dbSounds);
 
-    if (!stored) {
-      console.warn("No room data found in local storage.");
-      isLoadingRoom.value = false;
-      return
-    } else {
-      const roomData = JSON.parse(stored);
-      const ids = roomData.soundLibrarySources.map(s => s.libraryId);
-      const dbSounds = await getSoundsFromDB(ids);
-      const downloaded = await downloadMultipleAudio(dbSounds);
+    const finalSources = ids.map(id => {
+      const audioPath = downloaded.find(p => p.id === id)?.audioPath;
+      const soundMatch = dbSounds.find(d => d.id === id);
+      const name = soundMatch.name;
+      const bucket = soundMatch.bucket;
+      const path = soundMatch.path;
+      if (!audioPath) console.warn(`Missing audioPath for libraryId ${id}`);
+      return { libraryId: id, audioPath, name, path, bucket };
+    });
 
-      const finalSources = ids.map(id => {
-        const audioPath = downloaded.find(p => p.id === id)?.audioPath;
-        const soundMatch = dbSounds.find(d => d.id === id);
-        const name = soundMatch.name;
-        const bucket = soundMatch.bucket;
-        const path = soundMatch.path;
-        if (!audioPath) console.warn(`Missing audioPath for libraryId ${id}`);
-        return { libraryId: id, audioPath, name, path, bucket };
-      });
+    soundLibrarySources.value = finalSources;
 
-      soundLibrarySources.value = finalSources;
+    roomData.audioEngine.soundSources.forEach(src => {
+      const match = finalSources.find(a => a.libraryId === src.libraryId);
+      if (match) {
+        src.audioPath = match.audioPath;
+        src.name = match.name;
+      }
+    });
 
-      roomData.audioEngine.soundSources.forEach(src => {
-        const match = finalSources.find(a => a.libraryId === src.libraryId);
-        if (match) {
-          src.audioPath = match.audioPath;
-          src.name = match.name;
-        }
-      });
+    actionManager.clearHistory();
 
-      actionManager.clearHistory();
+    audioEngine.value.dispose();
+    listener.value.dispose();
 
-      audioEngine.value.dispose();
-      listener.value.dispose();
+    room.value = Room.fromJSON(roomData.room);
+    listener.value = Listener.fromJSON(roomData.listener);
+    audioEngine.value = AudioEngine.fromJSON(roomData.audioEngine);
 
-      room.value = Room.fromJSON(roomData.room);
-      listener.value = Listener.fromJSON(roomData.listener);
-      audioEngine.value = AudioEngine.fromJSON(roomData.audioEngine);
-
-      setupAudioContext(audioEngine, listener);
-    }
+    setupAudioContext(audioEngine, listener);
+    
     setTimeout(() => {
       isLoadingRoom.value = false;
     }, 2000);

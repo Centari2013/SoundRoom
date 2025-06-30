@@ -37,8 +37,8 @@
           ref="gridScroll"
           class="relative mt-5 place-content-start p-6 pt-20 overflow-y-auto h-full grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"
         >
-        <div class="absolute top-0 left-0 bottom-0 right-0 mt-15 mb-25">
-          <LoadingDiv v-if="loading" text="Getting your Rooms..." :duration="1000" @done="loading = false"/>
+        <div v-if="loading" class="absolute top-0 left-0 bottom-0 right-0 mt-15 mb-25">
+          <LoadingDiv text="Getting your Rooms..." :duration="1000" @done="loading = false"/>
         </div>
         
          <template v-if="rooms.length > 0 && !loading">
