@@ -3,7 +3,7 @@ import { storeToRefs } from "pinia";
 
 import { supabase } from "@/utils/supabase";
 import { downloadMultipleAudio } from "@/utils/downloadAudio";
-import { useAuth } from "@/utils/userAuth";
+import { useAuth } from "@/composables/useAuth";
 import { ref } from "vue";
 
 export function useSaveAndLoadRoom() {

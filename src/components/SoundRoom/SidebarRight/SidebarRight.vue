@@ -10,7 +10,7 @@
 
     <SelectedSourcePanel v-bind="{ selectedSource }" />
 
-    <div class="mt-auto">
+    <div v-if="isAuthenticated" class="mt-auto">
       <RouterLink
         to="/room-manager"
         class="w-full mb-2"
@@ -28,11 +28,12 @@
 
 <script setup>
 import { ref } from 'vue'
-
+import { useAuth } from '@/composables/useAuth';
 import SelectedSourcePanel from '@/components/SoundRoom/SidebarRight/SelectedSourcePanel.vue'
 import BaseButton from '@/components/ui/input/BaseButton.vue';
 defineProps(['selectedSource'])
 
-const openRoomManager = ref(false)
+const { isAuthenticated } = useAuth();
+
 
 </script>

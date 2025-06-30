@@ -5,7 +5,7 @@ import VueKonva from 'vue-konva';
 import PortalVue from 'portal-vue'
 import { createPinia } from 'pinia';
 import router from '@/utils/router.js'
-import '@/utils/userAuth.js' // Ensure auth is initialized before app mounts
+import '@/composables/useAuth.js' // Ensure auth is initialized before app mounts
 
 createApp(App)
 .use(VueKonva)

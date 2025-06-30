@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import SoundRoom from '@/views/SoundRoom.vue'
 import { useAuth } from '@/composables/useAuth'
+import { watch } from 'vue'
 
 const router = createRouter({
   history: createWebHistory(),
@@ -49,15 +50,32 @@ const router = createRouter({
 
 
 // Guard setup
-router.beforeEach(async (to, from, next) => {
-  const { isAuthenticated } = await useAuth()
+function waitForSessionLoaded() {
+  return new Promise(resolve => {
+    const { sessionLoaded } = useAuth()
+    if (sessionLoaded.value) return resolve()
 
-  // Protect routes with meta.requiresAuth
-  if (to.meta.requiresAuth && !isAuthenticated) {
+    const unwatch = watch(sessionLoaded, (loaded) => {
+      if (loaded) {
+        unwatch()
+        resolve()
+      }
+    })
+  })
+}
+
+router.beforeEach(async (to, from, next) => {
+  await waitForSessionLoaded()
+
+  const { isAuthenticated } = useAuth()
+
+  if (to.meta.requiresAuth && !isAuthenticated.value) {
     next({ path: '/' })
   } else {
     next()
   }
 })
+
+
 
 export default router;
