@@ -45,7 +45,6 @@ export function useSaveAndLoadRoom() {
         if (error) {
           console.error("Error updating room:", error);
         } else {
-          console.log("Room updated successfully:", data);
           room.value.id = data[0].id; // Update the room ID with the returned ID
         }
       });
@@ -71,21 +70,23 @@ export function useSaveAndLoadRoom() {
   }
 
   async function loadRoom(roomId) {
+    console.log("Loading room with ID:", roomId);
     isLoadingRoom.value = true;
     // get room data from supabase
-    const { data: roomData, error } = await supabase
+    const { data, error } = await supabase
       .from("rooms")
       .select("room_config")
-      .eq("owner_id", useAuth().user.value.id)
       .eq("id", roomId)
       .single();
     if (error) {
       console.error("Error loading room:", error);
       isLoadingRoom.value = false;
-      return;
+      return false;
     }
+    const roomData = data.room_config;
+    roomData.room.id = roomId; // Set the room ID from the database
     console.log("Loaded room data:", roomData);
-    return
+    
     const ids = roomData.soundLibrarySources.map(s => s.libraryId);
     const dbSounds = await getSoundsFromDB(ids);
     const downloaded = await downloadMultipleAudio(dbSounds);
@@ -93,14 +94,23 @@ export function useSaveAndLoadRoom() {
     const finalSources = ids.map(id => {
       const audioPath = downloaded.find(p => p.id === id)?.audioPath;
       const soundMatch = dbSounds.find(d => d.id === id);
-      const name = soundMatch.name;
-      const bucket = soundMatch.bucket;
-      const path = soundMatch.path;
-      if (!audioPath) console.warn(`Missing audioPath for libraryId ${id}`);
-      return { libraryId: id, audioPath, name, path, bucket };
-    });
+
+      if (!audioPath || !soundMatch) {
+        console.warn(`Missing data for libraryId ${id}`);
+        return null; // or skip it entirely if you'd prefer
+      }
+
+      return {
+        libraryId: id,
+        audioPath,
+        name: soundMatch.name,
+        bucket: soundMatch.bucket,
+        path: soundMatch.path
+      };
+    }).filter(Boolean); // remove nulls if any
 
     soundLibrarySources.value = finalSources;
+
 
     roomData.audioEngine.soundSources.forEach(src => {
       const match = finalSources.find(a => a.libraryId === src.libraryId);
@@ -110,6 +120,8 @@ export function useSaveAndLoadRoom() {
       }
     });
 
+    console.log(roomData);
+    
     actionManager.value.clearHistory();
 
     audioEngine.value.dispose();
@@ -124,6 +136,23 @@ export function useSaveAndLoadRoom() {
     setTimeout(() => {
       isLoadingRoom.value = false;
     }, 2000);
+
+    return true;
+  }
+
+  async function deleteRoom(roomId) {
+
+    const { error, statusText } = await supabase
+      .from("rooms")
+      .delete()
+      .eq("id", roomId)
+
+    if (error) {
+      console.error("Error deleting room:", error);
+      return false
+    } 
+    
+    return true;
   }
 
   async function getSoundsFromDB(ids) {
@@ -140,6 +169,7 @@ export function useSaveAndLoadRoom() {
   return {
     saveRoom,
     loadRoom,
+    deleteRoom,
     isLoadingRoom,
     isSavingRoom,
   };

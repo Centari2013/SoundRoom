@@ -1,7 +1,7 @@
 import { useRoomStore } from "@/stores/useRoomStore"
 import { storeToRefs } from "pinia"
 
-export function useKeyboardControls(){
+export function useKeyboardControls({selectedSource, selectedIndex}) {
   const store = useRoomStore()
   const { room, listener, actionManager, audioEngine } = storeToRefs(store)
   const rotationKeys = new Set()

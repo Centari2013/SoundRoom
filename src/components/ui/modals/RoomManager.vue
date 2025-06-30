@@ -50,8 +50,8 @@
             <div class="room-name font-medium truncate">{{ room.name || 'Untitled Room' }}</div>
             <div class="room-meta text-xs text-neutral-400">{{ formatDate(room.updated_at) }}</div>
             <div class="room-actions mt-3 flex gap-2">
-              <BaseButton @click="loadRoom(room)">Load</BaseButton>
-              <BaseButton @click="deleteRoom(room)">Delete</BaseButton>
+              <BaseButton @click="handleLoadRoom(room.id)">Load</BaseButton>
+              <BaseButton @click="handleDeleteRoom(room.id)">Delete</BaseButton>
             </div>
           </div>
           
@@ -92,8 +92,27 @@
         <span class="w-1/4"></span>
       </div>
       </div>
+      <!-- Yes/No Modal -->
+      <YesNoModal
+        v-if="deleteRoomModalVisible"
+        :yesFunction="doDeleteRoom"
+        :noFunction="doLoadRoom"
+        message="Are you sure you want to delete this room?"
+        title="Delete Room"
+        @close="deleteRoomModalVisible = false"
+      />
+      <YesNoModal
+        v-if="saveRoomCheck"
+        :yesFunction="doSaveRoom"
+        :noFunction="doLoadRoom"
+        message="Would you like to save the current room?"
+        title="Save Room"
+      />
+      <PulsingOverlay
+        v-if="isLoadingRoom || isSavingRoom"
+        :text="isLoadingRoom ? 'Loading your room...' : 'Saving your room...'"
+      />
 
-      
     </div>
   </div>
 </template>
@@ -103,25 +122,33 @@ import { ref, computed, onMounted, watch, nextTick } from 'vue'
 import { supabase } from '@/utils/supabase'
 import BaseButton from '@/components/ui/input/BaseButton.vue'
 import LoadingDiv from '@/components/ui/loading/LoadingDiv.vue'
+import YesNoModal from '@/components/ui/modals/YesNoModal.vue'
 import { useAuth } from '@/composables/useAuth'
 import { formatDate } from '@/utils/dateUtils'
 import { useRouter } from 'vue-router'
+import { useSaveAndLoadRoom } from '@/composables/useSaveAndLoadRoom'
+import { useRoomStore } from '@/stores/useRoomStore'
+import PulsingOverlay from '@/components/ui/overlays/PulsingOverlay.vue'
 
 const router = useRouter()
 const buttons = ref([
   { label: 'Your Rooms', action: () => {} },
 ])
 
+const roomStore = useRoomStore()
 const headerBar = ref(null)
 const activeButton = ref(buttons.value[0].label)
 const gridScroll = ref(null)
 const currentPage = ref(0)
 const itemsPerPage = 12 // or 8, 16 depending on grid size
 
+const { loadRoom, deleteRoom, saveRoom, isSavingRoom, isLoadingRoom } = useSaveAndLoadRoom()
 
+const deleteRoomModalVisible = ref(false)
+const saveRoomCheck = ref(false)
 const rooms = ref([])
 const loading = ref(true)
-
+let roomId = null
 const paginatedItems = computed(() => {
   const start = (currentPage.value) * itemsPerPage
   return rooms.value.slice(start, start + itemsPerPage)
@@ -136,6 +163,51 @@ watch(currentPage, () => {
     gridScroll.value?.scrollTo({ top: 0, behavior: 'smooth' })
   })
 })
+
+const handleLoadRoom = async (rId) => {
+  roomId = rId
+  if (roomStore.currentRoomId === null) {
+    // If the room is already loaded, just navigate back
+    doLoadRoom(roomId)
+    return
+  }
+  saveRoomCheck.value = true
+}
+
+const doLoadRoom = async () => {
+  saveRoomCheck.value = false
+  const success = await loadRoom(roomId)
+  if (success) {
+    router.push('/')
+  } else {
+    console.error('Failed to load room')
+  }
+}
+
+const doSaveRoom = async () => {
+  saveRoomCheck.value = false
+  const success = await saveRoom()
+  if (success) {
+    // Optionally, you can show a success message or update the UI
+    
+  } else {
+    console.error('Failed to save room')
+  }
+  await doLoadRoom(roomId)
+}
+
+const handleDeleteRoom = async (rId) => {
+  roomId = rId
+  deleteRoomModalVisible.value = true
+}
+
+const doDeleteRoom = async () => {
+  deleteRoomModalVisible.value = false
+  const success = await deleteRoom(roomId)
+  if (success) {
+    rooms.value = rooms.value.filter(r => r.id !== roomId)
+  }
+}
 
 
 onMounted(async () => {
@@ -155,7 +227,7 @@ onMounted(async () => {
 })
 
 const createNewRoom = () => {
-
+  router.push('/')
 }
 
 </script>

@@ -13,6 +13,7 @@ export const useRoomStore = defineStore('room', () => {
   const audioEngine = shallowRef(new AudioEngine([]))
   const soundLibrarySources = ref([])
   const actionManager = ref(new ActionManager())
+  const currentRoomId = ref(null)
 
   // actions
   function setupAudioContext() {
@@ -90,6 +91,7 @@ export const useRoomStore = defineStore('room', () => {
     listenerToJSON,
     audioEngineToJSON,
     soundLibrarySourcesToJSON,
-    setupAudioContext
+    setupAudioContext,
+    currentRoomId,
   }
 })
