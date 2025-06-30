@@ -33,6 +33,10 @@ export const useRoomStore = defineStore('room', () => {
     audioEngine.value = AudioEngine.fromJSON(data)
   }
 
+  function clearSoundLibrarySources() {
+    soundLibrarySources.value = []
+  }
+
   function roomToJSON() {
     return room.value.toJSON()
   }
@@ -82,6 +86,7 @@ export const useRoomStore = defineStore('room', () => {
     setMaxCanvasSources,
     addLibrarySoundSource,
     deleteLibrarySoundSource,
+    clearSoundLibrarySources,
     isPlaying,
     actionStackEmpty,
     redoStackEmpty,

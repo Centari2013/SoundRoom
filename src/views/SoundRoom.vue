@@ -103,7 +103,7 @@ const draggedSource = ref(null)
 const stageWrapper = ref(null)
 
 const store = useRoomStore()
-const { room, listener, audioEngine, soundLibrarySources, actionManager } = storeToRefs(store)
+const { listener, audioEngine, } = storeToRefs(store)
 
 const MAX_LIB_SOURCES = 20
 const MAX_CANVAS_SOURCES = 30
@@ -135,7 +135,7 @@ const { showContextMenu, contextMenuActions } = useContextMenuLogic(selectedSour
 
 const { onKeyDown, onKeyUp } = useKeyboardControls({selectedIndex, selectedSource})
 
-const { saveRoom, loadRoom, isLoadingRoom, isSavingRoom } = useSaveAndLoadRoom()
+const { saveRoom, isLoadingRoom, isSavingRoom, loadRoomLocal } = useSaveAndLoadRoom()
 
 registerCanvasActions()
 registerDraggableActions()
@@ -143,10 +143,16 @@ setMaxLibSources(MAX_LIB_SOURCES)
 
 const showWelcomeOverlay = ref(false)
 onBeforeMount(() => {
+  store.clearSoundLibrarySources() // Clear any previous sound library sources
   if (sessionStorage.getItem('justLoggedIn') === 'true') {
     sessionStorage.removeItem('justLoggedIn')
     showWelcomeOverlay.value = true
-    const router = useRouter()
+    const tempSoundRoomData = localStorage.getItem('tempSoundRoomData')
+    if (tempSoundRoomData) {
+      loadRoomLocal()
+      saveRoom() // Save the room data immediately after loading from temp
+    }
+    //const router = useRouter()
     //router.push('/welcome')
   }
   store.setupAudioContext()
