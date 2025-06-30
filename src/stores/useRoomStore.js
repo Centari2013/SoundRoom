@@ -13,7 +13,6 @@ export const useRoomStore = defineStore('room', () => {
   const audioEngine = shallowRef(new AudioEngine([]))
   const soundLibrarySources = ref([])
   const actionManager = ref(new ActionManager())
-  const currentRoomId = ref(null)
 
   // actions
   function setupAudioContext() {
@@ -69,7 +68,7 @@ export const useRoomStore = defineStore('room', () => {
   const actionStackEmpty = computed(() => actionManager.value.actionStackEmpty)
   const redoStackEmpty = computed(() => actionManager.value.redoStackEmpty)
   const MAX_CANVAS_SOURCES = computed(() => audioEngine.value.maxSourceCount)
-
+  const isRoomSaveable = computed(() => !actionManager.value.actionStackEmpty) // room has unsaved changes
   return {
     room,
     listener,
@@ -92,6 +91,6 @@ export const useRoomStore = defineStore('room', () => {
     audioEngineToJSON,
     soundLibrarySourcesToJSON,
     setupAudioContext,
-    currentRoomId,
+    isRoomSaveable
   }
 })

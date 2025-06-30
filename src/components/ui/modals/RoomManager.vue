@@ -166,8 +166,8 @@ watch(currentPage, () => {
 
 const handleLoadRoom = async (rId) => {
   roomId = rId
-  if (roomStore.currentRoomId === null) {
-    // If the room is already loaded, just navigate back
+  if (!roomStore.isRoomSaveable) {
+    
     doLoadRoom(roomId)
     return
   }
