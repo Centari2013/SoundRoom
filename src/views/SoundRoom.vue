@@ -28,7 +28,7 @@
       <!-- Canvas + Controls -->
       <main class="flex-1 flex flex-col">
         <!-- Toolbar -->
-        <div class="flex items-center justify-between p-4 border-b border-neutral-300 dark:border-neutral-800 bg-neutral-100 dark:bg-neutral-900">
+        <div class="flex items-center justify-between p-4 border-b border-neutral-300 dark:border-neutral-800 bg-neutral-100 dark:bg-neutral-900 space-x-10">
           <ToolbarControls
             :canPlay="audioEngine.soundSources.value.length > 0"
             :canUndo="!actionStackEmpty"
@@ -37,8 +37,13 @@
             @undo="actionManager.undoLastAction"
             @redo="actionManager.redoLastAction"
             @togglePlay="isPlaying ? audioEngine.pauseAll() : audioEngine.playAll()"
+            class="w-1/3"
           />
-          <div class="flex items-center space-x-2">
+          <div v-if="isAuthenticated" class=" w-1/3">
+            <RoomNameInput />
+          </div>
+          <div class="flex items-center justify-center space-x-2 w-1/3 ">
+            <span class="w-20"></span>
             <span class="text-xs text-neutral-500">Master</span>
             <VueSlider 
               v-model="masterVolumeProxy"
@@ -119,6 +124,7 @@ import MainCanvasStage from '@/components/SoundRoom/MainCanvasStage.vue'
 import FooterBar from '@/components/SoundRoom/FooterBar.vue'
 import PulsingOverlay from '@/components/ui/overlays/PulsingOverlay.vue'
 import WelcomeOverlay from '@/components/ui/overlays/WelcomeOverlay.vue'
+import RoomNameInput from '@/components/SoundRoom/RoomNameInput.vue'
 
 // Core Classes
 import Listener from '@/lib/Listener'
@@ -134,10 +140,10 @@ import { setupAudioContext } from '@/composables/useAudioSetup'
 import { useContextMenuLogic } from '@/composables/useContextMenuLogic'
 import { registerCanvasActions, registerDraggableActions, setMaxLibSources } from '@/composables/useSoundRoomActions'
 import { useSaveAndLoadRoom } from '@/composables/useSaveAndLoadRoom';
-//import { useAuth } from '@/composables/useAuth'
+import { useAuth } from '@/composables/useAuth'
 
 // Auth
-//const { isAuthenticated } = useAuth()
+const { isAuthenticated } = useAuth()
 
 // State
 const isLibraryOpen = ref(false)

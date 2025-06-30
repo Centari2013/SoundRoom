@@ -76,6 +76,8 @@ const props = defineProps({
     required: true,
   },
 })
+
+
 //TODO: Add prop for isAuthenticated for save button to prompt user to log in if not authenticated
 // First time unauthenticated user: Want to save your room? Sign up.
 // Returning unauthenticated user: Just prompt them to log in to save their room.

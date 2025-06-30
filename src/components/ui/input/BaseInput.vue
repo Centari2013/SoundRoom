@@ -18,6 +18,7 @@
       :class="[
         'px-3 py-2 rounded border w-full text-sm focus:outline-none',
         'focus-visible:ring-2 focus-visible:ring-blue-500',
+        props.class,
         error
           ? 'border-red-500 text-red-700 bg-red-50'
           : 'border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white',
@@ -63,6 +64,10 @@ const props = defineProps({
     default: () => `input-${Math.random().toString(36).substring(2, 10)}`,
   },
   required: Boolean,
+  class: {
+    type: [String, Array, Object],
+    default: '',
+  },
 })
 
 const emit = defineEmits(['update:modelValue'])
