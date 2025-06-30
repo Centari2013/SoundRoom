@@ -69,7 +69,7 @@
 </template>
 
 <script setup>
-import { ref, provide, onBeforeMount, onUnmounted, shallowRef } from 'vue'
+import { ref, provide, onBeforeMount, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 // Shared constants
 const SOUND_NODE_PART_NAME = 'sound-node-part'
