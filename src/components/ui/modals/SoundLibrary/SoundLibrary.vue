@@ -97,7 +97,7 @@ import { ref, watch, nextTick } from 'vue'
 
 import { supabase } from '@/utils/supabase'
 
-import SoundPreviewCircle from '@/components/ui/controls/SoundPreviewCircle.vue'
+import SoundPreviewCircle from '@/components/ui/modals/SoundLibrary/SoundPreviewCircle.vue'
 import MarqueeTitle from '@/components/ui/text/MarqueeTitle.vue'
 import { getSourceName } from '@/composables/useSelectedSource'
 import BaseButton from '@/components/ui/input/BaseButton.vue'
@@ -178,7 +178,7 @@ function handleUpload(event) {
 }
 </script>
 
-<style>
+<style scoped>
 .marquee-text-text {
   margin-left: 20px;
 }

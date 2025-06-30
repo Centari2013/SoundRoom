@@ -29,6 +29,11 @@ const router = createRouter({
           component: () => import('@/components/ui/modals/ModalWrapper.vue'),
           props: { component: () => import('@/components/ui/modals/Help.vue') },
         },
+        { path: '/room-manager',
+          component: () => import('@/components/ui/modals/ModalWrapper.vue'),
+          props: { component: () => import('@/components/ui/modals/RoomManager.vue') },
+          meta: { requiresAuth: true }
+        },
       ]
     },
     { path: '/terms', component: () => import('@/views/TermsOfService.vue') },
@@ -37,7 +42,8 @@ const router = createRouter({
     { path: '/auth/callback', component: () => import('@/views/AuthCallback.vue') },
     { path: '/auth/error', component: () => import('@/views/AuthError.vue') },
     { path: '/welcome', component: () => import('@/components/ui/modals/Welcome.vue') },
-    { path: '/logged-out', component: () => import('@/views/LoggedOut.vue') }
+    { path: '/logged-out', component: () => import('@/views/LoggedOut.vue') },
+    
   ]
 })
 

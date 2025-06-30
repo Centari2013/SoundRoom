@@ -56,8 +56,8 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 
 import ContextMenu from '@/components/ui/context/ContextMenu.vue'
-import SoundSourceNode from '@/components/ui/canvas/SoundSourceNode.vue'
-import ListenerNode from '@/components/ui/canvas/ListenerNode.vue'
+import SoundSourceNode from '@/components/SoundRoom/MainCanvasStage/SoundSourceNode.vue'
+import ListenerNode from '@/components/SoundRoom/MainCanvasStage/ListenerNode.vue'
 
 import SoundSourceLabel from '@/components/ui/text/SoundSourceLabel.vue'
 

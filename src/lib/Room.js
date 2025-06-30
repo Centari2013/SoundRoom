@@ -4,11 +4,13 @@ export default class Room {
   width = 0
   height = 0
   name = ''
+  id = null
 
-  constructor (width = 600, height = 400, name = 'Untitled Room') {
+  constructor (width = 600, height = 400, name = 'Untitled Room', id = null) {
     this.width = width
     this.height = height
     this.name = name
+    this.id = id
   }
 
   // clamp values to be within room boundaries
@@ -17,8 +19,8 @@ export default class Room {
   }
 
   static fromJSON(json) {
-    if (json.width && json.height && json.name) {
-      const newRoom = new Room(json.width, json.height, json.name)
+    if (json.width && json.height && json.name && json.id !== undefined) {
+      const newRoom = new Room(json.width, json.height, json.name, json.id)
       return newRoom
     } else {
       throw new Error('Invalid JSON format for Room')

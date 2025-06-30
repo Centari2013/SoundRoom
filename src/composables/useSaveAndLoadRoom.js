@@ -5,13 +5,15 @@ import { setupAudioContext } from "@/composables/useAudioSetup";
 
 import { supabase } from "@/utils/supabase";
 import { downloadMultipleAudio } from "@/utils/downloadAudio";
+import { useAuth } from "@/utils/userAuth";
 import { ref } from "vue";
 
 export function useSaveAndLoadRoom({ room, listener, soundLibrarySources, audioEngine, actionManager }) {
   const isLoadingRoom = ref(false);
   const isSavingRoom = ref(false);
+  const { user } = useAuth();
 
-  function saveRoomLocal() {
+  function saveRoom() {
     isSavingRoom.value = true;
     const roomData = {
       room: room.value.toJSON(),
@@ -19,13 +21,55 @@ export function useSaveAndLoadRoom({ room, listener, soundLibrarySources, audioE
       soundLibrarySources: soundLibrarySources.value.map(({ libraryId }) => ({ libraryId })),
       audioEngine: audioEngine.value.toJSON(),
     };
-    localStorage.setItem("soundRoomData", JSON.stringify(roomData));
+    // if room.id in room table, update it
+    //otherwise, insert a new room
+    if (room.value.id) {
+      updateRoom(roomData);
+    } else {
+      insertRoom(roomData);
+    }
     setTimeout(() => {
       isSavingRoom.value = false;
     }, 2000);
   }
 
-  async function loadRoomLocal() {
+  function updateRoom(roomData) {
+    supabase
+      .from("rooms")
+      .update({
+        name: room.value.name,
+        room_config: roomData,
+      })
+      .eq("id", room.value.id)
+      .then(({ data, error }) => {
+        if (error) {
+          console.error("Error updating room:", error);
+        } else {
+          console.log("Room updated successfully:", data);
+          room.value.id = data[0].id; // Update the room ID with the returned ID
+        }
+      });
+  }
+
+  function insertRoom(roomData) {
+    supabase
+      .from("rooms")
+      .insert({
+        owner_id: user.value.id,
+        name: room.value.name,
+        room_config: roomData
+      })
+      .then(({ data, error }) => {
+        if (error) {
+          console.error("Error inserting room:", error);
+        } else {
+          console.log("Room inserted successfully:", data);
+          room.value.id = data[0].id; // Update the room ID with the returned ID
+        }
+      });
+  }
+
+  async function loadRoom() {
     isLoadingRoom.value = true;
     const stored = localStorage.getItem("soundRoomData");
     if (!stored) {
@@ -86,8 +130,8 @@ export function useSaveAndLoadRoom({ room, listener, soundLibrarySources, audioE
   }
 
   return {
-    saveRoomLocal,
-    loadRoomLocal,
+    saveRoom,
+    loadRoom,
     isLoadingRoom,
     isSavingRoom,
   };

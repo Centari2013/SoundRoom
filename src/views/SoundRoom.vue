@@ -78,8 +78,8 @@
       />
     </div>
     <FooterBar
-      @saveRoom="saveRoomLocal"
-      @loadRoom="loadRoomLocal"
+      @saveRoom="saveRoom"
+      @loadRoom="loadRoom"
       v-bind="{
         isSaving: isSavingRoom,
         isLoading: isLoadingRoom
@@ -101,10 +101,10 @@ const SOUND_NODE_PART_NAME = 'sound-node-part'
 
 // UI Components
 import Toolbar from '@/components/SoundRoom/Toolbar.vue'
-import SoundLibrary from '@/components/ui/modals/SoundLibrary.vue'
-import SidebarLeft from '@/components/SoundRoom/SidebarLeft.vue'
-import SidebarRight from '@/components/SoundRoom/SidebarRight.vue'
-import MainCanvasStage from '@/components/SoundRoom/MainCanvasStage.vue'
+import SoundLibrary from '@/components/ui/modals/SoundLibrary/SoundLibrary.vue'
+import SidebarLeft from '@/components/SoundRoom/SidebarLeft/SidebarLeft.vue'
+import SidebarRight from '@/components/SoundRoom/SidebarRight/SidebarRight.vue'
+import MainCanvasStage from '@/components/SoundRoom/MainCanvasStage/MainCanvasStage.vue'
 import FooterBar from '@/components/SoundRoom/FooterBar.vue'
 import PulsingOverlay from '@/components/ui/overlays/PulsingOverlay.vue'
 import WelcomeOverlay from '@/components/ui/overlays/WelcomeOverlay.vue'
@@ -194,7 +194,7 @@ const { onKeyDown, onKeyUp } = useKeyboardControls({
   room,
 })
 
-const { saveRoomLocal, loadRoomLocal, isLoadingRoom, isSavingRoom } = useSaveAndLoadRoom({
+const { saveRoom, loadRoom, isLoadingRoom, isSavingRoom } = useSaveAndLoadRoom({
   room,
   listener,
   soundLibrarySources,

@@ -12,6 +12,7 @@
     "@supabase/supabase-js": "^2.49.7",
     "@tailwindcss/vite": "^4.1.7",
     "@vercel/speed-insights": "^1.2.0",
+    "dayjs": "^1.11.13",
     "dotenv": "^16.5.0",
     "konva": "^9.3.20",
     "portal-vue": "^3.0.0-beta.0",

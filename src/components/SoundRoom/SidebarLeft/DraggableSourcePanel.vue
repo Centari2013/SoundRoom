@@ -31,7 +31,7 @@
 <script setup>
 import { ref } from 'vue'
 
-import LibrarySource from '@/components/ui/panels/parts/LibrarySource.vue'
+import LibrarySource from '@/components/SoundRoom/SidebarLeft/LibrarySource.vue'
 import ContextMenu from '@/components/ui/context/ContextMenu.vue'
 
 const props = defineProps({

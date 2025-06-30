@@ -28,8 +28,8 @@
 
 
 <script setup>
-import DraggableSourcePanel from '@/components/ui/panels/DraggableSourcePanel.vue'
-import ListenerReadout from '@/components/ui/readouts/ListenerReadout.vue'
+import DraggableSourcePanel from '@/components/SoundRoom/SidebarLeft/DraggableSourcePanel.vue'
+import ListenerReadout from '@/components/SoundRoom/SidebarLeft/ListenerReadout.vue'
 
 defineProps([
   'soundLibrarySources',
