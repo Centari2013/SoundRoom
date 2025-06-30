@@ -37,7 +37,10 @@
           ref="gridScroll"
           class="relative mt-5 place-content-start p-6 pt-20 overflow-y-auto h-full grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"
         >
-        <LoadingDiv v-if="loading" text="Getting your Rooms..." :duration="1000" @done="loading = false" :class="'mt-15'"/>
+        <div class="absolute top-0 left-0 bottom-0 right-0 mt-15 mb-25">
+          <LoadingDiv v-if="loading" text="Getting your Rooms..." :duration="1000" @done="loading = false"/>
+        </div>
+        
          <template v-if="rooms.length > 0 && !loading">
           <div
             v-for="room in paginatedItems"
@@ -66,21 +69,10 @@
         </div>
         <!-- Bottom Panel -->
       <div
-        v-if="true"
         class="absolute flex bottom-0 left-0 right-0 p-4 bg-white dark:bg-neutral-950 border-t border-neutral-300 dark:border-neutral-800"
       >
-        <div class="flex justify-start items-center w-1/4">
-          <label v-if="false" class="text-sm cursor-pointer">
-            Upload your own sound
-            <input
-              type="file"
-              accept="audio/*"
-              class="hidden"
-              @change="handleUpload"
-            />
-          </label>
-        </div>
-        <div class="flex items-center justify-center w-1/2  space-x-3">
+        <span class="w-1/4"></span>
+        <div class="flex items-center justify-center w-1/2 space-x-3" :class="{'invisible': loading}">
           <BaseButton
             class="px-3 py-1"
             :disabled="currentPage === 0"
