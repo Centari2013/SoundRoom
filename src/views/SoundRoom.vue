@@ -28,35 +28,20 @@
       <!-- Canvas + Controls -->
       <main class="flex-1 flex flex-col">
         <!-- Toolbar -->
-        <div class="flex items-center justify-between p-4 border-b border-neutral-300 dark:border-neutral-800 bg-neutral-100 dark:bg-neutral-900 space-x-10">
-          <ToolbarControls
-            :canPlay="audioEngine.soundSources.value.length > 0"
-            :canUndo="!actionStackEmpty"
-            :canRedo="!redoStackEmpty"
-            :playing="isPlaying"
-            @undo="actionManager.undoLastAction"
-            @redo="actionManager.redoLastAction"
-            @togglePlay="isPlaying ? audioEngine.pauseAll() : audioEngine.playAll()"
-            class="w-1/3"
-          />
-          <div v-if="isAuthenticated" class=" w-1/3">
-            <RoomNameInput />
-          </div>
-          <div class="flex items-center justify-center space-x-2 w-1/3 ">
-            <span class="w-20"></span>
-            <span class="text-xs text-neutral-500">Master</span>
-            <VueSlider 
-              v-model="masterVolumeProxy"
-              :min="0" 
-              :max="1" 
-              :interval="0.01"
-              :width="100"
-              :height="4"
-              tooltip="none"
-              class="mr-3"
-            />
-          </div>
-        </div>
+        <Toolbar
+          :canPlay="audioEngine.soundSources.value.length > 0"
+          :canUndo="!actionStackEmpty"
+          :canRedo="!redoStackEmpty"
+          :playing="isPlaying"
+          :audioEngine="audioEngine"
+          @undo="actionManager.undoLastAction"
+          @redo="actionManager.redoLastAction"
+          @togglePlay="isPlaying ? audioEngine.pauseAll() : audioEngine.playAll()"
+          @update:masterVolume="audioEngine.masterVolume.value = $event"
+          @update:roomName="room.name = $event"
+          :roomName="room.name"
+          :masterVolume="audioEngine.masterVolume.value"
+        />
 
         <!-- Canvas Area -->
         <div class="flex-1 bg-neutral-200 dark:bg-black flex items-center justify-center">
@@ -115,8 +100,7 @@ import { useRouter } from 'vue-router'
 const SOUND_NODE_PART_NAME = 'sound-node-part'
 
 // UI Components
-import VueSlider from 'vue-3-slider-component'
-import ToolbarControls from '@/components/ui/controls/ToolbarControls.vue'
+import Toolbar from '@/components/SoundRoom/Toolbar.vue'
 import SoundLibrary from '@/components/ui/modals/SoundLibrary.vue'
 import SidebarLeft from '@/components/SoundRoom/SidebarLeft.vue'
 import SidebarRight from '@/components/SoundRoom/SidebarRight.vue'
@@ -124,7 +108,6 @@ import MainCanvasStage from '@/components/SoundRoom/MainCanvasStage.vue'
 import FooterBar from '@/components/SoundRoom/FooterBar.vue'
 import PulsingOverlay from '@/components/ui/overlays/PulsingOverlay.vue'
 import WelcomeOverlay from '@/components/ui/overlays/WelcomeOverlay.vue'
-import RoomNameInput from '@/components/SoundRoom/RoomNameInput.vue'
 
 // Core Classes
 import Listener from '@/lib/Listener'
@@ -142,8 +125,6 @@ import { registerCanvasActions, registerDraggableActions, setMaxLibSources } fro
 import { useSaveAndLoadRoom } from '@/composables/useSaveAndLoadRoom';
 import { useAuth } from '@/composables/useAuth'
 
-// Auth
-const { isAuthenticated } = useAuth()
 
 // State
 const isLibraryOpen = ref(false)
@@ -162,10 +143,6 @@ const audioEngine = shallowRef(new AudioEngine(loadedCanvasSoundSources))
 audioEngine.value.maxSourceCount = MAX_CANVAS_SOURCES
 
 const isPlaying = computed(() => audioEngine.value.isPlaying.value)
-const masterVolumeProxy = computed({
-  get: () => audioEngine.value.masterVolume.value,
-  set: v => (audioEngine.value.masterVolume.value = v),
-})
 
 // Actions
 const actionManager = new ActionManager()
