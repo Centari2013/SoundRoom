@@ -68,7 +68,7 @@
         class="absolute flex bottom-0 left-0 right-0 p-4 bg-white dark:bg-neutral-950 border-t border-neutral-300 dark:border-neutral-800"
       >
         <div class="flex justify-start items-center w-1/4">
-          <label class="text-sm cursor-pointer">
+          <label v-if="false" class="text-sm cursor-pointer">
             Upload your own sound
             <input
               type="file"
