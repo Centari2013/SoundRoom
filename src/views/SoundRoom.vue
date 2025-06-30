@@ -111,6 +111,9 @@ import AudioEngine from '@/lib/AudioEngine'
 import Room from '@/lib/Room'
 import ActionManager from '@/lib/ActionManager'
 
+// Store
+import { useRoomStore } from '@/stores/useRoomStore'
+
 // Composables
 import { useKeyboardControls } from '@/composables/useKeyboardControls'
 import { useDragDropAudio } from '@/composables/useDragDropAudio'
@@ -127,14 +130,12 @@ const selectedIndex = ref(null)
 const draggedSource = ref(null)
 const stageWrapper = ref(null)
 
-const room = ref(new Room())
-const listener = ref(new Listener())
-const soundLibrarySources = ref([])
+const { room, listener, audioEngine, soundLibrarySources } = useRoomStore()
+
 const MAX_LIB_SOURCES = 20
 const MAX_CANVAS_SOURCES = 30
 const loadedCanvasSoundSources = [] // to be populated with sources loaded from last user session
 
-const audioEngine = shallowRef(new AudioEngine(loadedCanvasSoundSources))
 audioEngine.value.maxSourceCount = MAX_CANVAS_SOURCES
 
 const isPlaying = computed(() => audioEngine.value.isPlaying.value)
