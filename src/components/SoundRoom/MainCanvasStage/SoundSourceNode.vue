@@ -80,22 +80,19 @@
 </template>
 
 <script setup>
-import { computed, ref } from 'vue'
-
+import { computed } from 'vue'
+import { useRoomStore } from '@/stores/useRoomStore'
+import { storeToRefs } from 'pinia'
 // Props and emits
 const props = defineProps({
   source: Object,
-  actionManager: Object,
-  room: Object,
   index: Number,
   selected: Boolean
 })
 
+const { room, actionManager } = storeToRefs(useRoomStore())
 const emit = defineEmits(['select'])
 
-
-const room = props.room
-const actionManager = props.actionManager
 
 // Cone visibility logic
 const hasCone = computed(() =>
@@ -177,8 +174,8 @@ function onSourceMouseDown(e) {
 
 function onSourceDragMove(e) {
   const pos = e.target.position()
-  const clampedX = room.clamp(pos.x, 0, room.width)
-  const clampedY = room.clamp(pos.y, 0, room.height)
+  const clampedX = room.value.clamp(pos.x, 0, room.value.width)
+  const clampedY = room.value.clamp(pos.y, 0, room.value.height)
 
   e.target.position({ x: clampedX, y: clampedY })
 
@@ -196,7 +193,7 @@ function onSourceMouseUp(e) {
 
   if (moveSourcePayload && !positionsEqual(moveSourcePayload.from, to)) {
     moveSourcePayload.to = to
-    actionManager.doAction("move_canvas_sound_source", moveSourcePayload)
+    actionManager.value.doAction("move_canvas_sound_source", moveSourcePayload)
   }
 
   moveSourcePayload = null
@@ -241,7 +238,7 @@ function onHandleMouseUp() {
   const finalSourceAngle = props.source.instance.state.angle
 
   if (initialSourceAngle !== null && initialSourceAngle !== finalSourceAngle) {
-    actionManager.doAction("rotate_source_angle", {
+    actionManager.value.doAction("rotate_source_angle", {
       from: initialSourceAngle,
       to: finalSourceAngle
     })

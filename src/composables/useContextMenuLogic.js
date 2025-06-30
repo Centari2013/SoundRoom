@@ -1,9 +1,13 @@
 import { computed, toRaw, reactive } from 'vue'
-
+import { useRoomStore } from '@/stores/useRoomStore'
+import { storeToRefs } from 'pinia'
 // Central constant for sound node part identifier
 export const SOUND_NODE_PART_NAME = 'sound-node-part'
 
-export function useContextMenuLogic(selectedSource, stageWrapperRef, actionManager) {
+export function useContextMenuLogic(selectedSource, stageWrapperRef) {
+  const roomStore = useRoomStore()
+  const { actionManager } = storeToRefs(roomStore)
+
   function showContextMenu(e) {
     e.evt.preventDefault()
     e.evt.stopPropagation()
@@ -25,7 +29,7 @@ export function useContextMenuLogic(selectedSource, stageWrapperRef, actionManag
     {
       label: 'Delete',
       function: () => {
-        actionManager.doAction('delete_canvas_sound_source', {
+        actionManager.value.doAction('delete_canvas_sound_source', {
           index: selectedSource.value.index,
           src: selectedSource.value,
         })
@@ -41,8 +45,8 @@ export function useContextMenuLogic(selectedSource, stageWrapperRef, actionManag
         src.state = state
         src.state.x += 5
         src.state.y += 5
-        
-        actionManager.doAction('add_canvas_sound_source', {
+
+        actionManager.value.doAction('add_canvas_sound_source', {
           index: null,
           src
         })

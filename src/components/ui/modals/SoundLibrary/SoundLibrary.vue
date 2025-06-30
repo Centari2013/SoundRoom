@@ -102,15 +102,20 @@ import MarqueeTitle from '@/components/ui/text/MarqueeTitle.vue'
 import { getSourceName } from '@/composables/useSelectedSource'
 import BaseButton from '@/components/ui/input/BaseButton.vue'
 
+import { useRoomStore } from '@/stores/useRoomStore'
+import { storeToRefs } from 'pinia'
+
 const props = defineProps({
-  isLibraryOpen: Boolean,
-  soundLibrarySources: Object,
+  isLibraryOpen: Boolean
 })
-const emit = defineEmits(['close', 'load', 'upload', 'delete'])
+
+const store = useRoomStore()
+const { soundLibrarySources } = storeToRefs(store)
+const emit = defineEmits(['close'])
 
 function handleAudioSent(source, sound) {
   sound.send = false
-  emit('load', source)
+  store.addLibrarySoundSource(source)
 }
 
 const categories = [
@@ -124,9 +129,9 @@ const categories = [
 
 function toggleAddSource(s) {
   // if source in soundlibrarysources (draggable sources), delete, otherwise add
-  if (props.soundLibrarySources.find((sound) => s.libraryId == sound.libraryId)) {
+  if (soundLibrarySources.value.find((sound) => s.libraryId == sound.libraryId)) {
     s.send = false
-    emit('delete', s)
+    store.deleteLibrarySoundSource(s)
   } else {
     s.send = true
   }
@@ -173,7 +178,7 @@ async function listCategoryFiles() {
 function handleUpload(event) {
   const file = event.target.files?.[0]
   if (file) {
-    emit('upload', file)
+    
   }
 }
 </script>

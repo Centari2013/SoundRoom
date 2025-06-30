@@ -1,8 +1,8 @@
 <template>
   <v-group
     ref="listenerGroup"
-    :x="props.listener.x"
-    :y="props.listener.y"
+    :x="listener.x"
+    :y="listener.y"
     :draggable="false"
     @mouseover="setCursor($event, 'pointer')"
     @mouseout="setCursor($event, 'default')"
@@ -28,7 +28,7 @@
         ctx.closePath()
         ctx.fillStrokeShape(shape)
       }"
-      :rotation="props.listener.angle"
+      :rotation="listener.angle"
       fill="#fff"
       stroke="#000"
       :strokeWidth="1"
@@ -38,12 +38,12 @@
 
     <!-- Rotation Hitbox -->
     <v-arc
-      :x="Math.cos(toRad(props.listener.angle + 90)) * 7"
-      :y="Math.sin(toRad(props.listener.angle + 90)) * 7"
+      :x="Math.cos(toRad(listener.angle + 90)) * 7"
+      :y="Math.sin(toRad(listener.angle + 90)) * 7"
       :innerRadius="0"
       :outerRadius="25"
       :angle="135"
-      :rotation="props.listener.angle + 20"
+      :rotation="listener.angle + 20"
       fill="transparent"
       @mousedown="onHandleMouseDown"
       @mouseup="onHandleMouseUp"
@@ -53,16 +53,11 @@
 
 <script setup>
 import { ref, onBeforeUnmount } from 'vue';
-// Props and setup
-const props = defineProps({
-  listener: Object,
-  actionManager: Object,
-  room: Object,
-})
+import { useRoomStore } from '@/stores/useRoomStore';
+import { storeToRefs } from 'pinia';
 
 
-const actionManager = props.actionManager
-const room = props.room
+const { listener, actionManager, room } = storeToRefs(useRoomStore())
 
 let moveListenerPayload = null
 let initialMouseAngle = null
@@ -110,7 +105,7 @@ function onListenerMouseDown(e) {
       group.startDrag()
 
       moveListenerPayload = {
-        from: { x: props.listener.x, y: props.listener.y },
+        from: { x: listener.value.x, y: listener.value.y },
       }
 
       window.removeEventListener('mousemove', mouseMoveListener)
@@ -124,14 +119,14 @@ function onListenerMouseDown(e) {
 
 function onListenerDragMove(e) {
   const pos = e.target.position()
-  const clampedX = room.clamp(pos.x, 0, room.width)
-  const clampedY = room.clamp(pos.y, 0, room.height)
+  const clampedX = room.value.clamp(pos.x, 0, room.value.width)
+  const clampedY = room.value.clamp(pos.y, 0, room.value.height)
 
   e.target.position({ x: clampedX, y: clampedY })
 
-  props.listener.x = clampedX
-  props.listener.y = clampedY
-  props.listener.updateAudio()
+  listener.value.x = clampedX
+  listener.value.y = clampedY
+  listener.value.updateAudio()
 }
 
 function onListenerMouseUp(e) {
@@ -144,11 +139,11 @@ function onListenerMouseUp(e) {
   }
 
   if (moveListenerPayload) {
-    const to = { x: props.listener.x, y: props.listener.y }
+    const to = { x: listener.value.x, y: listener.value.y }
 
     if (!positionsEqual(moveListenerPayload.from, to)) {
       moveListenerPayload.to = to
-      actionManager.doAction("move_listener", moveListenerPayload)
+      actionManager.value.doAction("move_listener", moveListenerPayload)
     }
   }
 
@@ -160,12 +155,12 @@ function onListenerMouseUp(e) {
 function onHandleMouseDown(e) {
   e.evt.stopPropagation()
 
-  initialListenerAngle = props.listener.angle
+  initialListenerAngle = listener.value.angle
 
   const stage = e.target.getStage()
   const mousePos = stage.getPointerPosition()
-  const dx = mousePos.x - props.listener.x
-  const dy = mousePos.y - props.listener.y
+  const dx = mousePos.x - listener.value.x
+  const dy = mousePos.y - listener.value.y
   initialMouseAngle = Math.atan2(dy, dx) * (180 / Math.PI)
 
   stage.on("mousemove.listenerRotate", onHandleMouseMove)
@@ -179,22 +174,22 @@ function onHandleMouseDown(e) {
 function onHandleMouseMove(e) {
   const stage = e.target.getStage()
   const mousePos = stage.getPointerPosition()
-  const dx = mousePos.x - props.listener.x
-  const dy = mousePos.y - props.listener.y
+  const dx = mousePos.x - listener.value.x
+  const dy = mousePos.y - listener.value.y
   const currentMouseAngle = Math.atan2(dy, dx) * (180 / Math.PI)
 
   const delta = currentMouseAngle - initialMouseAngle
   const newAngle = initialListenerAngle + delta
 
-  props.listener.updateAngle(newAngle)
-  props.listener.updateAudio()
+  listener.value.updateAngle(newAngle)
+  listener.value.updateAudio()
 }
 
 function onHandleMouseUp() {
-  const finalAngle = props.listener.angle
+  const finalAngle = listener.value.angle
 
   if (initialListenerAngle !== null && initialListenerAngle !== finalAngle) {
-    actionManager.doAction("rotate_listener_angle", {
+    actionManager.value.doAction("rotate_listener_angle", {
       from: initialListenerAngle,
       to: finalAngle,
     })

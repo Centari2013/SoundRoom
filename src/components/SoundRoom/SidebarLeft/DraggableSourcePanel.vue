@@ -7,9 +7,9 @@
   </h5>
 
   <ul class="overflow-y-auto space-y-2 text-sm"
-  :class="{ 'flex-1 mt-4': librarySources.length > 0 }">
+  :class="{ 'flex-1 mt-4': soundLibrarySources.length > 0 }">
     <LibrarySource 
-      v-for="s in librarySources"
+      v-for="s in soundLibrarySources"
       :key="s.id || s.name"
       :librarySource="s" 
       @contextmenu="(e) => openContextMenu(e, s)"
@@ -18,7 +18,7 @@
   </ul>
 
   <button
-    :disabled="librarySources.length == MAX_SOURCES"
+    :disabled="soundLibrarySources.length == MAX_SOURCES"
     @click="addSourceClick"
     class="w-full mt-4 bg-neutral-300 dark:bg-neutral-800 text-xs rounded hover:bg-neutral-400 dark:hover:bg-neutral-700"
   >
@@ -33,15 +33,18 @@ import { ref } from 'vue'
 
 import LibrarySource from '@/components/SoundRoom/SidebarLeft/LibrarySource.vue'
 import ContextMenu from '@/components/ui/context/ContextMenu.vue'
+import { useRoomStore } from '@/stores/useRoomStore'
+import { storeToRefs } from 'pinia'
 
 const props = defineProps({
-  librarySources: Array,
   MAX_SOURCES: Number,
   handleDragStart: Function,
   addSourceClick: Function
 })
 
-const emit = defineEmits(['deleteSource'])
+const store = useRoomStore()
+const { soundLibrarySources } = storeToRefs(store)
+
 
 const menuRef = ref(null)
 const contextSound = ref(null)
@@ -56,7 +59,7 @@ function openContextMenu(e, source) {
 }
 
 function deleteSound() {
-  emit('deleteSource', contextSound.value)
+  store.deleteLibrarySoundSource(contextSound.value)
   contextSound.value = null
 }
 

@@ -52,7 +52,6 @@
   
 <script setup>
 import { ref } from 'vue';
-import { useAuth } from '@/composables/useAuth';
 import SmallModal from '@/components/ui/modals/SmallModalBase.vue';
 import BaseButton from '@/components/ui/input/BaseButton.vue';
 

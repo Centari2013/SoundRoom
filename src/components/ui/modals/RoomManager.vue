@@ -83,7 +83,7 @@
           <span>Page {{ currentPage + 1 }} of {{ totalPages == 0 ? 1 : totalPages }}</span>
           <BaseButton
             class="px-3 py-1"
-            :disabled="currentPage === totalPages"
+            :disabled="currentPage + 1 === totalPages"
             @click="currentPage++"
           >
             Next →

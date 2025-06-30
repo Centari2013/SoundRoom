@@ -8,7 +8,7 @@
       Selected Sound Settings Panel
     </h2>
 
-    <SelectedSourcePanel v-bind="{ actionManager, selectedSource }" />
+    <SelectedSourcePanel v-bind="{ selectedSource }" />
 
     <div class="mt-auto">
       <RouterLink
@@ -21,11 +21,7 @@
         </BaseButton>
       </RouterLink>
     </div>
-    <RoomManager
-      v-if="openRoomManager"
-      @close="openRoomManager = false"
-      :actionManager="actionManager"
-    />
+    
   </aside>
 </template>
 
@@ -35,8 +31,7 @@ import { ref } from 'vue'
 
 import SelectedSourcePanel from '@/components/SoundRoom/SidebarRight/SelectedSourcePanel.vue'
 import BaseButton from '@/components/ui/input/BaseButton.vue';
-import RoomManager from '@/components/ui/modals/RoomManager.vue';
-defineProps(['selectedSource', 'actionManager'])
+defineProps(['selectedSource'])
 
 const openRoomManager = ref(false)
 

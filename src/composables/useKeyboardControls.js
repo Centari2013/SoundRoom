@@ -1,19 +1,15 @@
-// src/composables/useKeyboardControls.js
-export function useKeyboardControls({ 
-  listener, 
-  selectedIndex, 
-  soundSources,
-  selectedSource,
-  actionManager,
-  room
-}){
+import { useRoomStore } from "@/stores/useRoomStore"
+import { storeToRefs } from "pinia"
 
+export function useKeyboardControls(){
+  const store = useRoomStore()
+  const { room, listener, actionManager, audioEngine } = storeToRefs(store)
   const rotationKeys = new Set()
   let listenerAngleStart = null
   let sourceAngleStart = null
   
 
-  actionManager.registerActionHandlers(
+  actionManager.value.registerActionHandlers(
     "move_listener",
     (payload) => {
       listener.value.x = payload.to.x
@@ -25,7 +21,7 @@ export function useKeyboardControls({
     }
   )
 
-  actionManager.registerActionHandlers(
+  actionManager.value.registerActionHandlers(
     "rotate_listener_angle",
     (payload) => {
       listener.value.updateAngle(payload.to)
@@ -37,7 +33,7 @@ export function useKeyboardControls({
     }
   )
 
-  actionManager.registerActionHandlers(
+  actionManager.value.registerActionHandlers(
     "rotate_source_angle",
     (payload) => {
       if (selectedSource.value !== null) {
@@ -107,23 +103,23 @@ export function useKeyboardControls({
         break
       case 'Tab':
         e.preventDefault()
-        if (soundSources.value.length === 0) break
+        if (audioEngine.value.soundSources.value.length === 0) break
         if (selectedIndex.value === null) {
           selectedIndex.value = 0
         } else {
-          selectedIndex.value = (selectedIndex.value + 1) % soundSources.value.length
+          selectedIndex.value = (selectedIndex.value + 1) % audioEngine.value.soundSources.value.length
         }
         
         break
       case 'Delete':
       case 'Backspace':
-        actionManager.doAction("delete_canvas_sound_source", { index: selectedSource.value.index, src: selectedSource.value })
+        actionManager.value.doAction("delete_canvas_sound_source", { index: selectedSource.value.index, src: selectedSource.value })
         break
       case 'u':
-        actionManager.undoLastAction()
+        actionManager.value.undoLastAction()
         break
       case 'r':
-        actionManager.redoLastAction()
+        actionManager.value.redoLastAction()
         break
       
     }
@@ -139,7 +135,7 @@ export function useKeyboardControls({
       const listenerAngleEnd = listener.value.angle
   
       if (listenerAngleStart !== null && listenerAngleStart !== listenerAngleEnd) {
-        actionManager.doAction("rotate_listener_angle", {
+        actionManager.value.doAction("rotate_listener_angle", {
           from: listenerAngleStart,
           to: listenerAngleEnd
         })
@@ -155,7 +151,7 @@ export function useKeyboardControls({
         const sourceAngleEnd = selectedSource.value.instance.state.angle
   
         if (sourceAngleStart !== null && sourceAngleStart !== sourceAngleEnd) {
-          actionManager.doAction("rotate_source_angle", {
+          actionManager.value.doAction("rotate_source_angle", {
             from: sourceAngleStart,
             to: sourceAngleEnd
           })

@@ -31,15 +31,11 @@
           :key="i"
           :source="src"
           :selected="i === selectedIndex"
-          :actionManager="actionManager"
-          :room="room"
           :index="i"
           @select="$emit('selectNode', $event)"
           @contextmenu="showContextMenu"
         />
-        <ListenerNode
-          v-bind="{ listener, actionManager, room }"
-        />
+        <ListenerNode/>
       </v-layer>
     </v-stage>
 
@@ -61,20 +57,21 @@ import ListenerNode from '@/components/SoundRoom/MainCanvasStage/ListenerNode.vu
 
 import SoundSourceLabel from '@/components/ui/text/SoundSourceLabel.vue'
 
+import { useRoomStore } from '@/stores/useRoomStore'
+import { storeToRefs } from 'pinia'
+
+const { room, actionManager, listener, audioEngine } = storeToRefs(useRoomStore())
+
 const props = defineProps({
-  room: Object,
   handleDrop: Function,
   onKeyDown: Function,
   onKeyUp: Function,
   handleStageClick: Function,
   contextMenuActions: Object,
   showContextMenu: Function,
-  actionManager: Object,
   selectedIndex: Number,
-  listener: Object,
-  audioEngine: Object,
-  stageRef: Object,
 })
+
 
 defineEmits(['selectNode'])
 
@@ -96,7 +93,7 @@ function updateCoords() {
 
 const soundNodeTitleCoords = computed(() => {
   coordsVersion.value // makes it reactive to window resize
-  return props.audioEngine.soundSources.value.map(sn => {          
+  return audioEngine.value.soundSources.value.map(sn => {          
   const stagePos = stageRef.value.getBoundingClientRect();
   return {
         x: stagePos.left + sn.instance.state.x,

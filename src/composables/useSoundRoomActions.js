@@ -1,6 +1,9 @@
 import downloadAudio from '@/utils/downloadAudio'
+import { useRoomStore } from '@/stores/useRoomStore'
+import { storeToRefs } from 'pinia'
 
-export function registerCanvasActions(audioEngine, actionManager, listener, soundLibrarySources) {
+export function registerCanvasActions() {
+  const { audioEngine,  actionManager, listener, soundLibrarySources} = storeToRefs(useRoomStore())
   const moveSoundSource = (src, coords) => {
     src.instance.state.x = coords.x
     src.instance.state.y = coords.y
@@ -18,17 +21,17 @@ export function registerCanvasActions(audioEngine, actionManager, listener, soun
     listener.value.updateAudio()
   }
 
-  actionManager.registerActionHandlers('add_canvas_sound_source',
+  actionManager.value.registerActionHandlers('add_canvas_sound_source',
     addSoundSource,
     deleteSoundSource
   )
 
-  actionManager.registerActionHandlers('delete_canvas_sound_source',
+  actionManager.value.registerActionHandlers('delete_canvas_sound_source',
     deleteSoundSource,
     addSoundSource
   )
 
-  actionManager.registerActionHandlers('move_canvas_sound_source',
+  actionManager.value.registerActionHandlers('move_canvas_sound_source',
     payload => moveSoundSource(audioEngine.value.soundSources.value[payload.index], payload.to),
     payload => moveSoundSource(audioEngine.value.soundSources.value[payload.index], payload.from)
   )
@@ -45,7 +48,9 @@ const maxLibSourcesReached = function(soundLibrarySources){
   }
   return false
 }
-export function registerDraggableActions(audioEngine, actionManager, soundLibrarySources) {
+export function registerDraggableActions() {
+  const { audioEngine, actionManager, soundLibrarySources } = storeToRefs(useRoomStore())
+
   const deleteDraggableSoundSource = (payload) => {
       const originalSrc = payload.src // 🔐 store it safely
 
@@ -104,12 +109,12 @@ export function registerDraggableActions(audioEngine, actionManager, soundLibrar
     });
   }
 
-  actionManager.registerActionHandlers('delete_draggable_sound_source',
+  actionManager.value.registerActionHandlers('delete_draggable_sound_source',
     payload => deleteDraggableSoundSource(payload),
     async payload => await addDraggableSoundSource(payload)
   )
   
-  actionManager.registerActionHandlers('add_draggable_sound_source',
+  actionManager.value.registerActionHandlers('add_draggable_sound_source',
     async payload => await addDraggableSoundSource(payload),
     payload => deleteDraggableSoundSource(payload),
   )

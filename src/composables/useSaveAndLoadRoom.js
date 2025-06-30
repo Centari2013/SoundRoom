@@ -1,25 +1,25 @@
-import Room from "@/lib/Room";
-import Listener from "@/lib/Listener";
-import AudioEngine from "@/lib/AudioEngine";
-import { setupAudioContext } from "@/composables/useAudioSetup";
+import { useRoomStore } from "@/stores/useRoomStore";
+import { storeToRefs } from "pinia";
 
 import { supabase } from "@/utils/supabase";
 import { downloadMultipleAudio } from "@/utils/downloadAudio";
 import { useAuth } from "@/utils/userAuth";
 import { ref } from "vue";
 
-export function useSaveAndLoadRoom({ room, listener, soundLibrarySources, audioEngine, actionManager }) {
+export function useSaveAndLoadRoom() {
   const isLoadingRoom = ref(false);
   const isSavingRoom = ref(false);
   const { user } = useAuth();
+  const store = useRoomStore();
+  const { room, listener, audioEngine, soundLibrarySources, actionManager } = storeToRefs(store);
 
   function saveRoom() {
     isSavingRoom.value = true;
     const roomData = {
-      room: room.value.toJSON(),
-      listener: listener.value.toJSON(),
-      soundLibrarySources: soundLibrarySources.value.map(({ libraryId }) => ({ libraryId })),
-      audioEngine: audioEngine.value.toJSON(),
+      room: store.roomToJSON(),
+      listener: store.listenerToJSON(),
+      soundLibrarySources: store.soundLibrarySourcesToJSON(),
+      audioEngine: store.audioEngineToJSON(),
     };
     // if room.id in room table, update it
     //otherwise, insert a new room
@@ -110,16 +110,16 @@ export function useSaveAndLoadRoom({ room, listener, soundLibrarySources, audioE
       }
     });
 
-    actionManager.clearHistory();
+    actionManager.value.clearHistory();
 
     audioEngine.value.dispose();
     listener.value.dispose();
 
-    room.value = Room.fromJSON(roomData.room);
-    listener.value = Listener.fromJSON(roomData.listener);
-    audioEngine.value = AudioEngine.fromJSON(roomData.audioEngine);
-
-    setupAudioContext(audioEngine, listener);
+    store.loadRoom(roomData.room);
+    store.loadListener(roomData.listener);
+    store.loadAudioEngine(roomData.audioEngine);
+    
+    store.setupAudioContext(audioEngine, listener);
     
     setTimeout(() => {
       isLoadingRoom.value = false;

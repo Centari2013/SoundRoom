@@ -48,14 +48,16 @@
 import { computed, inject } from 'vue';
 import VueSlider from 'vue-3-slider-component';
 import { useVolumeSlider } from '@/composables/useVolumeSlider';
+import { useRoomStore } from '@/stores/useRoomStore';
+import { storeToRefs } from 'pinia';
 
 const props = defineProps({
-  actionManager: Object,
   selectedSource: Object
 });
 
+const { actionManager } = storeToRefs(useRoomStore());
+
 const selectedSource = inject('selectedSource');
-const actionManager = props.actionManager;
 
 const { onStart, onChange, onEnd } = useVolumeSlider(selectedSource, actionManager);
 

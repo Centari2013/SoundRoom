@@ -10,17 +10,14 @@
       <DraggableSourcePanel
         class="h-full"
         v-bind="{
-          librarySources: soundLibrarySources,
           MAX_SOURCES,
           handleDragStart,
           addSourceClick
         }"
-        @deleteSource="$emit('deleteSource', $event)"
       />
     </div>
 
     <ListenerReadout
-      v-bind="{ listener }"
       aria-label="Listener position and orientation"
     />
   </aside>
@@ -32,10 +29,8 @@ import DraggableSourcePanel from '@/components/SoundRoom/SidebarLeft/DraggableSo
 import ListenerReadout from '@/components/SoundRoom/SidebarLeft/ListenerReadout.vue'
 
 defineProps([
-  'soundLibrarySources',
   'MAX_SOURCES',
   'handleDragStart',
-  'addSourceClick',
-  'listener'
+  'addSourceClick'
 ])
 </script>

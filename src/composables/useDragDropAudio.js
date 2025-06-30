@@ -1,7 +1,11 @@
 import { reactive } from "vue"
+import { useRoomStore } from "@/stores/useRoomStore";
+import { storeToRefs } from "pinia";  
 
 // useDragDropAudio.js
-export function useDragDropAudio({ draggedSource, actionManager, stageWrapper}) {
+export function useDragDropAudio({ draggedSource, stageWrapper}) {
+  const roomStore = useRoomStore()
+  const { actionManager } = storeToRefs(roomStore)
   const handleDragStart = (e, source) => {
     draggedSource.value = source
   }
@@ -25,7 +29,7 @@ export function useDragDropAudio({ draggedSource, actionManager, stageWrapper}) 
       libraryId: draggedSource.value.libraryId
     }
   
-    actionManager.doAction("add_canvas_sound_source", { src: src })
+    actionManager.value.doAction("add_canvas_sound_source", { src: src })
   }
   
 

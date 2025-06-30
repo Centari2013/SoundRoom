@@ -1,6 +1,9 @@
-// src/composables/useVolumeSlider.js
-export function useVolumeSlider(selectedSource, actionManager) {
-  actionManager.registerActionHandlers(
+import { storeToRefs } from "pinia"
+import { useRoomStore } from "@/stores/useRoomStore"
+export function useVolumeSlider(selectedSource) {
+  const roomStore = useRoomStore()
+  const { actionManager } = storeToRefs(roomStore)
+  actionManager.value.registerActionHandlers(
     "set_sound_source_volume",
     (payload) => {
       selectedSource.value.instance.setVolume(payload.to)
@@ -27,7 +30,7 @@ export function useVolumeSlider(selectedSource, actionManager) {
 
   const onEnd = () => {
     volumePayload.to = selectedSource.value.instance.getVolume()
-    actionManager.doAction("set_sound_source_volume", volumePayload)
+    actionManager.value.doAction("set_sound_source_volume", volumePayload)
     volumePayload.value = null
   }
 
