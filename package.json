@@ -15,6 +15,7 @@
     "dayjs": "^1.11.13",
     "dotenv": "^16.5.0",
     "konva": "^9.3.20",
+    "pinia": "^3.0.3",
     "portal-vue": "^3.0.0-beta.0",
     "tailwindcss": "^4.1.7",
     "vite-svg-loader": "^5.1.0",
