@@ -32,6 +32,9 @@
 import { ref } from 'vue';
 import BaseButton from '@/components/ui/input/BaseButton.vue';
 import YesNoModal from  '@/components/ui/modals/YesNoModal.vue';
+import { useAuth } from '@/composables/useAuth';
+import { useRouter } from 'vue-router';
+
 
 const emit = defineEmits(['saveRoom'])
 const props = defineProps({
@@ -41,9 +44,17 @@ const props = defineProps({
   }
 })
 
+const router = useRouter();
+
+const { isAuthenticated } = useAuth();
 const showSaveMessage = ref(false);
 
 const yesFunction = () => {
+  if (!isAuthenticated.value) {
+    showSaveMessage.value = false;
+    router.push('/login');
+    return
+  }
   emit('saveRoom');
   showSaveMessage.value = false;
 };
