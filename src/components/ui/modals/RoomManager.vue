@@ -118,7 +118,7 @@ const gridScroll = ref(null)
 const currentPage = ref(0)
 const itemsPerPage = 12 // or 8, 16 depending on grid size
 
-// Temporary example: replace with fetched rooms
+
 const rooms = ref([])
 const loading = ref(true)
 
