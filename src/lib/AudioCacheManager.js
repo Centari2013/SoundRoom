@@ -2,9 +2,26 @@ import { get, set, del, keys } from 'idb-keyval'
 
 export default class AudioCacheManager {
   audioContext = null
-  constructor(audioContext) {
+  #maxEntries = 20
+
+  constructor(audioContext, maxEntries = 20) {
     this.memoryCache = new Map() // fileId -> Object URL
     this.audioContext = audioContext || null
+    this.#maxEntries = maxEntries
+  }
+
+  #touch(fileId, url) {
+    if (this.memoryCache.has(fileId)) {
+      this.memoryCache.delete(fileId)
+    }
+    this.memoryCache.set(fileId, url)
+
+    if (this.memoryCache.size > this.#maxEntries) {
+      const [oldestId] = this.memoryCache.keys()
+      const oldestUrl = this.memoryCache.get(oldestId)
+      if (oldestUrl) URL.revokeObjectURL(oldestUrl)
+      this.memoryCache.delete(oldestId)
+    }
   }
 
   setAudioContext(audioContext) {
@@ -18,7 +35,9 @@ export default class AudioCacheManager {
   // Get object URL for use in <audio> tag
   async getAudioURL(fileId, fetchFn) {
     if (this.memoryCache.has(fileId)) {
-      return this.memoryCache.get(fileId)
+      const url = this.memoryCache.get(fileId)
+      this.#touch(fileId, url)
+      return url
     }
 
     let blob = await get(fileId)
@@ -28,7 +47,7 @@ export default class AudioCacheManager {
     }
 
     const url = URL.createObjectURL(blob)
-    this.memoryCache.set(fileId, url)
+    this.#touch(fileId, url)
     return url
   }
 
