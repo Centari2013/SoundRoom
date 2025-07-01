@@ -41,6 +41,7 @@ export function useSaveAndLoadRoom() {
         room_config: roomData,
       })
       .eq("id", room.value.id)
+      .select("id") // Ensure we get the updated ID back
       .then(({ data, error }) => {
         if (error) {
           console.error("Error updating room:", error);
