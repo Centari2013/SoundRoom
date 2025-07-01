@@ -47,7 +47,6 @@ export const useRoomStore = defineStore('room', () => {
     return audioEngine.value.toJSON()
   }
   function soundLibrarySourcesToJSON() {
-    console.log("Sound library sources to JSON:", soundLibrarySources.value);
     return soundLibrarySources.value.map((src) => ({ 
       libraryId: src.libraryId, 
       coneInner: src.coneInner, 

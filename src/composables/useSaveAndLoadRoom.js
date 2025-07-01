@@ -71,7 +71,6 @@ export function useSaveAndLoadRoom() {
   }
 
   async function loadRoom(roomId) {
-    console.log("Loading room with ID:", roomId);
     isLoadingRoom.value = true;
     // get room data from supabase
     const { data, error } = await supabase
@@ -86,8 +85,6 @@ export function useSaveAndLoadRoom() {
     }
     const roomData = data.room_config;
     roomData.room.id = roomId; // Set the room ID from the database
-    console.log("Loaded room data:", roomData);
-    
     const ids = roomData.soundLibrarySources.map(s => s.libraryId);
     const dbSounds = await getSoundsFromDB(ids);
     const downloaded = await downloadMultipleAudio(dbSounds);
@@ -125,8 +122,6 @@ export function useSaveAndLoadRoom() {
         src.name = match.name;
       }
     });
-
-    console.log(roomData);
     
     actionManager.value.clearHistory();
 

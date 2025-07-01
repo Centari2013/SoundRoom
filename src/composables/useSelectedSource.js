@@ -13,7 +13,7 @@ export function useSelectedSource(selectedIndex) {
     const index = selectedIndex.value;
     if (index == null || index < 0 || index >= audioEngine.value.soundSources.value.length) return null;
     const raw = audioEngine.value.soundSources.value[index];
-    console.log(raw)
+  
     return {
       ...raw,
       volume: raw.instance.getVolume(),
