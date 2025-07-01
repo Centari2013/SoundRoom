@@ -95,6 +95,9 @@ export function useSaveAndLoadRoom() {
       const audioPath = downloaded.find(p => p.id === id)?.audioPath;
       const soundMatch = dbSounds.find(d => d.id === id);
 
+      const coneInner = roomData.audioEngine.soundSources.find(src => src.libraryId === id)?.state?.coneInner ?? soundMatch?.coneInner ?? 60;
+      const coneOuter = roomData.audioEngine.soundSources.find(src => src.libraryId === id)?.state?.coneOuter ?? soundMatch?.coneOuter ?? 180;
+
       if (!audioPath || !soundMatch) {
         console.warn(`Missing data for libraryId ${id}`);
         return null; // or skip it entirely if you'd prefer
@@ -103,6 +106,8 @@ export function useSaveAndLoadRoom() {
       return {
         libraryId: id,
         audioPath,
+        coneInner,
+        coneOuter,
         name: soundMatch.name,
         bucket: soundMatch.bucket,
         path: soundMatch.path
@@ -170,7 +175,7 @@ export function useSaveAndLoadRoom() {
     const roomData = {
       room: room.value.toJSON(),
       listener: listener.value.toJSON(),
-      soundLibrarySources: soundLibrarySources.value.map(({ libraryId }) => ({ libraryId })),
+      soundLibrarySources: store.soundLibrarySourcesToJSON(),
       audioEngine: audioEngine.value.toJSON(),
     };
     localStorage.setItem("tempSoundRoomData", JSON.stringify(roomData));
@@ -198,8 +203,10 @@ export function useSaveAndLoadRoom() {
         const name = soundMatch.name;
         const bucket = soundMatch.bucket;
         const path = soundMatch.path;
+        const coneInner = roomData.audioEngine.soundSources.find(src => src.libraryId === id)?.state?.coneInner ?? soundMatch?.coneInner ?? 60;
+        const coneOuter = roomData.audioEngine.soundSources.find(src => src.libraryId === id)?.state?.coneOuter ?? soundMatch?.coneOuter ?? 180;
         if (!audioPath) console.warn(`Missing audioPath for libraryId ${id}`);
-        return { libraryId: id, audioPath, name, path, bucket };
+        return { libraryId: id, audioPath, name, path, bucket, coneInner, coneOuter };
       });
 
       soundLibrarySources.value = finalSources;
