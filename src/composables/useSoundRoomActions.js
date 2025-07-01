@@ -2,7 +2,29 @@ import downloadAudio from '@/utils/downloadAudio'
 import { useRoomStore } from '@/stores/useRoomStore'
 import { storeToRefs } from 'pinia'
 
-export function registerCanvasActions() {
+let actionsRegistered = false
+
+export function registerSoundRoomActions() {
+  if (actionsRegistered) return
+  registerCanvasActions()
+  registerDraggableActions()
+  actionsRegistered = true
+}
+
+export function unregisterSoundRoomActions() {
+  if (!actionsRegistered) return
+  const { actionManager } = storeToRefs(useRoomStore())
+  actionManager.value.unregisterActionHandlers([
+    'add_canvas_sound_source',
+    'delete_canvas_sound_source',
+    'move_canvas_sound_source',
+    'delete_draggable_sound_source',
+    'add_draggable_sound_source'
+  ])
+  actionsRegistered = false
+}
+
+function registerCanvasActions() {
   const { audioEngine,  actionManager, listener, soundLibrarySources} = storeToRefs(useRoomStore())
   const moveSoundSource = (src, coords) => {
     src.instance.state.x = coords.x
@@ -48,7 +70,7 @@ const maxLibSourcesReached = function(soundLibrarySources){
   }
   return false
 }
-export function registerDraggableActions() {
+function registerDraggableActions() {
   const { audioEngine, actionManager, soundLibrarySources } = storeToRefs(useRoomStore())
 
   const deleteDraggableSoundSource = (payload) => {
@@ -119,3 +141,4 @@ export function registerDraggableActions() {
     payload => deleteDraggableSoundSource(payload),
   )
 }
+

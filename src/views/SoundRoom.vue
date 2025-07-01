@@ -92,7 +92,7 @@ import { useKeyboardControls } from '@/composables/useKeyboardControls'
 import { useDragDropAudio } from '@/composables/useDragDropAudio'
 import { useSelectedSource } from '@/composables/useSelectedSource'
 import { useContextMenuLogic } from '@/composables/useContextMenuLogic'
-import { registerCanvasActions, registerDraggableActions, setMaxLibSources } from '@/composables/useSoundRoomActions'
+import { registerSoundRoomActions, unregisterSoundRoomActions, setMaxLibSources } from '@/composables/useSoundRoomActions'
 import { useSaveAndLoadRoom } from '@/composables/useSaveAndLoadRoom';
 import { storeToRefs } from 'pinia'
 
@@ -137,12 +137,11 @@ const { onKeyDown, onKeyUp } = useKeyboardControls({selectedIndex, selectedSourc
 
 const { saveRoom, isLoadingRoom, isSavingRoom, loadRoomLocal } = useSaveAndLoadRoom()
 
-registerCanvasActions()
-registerDraggableActions()
 setMaxLibSources(MAX_LIB_SOURCES)
 
 const showWelcomeOverlay = ref(false)
 onBeforeMount(() => {
+  registerSoundRoomActions()
   store.clearSoundLibrarySources() // Clear any previous sound library sources
   if (sessionStorage.getItem('justLoggedIn') === 'true') {
     sessionStorage.removeItem('justLoggedIn')
@@ -159,6 +158,7 @@ onBeforeMount(() => {
 })
 
 onUnmounted(() => {
+  unregisterSoundRoomActions()
   audioEngine.value.dispose()
 })
 </script>

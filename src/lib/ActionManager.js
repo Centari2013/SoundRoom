@@ -23,6 +23,13 @@ export default class ActionManager {
     this._actionMap[actionName] = { doAction, undoAction }
   }
 
+  unregisterActionHandlers(actionNames) {
+    if (!Array.isArray(actionNames)) actionNames = [actionNames]
+    for (const name of actionNames) {
+      delete this._actionMap[name]
+    }
+  }
+
   async doAction(actionName, payload = null) {
     const action = this._actionMap[actionName]
     if (!action) {
