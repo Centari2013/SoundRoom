@@ -31,6 +31,8 @@ export function useSaveAndLoadRoom() {
     setTimeout(() => {
       isSavingRoom.value = false;
     }, 2000);
+
+    return true; // Indicate that the save operation was initiated
   }
 
   function updateRoom(roomData) {
