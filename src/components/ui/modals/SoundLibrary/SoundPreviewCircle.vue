@@ -42,6 +42,9 @@
 import { ref, onUnmounted, computed, watch, onMounted, nextTick } from 'vue'
 import downloadAudio from '@/utils/downloadAudio'
 
+// Cache the downloaded preview locally to avoid redundant network calls
+let cachedPreview = null
+
 const props = defineProps({
   soundData: Object,
   sendAudioUp: Boolean,
@@ -67,8 +70,11 @@ const emit = defineEmits(['sendAudio', 'updateCurrent'])
 const hasBeenPromoted = ref(false)
 
 async function emitAudio() {
-  if (!blobUrl) {
+  if (cachedPreview) {
+    blobUrl = cachedPreview.blobUrl
+  } else {
     ({ blobUrl } = await downloadAudio(props.soundData.bucket, props.soundData.path, false))
+    cachedPreview = { blobUrl, audio: null }
   }
   hasBeenPromoted.value = true
   const { cone_inner, cone_outer, id, ...rest } = props.soundData
@@ -130,7 +136,20 @@ async function togglePlay() {
   if (isPlaying.value) {
     stopPlayback()
   } else {
-    ({ blobUrl, audio } = await downloadAudio(props.soundData.bucket, props.soundData.path, true, stopPlayback))
+    if (cachedPreview) {
+      blobUrl = cachedPreview.blobUrl
+      if (cachedPreview.audio) {
+        audio = cachedPreview.audio
+      } else {
+        audio = new Audio(blobUrl)
+        audio.preload = 'auto'
+        audio.addEventListener('ended', stopPlayback)
+        cachedPreview.audio = audio
+      }
+    } else {
+      ({ blobUrl, audio } = await downloadAudio(props.soundData.bucket, props.soundData.path, true, stopPlayback))
+      cachedPreview = { blobUrl, audio }
+    }
     audio.currentTime = 0
     audio.play().then(() => {
       isPlaying.value = true
@@ -156,30 +175,24 @@ function setupProgressTracking() {
 
 function stopPlayback() {
   if (!audio) return
-  audio.removeEventListener('ended', stopPlayback)
 
   audio.pause()
-  audio.removeAttribute('src')
-  audio.load()
-  
+  audio.currentTime = 0
 
   clearTimeout(timeoutId)
   cancelAnimationFrame(rafId)
 
   isPlaying.value = false
   progress.value = 0
-
-  if (blobUrl && !hasBeenPromoted.value) { // revoke blob to free up memory only if blob has not been piped up to draggable sources
-    URL.revokeObjectURL(blobUrl)
-    blobUrl = null
-  }
-
-  audio = null
 }
 
 
 onUnmounted(() => {
   stopPlayback()
+  if (!hasBeenPromoted.value && cachedPreview) {
+    URL.revokeObjectURL(cachedPreview.blobUrl)
+    cachedPreview = null
+  }
 })
 
 </script>
