@@ -16,7 +16,7 @@
   <div class="flex justify-start items-center h-15 p-2 space-x-3">
     <BaseButton
       @click="showSaveMessage = true"
-      :disabled="isSaving"
+      :disabled="isSaving || !isRoomSaveable"
       class="px-3 py-2 rounded bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400"
       type="button"
       aria-label="Open save room confirmation"
@@ -34,7 +34,8 @@ import BaseButton from '@/components/ui/input/BaseButton.vue';
 import YesNoModal from  '@/components/ui/modals/YesNoModal.vue';
 import { useAuth } from '@/composables/useAuth';
 import { useRouter } from 'vue-router';
-
+import { useRoomStore } from '@/stores/useRoomStore';
+import { storeToRefs } from 'pinia';
 
 const emit = defineEmits(['saveRoom'])
 const props = defineProps({
@@ -45,6 +46,7 @@ const props = defineProps({
 })
 
 const router = useRouter();
+const { isRoomSaveable } = storeToRefs(useRoomStore());
 
 const { isAuthenticated } = useAuth();
 const showSaveMessage = ref(false);

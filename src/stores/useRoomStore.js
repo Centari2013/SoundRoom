@@ -13,6 +13,7 @@ export const useRoomStore = defineStore('room', () => {
   const audioEngine = shallowRef(new AudioEngine([]))
   const soundLibrarySources = ref([])
   const actionManager = ref(new ActionManager())
+  const _lastSavedSnapshot = ref(null)
 
   // actions
   function setupAudioContext() {
@@ -20,6 +21,7 @@ export const useRoomStore = defineStore('room', () => {
     listener.value.setAudioContext(audioContext)
     audioEngine.value.setupAudioEngine() // run after listener audio context is set because it plays saved sounds
     listener.value.updateAudio() // ensure listener is ready with the new context
+    getSaveSnapshot()
   }
   function loadRoom(roomData) {
     room.value = Room.fromJSON(roomData)
@@ -46,6 +48,18 @@ export const useRoomStore = defineStore('room', () => {
   function audioEngineToJSON() {
     return audioEngine.value.toJSON()
   }
+
+  function getSaveSnapshot() {
+    const savedState = {
+      room: roomToJSON(),
+      listener: listenerToJSON(), 
+      audioEngine: audioEngineToJSON(),
+      soundLibrarySources: soundLibrarySourcesToJSON()
+    }
+    _lastSavedSnapshot.value = JSON.stringify(savedState)
+    return savedState
+  }
+
   function soundLibrarySourcesToJSON() {
     return soundLibrarySources.value.map((src) => ({ 
       libraryId: src.libraryId, 
@@ -77,7 +91,24 @@ export const useRoomStore = defineStore('room', () => {
   const actionStackEmpty = computed(() => actionManager.value.actionStackEmpty)
   const redoStackEmpty = computed(() => actionManager.value.redoStackEmpty)
   const MAX_CANVAS_SOURCES = computed(() => audioEngine.value.maxSourceCount)
-  const isRoomSaveable = computed(() => !actionManager.value.actionStackEmpty) // room has unsaved changes
+  const isRoomSaveable = computed(() => {
+  // 👇 this line makes Vue re-evaluate when any relevant part changes
+    void room.value && void listener.value && void audioEngine.value && void soundLibrarySources.value
+
+    try {
+      const currentSnapshot = JSON.stringify({
+        room: roomToJSON(),
+        listener: listenerToJSON(),
+        audioEngine: audioEngineToJSON(),
+        soundLibrarySources: soundLibrarySourcesToJSON(),
+      })
+      return currentSnapshot !== _lastSavedSnapshot.value
+    } catch (e) {
+      console.warn('Error computing isRoomSaveable:', e)
+      return false
+    }
+  })
+
   return {
     room,
     listener,
@@ -101,6 +132,7 @@ export const useRoomStore = defineStore('room', () => {
     audioEngineToJSON,
     soundLibrarySourcesToJSON,
     setupAudioContext,
-    isRoomSaveable
+    isRoomSaveable,
+    getSaveSnapshot,
   }
 })

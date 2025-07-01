@@ -15,12 +15,7 @@ export function useSaveAndLoadRoom() {
 
   function saveRoom() {
     isSavingRoom.value = true;
-    const roomData = {
-      room: store.roomToJSON(),
-      listener: store.listenerToJSON(),
-      soundLibrarySources: store.soundLibrarySourcesToJSON(),
-      audioEngine: store.audioEngineToJSON(),
-    };
+    const roomData = store.getSaveSnapshot();
     // if room.id in room table, update it
     //otherwise, insert a new room
     if (room.value.id) {
@@ -170,12 +165,7 @@ export function useSaveAndLoadRoom() {
   }
   function saveRoomLocal() {
     isSavingRoom.value = true;
-    const roomData = {
-      room: room.value.toJSON(),
-      listener: listener.value.toJSON(),
-      soundLibrarySources: store.soundLibrarySourcesToJSON(),
-      audioEngine: audioEngine.value.toJSON(),
-    };
+    const roomData = store.getSaveSnapshot();
     localStorage.setItem("tempSoundRoomData", JSON.stringify(roomData));
     setTimeout(() => {
       isSavingRoom.value = false;
