@@ -106,14 +106,21 @@ function registerDraggableActions() {
       }
 
 
-      URL.revokeObjectURL(originalSrc.audioPath)
+      const store = useRoomStore()
+      store.audioCacheManager.remove(originalSrc.libraryId)
     }
 
   
   const addDraggableSoundSource = async (payload) => {
     if (maxLibSourcesReached(soundLibrarySources)) return;
     // download blob and re-instate draggable source
-    const { blobUrl } = await downloadAudio(payload.src.bucket, payload.src.path, false)
+    const { blobUrl } = await downloadAudio(
+      payload.src.bucket,
+      payload.src.path,
+      false,
+      null,
+      payload.src.libraryId
+    )
     payload.src.audioPath = blobUrl
     const exists = soundLibrarySources.value.find(s => s.libraryId === payload.src.libraryId)
     if (!exists) {

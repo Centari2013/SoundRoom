@@ -7,13 +7,15 @@
   </li>
 </template>
 <script setup>
-import { onUnmounted } from 'vue';
+import { onUnmounted } from 'vue'
+import { useRoomStore } from '@/stores/useRoomStore'
 
 const props = defineProps({
   librarySource: Object
 })
 
 onUnmounted(() => {
-  URL.revokeObjectURL(props.librarySource.audioPath)
+  const store = useRoomStore()
+  store.audioCacheManager.remove(props.librarySource.libraryId)
 })
 </script>

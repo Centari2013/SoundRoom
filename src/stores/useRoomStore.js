@@ -39,6 +39,9 @@ export const useRoomStore = defineStore('room', () => {
   }
 
   function clearSoundLibrarySources() {
+    soundLibrarySources.value.forEach(src => {
+      audioCacheManager.remove(src.libraryId)
+    })
     soundLibrarySources.value = []
   }
 

@@ -41,6 +41,7 @@
 <script setup>
 import { ref, onUnmounted, computed, watch, onMounted, nextTick } from 'vue'
 import downloadAudio from '@/utils/downloadAudio'
+import { useRoomStore } from '@/stores/useRoomStore'
 
 
 // Cache the downloaded preview locally to avoid redundant network calls
@@ -74,7 +75,13 @@ async function emitAudio() {
   if (cachedPreview) {
     blobUrl = cachedPreview.blobUrl
   } else {
-    ({ blobUrl } = await downloadAudio(props.soundData.bucket, props.soundData.path, false))
+    ;({ blobUrl } = await downloadAudio(
+      props.soundData.bucket,
+      props.soundData.path,
+      false,
+      null,
+      props.soundData.id
+    ))
     cachedPreview = { blobUrl, audio: null }
   }
   hasBeenPromoted.value = true
@@ -148,7 +155,13 @@ async function togglePlay() {
         cachedPreview.audio = audio
       }
     } else {
-      ({ blobUrl, audio } = await downloadAudio(props.soundData.bucket, props.soundData.path, true, stopPlayback))
+      ;({ blobUrl, audio } = await downloadAudio(
+        props.soundData.bucket,
+        props.soundData.path,
+        true,
+        stopPlayback,
+        props.soundData.id
+      ))
       cachedPreview = { blobUrl, audio }
     }
     audio.currentTime = 0
@@ -191,7 +204,8 @@ function stopPlayback() {
 onUnmounted(() => {
   stopPlayback()
   if (!hasBeenPromoted.value && cachedPreview) {
-    URL.revokeObjectURL(cachedPreview.blobUrl)
+    const store = useRoomStore()
+    store.audioCacheManager.remove(props.soundData.id)
     cachedPreview = null
   }
 })
