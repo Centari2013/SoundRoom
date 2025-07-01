@@ -42,6 +42,7 @@
 import { ref, onUnmounted, computed, watch, onMounted, nextTick } from 'vue'
 import downloadAudio from '@/utils/downloadAudio'
 
+//TODO: add sound library pagination to avoid loading and caching all sounds at once
 // Cache the downloaded preview locally to avoid redundant network calls
 let cachedPreview = null
 
