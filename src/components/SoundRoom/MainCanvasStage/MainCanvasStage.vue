@@ -49,7 +49,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
 
 import ContextMenu from '@/components/ui/context/ContextMenu.vue'
 import SoundSourceNode from '@/components/SoundRoom/MainCanvasStage/SoundSourceNode.vue'
@@ -78,29 +78,57 @@ defineEmits(['selectNode'])
 const stageRef = ref(null)
 const contextMenuRef = ref(null)
 const coordsVersion = ref(0) // reactive bump trigger
+const stageRect = ref(null)
 
-onMounted(() => {
-  window.addEventListener('resize', updateCoords)
-})
-onUnmounted(() => {
-  window.removeEventListener('resize', updateCoords)
-})
+// simple throttle implementation
+function throttle(fn, delay = 100) {
+  let timer = null
+  return (...args) => {
+    if (timer) return
+    timer = setTimeout(() => {
+      fn(...args)
+      timer = null
+    }, delay)
+  }
+}
 
 function updateCoords() {
-  coordsVersion.value++
+  if (!stageRef.value) return
+  const rect = stageRef.value.getBoundingClientRect()
+  const prev = stageRect.value
+  if (!prev || prev.width !== rect.width || prev.height !== rect.height || prev.left !== rect.left || prev.top !== rect.top) {
+    stageRect.value = rect
+    coordsVersion.value++
+  }
 }
+
+const throttledUpdateCoords = throttle(updateCoords, 100)
+
+onMounted(() => {
+  nextTick(() => {
+    updateCoords()
+  })
+  window.addEventListener('resize', throttledUpdateCoords)
+})
+onUnmounted(() => {
+  window.removeEventListener('resize', throttledUpdateCoords)
+})
+
+watch(() => [room.value.width, room.value.height], () => {
+  nextTick(() => updateCoords())
+})
 
 
 const soundNodeTitleCoords = computed(() => {
-  coordsVersion.value // makes it reactive to window resize
-  return audioEngine.value.soundSources.value.map(sn => {          
-  const stagePos = stageRef.value.getBoundingClientRect();
-  return {
-        x: stagePos.left + sn.instance.state.x,
-        y: stagePos.top + sn.instance.state.y + 20, //20 is to account for directional arrow
-        name: sn.name
-      }
-});
+  coordsVersion.value // re-compute when stageRect changes
+  const stagePos = stageRect.value || { left: 0, top: 0 }
+  return audioEngine.value.soundSources.value.map(sn => {
+    return {
+      x: stagePos.left + sn.instance.state.x,
+      y: stagePos.top + sn.instance.state.y + 20, //20 is to account for directional arrow
+      name: sn.name
+    }
+  })
 })
 
 
