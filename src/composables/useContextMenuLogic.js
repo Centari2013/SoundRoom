@@ -1,4 +1,4 @@
-import { computed, toRaw, reactive } from 'vue'
+import { computed, reactive } from 'vue'
 import { useRoomStore } from '@/stores/useRoomStore'
 import { storeToRefs } from 'pinia'
 // Central constant for sound node part identifier
@@ -38,13 +38,20 @@ export function useContextMenuLogic(selectedSource, stageWrapperRef) {
     {
       label: 'Duplicate',
       function: () => {
-        const {instance, ...rest} = selectedSource.value
-        const state = reactive(structuredClone(toRaw(rest.state))) // copy state to new reactive obj
-        rest.state = null // nullified to allow cloning
-        const src = structuredClone(rest)
-        src.state = state
-        src.state.x += 5
-        src.state.y += 5
+        const src = {
+          // shallow copy of simple fields
+          audioPath: selectedSource.value.audioPath,
+          name: selectedSource.value.name,
+          libraryId: selectedSource.value.libraryId,
+          // copy reactive state manually
+          state: reactive({
+            x: selectedSource.value.state.x + 5,
+            y: selectedSource.value.state.y + 5,
+            angle: selectedSource.value.state.angle,
+            coneInner: selectedSource.value.state.coneInner,
+            coneOuter: selectedSource.value.state.coneOuter,
+          })
+        }
 
         actionManager.value.doAction('add_canvas_sound_source', {
           index: null,
