@@ -160,5 +160,9 @@ onBeforeMount(() => {
 onUnmounted(() => {
   unregisterSoundRoomActions()
   audioEngine.value.dispose()
+  // Revoke object URLs to avoid memory leaks
+  store.audioCacheManager.clearMemoryCache()
+  // Uncomment to also wipe IndexedDB cache if long-term storage isn't desired
+  // void store.audioCacheManager.clearPersistentCache()
 })
 </script>
