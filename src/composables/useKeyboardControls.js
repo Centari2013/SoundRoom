@@ -55,6 +55,7 @@ export function useKeyboardControls({selectedSource, selectedIndex}) {
     const key = e.key
     const speed = 5
     const rotationStep = 5
+    let listenerChanged = false
     
     if ((key == 'q' || key == 'e') && !rotationKeys.has(key)) {
       rotationKeys.add(key)
@@ -70,24 +71,30 @@ export function useKeyboardControls({selectedSource, selectedIndex}) {
       case 'ArrowUp':
       case 'w':
         listener.value.y = room.value.clamp(listener.value.y - speed, 0, room.value.height)
+        listenerChanged = true
         break
       case 'ArrowDown':
       case 's':
         listener.value.y = room.value.clamp(listener.value.y + speed, 0, room.value.height)
+        listenerChanged = true
         break
       case 'ArrowLeft':
       case 'a':
         listener.value.x = room.value.clamp(listener.value.x - speed, 0, room.value.width)
+        listenerChanged = true
         break
       case 'ArrowRight':
       case 'd':
         listener.value.x = room.value.clamp(listener.value.x + speed, 0, room.value.width)
+        listenerChanged = true
         break
       case 'q':
         listener.value.updateAngle(listener.value.angle - rotationStep)
+        listenerChanged = true
         break
       case 'e':
         listener.value.updateAngle(listener.value.angle + rotationStep)
+        listenerChanged = true
         break
       case 'z':
         if (selectedSource.value !== null) {
@@ -124,7 +131,9 @@ export function useKeyboardControls({selectedSource, selectedIndex}) {
       
     }
 
-    listener.value.updateAudio()
+    if (listenerChanged) {
+      listener.value.updateAudio()
+    }
   }
 
   const onKeyUp = (event) => {
