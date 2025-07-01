@@ -221,7 +221,7 @@ export function useSaveAndLoadRoom() {
       listener.value = Listener.fromJSON(roomData.listener);
       audioEngine.value = AudioEngine.fromJSON(roomData.audioEngine);
 
-      setupAudioContext(audioEngine, listener);
+      store.setupAudioContext();
     }
     localStorage.removeItem("tempSoundRoomData");
     setTimeout(() => {
