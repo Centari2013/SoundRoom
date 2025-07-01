@@ -32,7 +32,7 @@ const router = createRouter({
         },
         { path: '/room-manager',
           component: () => import('@/components/ui/modals/ModalWrapper.vue'),
-          props: { component: () => import('@/components/ui/modals/RoomManager.vue') },
+          props: { component: () => import('@/components/ui/modals/RoomManager/RoomManager.vue') },
           meta: { requiresAuth: true }
         },
       ]

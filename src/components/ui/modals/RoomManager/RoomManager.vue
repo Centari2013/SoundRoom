@@ -47,7 +47,13 @@
             :key="room.id"
             class="room-row p-4 border border-neutral-700 rounded-lg shadow-sm hover:bg-neutral-800 transition"
           >
-            <div class="room-name font-medium truncate">{{ room.name || 'Untitled Room' }}</div>
+            <EditableRoomName
+              :room-id="room.id"
+              :name="room.name"
+              :on-update="updateRoomName"
+              @updated="room.name = $event"
+            />
+
             <div class="room-meta text-xs text-neutral-400">{{ formatDate(room.updated_at) }}</div>
             <div class="room-actions mt-3 flex gap-2">
               <BaseButton @click="handleLoadRoom(room.id)">Load</BaseButton>
@@ -123,6 +129,7 @@ import { supabase } from '@/utils/supabase'
 import BaseButton from '@/components/ui/input/BaseButton.vue'
 import LoadingDiv from '@/components/ui/loading/LoadingDiv.vue'
 import YesNoModal from '@/components/ui/modals/YesNoModal.vue'
+import EditableRoomName from '@/components/ui/modals/RoomManager/EditableRoomName.vue'
 import { useAuth } from '@/composables/useAuth'
 import { formatDate } from '@/utils/dateUtils'
 import { useRouter } from 'vue-router'
@@ -142,7 +149,7 @@ const gridScroll = ref(null)
 const currentPage = ref(0)
 const itemsPerPage = 12 // or 8, 16 depending on grid size
 
-const { loadRoom, deleteRoom, saveRoom, isSavingRoom, isLoadingRoom } = useSaveAndLoadRoom()
+const { loadRoom, deleteRoom, saveRoom, isSavingRoom, isLoadingRoom, updateRoomName } = useSaveAndLoadRoom()
 
 const deleteRoomModalVisible = ref(false)
 const saveRoomCheck = ref(false)

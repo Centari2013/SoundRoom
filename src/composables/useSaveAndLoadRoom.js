@@ -48,6 +48,21 @@ export function useSaveAndLoadRoom() {
       });
   }
 
+  async function updateRoomName(roomId, name) {
+    const { error } = await supabase
+      .from("rooms")
+      .update({ name })
+      .eq("id", roomId)
+
+    if (error) {
+      console.error("Error updating room:", error)
+      return false
+    }
+
+    return true
+  }
+
+
   function insertRoom(roomData) {
     supabase
       .from("rooms")
@@ -72,7 +87,7 @@ export function useSaveAndLoadRoom() {
     // get room data from supabase
     const { data, error } = await supabase
       .from("rooms")
-      .select("room_config")
+      .select("room_config", "name")
       .eq("id", roomId)
       .single();
     if (error) {
@@ -82,6 +97,7 @@ export function useSaveAndLoadRoom() {
     }
     const roomData = data.room_config;
     roomData.room.id = roomId; // Set the room ID from the database
+    roomData.room.name = data.name; // Set the room name from the database
     const ids = roomData.soundLibrarySources.map(s => s.libraryId);
     const dbSounds = await getSoundsFromDB(ids);
     const downloaded = await downloadMultipleAudio(dbSounds);
@@ -231,5 +247,6 @@ export function useSaveAndLoadRoom() {
     saveRoomLocal,
     loadRoomLocal,
     isSavingRoom,
+    updateRoomName,
   };
 }
