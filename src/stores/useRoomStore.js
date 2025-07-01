@@ -5,6 +5,7 @@ import Room from '@/lib/Room'
 import Listener from '@/lib/Listener'
 import AudioEngine from '@/lib/AudioEngine'
 import ActionManager from '@/lib/ActionManager'
+import AudioCacheManager from '@/lib/AudioCacheManager'
 
 export const useRoomStore = defineStore('room', () => {
   // reactive refs
@@ -13,12 +14,14 @@ export const useRoomStore = defineStore('room', () => {
   const audioEngine = shallowRef(new AudioEngine([]))
   const soundLibrarySources = ref([])
   const actionManager = ref(new ActionManager())
+  const audioCacheManager = new AudioCacheManager()
   const _lastSavedSnapshot = ref(null)
 
   // actions
   function setupAudioContext() {
     const audioContext = audioEngine.value.getAudioContext()
     listener.value.setAudioContext(audioContext)
+    audioCacheManager.setAudioContext(audioContext) // ensure cache manager uses the same context
     audioEngine.value.setupAudioEngine() // run after listener audio context is set because it plays saved sounds
     listener.value.updateAudio() // ensure listener is ready with the new context
     getSaveSnapshot()
@@ -134,5 +137,6 @@ export const useRoomStore = defineStore('room', () => {
     setupAudioContext,
     isRoomSaveable,
     getSaveSnapshot,
+    audioCacheManager
   }
 })
