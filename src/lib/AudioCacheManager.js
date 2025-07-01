@@ -2,7 +2,7 @@ import { get, set, del, keys } from 'idb-keyval'
 
 export default class AudioCacheManager {
   audioContext = null
-  #maxEntries = 20
+  #maxEntries = 20 // corresponds to number of loaded library sounds allowed by sound library
 
   constructor(audioContext, maxEntries = 20) {
     this.memoryCache = new Map() // fileId -> Object URL
