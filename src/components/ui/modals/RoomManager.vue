@@ -96,7 +96,7 @@
       <YesNoModal
         v-if="deleteRoomModalVisible"
         :yesFunction="doDeleteRoom"
-        :noFunction="doLoadRoom"
+        :noFunction="() => deleteRoomModalVisible = false"
         message="Are you sure you want to delete this room?"
         title="Delete Room"
         @close="deleteRoomModalVisible = false"
