@@ -58,6 +58,11 @@ export default class AudioCacheManager {
     const arrayBuffer = await blob.arrayBuffer()
     return await this.audioContext.decodeAudioData(arrayBuffer)
   }
+    // Add a blob to persistent cache and trigger pruning
+  async addBlob(fileId, blob) {
+    await set(fileId, blob)
+    await this._ensurePersistentLimit([fileId])
+  }
 
   async getOrFetchBlob(fileId, fetchFn) {
     let blob = await get(fileId)
@@ -70,6 +75,10 @@ export default class AudioCacheManager {
   }
 
   async _ensurePersistentLimit(extraKeep = []) {
+    if (this._maxPersistentEntries === 0) return // infinite allowed
+    const allKeys = await keys()
+    if (allKeys.length <= this._maxPersistentEntries) return
+
     const keepKeys = [...this.memoryCache.keys(), ...extraKeep]
     await this.prunePersistentCache({
       keep: keepKeys,
