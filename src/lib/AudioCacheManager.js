@@ -1,10 +1,23 @@
 import { get, set, del, keys } from 'idb-keyval'
 
 export default class AudioCacheManager {
-  constructor(audioContext, maxEntries = 20) {
+  constructor(audioContext, maxEntries = 20, maxPersistentEntries = 100) {
     this.memoryCache = new Map()
     this.audioContext = audioContext || null
     this._maxEntries = maxEntries
+    this._maxPersistentEntries = maxPersistentEntries
+  }
+
+  setAudioContext(audioContext) {
+    if (this.audioContext) {
+      console.warn('AudioContext already set, ignoring new context')
+      return
+    }
+    this.audioContext = audioContext
+  }
+
+  setMaxPersistentEntries(max) {
+    this._maxPersistentEntries = max
   }
 
   // 🔁 Used by memory Map to evict old items
@@ -51,8 +64,17 @@ export default class AudioCacheManager {
     if (!blob) {
       blob = await fetchFn()
       await set(fileId, blob)
+      await this._ensurePersistentLimit([fileId])
     }
     return blob
+  }
+
+  async _ensurePersistentLimit(extraKeep = []) {
+    const keepKeys = [...this.memoryCache.keys(), ...extraKeep]
+    await this.prunePersistentCache({
+      keep: keepKeys,
+      maxCount: this._maxPersistentEntries,
+    })
   }
 
   clearMemoryCache() {
