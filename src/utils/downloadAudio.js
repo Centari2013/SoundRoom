@@ -1,5 +1,22 @@
-import { supabase } from '@/utils/supabase'
 import { useRoomStore } from '@/stores/useRoomStore'
+
+
+async function fetchAudioBlob(key) {
+  const res = await fetch(`/api/get-signed-url?key=${encodeURIComponent(key)}`);
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({ error: 'Invalid JSON response' }));
+    throw new Error(errorData.error || "Failed to get signed URL");
+  }
+  const { signedUrl } = await res.json();
+
+  const audioResponse = await fetch(signedUrl);
+  if (!audioResponse.ok) throw new Error("Failed to fetch audio from R2");
+
+  return await audioResponse.blob();
+}
+
+
+
 
 export default async function downloadAudio(
   bucket,
@@ -10,20 +27,21 @@ export default async function downloadAudio(
 ) {
   const store = useRoomStore()
   const cacheManager = store.audioCacheManager
-  
+  cacheManager.clearPersistentCache()
   const fileId = libraryId ?? `${bucket}/${path}`
 
   const blobUrl = await cacheManager.getAudioURL(fileId, async () => {
-    const { data: fileData, error: fileError } = await supabase.storage
+  /*  const { data: fileData, error: fileError } = await supabase.storage
       .from(bucket)
       .download(path)
 
     if (fileError) {
       console.error(`Failed to download:`, fileError)
       return new Blob()
-    }
-
-    return fileData
+    } */
+    
+    const audioBlob = await fetchAudioBlob(`free/${bucket}/${path}`)
+    return audioBlob
   })
 
   let audio = null
