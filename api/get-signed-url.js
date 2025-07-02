@@ -17,12 +17,6 @@ export async function GET(request) {
   if (!key) {
     return new Response("Missing 'key' query param", { 
       status: 400,
-      headers: {
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-        "Access-Control-Allow-Headers": "Content-Type, Authorization",
-        "Access-Control-Allow-Credentials": "true",
-      },
     });
   }
 
