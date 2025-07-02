@@ -45,5 +45,13 @@ export async function GET(request) {
     { aws: { signQuery: true } }
   );
 
-  return Response.json({ signedUrl: signed.url });
+  return Response.json({ signedUrl: signed.url },
+    {
+      status: 200,
+      headers: {
+        ...corsHeaders,
+        'Content-Type': 'application/json',
+      },
+    }
+  );
 }
