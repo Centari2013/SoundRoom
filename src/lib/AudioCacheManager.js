@@ -1,13 +1,50 @@
 import { get, set, del, keys } from 'idb-keyval'
 
+/**
+ * Manages in-memory and persistent caching of audio files.
+ *
+ * The manager stores small sets of object URLs in memory for quick reuse and
+ * uses the [`idb-keyval`](https://github.com/jakearchibald/idb-keyval) library
+ * to persist blobs in IndexedDB.  This allows audio files to be fetched once
+ * and then reused across sessions without additional network requests.  Both
+ * caches have configurable size limits and will prune old entries when the
+ * limits are exceeded.
+ */
 export default class AudioCacheManager {
+  /**
+   * @param {AudioContext} [audioContext]  Optional audio context used when
+   *   decoding buffers.
+   * @param {number} [maxEntries=20]  Maximum number of in-memory object URLs.
+   * @param {number} [maxPersistentEntries=100]  Maximum number of blobs stored
+   *   in IndexedDB. A value of `0` disables the limit.
+   */
   constructor(audioContext, maxEntries = 20, maxPersistentEntries = 100) {
+    // Map of fileId -> Object URL. New entries are added to the end so we can
+    // treat it like an LRU cache.
     this.memoryCache = new Map()
+
+    // `audioContext` is optional so that the manager can be constructed before
+    // Web Audio is initialised. It can later be supplied via `setAudioContext`.
     this.audioContext = audioContext || null
+
+    // Maximum number of object URLs to keep in memory at once.
     this._maxEntries = maxEntries
+
+    // Maximum number of persistent blobs allowed in IndexedDB.
     this._maxPersistentEntries = maxPersistentEntries
   }
 
+  /**
+   * Supply an `AudioContext` to use when decoding audio data.  This is
+   * separated from the constructor so that the manager can be created before
+   * the user has interacted with the page (which is often required before an
+   * `AudioContext` can be resumed).
+   *
+   * Subsequent calls are ignored to prevent accidentally switching contexts
+   * while cached buffers may still be in use.
+   *
+   * @param {AudioContext} audioContext
+   */
   setAudioContext(audioContext) {
     if (this.audioContext) {
       console.warn('AudioContext already set, ignoring new context')
@@ -20,7 +57,13 @@ export default class AudioCacheManager {
     this._maxPersistentEntries = max
   }
 
-  // 🔁 Used by memory Map to evict old items
+  /**
+   * Internal helper used by the memory Map to mark an entry as recently used.
+   *
+   * The Map is treated as an ordered list with the most recently used entry
+   * last.  When the limit is exceeded the oldest entry is revoked and removed
+   * from the Map.
+   */
   _touch(fileId, url) {
     if (this.memoryCache.has(fileId)) {
       this.memoryCache.delete(fileId)
@@ -35,6 +78,19 @@ export default class AudioCacheManager {
     }
   }
 
+  /**
+   * Retrieve an object URL for an audio file.
+   *
+   * The method first checks the in-memory cache and then IndexedDB. If the file
+   * is not found, `fetchFn` is invoked to obtain the Blob which is then stored
+   * persistently. The returned object URL should be released by the caller when
+   * no longer needed.
+   *
+   * @param {string} fileId  Unique identifier for the audio file.
+   * @param {Function} fetchFn  Async function that returns a `Blob` when the
+   *   file must be fetched from the network.
+   * @returns {Promise<string>}  Object URL for the audio Blob.
+   */
   async getAudioURL(fileId, fetchFn) {
     if (this.memoryCache.has(fileId)) {
       const url = this.memoryCache.get(fileId)
@@ -53,17 +109,31 @@ export default class AudioCacheManager {
     return url
   }
 
+  /**
+   * Decode an audio file into an `AudioBuffer` using the configured context.
+   *
+   * @param {string} fileId
+   * @param {Function} fetchFn  Function used to fetch the Blob if needed.
+   * @returns {Promise<AudioBuffer>}
+   */
   async getAudioBuffer(fileId, fetchFn) {
     const blob = await this.getOrFetchBlob(fileId, fetchFn)
     const arrayBuffer = await blob.arrayBuffer()
     return await this.audioContext.decodeAudioData(arrayBuffer)
   }
     // Add a blob to persistent cache and trigger pruning
+  /**
+   * Add a Blob directly to the persistent cache, bypassing any fetch step.
+   * The blob will also trigger a pruning run to enforce the persistent limit.
+   */
   async addBlob(fileId, blob) {
     await set(fileId, blob)
     await this._ensurePersistentLimit([fileId])
   }
 
+  /**
+   * Convenience helper that returns a Blob from cache or by invoking `fetchFn`.
+   */
   async getOrFetchBlob(fileId, fetchFn) {
     let blob = await get(fileId)
     if (!blob) {
@@ -74,6 +144,13 @@ export default class AudioCacheManager {
     return blob
   }
 
+  /**
+   * Internal check that prunes the persistent cache when it exceeds the
+   * configured limit.
+   *
+   * @param {string[]} [extraKeep]  File IDs that should not be removed during
+   *   pruning (in addition to those currently in the memory cache).
+   */
   async _ensurePersistentLimit(extraKeep = []) {
     if (this._maxPersistentEntries === 0) return // infinite allowed
     const allKeys = await keys()
@@ -86,6 +163,9 @@ export default class AudioCacheManager {
     })
   }
 
+  /**
+   * Clear the in-memory cache and revoke all generated object URLs.
+   */
   clearMemoryCache() {
     for (const url of this.memoryCache.values()) {
       URL.revokeObjectURL(url)
@@ -93,11 +173,17 @@ export default class AudioCacheManager {
     this.memoryCache.clear()
   }
 
+  /**
+   * Remove all entries from the persistent IndexedDB cache.
+   */
   async clearPersistentCache() {
     const allKeys = await keys()
     await Promise.all(allKeys.map(k => del(k)))
   }
 
+  /**
+   * Delete a single file from both memory and persistent storage.
+   */
   async remove(fileId) {
     const url = this.memoryCache.get(fileId)
     if (url) URL.revokeObjectURL(url)
@@ -105,7 +191,16 @@ export default class AudioCacheManager {
     await del(fileId)
   }
 
-  // Self-cleaner: prune all persistent cache except whitelisted keys
+  /**
+   * Self-cleaner: prune all persistent cache except whitelisted keys.
+   *
+   * @param {Object} [opts]
+   * @param {string[]} [opts.keep]  File IDs to always keep.
+   * @param {number} [opts.maxCount=100]  Maximum allowed entries.
+   * @param {boolean} [opts.dryRun=false]  If true, no files are deleted and a
+   *   summary is still returned.
+   * @returns {Promise<{total:number, removed:number, kept:number}>}
+   */
   async prunePersistentCache({ keep = [], maxCount = 100, dryRun = false } = {}) {
     const allKeys = await keys()
 
@@ -125,7 +220,9 @@ export default class AudioCacheManager {
     }
   }
 
-  // get usage in MB
+  /**
+   * Estimate persistent storage usage in megabytes.
+   */
   async estimateStorage() {
     if ('storage' in navigator && 'estimate' in navigator.storage) {
       const { usage, quota } = await navigator.storage.estimate()
