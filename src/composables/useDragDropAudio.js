@@ -1,9 +1,10 @@
 import { reactive } from "vue"
 import { useRoomStore } from "@/stores/useRoomStore";
+import { useCanvasStore } from "@/stores/useCanvasStore";
 import { storeToRefs } from "pinia";  
 
 // useDragDropAudio.js
-export function useDragDropAudio({ draggedSource, stageWrapper}) {
+export function useDragDropAudio({ draggedSource }) {
   const roomStore = useRoomStore()
   const { actionManager } = storeToRefs(roomStore)
   const handleDragStart = (e, source) => {
@@ -12,9 +13,10 @@ export function useDragDropAudio({ draggedSource, stageWrapper}) {
 
   function handleDrop(e) {
     if (!draggedSource.value) return
-    const wrapperBounds = stageWrapper.value.stageRef.getBoundingClientRect()
-    const dropX = e.clientX - wrapperBounds.left
-    const dropY = e.clientY - wrapperBounds.top
+    const canvasStore = useCanvasStore()
+    const stageBounds = canvasStore.stageDivRef.getBoundingClientRect()
+    const dropX = e.clientX - stageBounds.left
+    const dropY = e.clientY - stageBounds.top
   
     const src = {
       state: reactive({

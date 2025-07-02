@@ -47,6 +47,13 @@
             :key="room.id"
             class="room-row p-4 border border-neutral-700 rounded-lg shadow-sm hover:bg-neutral-800 transition"
           >
+            <img
+              v-if="room.thumbnail"
+              :src="room.thumbnail"
+              alt="Room preview"
+              class="rounded mb-3 w-full aspect-video object-cover border border-neutral-800"
+            />
+
             <EditableRoomName
               :room-id="room.id"
               :name="room.name"
@@ -60,6 +67,7 @@
               <BaseButton @click="handleDeleteRoom(room.id)">Delete</BaseButton>
             </div>
           </div>
+
           
 
         </template>
@@ -222,7 +230,7 @@ onMounted(async () => {
   // Fetch rooms from Supabase
   const { data, error } = await supabase
     .from('rooms')
-    .select('id, name, updated_at')
+    .select('id, name, updated_at, thumbnail')
     .eq('owner_id', user.value.id)
     .order('updated_at', { ascending: false })
 
