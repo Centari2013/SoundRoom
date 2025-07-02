@@ -3,6 +3,18 @@ import { getEnv } from '@vercel/functions';
 import { AwsClient } from "aws4fetch";
 
 export async function GET(request) {
+
+  const ALLOWED_ORIGIN =
+  process.env.NODE_ENV === 'production'
+    ? 'https://www.soundroom.live'
+    : 'http://localhost:4000'; // or whatever you're running locally
+
+  const corsHeaders = {
+    'Access-Control-Allow-Origin': ALLOWED_ORIGIN,
+    'Access-Control-Allow-Methods': 'GET, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type',
+    'Access-Control-Allow-Credentials': 'true',
+  };
   // Secure credentials using Vercel env vars
   const { R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_BUCKET_NAME, R2_ACCOUNT_ID } = getEnv();
 
@@ -17,6 +29,9 @@ export async function GET(request) {
   if (!key) {
     return new Response("Missing 'key' query param", { 
       status: 400,
+      headers: {
+        ...corsHeaders,
+      },
     });
   }
 
