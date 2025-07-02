@@ -24,12 +24,14 @@ export async function GET(request) {
   const key = searchParams.get("key");
 
   if (!key) {
-    return new Response("Missing 'key' query param", { 
+    return new Response(JSON.stringify({ error: "Missing 'key' query param" }), {
       status: 400,
       headers: {
         ...corsHeaders,
+        'Content-Type': 'application/json',
       },
     });
+
   }
 
   // Build R2 object URL
