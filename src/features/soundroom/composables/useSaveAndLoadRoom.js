@@ -1,4 +1,4 @@
-import { useRoomStore } from "@/stores/useRoomStore";
+import { useRoomStore } from "@/features/soundroom/stores/useRoomStore";
 import { storeToRefs } from "pinia";
 
 import { supabase } from "@/utils/supabase";

@@ -25,8 +25,8 @@
 
 
 <script setup>
-import DraggableSourcePanel from '@/components/SoundRoom/SidebarLeft/DraggableSourcePanel.vue'
-import ListenerReadout from '@/components/SoundRoom/SidebarLeft/ListenerReadout.vue'
+import DraggableSourcePanel from '@/features/soundroom/components/SoundRoom/SidebarLeft/DraggableSourcePanel.vue'
+import ListenerReadout from '@/features/soundroom/components/SoundRoom/SidebarLeft/ListenerReadout.vue'
 
 defineProps([
   'MAX_SOURCES',

@@ -1,0 +1,12 @@
+export { default as Toolbar } from './Toolbar.vue';
+export { default as HeaderBar } from './HeaderBar.vue';
+export { default as FooterBar } from './FooterBar.vue';
+export { default as MainCanvasStage } from './MainCanvasStage/MainCanvasStage.vue';
+export { default as SoundSourceNode } from './MainCanvasStage/SoundSourceNode.vue';
+export { default as ListenerNode } from './MainCanvasStage/ListenerNode.vue';
+export { default as SidebarLeft } from './SidebarLeft/SidebarLeft.vue';
+export { default as DraggableSourcePanel } from './SidebarLeft/DraggableSourcePanel.vue';
+export { default as LibrarySource } from './SidebarLeft/LibrarySource.vue';
+export { default as ListenerReadout } from './SidebarLeft/ListenerReadout.vue';
+export { default as SidebarRight } from './SidebarRight/SidebarRight.vue';
+export { default as SelectedSourcePanel } from './SidebarRight/SelectedSourcePanel.vue';

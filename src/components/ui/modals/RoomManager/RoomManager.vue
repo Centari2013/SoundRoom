@@ -133,8 +133,8 @@ import EditableRoomName from '@/components/ui/modals/RoomManager/EditableRoomNam
 import { useAuth } from '@/composables/useAuth'
 import { formatDate } from '@/utils/dateUtils'
 import { useRouter } from 'vue-router'
-import { useSaveAndLoadRoom } from '@/composables/useSaveAndLoadRoom'
-import { useRoomStore } from '@/stores/useRoomStore'
+import { useSaveAndLoadRoom } from '@/features/soundroom/composables/useSaveAndLoadRoom'
+import { useRoomStore } from '@/features/soundroom/stores/useRoomStore'
 import PulsingOverlay from '@/components/ui/overlays/PulsingOverlay.vue'
 
 const router = useRouter()

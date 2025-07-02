@@ -1,5 +1,5 @@
 import downloadAudio from '@/utils/downloadAudio'
-import { useRoomStore } from '@/stores/useRoomStore'
+import { useRoomStore } from '@/features/soundroom/stores/useRoomStore'
 import { storeToRefs } from 'pinia'
 
 let actionsRegistered = false

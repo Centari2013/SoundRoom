@@ -41,7 +41,7 @@
 <script setup>
 import { ref, onUnmounted, computed, watch, onMounted, nextTick } from 'vue'
 import downloadAudio from '@/utils/downloadAudio'
-import { useRoomStore } from '@/stores/useRoomStore'
+import { useRoomStore } from '@/features/soundroom/stores/useRoomStore'
 
 
 // Cache the downloaded preview locally to avoid redundant network calls

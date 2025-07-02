@@ -13,7 +13,7 @@
 
 <script setup>
 import { SpeedInsights } from '@vercel/speed-insights/vue'
-import HeaderBar from '@/components/SoundRoom/HeaderBar.vue';
+import HeaderBar from '@/features/soundroom/components/SoundRoom/HeaderBar.vue';
 import MobileComingSoon from '@/views/MobileComingSoon.vue';
 function mobileCheck () {
     let check = false;

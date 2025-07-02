@@ -1,5 +1,5 @@
 import { computed, reactive } from 'vue'
-import { useRoomStore } from '@/stores/useRoomStore'
+import { useRoomStore } from '@/features/soundroom/stores/useRoomStore'
 import { storeToRefs } from 'pinia'
 // Central constant for sound node part identifier
 export const SOUND_NODE_PART_NAME = 'sound-node-part'

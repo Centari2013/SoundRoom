@@ -1,5 +1,5 @@
 import { storeToRefs } from "pinia"
-import { useRoomStore } from "@/stores/useRoomStore"
+import { useRoomStore } from "@/features/soundroom/stores/useRoomStore"
 export function useVolumeSlider(selectedSource) {
   const roomStore = useRoomStore()
   const { actionManager } = storeToRefs(roomStore)

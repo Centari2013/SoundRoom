@@ -8,7 +8,7 @@
 </template>
 <script setup>
 import { onUnmounted } from 'vue'
-import { useRoomStore } from '@/stores/useRoomStore'
+import { useRoomStore } from '@/features/soundroom/stores/useRoomStore'
 
 const props = defineProps({
   librarySource: Object

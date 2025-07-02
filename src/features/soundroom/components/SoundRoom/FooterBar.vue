@@ -34,7 +34,7 @@ import BaseButton from '@/components/ui/input/BaseButton.vue';
 import YesNoModal from  '@/components/ui/modals/YesNoModal.vue';
 import { useAuth } from '@/composables/useAuth';
 import { useRouter } from 'vue-router';
-import { useRoomStore } from '@/stores/useRoomStore';
+import { useRoomStore } from '@/features/soundroom/stores/useRoomStore';
 import { storeToRefs } from 'pinia';
 
 const emit = defineEmits(['saveRoom'])

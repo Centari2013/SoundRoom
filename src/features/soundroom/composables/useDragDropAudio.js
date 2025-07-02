@@ -1,5 +1,5 @@
 import { reactive } from "vue"
-import { useRoomStore } from "@/stores/useRoomStore";
+import { useRoomStore } from "@/features/soundroom/stores/useRoomStore";
 import { storeToRefs } from "pinia";  
 
 // useDragDropAudio.js

@@ -75,25 +75,25 @@ import { useRouter } from 'vue-router'
 const SOUND_NODE_PART_NAME = 'sound-node-part'
 
 // UI Components
-import Toolbar from '@/components/SoundRoom/Toolbar.vue'
+import Toolbar from '@/features/soundroom/components/SoundRoom/Toolbar.vue'
 import SoundLibrary from '@/components/ui/modals/SoundLibrary/SoundLibrary.vue'
-import SidebarLeft from '@/components/SoundRoom/SidebarLeft/SidebarLeft.vue'
-import SidebarRight from '@/components/SoundRoom/SidebarRight/SidebarRight.vue'
-import MainCanvasStage from '@/components/SoundRoom/MainCanvasStage/MainCanvasStage.vue'
-import FooterBar from '@/components/SoundRoom/FooterBar.vue'
+import SidebarLeft from '@/features/soundroom/components/SoundRoom/SidebarLeft/SidebarLeft.vue'
+import SidebarRight from '@/features/soundroom/components/SoundRoom/SidebarRight/SidebarRight.vue'
+import MainCanvasStage from '@/features/soundroom/components/SoundRoom/MainCanvasStage/MainCanvasStage.vue'
+import FooterBar from '@/features/soundroom/components/SoundRoom/FooterBar.vue'
 import PulsingOverlay from '@/components/ui/overlays/PulsingOverlay.vue'
 import WelcomeOverlay from '@/components/ui/overlays/WelcomeOverlay.vue'
 
 // Store
-import { useRoomStore } from '@/stores/useRoomStore'
+import { useRoomStore } from '@/features/soundroom/stores/useRoomStore'
 
 // Composables
 import { useKeyboardControls } from '@/composables/useKeyboardControls'
-import { useDragDropAudio } from '@/composables/useDragDropAudio'
-import { useSelectedSource } from '@/composables/useSelectedSource'
-import { useContextMenuLogic } from '@/composables/useContextMenuLogic'
-import { registerSoundRoomActions, unregisterSoundRoomActions, setMaxLibSources } from '@/composables/useSoundRoomActions'
-import { useSaveAndLoadRoom } from '@/composables/useSaveAndLoadRoom';
+import { useDragDropAudio } from '@/features/soundroom/composables/useDragDropAudio'
+import { useSelectedSource } from '@/features/soundroom/composables/useSelectedSource'
+import { useContextMenuLogic } from '@/features/soundroom/composables/useContextMenuLogic'
+import { registerSoundRoomActions, unregisterSoundRoomActions, setMaxLibSources } from '@/features/soundroom/composables/useSoundRoomActions'
+import { useSaveAndLoadRoom } from '@/features/soundroom/composables/useSaveAndLoadRoom';
 import { storeToRefs } from 'pinia'
 
 // State

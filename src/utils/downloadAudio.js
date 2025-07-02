@@ -1,5 +1,5 @@
 import { supabase } from '@/utils/supabase'
-import { useRoomStore } from '@/stores/useRoomStore'
+import { useRoomStore } from '@/features/soundroom/stores/useRoomStore'
 
 export default async function downloadAudio(
   bucket,

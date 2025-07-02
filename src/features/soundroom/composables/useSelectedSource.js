@@ -1,5 +1,5 @@
 import { computed } from "vue";
-import { useRoomStore } from "@/stores/useRoomStore";
+import { useRoomStore } from "@/features/soundroom/stores/useRoomStore";
 import { storeToRefs } from "pinia";
 
 export function getSourceName(path) {

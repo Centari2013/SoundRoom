@@ -52,12 +52,12 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 
 import ContextMenu from '@/components/ui/context/ContextMenu.vue'
-import SoundSourceNode from '@/components/SoundRoom/MainCanvasStage/SoundSourceNode.vue'
-import ListenerNode from '@/components/SoundRoom/MainCanvasStage/ListenerNode.vue'
+import SoundSourceNode from '@/features/soundroom/components/SoundRoom/MainCanvasStage/SoundSourceNode.vue'
+import ListenerNode from '@/features/soundroom/components/SoundRoom/MainCanvasStage/ListenerNode.vue'
 
 import SoundSourceLabel from '@/components/ui/text/SoundSourceLabel.vue'
 
-import { useRoomStore } from '@/stores/useRoomStore'
+import { useRoomStore } from '@/features/soundroom/stores/useRoomStore'
 import { storeToRefs } from 'pinia'
 
 const { room, actionManager, listener, audioEngine } = storeToRefs(useRoomStore())

@@ -47,8 +47,8 @@
 <script setup>
 import { computed, inject } from 'vue';
 import VueSlider from 'vue-3-slider-component';
-import { useVolumeSlider } from '@/composables/useVolumeSlider';
-import { useRoomStore } from '@/stores/useRoomStore';
+import { useVolumeSlider } from '@/features/soundroom/composables/useVolumeSlider';
+import { useRoomStore } from '@/features/soundroom/stores/useRoomStore';
 import { storeToRefs } from 'pinia';
 
 const props = defineProps({

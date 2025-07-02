@@ -50,7 +50,7 @@ import BaseInput from '@/components/ui/input/BaseInput.vue'
 import VueSlider from 'vue-3-slider-component'
 import { useAuth } from '@/composables/useAuth'
 
-import { useRoomStore } from '@/stores/useRoomStore'
+import { useRoomStore } from '@/features/soundroom/stores/useRoomStore'
 import { storeToRefs } from 'pinia'
 
 const store = useRoomStore()

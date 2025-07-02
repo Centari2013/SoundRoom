@@ -31,9 +31,9 @@
 <script setup>
 import { ref } from 'vue'
 
-import LibrarySource from '@/components/SoundRoom/SidebarLeft/LibrarySource.vue'
+import LibrarySource from '@/features/soundroom/components/SoundRoom/SidebarLeft/LibrarySource.vue'
 import ContextMenu from '@/components/ui/context/ContextMenu.vue'
-import { useRoomStore } from '@/stores/useRoomStore'
+import { useRoomStore } from '@/features/soundroom/stores/useRoomStore'
 import { storeToRefs } from 'pinia'
 
 const props = defineProps({

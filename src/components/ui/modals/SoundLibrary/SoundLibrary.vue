@@ -99,10 +99,10 @@ import { supabase } from '@/utils/supabase'
 
 import SoundPreviewCircle from '@/components/ui/modals/SoundLibrary/SoundPreviewCircle.vue'
 import MarqueeTitle from '@/components/ui/text/MarqueeTitle.vue'
-import { getSourceName } from '@/composables/useSelectedSource'
+import { getSourceName } from '@/features/soundroom/composables/useSelectedSource'
 import BaseButton from '@/components/ui/input/BaseButton.vue'
 
-import { useRoomStore } from '@/stores/useRoomStore'
+import { useRoomStore } from '@/features/soundroom/stores/useRoomStore'
 import { storeToRefs } from 'pinia'
 
 const props = defineProps({

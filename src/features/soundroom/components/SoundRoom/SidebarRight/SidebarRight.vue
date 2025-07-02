@@ -29,7 +29,7 @@
 <script setup>
 import { ref } from 'vue'
 import { useAuth } from '@/composables/useAuth';
-import SelectedSourcePanel from '@/components/SoundRoom/SidebarRight/SelectedSourcePanel.vue'
+import SelectedSourcePanel from '@/features/soundroom/components/SoundRoom/SidebarRight/SelectedSourcePanel.vue'
 import BaseButton from '@/components/ui/input/BaseButton.vue';
 defineProps(['selectedSource'])
 

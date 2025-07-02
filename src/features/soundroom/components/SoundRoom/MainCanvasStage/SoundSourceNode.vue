@@ -81,7 +81,7 @@
 
 <script setup>
 import { computed } from 'vue'
-import { useRoomStore } from '@/stores/useRoomStore'
+import { useRoomStore } from '@/features/soundroom/stores/useRoomStore'
 import { storeToRefs } from 'pinia'
 // Props and emits
 const props = defineProps({
