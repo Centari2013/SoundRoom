@@ -1,22 +1,20 @@
 import { get, set, del, keys } from 'idb-keyval'
 
 export default class AudioCacheManager {
-  audioContext = null
-  #maxEntries = 20 // corresponds to number of loaded library sounds allowed by sound library
-
   constructor(audioContext, maxEntries = 20) {
-    this.memoryCache = new Map() // fileId -> Object URL
+    this.memoryCache = new Map()
     this.audioContext = audioContext || null
-    this.#maxEntries = maxEntries
+    this._maxEntries = maxEntries
   }
 
-  #touch(fileId, url) {
+  // 🔁 Used by memory Map to evict old items
+  _touch(fileId, url) {
     if (this.memoryCache.has(fileId)) {
       this.memoryCache.delete(fileId)
     }
     this.memoryCache.set(fileId, url)
 
-    if (this.memoryCache.size > this.#maxEntries) {
+    if (this.memoryCache.size > this._maxEntries) {
       const [oldestId] = this.memoryCache.keys()
       const oldestUrl = this.memoryCache.get(oldestId)
       if (oldestUrl) URL.revokeObjectURL(oldestUrl)
@@ -24,19 +22,10 @@ export default class AudioCacheManager {
     }
   }
 
-  setAudioContext(audioContext) {
-    if (this.audioContext) {
-      console.warn('AudioContext already set, ignoring new context')
-      return
-    }
-    this.audioContext = audioContext
-  }
-
-  // Get object URL for use in <audio> tag
   async getAudioURL(fileId, fetchFn) {
     if (this.memoryCache.has(fileId)) {
       const url = this.memoryCache.get(fileId)
-      this.#touch(fileId, url)
+      this._touch(fileId, url)
       return url
     }
 
@@ -47,11 +36,10 @@ export default class AudioCacheManager {
     }
 
     const url = URL.createObjectURL(blob)
-    this.#touch(fileId, url)
+    this._touch(fileId, url)
     return url
   }
 
-  // Get decoded AudioBuffer for use in AudioContext
   async getAudioBuffer(fileId, fetchFn) {
     const blob = await this.getOrFetchBlob(fileId, fetchFn)
     const arrayBuffer = await blob.arrayBuffer()
@@ -84,5 +72,38 @@ export default class AudioCacheManager {
     if (url) URL.revokeObjectURL(url)
     this.memoryCache.delete(fileId)
     await del(fileId)
+  }
+
+  // Self-cleaner: prune all persistent cache except whitelisted keys
+  async prunePersistentCache({ keep = [], maxCount = 100, dryRun = false } = {}) {
+    const allKeys = await keys()
+
+    // If the cache is under maxCount, do nothing
+    if (allKeys.length <= maxCount && keep.length === 0) return
+
+    const keysToRemove = allKeys.filter(k => !keep.includes(k))
+
+    if (keysToRemove.length > 0 && !dryRun) {
+      await Promise.all(keysToRemove.map(k => del(k)))
+    }
+
+    return {
+      total: allKeys.length,
+      removed: keysToRemove.length,
+      kept: allKeys.length - keysToRemove.length
+    }
+  }
+
+  // get usage in MB
+  async estimateStorage() {
+    if ('storage' in navigator && 'estimate' in navigator.storage) {
+      const { usage, quota } = await navigator.storage.estimate()
+      return {
+        usageMB: (usage / 1024 / 1024).toFixed(2),
+        quotaMB: (quota / 1024 / 1024).toFixed(2),
+        percent: ((usage / quota) * 100).toFixed(1)
+      }
+    }
+    return null
   }
 }
