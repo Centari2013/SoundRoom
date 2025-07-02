@@ -27,7 +27,9 @@ export default async function downloadAudio(
 ) {
   const store = useRoomStore()
   const cacheManager = store.audioCacheManager
-  cacheManager.clearPersistentCache()
+
+  // uncomment for debugging cache and download issues
+  //cacheManager.clearPersistentCache()
   const fileId = libraryId ?? `${bucket}/${path}`
 
   const blobUrl = await cacheManager.getAudioURL(fileId, async () => {
