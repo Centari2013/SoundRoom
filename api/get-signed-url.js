@@ -1,8 +1,19 @@
 import { getEnv } from '@vercel/functions';
 import { AwsClient } from "aws4fetch";
 
+
 export async function GET(request) {
-  const ALLOWED_ORIGIN = '*'; // In prod: 'https://soundroom.live'
+  const ALLOWED_ORIGIN =
+  process.env.NODE_ENV === 'production'
+    ? 'https://soundroom.live'
+    : '*';
+
+  const {
+    R2_ACCESS_KEY_ID,
+    R2_SECRET_ACCESS_KEY,
+    R2_BUCKET_NAME,
+    R2_ACCOUNT_ID
+  } = process.env;
 
   const corsHeaders = {
     'Access-Control-Allow-Origin': ALLOWED_ORIGIN,
@@ -19,8 +30,8 @@ export async function GET(request) {
   }
 
   try {
-    const { R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_BUCKET_NAME, R2_ACCOUNT_ID } = getEnv();
-
+   
+    console.log("🔑 R2_ACCESS_KEY_ID:", R2_ACCESS_KEY_ID);
     const client = new AwsClient({
       accessKeyId: R2_ACCESS_KEY_ID,
       secretAccessKey: R2_SECRET_ACCESS_KEY,
