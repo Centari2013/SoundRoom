@@ -75,12 +75,13 @@ async function emitAudio() {
   if (cachedPreview) {
     blobUrl = cachedPreview.blobUrl
   } else {
-    ;({ blobUrl } = await downloadAudio(
+    
+    ({ blobUrl } = await downloadAudio(
       props.soundData.bucket,
       props.soundData.path,
       false,
       null,
-      props.soundData.id
+      props.soundData.libraryId
     ))
     cachedPreview = { blobUrl, audio: null }
   }
@@ -155,12 +156,12 @@ async function togglePlay() {
         cachedPreview.audio = audio
       }
     } else {
-      ;({ blobUrl, audio } = await downloadAudio(
+      ({ blobUrl, audio } = await downloadAudio(
         props.soundData.bucket,
         props.soundData.path,
         true,
         stopPlayback,
-        props.soundData.id
+        props.soundData.libraryId
       ))
       cachedPreview = { blobUrl, audio }
     }
@@ -205,7 +206,7 @@ onUnmounted(() => {
   stopPlayback()
   if (!hasBeenPromoted.value && cachedPreview) {
     const store = useRoomStore()
-    store.audioCacheManager.remove(props.soundData.id)
+    store.audioCacheManager.remove(props.soundData.libraryId)
     cachedPreview = null
   }
 })
