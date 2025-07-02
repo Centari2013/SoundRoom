@@ -11,7 +11,9 @@
   "dependencies": {
     "@supabase/supabase-js": "^2.49.7",
     "@tailwindcss/vite": "^4.1.7",
+    "@vercel/functions": "^2.2.2",
     "@vercel/speed-insights": "^1.2.0",
+    "aws4fetch": "^1.0.20",
     "dayjs": "^1.11.13",
     "dotenv": "^16.5.0",
     "idb-keyval": "^3.0.0",
