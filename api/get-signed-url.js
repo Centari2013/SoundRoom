@@ -14,12 +14,16 @@ export async function GET(request) {
   const { searchParams } = new URL(request.url);
   const key = searchParams.get("key");
 
+  const corsHeaders = {
+    "Access-Control-Allow-Origin": "*", // during dev
+    "Access-Control-Allow-Methods": "GET, OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type",
+  };
+
   if (!key) {
     return new Response("Missing 'key' query param", { 
       status: 400,
-      headers: {
-        "Access-Control-Allow-Origin": "http://localhost:4000"
-      }
+      headers: corsHeaders
     });
   }
 
