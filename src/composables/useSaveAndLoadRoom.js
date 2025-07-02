@@ -87,7 +87,7 @@ export function useSaveAndLoadRoom() {
     // get room data from supabase
     const { data, error } = await supabase
       .from("rooms")
-      .select("room_config", "name")
+      .select("room_config, name")
       .eq("id", roomId)
       .single();
     if (error) {
@@ -95,6 +95,7 @@ export function useSaveAndLoadRoom() {
       isLoadingRoom.value = false;
       return false;
     }
+    
     const roomData = data.room_config;
     roomData.room.id = roomId; // Set the room ID from the database
     roomData.room.name = data.name; // Set the room name from the database
