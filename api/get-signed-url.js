@@ -4,10 +4,7 @@ import { AwsClient } from "aws4fetch";
 
 export async function GET(request) {
 
-  const ALLOWED_ORIGIN =
-  process.env.NODE_ENV === 'production'
-    ? 'https://www.soundroom.live'
-    : 'http://localhost:4000'; // or whatever you're running locally
+  const ALLOWED_ORIGIN = '*'; // or whatever you're running locally
 
   const corsHeaders = {
     'Access-Control-Allow-Origin': ALLOWED_ORIGIN,
