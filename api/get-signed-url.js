@@ -15,7 +15,12 @@ export async function GET(request) {
   const key = searchParams.get("key");
 
   if (!key) {
-    return new Response("Missing 'key' query param", { status: 400 });
+    return new Response("Missing 'key' query param", { 
+      status: 400,
+      headers: {
+        "Access-Control-Allow-Origin": "http://localhost:4000"
+      }
+    });
   }
 
   // Build R2 object URL
