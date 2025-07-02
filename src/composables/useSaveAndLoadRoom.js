@@ -1,4 +1,5 @@
 import { useRoomStore } from "@/stores/useRoomStore";
+import { useCanvasStore } from "@/stores/useCanvasStore";
 import { storeToRefs } from "pinia";
 
 import { supabase } from "@/utils/supabase";
@@ -10,12 +11,13 @@ export function useSaveAndLoadRoom() {
   const isLoadingRoom = ref(false);
   const isSavingRoom = ref(false);
   const { user } = useAuth();
-  const store = useRoomStore();
-  const { room, listener, audioEngine, soundLibrarySources, actionManager } = storeToRefs(store);
+  const roomStore = useRoomStore();
+  const canvasStore = useCanvasStore();
+  const { room, listener, audioEngine, soundLibrarySources, actionManager } = storeToRefs(roomStore);
 
   function saveRoom() {
     isSavingRoom.value = true;
-    const roomData = store.getSaveSnapshot();
+    const roomData = roomStore.getSaveSnapshot();
     // if room.id in room table, update it
     //otherwise, insert a new room
     if (room.value.id) {
@@ -36,6 +38,7 @@ export function useSaveAndLoadRoom() {
       .update({
         name: room.value.name,
         room_config: roomData,
+        thumbnail: canvasStore.getThumbnailURI() // Get the thumbnail URI from the canvas store
       })
       .eq("id", room.value.id)
       .select("id") // Ensure we get the updated ID back
@@ -69,7 +72,8 @@ export function useSaveAndLoadRoom() {
       .insert({
         owner_id: user.value.id,
         name: room.value.name,
-        room_config: roomData
+        room_config: roomData,
+        thumbnail: canvasStore.getThumbnailURI() // Get the thumbnail URI from the canvas store
       })
       .select("id") // Ensure we get the inserted ID back
       .single() // We expect a single row back
@@ -142,11 +146,11 @@ export function useSaveAndLoadRoom() {
     audioEngine.value.dispose();
     listener.value.dispose();
 
-    store.loadRoom(roomData.room);
-    store.loadListener(roomData.listener);
-    store.loadAudioEngine(roomData.audioEngine);
+    roomStore.loadRoom(roomData.room);
+    roomStore.loadListener(roomData.listener);
+    roomStore.loadAudioEngine(roomData.audioEngine);
     
-    store.setupAudioContext(audioEngine, listener);
+    roomStore.setupAudioContext(audioEngine, listener);
     
     setTimeout(() => {
       isLoadingRoom.value = false;
@@ -182,7 +186,7 @@ export function useSaveAndLoadRoom() {
   }
   function saveRoomLocal() {
     isSavingRoom.value = true;
-    const roomData = store.getSaveSnapshot();
+    const roomData = roomStore.getSaveSnapshot();
     localStorage.setItem("tempSoundRoomData", JSON.stringify(roomData));
     setTimeout(() => {
       isSavingRoom.value = false;
@@ -233,7 +237,7 @@ export function useSaveAndLoadRoom() {
       listener.value = Listener.fromJSON(roomData.listener);
       audioEngine.value = AudioEngine.fromJSON(roomData.audioEngine);
 
-      store.setupAudioContext();
+      roomStore.setupAudioContext();
     }
     localStorage.removeItem("tempSoundRoomData");
     setTimeout(() => {

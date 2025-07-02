@@ -1,6 +1,6 @@
  <template>
   <div
-    ref="stageRef"
+    ref="stageDivRef"
     role="application"
     tabindex="0"
     aria-label="SoundRoom 2D audio environment. Use keyboard or mouse to interact with sound nodes."
@@ -20,6 +20,7 @@
 
     <!-- Konva stage: purely visual, hide from screen readers -->
     <v-stage
+      ref="vStageRef"
       :config="{ width: room.width, height: room.height }"
       @contextmenu="(e) => e.evt.preventDefault()"
       @mousedown="handleStageClick"
@@ -58,9 +59,10 @@ import ListenerNode from '@/components/SoundRoom/MainCanvasStage/ListenerNode.vu
 import SoundSourceLabel from '@/components/ui/text/SoundSourceLabel.vue'
 
 import { useRoomStore } from '@/stores/useRoomStore'
+import { useCanvasStore } from '@/stores/useCanvasStore'
 import { storeToRefs } from 'pinia'
 
-const { room, actionManager, listener, audioEngine } = storeToRefs(useRoomStore())
+const { room, audioEngine } = storeToRefs(useRoomStore())
 
 const props = defineProps({
   handleDrop: Function,
@@ -75,12 +77,16 @@ const props = defineProps({
 
 defineEmits(['selectNode'])
 
-const stageRef = ref(null)
+const stageDivRef = ref(null)
 const contextMenuRef = ref(null)
+const vStageRef = ref(null) // for Konva stage
 const coordsVersion = ref(0) // reactive bump trigger
 
 onMounted(() => {
   window.addEventListener('resize', updateCoords)
+  const canvasStore = useCanvasStore()
+  canvasStore.setStageDivRef(stageDivRef.value)
+  canvasStore.setVStageRef(vStageRef.value)
 })
 onUnmounted(() => {
   window.removeEventListener('resize', updateCoords)
@@ -94,7 +100,7 @@ function updateCoords() {
 const soundNodeTitleCoords = computed(() => {
   coordsVersion.value // makes it reactive to window resize
   return audioEngine.value.soundSources.value.map(sn => {          
-  const stagePos = stageRef.value.getBoundingClientRect();
+  const stagePos = stageDivRef.value.getBoundingClientRect();
   return {
         x: stagePos.left + sn.instance.state.x,
         y: stagePos.top + sn.instance.state.y + 20, //20 is to account for directional arrow
@@ -104,6 +110,4 @@ const soundNodeTitleCoords = computed(() => {
 })
 
 
-
-defineExpose({ stageRef, contextMenuRef })
 </script>

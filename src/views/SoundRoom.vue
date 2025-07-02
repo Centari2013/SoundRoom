@@ -27,8 +27,7 @@
 
         <!-- Canvas Area -->
         <div class="flex-1 bg-neutral-200 dark:bg-black flex items-center justify-center">
-          <MainCanvasStage 
-            ref="stageWrapper"
+          <MainCanvasStage
             v-bind="{
               handleDrop,
               onKeyDown,
@@ -70,7 +69,6 @@
 
 <script setup>
 import { ref, provide, onBeforeMount, onUnmounted } from 'vue'
-import { useRouter } from 'vue-router'
 // Shared constants
 const SOUND_NODE_PART_NAME = 'sound-node-part'
 
@@ -100,7 +98,6 @@ import { storeToRefs } from 'pinia'
 const isLibraryOpen = ref(false)
 const selectedIndex = ref(null)
 const draggedSource = ref(null)
-const stageWrapper = ref(null)
 
 const store = useRoomStore()
 const { listener, audioEngine, } = storeToRefs(store)
@@ -127,11 +124,10 @@ function handleStageClick(e) {
 
 // Composable Logic
 const { handleDragStart, handleDrop } = useDragDropAudio({
-  draggedSource,
-  stageWrapper
+  draggedSource
 })
 
-const { showContextMenu, contextMenuActions } = useContextMenuLogic(selectedSource,stageWrapper)
+const { showContextMenu, contextMenuActions } = useContextMenuLogic(selectedSource)
 
 const { onKeyDown, onKeyUp } = useKeyboardControls({selectedIndex, selectedSource})
 
