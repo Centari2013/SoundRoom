@@ -41,7 +41,7 @@
 <script setup>
 import { ref, onUnmounted, computed, watch, onMounted, nextTick } from 'vue'
 import downloadAudio from '@/utils/downloadAudio'
-import { useRoomStore } from '@/stores/useRoomStore'
+import { useAudioCacheStore } from '@/stores/useAudioCacheStore'
 
 
 // Cache the downloaded preview locally to avoid redundant network calls
@@ -205,8 +205,8 @@ function stopPlayback() {
 onUnmounted(() => {
   stopPlayback()
   if (!hasBeenPromoted.value && cachedPreview) {
-    const store = useRoomStore()
-    store.audioCacheManager.remove(props.soundData.libraryId)
+    const cacheStore = useAudioCacheStore()
+    cacheStore.audioCacheManager.remove(props.soundData.libraryId)
     cachedPreview = null
   }
 })

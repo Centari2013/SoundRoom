@@ -1,5 +1,8 @@
 import downloadAudio from '@/utils/downloadAudio'
-import { useRoomStore } from '@/stores/useRoomStore'
+import { useActionManagerStore } from '@/stores/useActionManagerStore'
+import { useAudioEngineStore } from '@/stores/useAudioEngineStore'
+import { useListenerStore } from '@/stores/useListenerStore'
+import { useAudioCacheStore } from '@/stores/useAudioCacheStore'
 import { storeToRefs } from 'pinia'
 
 let actionsRegistered = false
@@ -13,7 +16,7 @@ export function registerSoundRoomActions() {
 
 export function unregisterSoundRoomActions() {
   if (!actionsRegistered) return
-  const { actionManager } = storeToRefs(useRoomStore())
+  const { actionManager } = storeToRefs(useActionManagerStore())
   actionManager.value.unregisterActionHandlers([
     'add_canvas_sound_source',
     'delete_canvas_sound_source',
@@ -25,7 +28,10 @@ export function unregisterSoundRoomActions() {
 }
 
 function registerCanvasActions() {
-  const { audioEngine,  actionManager, listener, soundLibrarySources} = storeToRefs(useRoomStore())
+  const { audioEngine } = storeToRefs(useAudioEngineStore())
+  const { actionManager } = storeToRefs(useActionManagerStore())
+  const { listener } = storeToRefs(useListenerStore())
+  const { soundLibrarySources } = storeToRefs(useAudioCacheStore())
   const moveSoundSource = (src, coords) => {
     src.instance.state.x = coords.x
     src.instance.state.y = coords.y
@@ -71,7 +77,10 @@ const maxLibSourcesReached = function(soundLibrarySources){
   return false
 }
 function registerDraggableActions() {
-  const { audioEngine, actionManager, soundLibrarySources } = storeToRefs(useRoomStore())
+  const { audioEngine } = storeToRefs(useAudioEngineStore())
+  const { actionManager } = storeToRefs(useActionManagerStore())
+  const cacheStore = useAudioCacheStore()
+  const { soundLibrarySources } = storeToRefs(cacheStore)
 
   const deleteDraggableSoundSource = (payload) => {
       const originalSrc = payload.src // 🔐 store it safely
@@ -106,8 +115,7 @@ function registerDraggableActions() {
       }
 
 
-      const store = useRoomStore()
-      store.audioCacheManager.remove(originalSrc.libraryId)
+      cacheStore.audioCacheManager.remove(originalSrc.libraryId)
     }
 
   

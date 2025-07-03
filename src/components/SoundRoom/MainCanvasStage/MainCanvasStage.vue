@@ -59,10 +59,12 @@ import ListenerNode from '@/components/SoundRoom/MainCanvasStage/ListenerNode.vu
 import SoundSourceLabel from '@/components/ui/text/SoundSourceLabel.vue'
 
 import { useRoomStore } from '@/stores/useRoomStore'
+import { useAudioEngineStore } from '@/stores/useAudioEngineStore'
 import { useCanvasStore } from '@/stores/useCanvasStore'
 import { storeToRefs } from 'pinia'
 
-const { room, audioEngine } = storeToRefs(useRoomStore())
+const { room } = storeToRefs(useRoomStore())
+const { audioEngine } = storeToRefs(useAudioEngineStore())
 
 const props = defineProps({
   handleDrop: Function,

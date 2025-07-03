@@ -1,8 +1,8 @@
 import { storeToRefs } from "pinia"
-import { useRoomStore } from "@/stores/useRoomStore"
+import { useActionManagerStore } from "@/stores/useActionManagerStore"
 export function useVolumeSlider(selectedSource) {
-  const roomStore = useRoomStore()
-  const { actionManager } = storeToRefs(roomStore)
+  const actionStore = useActionManagerStore()
+  const { actionManager } = storeToRefs(actionStore)
   actionManager.value.registerActionHandlers(
     "set_sound_source_volume",
     (payload) => {

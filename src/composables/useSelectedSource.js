@@ -1,5 +1,5 @@
 import { computed } from "vue";
-import { useRoomStore } from "@/stores/useRoomStore";
+import { useAudioEngineStore } from "@/stores/useAudioEngineStore";
 import { storeToRefs } from "pinia";
 
 export function getSourceName(path) {
@@ -8,7 +8,7 @@ export function getSourceName(path) {
 }
 
 export function useSelectedSource(selectedIndex) {
-  const { audioEngine } = storeToRefs(useRoomStore());
+  const { audioEngine } = storeToRefs(useAudioEngineStore());
   const selectedSource = computed(() => {
     const index = selectedIndex.value;
     if (index == null || index < 0 || index >= audioEngine.value.soundSources.value.length) return null;

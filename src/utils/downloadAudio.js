@@ -1,4 +1,4 @@
-import { useRoomStore } from '@/stores/useRoomStore'
+import { useAudioCacheStore } from '@/stores/useAudioCacheStore'
 
 
 async function fetchAudioBlob(key) {
@@ -25,8 +25,8 @@ export default async function downloadAudio(
   stopPlayback = null,
   libraryId = null
 ) {
-  const store = useRoomStore()
-  const cacheManager = store.audioCacheManager
+  const cacheStore = useAudioCacheStore()
+  const cacheManager = cacheStore.audioCacheManager
 
   // uncomment for debugging cache and download issues
   //cacheManager.clearPersistentCache()

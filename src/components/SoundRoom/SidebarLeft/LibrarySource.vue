@@ -8,14 +8,14 @@
 </template>
 <script setup>
 import { onUnmounted } from 'vue'
-import { useRoomStore } from '@/stores/useRoomStore'
+import { useAudioCacheStore } from '@/stores/useAudioCacheStore'
 
 const props = defineProps({
   librarySource: Object
 })
 
 onUnmounted(() => {
-  const store = useRoomStore()
-  store.audioCacheManager.remove(props.librarySource.libraryId)
+  const cacheStore = useAudioCacheStore()
+  cacheStore.audioCacheManager.remove(props.librarySource.libraryId)
 })
 </script>

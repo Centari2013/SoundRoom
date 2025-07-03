@@ -33,7 +33,8 @@ import { ref } from 'vue'
 
 import LibrarySource from '@/components/SoundRoom/SidebarLeft/LibrarySource.vue'
 import ContextMenu from '@/components/ui/context/ContextMenu.vue'
-import { useRoomStore } from '@/stores/useRoomStore'
+import { useAudioCacheStore } from '@/stores/useAudioCacheStore'
+import { useActionManagerStore } from '@/stores/useActionManagerStore'
 import { storeToRefs } from 'pinia'
 
 const props = defineProps({
@@ -42,8 +43,9 @@ const props = defineProps({
   addSourceClick: Function
 })
 
-const store = useRoomStore()
-const { soundLibrarySources } = storeToRefs(store)
+const cacheStore = useAudioCacheStore()
+const actionStore = useActionManagerStore()
+const { soundLibrarySources } = storeToRefs(cacheStore)
 
 
 const menuRef = ref(null)
@@ -59,7 +61,7 @@ function openContextMenu(e, source) {
 }
 
 function deleteSound() {
-  store.deleteLibrarySoundSource(contextSound.value)
+  actionStore.deleteLibrarySoundSource(contextSound.value)
   contextSound.value = null
 }
 
