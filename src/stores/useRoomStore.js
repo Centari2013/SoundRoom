@@ -1,6 +1,10 @@
 // stores/useRoomStore.js
 import { defineStore } from 'pinia'
 import { ref, shallowRef, computed } from 'vue'
+
+// Pinia store that centralises all state for the "Sound Room" editor. The store
+// coordinates the `Room`, `Listener`, `AudioEngine` and supporting utilities so
+// components can remain fairly stateless.
 import Room from '@/lib/Room'
 import Listener from '@/lib/Listener'
 import AudioEngine from '@/lib/AudioEngine'
@@ -18,6 +22,8 @@ export const useRoomStore = defineStore('room', () => {
   const _lastSavedSnapshot = ref(null)
 
   // actions
+  // Initialise Web Audio and wire up the helper classes. Must be called
+  // in response to a user interaction so the AudioContext can start.
   function setupAudioContext() {
     const audioContext = audioEngine.value.getAudioContext()
     listener.value.setAudioContext(audioContext)
@@ -97,8 +103,10 @@ export const useRoomStore = defineStore('room', () => {
   const actionStackEmpty = computed(() => actionManager.value.actionStackEmpty)
   const redoStackEmpty = computed(() => actionManager.value.redoStackEmpty)
   const MAX_CANVAS_SOURCES = computed(() => audioEngine.value.maxSourceCount)
+  // Determine if the user has made changes since the last save by comparing
+  // a serialised snapshot of all reactive state.
   const isRoomSaveable = computed(() => {
-  // 👇 this line makes Vue re-evaluate when any relevant part changes
+    // 👇 this line makes Vue re-evaluate when any relevant part changes
     void room.value && void listener.value && void audioEngine.value && void soundLibrarySources.value
 
     try {

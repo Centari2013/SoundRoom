@@ -1,6 +1,15 @@
 // lib/ActionManager.js
 import { ref, computed } from 'vue'
 
+/**
+ * Simple undo/redo stack used throughout the app.
+ *
+ * Actions are registered with a name and a pair of callbacks. `doAction`
+ * executes the callback and stores the payload on a stack so that
+ * `undoLastAction` and `redoLastAction` can replay or revert it later.
+ * Only the most recent `#MAX_STACK` actions are kept in memory.
+ */
+
 export default class ActionManager {
   #MAX_STACK = 100
 
@@ -20,10 +29,15 @@ export default class ActionManager {
   
 
   registerActionHandlers(actionName, doAction, undoAction) {
+    // Store callbacks for a named action. The object contains the
+    // "do" and "undo" handlers which will later be invoked by
+    // `doAction`, `undoLastAction` and `redoLastAction`.
     this._actionMap[actionName] = { doAction, undoAction }
   }
 
   unregisterActionHandlers(actionNames) {
+    // Accept a single name or an array of names. Each registered
+    // handler is simply removed from the map.
     if (!Array.isArray(actionNames)) actionNames = [actionNames]
     for (const name of actionNames) {
       delete this._actionMap[name]
@@ -31,6 +45,8 @@ export default class ActionManager {
   }
 
   async doAction(actionName, payload = null) {
+    // Execute the "do" handler and push the payload onto the stack
+    // so that it can be undone or redone later.
     const action = this._actionMap[actionName]
     if (!action) {
       console.warn(`No registered action for "${actionName}"`)
@@ -48,6 +64,7 @@ export default class ActionManager {
   }
 
   async undoLastAction() {
+    // Pop the last action from the stack and call its "undo" handler.
     if (this.actionStackEmpty.value) return
 
     const { name, payload } = this._actionStack.value.pop()
@@ -67,6 +84,7 @@ export default class ActionManager {
   }
 
   async redoLastAction() {
+    // Reapply the last undone action.
     if (this.redoStackEmpty.value) return
 
     const { name, payload } = this._redoStack.value.pop()
@@ -82,6 +100,8 @@ export default class ActionManager {
   }
 
   clearHistory() {
+    // Completely reset both stacks. Useful when loading a new room
+    // or discarding all previous actions.
     this._actionStack.value = []
     this._redoStack.value = []
   }
