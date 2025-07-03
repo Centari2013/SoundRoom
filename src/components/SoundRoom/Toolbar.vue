@@ -10,15 +10,15 @@
         {{ isPlaying ? 'Pause All' : 'Play All' }}
       </BaseButton>
       <BaseButton
-        :disabled="actionStackEmpty"
-        @click="actionManager.undoLastAction"
+        :disabled="actionStackEmpty || waiting"
+        @click="handleUndo"
         class="px-3 py-1 rounded text-sm bg-neutral-200 dark:bg-neutral-800 hover:bg-neutral-300 dark:hover:bg-neutral-700"
       >
         Undo
       </BaseButton>
       <BaseButton
-        :disabled="redoStackEmpty"
-        @click="actionManager.redoLastAction"
+        :disabled="redoStackEmpty || waiting"
+        @click="handleRedo"
         class="px-3 py-1 rounded text-sm bg-neutral-200 dark:bg-neutral-800 hover:bg-neutral-300 dark:hover:bg-neutral-700"
       >
         Redo
@@ -45,6 +45,8 @@
 </template>
 
 <script setup>
+import { ref } from 'vue'
+
 import BaseButton from '@/components/ui/input/BaseButton.vue'
 import BaseInput from '@/components/ui/input/BaseInput.vue'
 import VueSlider from 'vue-3-slider-component'
@@ -63,5 +65,18 @@ const { audioEngine, isPlaying } = storeToRefs(engineStore)
 const { actionManager, actionStackEmpty, redoStackEmpty } = storeToRefs(actionStore)
 
 const { isAuthenticated } = useAuth()
+const waiting = ref(false)
+
+const handleUndo = async () => {
+  waiting.value = true
+  await actionManager.value.undoLastAction()
+  waiting.value = false
+}
+
+const handleRedo = async () => {
+  waiting.value = true
+  await actionManager.value.redoLastAction()
+  waiting.value = false
+}
 
 </script>

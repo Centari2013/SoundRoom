@@ -115,9 +115,9 @@ const actionStore = useActionManagerStore()
 const { soundLibrarySources } = storeToRefs(cacheStore)
 const emit = defineEmits(['close'])
 
-function handleAudioSent(source, sound) {
+async function handleAudioSent(source, sound) {
   sound.send = false
-  actionStore.addLibrarySoundSource(source)
+  await actionStore.addLibrarySoundSource(source)
 }
 
 const categories = [
