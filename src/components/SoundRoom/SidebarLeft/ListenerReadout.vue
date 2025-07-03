@@ -11,9 +11,9 @@
 
 <script setup>
 import { computed } from 'vue';
-import { useRoomStore } from '@/stores/useRoomStore';
+import { useListenerStore } from '@/stores/useListenerStore';
 
-const store = useRoomStore()
+const store = useListenerStore()
 
 // normalizes the angle of the listener into a 0–359° range, rotating the origin from the default right (0°) to top (0°)
 const displayListenerAngle = computed(() => Math.round(((store.listener.angle - 180) % 360 + 360) % 360))

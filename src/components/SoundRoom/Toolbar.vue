@@ -51,10 +51,16 @@ import VueSlider from 'vue-3-slider-component'
 import { useAuth } from '@/composables/useAuth'
 
 import { useRoomStore } from '@/stores/useRoomStore'
+import { useAudioEngineStore } from '@/stores/useAudioEngineStore'
+import { useActionManagerStore } from '@/stores/useActionManagerStore'
 import { storeToRefs } from 'pinia'
 
-const store = useRoomStore()
-const { audioEngine, room, actionManager } = storeToRefs(store)
+const roomStore = useRoomStore()
+const engineStore = useAudioEngineStore()
+const actionStore = useActionManagerStore()
+const { room } = storeToRefs(roomStore)
+const { audioEngine } = storeToRefs(engineStore)
+const { actionManager } = storeToRefs(actionStore)
 
 const { isAuthenticated } = useAuth()
 

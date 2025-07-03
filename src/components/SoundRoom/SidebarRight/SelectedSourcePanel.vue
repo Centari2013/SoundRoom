@@ -48,14 +48,14 @@
 import { computed, inject } from 'vue';
 import VueSlider from 'vue-3-slider-component';
 import { useVolumeSlider } from '@/composables/useVolumeSlider';
-import { useRoomStore } from '@/stores/useRoomStore';
+import { useActionManagerStore } from '@/stores/useActionManagerStore';
 import { storeToRefs } from 'pinia';
 
 const props = defineProps({
   selectedSource: Object
 });
 
-const { actionManager } = storeToRefs(useRoomStore());
+const { actionManager } = storeToRefs(useActionManagerStore());
 
 const selectedSource = inject('selectedSource');
 

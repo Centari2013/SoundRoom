@@ -1,13 +1,13 @@
 import { computed, reactive } from 'vue'
-import { useRoomStore } from '@/stores/useRoomStore'
+import { useActionManagerStore } from '@/stores/useActionManagerStore'
 import { useCanvasStore } from '@/stores/useCanvasStore'
 import { storeToRefs } from 'pinia'
 // Central constant for sound node part identifier
 export const SOUND_NODE_PART_NAME = 'sound-node-part'
 
 export function useContextMenuLogic(selectedSource) {
-  const roomStore = useRoomStore()
-  const { actionManager } = storeToRefs(roomStore)
+  const actionStore = useActionManagerStore()
+  const { actionManager } = storeToRefs(actionStore)
   const canvasStore = useCanvasStore()
   function showContextMenu(e) {
     e.evt.preventDefault()

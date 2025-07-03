@@ -84,6 +84,9 @@ import WelcomeOverlay from '@/components/ui/overlays/WelcomeOverlay.vue'
 
 // Store
 import { useRoomStore } from '@/stores/useRoomStore'
+import { useListenerStore } from '@/stores/useListenerStore'
+import { useAudioEngineStore } from '@/stores/useAudioEngineStore'
+import { useAudioCacheStore } from '@/stores/useAudioCacheStore'
 
 // Composables
 import { useKeyboardControls } from '@/composables/useKeyboardControls'
@@ -99,14 +102,18 @@ const isLibraryOpen = ref(false)
 const selectedIndex = ref(null)
 const draggedSource = ref(null)
 
-const store = useRoomStore()
-const { listener, audioEngine, } = storeToRefs(store)
+const roomStore = useRoomStore()
+const listenerStore = useListenerStore()
+const engineStore = useAudioEngineStore()
+const cacheStore = useAudioCacheStore()
+const { listener } = storeToRefs(listenerStore)
+const { audioEngine } = storeToRefs(engineStore)
 
 const MAX_LIB_SOURCES = 20
 const MAX_CANVAS_SOURCES = 30
 
 
-store.setMaxCanvasSources(MAX_CANVAS_SOURCES)
+engineStore.setMaxCanvasSources(MAX_CANVAS_SOURCES)
 
 
 // Selection
@@ -138,7 +145,7 @@ setMaxLibSources(MAX_LIB_SOURCES)
 const showWelcomeOverlay = ref(false)
 onBeforeMount(() => {
   registerSoundRoomActions()
-  store.clearSoundLibrarySources() // Clear any previous sound library sources
+  cacheStore.clearSoundLibrarySources() // Clear any previous sound library sources
   if (sessionStorage.getItem('justLoggedIn') === 'true') {
     sessionStorage.removeItem('justLoggedIn')
     showWelcomeOverlay.value = true
@@ -150,15 +157,15 @@ onBeforeMount(() => {
     //const router = useRouter()
     //router.push('/welcome')
   }
-  store.setupAudioContext()
+  engineStore.setupAudioContext()
 })
 
 onUnmounted(() => {
   unregisterSoundRoomActions()
   audioEngine.value.dispose()
   // Revoke object URLs to avoid memory leaks
-  store.audioCacheManager.clearMemoryCache()
+  cacheStore.audioCacheManager.clearMemoryCache()
   // Uncomment to also wipe IndexedDB cache if long-term storage isn't desired
-  // void store.audioCacheManager.clearPersistentCache()
+  // void cacheStore.audioCacheManager.clearPersistentCache()
 })
 </script>

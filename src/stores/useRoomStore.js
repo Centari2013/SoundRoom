@@ -1,120 +1,51 @@
-// stores/useRoomStore.js
 import { defineStore } from 'pinia'
-import { ref, shallowRef, computed } from 'vue'
+import { ref, computed } from 'vue'
 
-// Pinia store that centralises all state for the "Sound Room" editor. The store
-// coordinates the `Room`, `Listener`, `AudioEngine` and supporting utilities so
-// components can remain fairly stateless.
 import Room from '@/lib/Room'
-import Listener from '@/lib/Listener'
-import AudioEngine from '@/lib/AudioEngine'
-import ActionManager from '@/lib/ActionManager'
-import AudioCacheManager from '@/lib/AudioCacheManager'
+import { useListenerStore } from './useListenerStore'
+import { useAudioEngineStore } from './useAudioEngineStore'
+import { useAudioCacheStore } from './useAudioCacheStore'
 
 export const useRoomStore = defineStore('room', () => {
-  // reactive refs
   const room = ref(new Room())
-  const listener = ref(new Listener())
-  const audioEngine = shallowRef(new AudioEngine([]))
-  const soundLibrarySources = ref([])
-  const actionManager = ref(new ActionManager())
-  const audioCacheManager = shallowRef(new AudioCacheManager())
   const _lastSavedSnapshot = ref(null)
 
-  // actions
-  // Initialise Web Audio and wire up the helper classes. Must be called
-  // in response to a user interaction so the AudioContext can start.
-  function setupAudioContext() {
-    const audioContext = audioEngine.value.getAudioContext()
-    listener.value.setAudioContext(audioContext)
-    audioCacheManager.value.setAudioContext(audioContext) // ensure cache manager uses the same context
-    audioEngine.value.setupAudioEngine() // run after listener audio context is set because it plays saved sounds
-    listener.value.updateAudio() // ensure listener is ready with the new context
-    getSaveSnapshot()
-  }
+
+
   function loadRoom(roomData) {
     room.value = Room.fromJSON(roomData)
-  }
-
-  function loadListener(data) {
-    listener.value = Listener.fromJSON(data)
-  }
-
-  function loadAudioEngine(data) {
-    audioEngine.value = AudioEngine.fromJSON(data)
-  }
-
-  function clearSoundLibrarySources() {
-    soundLibrarySources.value.forEach(src => {
-      audioCacheManager.value.remove(src.libraryId)
-    })
-    soundLibrarySources.value = []
   }
 
   function roomToJSON() {
     return room.value.toJSON()
   }
-  function listenerToJSON() {
-    return listener.value.toJSON()
-  }
-  function audioEngineToJSON() {
-    return audioEngine.value.toJSON()
-  }
 
   function getSaveSnapshot() {
+    const listenerStore = useListenerStore()
+    const audioEngineStore = useAudioEngineStore()
+    const cacheStore = useAudioCacheStore()
     const savedState = {
       room: roomToJSON(),
-      listener: listenerToJSON(), 
-      audioEngine: audioEngineToJSON(),
-      soundLibrarySources: soundLibrarySourcesToJSON()
+      listener: listenerStore.listenerToJSON(),
+      audioEngine: audioEngineStore.audioEngineToJSON(),
+      soundLibrarySources: cacheStore.soundLibrarySourcesToJSON()
     }
     _lastSavedSnapshot.value = JSON.stringify(savedState)
     return savedState
   }
 
-  function soundLibrarySourcesToJSON() {
-    return soundLibrarySources.value.map((src) => ({ 
-      libraryId: src.libraryId, 
-      coneInner: src.coneInner, 
-      coneOuter: src.coneOuter,  
-      name: src.name 
-    }))
-  }
-
-  function addLibrarySource(src) {
-    soundLibrarySources.value.push(src)
-  }
-
-  function setMaxCanvasSources(max) {
-    if (audioEngine.value) {
-      audioEngine.value.maxSourceCount = max
-    }
-  }
-
-  async function addLibrarySoundSource(src) {
-    await actionManager.value.doAction('add_draggable_sound_source', { src })
-  }
-
-  async function deleteLibrarySoundSource(src) {
-    await actionManager.value.doAction('delete_draggable_sound_source', { src })
-  }
-
-  const isPlaying = computed(() => audioEngine.value.isPlaying.value)
-  const actionStackEmpty = computed(() => actionManager.value.actionStackEmpty)
-  const redoStackEmpty = computed(() => actionManager.value.redoStackEmpty)
-  const MAX_CANVAS_SOURCES = computed(() => audioEngine.value.maxSourceCount)
-  // Determine if the user has made changes since the last save by comparing
-  // a serialised snapshot of all reactive state.
   const isRoomSaveable = computed(() => {
-    // 👇 this line makes Vue re-evaluate when any relevant part changes
-    void room.value && void listener.value && void audioEngine.value && void soundLibrarySources.value
+    const listenerStore = useListenerStore()
+    const audioEngineStore = useAudioEngineStore()
+    const cacheStore = useAudioCacheStore()
+    void room.value && void listenerStore.listener && void audioEngineStore.audioEngine && void cacheStore.soundLibrarySources
 
     try {
       const currentSnapshot = JSON.stringify({
         room: roomToJSON(),
-        listener: listenerToJSON(),
-        audioEngine: audioEngineToJSON(),
-        soundLibrarySources: soundLibrarySourcesToJSON(),
+        listener: listenerStore.listenerToJSON(),
+        audioEngine: audioEngineStore.audioEngineToJSON(),
+        soundLibrarySources: cacheStore.soundLibrarySourcesToJSON()
       })
       return currentSnapshot !== _lastSavedSnapshot.value
     } catch (e) {
@@ -125,29 +56,9 @@ export const useRoomStore = defineStore('room', () => {
 
   return {
     room,
-    listener,
-    audioEngine,
-    soundLibrarySources,
-    actionManager,
     loadRoom,
-    loadListener,
-    loadAudioEngine,
-    addLibrarySource,
-    setMaxCanvasSources,
-    addLibrarySoundSource,
-    deleteLibrarySoundSource,
-    clearSoundLibrarySources,
-    isPlaying,
-    actionStackEmpty,
-    redoStackEmpty,
-    MAX_CANVAS_SOURCES,
     roomToJSON,
-    listenerToJSON,
-    audioEngineToJSON,
-    soundLibrarySourcesToJSON,
-    setupAudioContext,
-    isRoomSaveable,
     getSaveSnapshot,
-    audioCacheManager
+    isRoomSaveable
   }
 })
