@@ -7,15 +7,11 @@
   </li>
 </template>
 <script setup>
-import { onUnmounted } from 'vue'
-import { useAudioCacheStore } from '@/stores/useAudioCacheStore'
+
 
 const props = defineProps({
   librarySource: Object
 })
 
-onUnmounted(() => {
-  const cacheStore = useAudioCacheStore()
-  cacheStore.audioCacheManager.remove(props.librarySource.libraryId)
-})
+
 </script>
