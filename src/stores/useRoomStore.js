@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
+
 import Room from '@/lib/Room'
 import { useListenerStore } from './useListenerStore'
 import { useAudioEngineStore } from './useAudioEngineStore'
@@ -8,6 +9,8 @@ import { useAudioCacheStore } from './useAudioCacheStore'
 export const useRoomStore = defineStore('room', () => {
   const room = ref(new Room())
   const _lastSavedSnapshot = ref(null)
+
+
 
   function loadRoom(roomData) {
     room.value = Room.fromJSON(roomData)
@@ -36,6 +39,7 @@ export const useRoomStore = defineStore('room', () => {
     const audioEngineStore = useAudioEngineStore()
     const cacheStore = useAudioCacheStore()
     void room.value && void listenerStore.listener && void audioEngineStore.audioEngine && void cacheStore.soundLibrarySources
+
     try {
       const currentSnapshot = JSON.stringify({
         room: roomToJSON(),

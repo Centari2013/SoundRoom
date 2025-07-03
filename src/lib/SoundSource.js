@@ -1,5 +1,10 @@
 // lib/SoundSource.js
 
+/**
+ * Wrapper around a DOM `<audio>` element and the Web Audio nodes used to
+ * spatialise it. The `state` object drives position and orientation of the
+ * source so the canvas and audio remain in sync.
+ */
 export default class SoundSource {
   constructor({
     audioContext,
@@ -8,6 +13,8 @@ export default class SoundSource {
     state,
     loop = true
   }) {
+    // `state` holds the spatial position/angle and is kept in sync with the
+    // canvas representation.
     this.state = state;
 
     this._rad = (deg) => (deg * Math.PI) / 180;
@@ -15,6 +22,8 @@ export default class SoundSource {
 
     this._audioContext = audioContext;
     
+    // A simple <audio> element is used as the source. It's connected into the
+    // Web Audio graph so we can apply spatialisation and gain control.
     this._audioElement = new Audio(file);
     this._audioElement.preload = 'auto';
     this._audioElement.loop = loop;
@@ -24,6 +33,7 @@ export default class SoundSource {
     this._gainNode = audioContext.createGain();
     this._pannerNode = audioContext.createPanner();
 
+    // Configure the panner to simulate distance and directionality.
     const pn = this._pannerNode;
     pn.panningModel = 'HRTF';
     pn.distanceModel = 'inverse';
@@ -73,6 +83,8 @@ export default class SoundSource {
   }
 
   updateAudio() {
+    // Sync the Web Audio panner with the state used by the canvas. Both
+    // position and orientation are updated each time the source moves.
     const angleRad = this._rad(this.state.angle);
     const x = this.state.x * this._scale;
     const y = this.state.y * this._scale;
@@ -95,6 +107,8 @@ export default class SoundSource {
   }
 
   dispose() {
+    // Gracefully disconnect and release all Web Audio nodes and the underlying
+    // <audio> element when a source is removed from the room.
     try {
       if (this._audioElement) {
         this._audioElement.pause()
