@@ -202,6 +202,9 @@ export default class AudioCacheManager {
    * @returns {Promise<{total:number, removed:number, kept:number}>}
    */
   async prunePersistentCache({ keep = [], maxCount = 100, dryRun = false } = {}) {
+    // Remove old blobs from IndexedDB until the number of entries is under
+    // `maxCount`. Keys listed in `keep` are preserved. When `dryRun` is true
+    // the cache is scanned but nothing is deleted.
     const allKeys = await keys()
 
     // If the cache is under maxCount, do nothing
