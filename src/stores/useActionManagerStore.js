@@ -7,6 +7,7 @@ export const useActionManagerStore = defineStore('actionManager', () => {
 
   const actionStackEmpty = computed(() => actionManager.value.actionStackEmpty)
   const redoStackEmpty = computed(() => actionManager.value.redoStackEmpty)
+  const waiting = computed(() => actionManager.value.waiting) // Indicates if an action is currently being processed
 
   async function addLibrarySoundSource(src) {
     await actionManager.value.doAction('add_draggable_sound_source', { src })
@@ -20,6 +21,7 @@ export const useActionManagerStore = defineStore('actionManager', () => {
     actionManager,
     actionStackEmpty,
     redoStackEmpty,
+    waiting,
     addLibrarySoundSource,
     deleteLibrarySoundSource
   }

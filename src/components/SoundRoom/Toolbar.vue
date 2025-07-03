@@ -11,14 +11,14 @@
       </BaseButton>
       <BaseButton
         :disabled="actionStackEmpty || waiting"
-        @click="handleUndo"
+        @click="actionManager.undoLastAction"
         class="px-3 py-1 rounded text-sm bg-neutral-200 dark:bg-neutral-800 hover:bg-neutral-300 dark:hover:bg-neutral-700"
       >
         Undo
       </BaseButton>
       <BaseButton
         :disabled="redoStackEmpty || waiting"
-        @click="handleRedo"
+        @click="actionManager.redoLastAction"
         class="px-3 py-1 rounded text-sm bg-neutral-200 dark:bg-neutral-800 hover:bg-neutral-300 dark:hover:bg-neutral-700"
       >
         Redo
@@ -62,21 +62,8 @@ const engineStore = useAudioEngineStore()
 const actionStore = useActionManagerStore()
 const { room } = storeToRefs(roomStore)
 const { audioEngine, isPlaying } = storeToRefs(engineStore)
-const { actionManager, actionStackEmpty, redoStackEmpty } = storeToRefs(actionStore)
+const { actionManager, actionStackEmpty, redoStackEmpty, waiting } = storeToRefs(actionStore)
 
 const { isAuthenticated } = useAuth()
-const waiting = ref(false)
-
-const handleUndo = async () => {
-  waiting.value = true
-  await actionManager.value.undoLastAction()
-  waiting.value = false
-}
-
-const handleRedo = async () => {
-  waiting.value = true
-  await actionManager.value.redoLastAction()
-  waiting.value = false
-}
 
 </script>

@@ -20,7 +20,9 @@ export default class ActionManager {
   
     this.actionStackEmpty = computed(() => this._actionStack.value.length === 0)
     this.redoStackEmpty = computed(() => this._redoStack.value.length === 0)
-  
+    
+    this.waiting = ref(false)
+
     // bind methods so "this" is always correct
     this.doAction = this.doAction.bind(this)
     this.undoLastAction = this.undoLastAction.bind(this)
@@ -45,11 +47,13 @@ export default class ActionManager {
   }
 
   async doAction(actionName, payload = null) {
+    this.waiting.value = true
     // Execute the "do" handler and push the payload onto the stack
     // so that it can be undone or redone later.
     const action = this._actionMap[actionName]
     if (!action) {
       console.warn(`No registered action for "${actionName}"`)
+      this.waiting.value = false
       return
     }
 
@@ -61,17 +65,23 @@ export default class ActionManager {
     }
 
     this._redoStack.value.length = 0
+    this.waiting.value = false
   }
 
   async undoLastAction() {
+    this.waiting.value = true
     // Pop the last action from the stack and call its "undo" handler.
-    if (this.actionStackEmpty.value) return
+    if (this.actionStackEmpty.value) {
+      this.waiting.value = false
+      return
+    }
 
     const { name, payload } = this._actionStack.value.pop()
     const action = this._actionMap[name]
 
     if (!action) {
       console.warn(`No undo handler for "${name}"`)
+      this.waiting.value = false
       return
     }
 
@@ -81,22 +91,29 @@ export default class ActionManager {
     if (this._redoStack.value.length > this.#MAX_STACK) {
       this._redoStack.value.shift()
     }
+    this.waiting.value = false
   }
 
   async redoLastAction() {
+    this.waiting.value = true
     // Reapply the last undone action.
-    if (this.redoStackEmpty.value) return
+    if (this.redoStackEmpty.value) {
+      this.waiting.value = false
+      return
+    }
 
     const { name, payload } = this._redoStack.value.pop()
     const action = this._actionMap[name]
 
     if (!action) {
       console.warn(`No redo handler for "${name}"`)
+      this.waiting.value = false
       return
     }
 
     await action.doAction?.(payload)
     this._actionStack.value.push({ name, payload })
+    this.waiting.value = false
   }
 
   clearHistory() {
