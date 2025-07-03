@@ -1,6 +1,8 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 
+import { supabase } from '@/utils/supabase'
+
 import Room from '@/lib/Room'
 import { useListenerStore } from './useListenerStore'
 import { useAudioEngineStore } from './useAudioEngineStore'
@@ -9,7 +11,33 @@ import { useAudioCacheStore } from './useAudioCacheStore'
 export const useRoomStore = defineStore('room', () => {
   const room = ref(new Room())
   const _lastSavedSnapshot = ref(null)
+  const currentRoomNames = ref([])
 
+  function setCurrentRoomNames() { // to be called on app load for duplicate room name checking
+    supabase
+      .from('rooms')
+      .select('name')
+      .then(({ data, error }) => {
+        if (error) {
+          console.error('Error fetching room names:', error)
+        } else {
+          currentRoomNames.value = data.map(room => room.name)
+        }
+      })
+  }
+
+  function generateUniqueRoomName(base) {
+    const normalized = currentRoomNames.value.map(n => n.toLowerCase())
+    let name = base
+    let count = 1
+
+    while (normalized.includes(name.toLowerCase())) {
+      name = `${base} (${count})`
+      count++
+    }
+
+    return name
+  }
 
 
   function loadRoom(roomData) {
@@ -59,6 +87,8 @@ export const useRoomStore = defineStore('room', () => {
     loadRoom,
     roomToJSON,
     getSaveSnapshot,
-    isRoomSaveable
+    isRoomSaveable,
+    setCurrentRoomNames,
+    generateUniqueRoomName,
   }
 })

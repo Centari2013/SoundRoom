@@ -158,6 +158,7 @@ onBeforeMount(() => {
     //router.push('/welcome')
   }
   engineStore.setupAudioContext()
+  roomStore.setCurrentRoomNames() // Initialize with empty names
 })
 
 onUnmounted(() => {

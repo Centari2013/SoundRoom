@@ -45,8 +45,6 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
-
 import BaseButton from '@/components/ui/input/BaseButton.vue'
 import BaseInput from '@/components/ui/input/BaseInput.vue'
 import VueSlider from 'vue-3-slider-component'
