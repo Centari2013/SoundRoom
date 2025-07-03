@@ -4,20 +4,20 @@
     <div class="flex space-x-2 w-1/3">
       <BaseButton
       :disabled="audioEngine.soundSources.value.length === 0"
-      @click="store.isPlaying ? audioEngine.pauseAll() : audioEngine.playAll()"
+      @click="isPlaying ? audioEngine.pauseAll() : audioEngine.playAll()"
       class="px-3 py-1 rounded text-sm bg-neutral-200 dark:bg-neutral-800 hover:bg-neutral-300 dark:hover:bg-neutral-700"
       >
-        {{ store.isPlaying ? 'Pause All' : 'Play All' }}
+        {{ isPlaying ? 'Pause All' : 'Play All' }}
       </BaseButton>
       <BaseButton
-        :disabled="store.actionStackEmpty"
+        :disabled="actionStackEmpty"
         @click="actionManager.undoLastAction"
         class="px-3 py-1 rounded text-sm bg-neutral-200 dark:bg-neutral-800 hover:bg-neutral-300 dark:hover:bg-neutral-700"
       >
         Undo
       </BaseButton>
       <BaseButton
-        :disabled="store.redoStackEmpty"
+        :disabled="redoStackEmpty"
         @click="actionManager.redoLastAction"
         class="px-3 py-1 rounded text-sm bg-neutral-200 dark:bg-neutral-800 hover:bg-neutral-300 dark:hover:bg-neutral-700"
       >
@@ -59,8 +59,8 @@ const roomStore = useRoomStore()
 const engineStore = useAudioEngineStore()
 const actionStore = useActionManagerStore()
 const { room } = storeToRefs(roomStore)
-const { audioEngine } = storeToRefs(engineStore)
-const { actionManager } = storeToRefs(actionStore)
+const { audioEngine, isPlaying } = storeToRefs(engineStore)
+const { actionManager, actionStackEmpty, redoStackEmpty } = storeToRefs(actionStore)
 
 const { isAuthenticated } = useAuth()
 

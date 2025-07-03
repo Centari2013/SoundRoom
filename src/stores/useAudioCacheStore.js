@@ -6,10 +6,6 @@ export const useAudioCacheStore = defineStore('audioCache', () => {
   const soundLibrarySources = ref([])
   const audioCacheManager = shallowRef(new AudioCacheManager())
 
-  function addLibrarySource(src) {
-    soundLibrarySources.value.push(src)
-  }
-
   function clearSoundLibrarySources() {
     soundLibrarySources.value.forEach(src => {
       audioCacheManager.value.remove(src.libraryId)
@@ -29,7 +25,6 @@ export const useAudioCacheStore = defineStore('audioCache', () => {
   return {
     soundLibrarySources,
     audioCacheManager,
-    addLibrarySource,
     clearSoundLibrarySources,
     soundLibrarySourcesToJSON
   }
