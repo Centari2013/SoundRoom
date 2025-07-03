@@ -114,8 +114,6 @@ function registerDraggableActions() {
         }
       }
 
-
-      cacheStore.audioCacheManager.remove(originalSrc.libraryId)
     }
 
   
