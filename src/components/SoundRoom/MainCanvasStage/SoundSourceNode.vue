@@ -82,6 +82,7 @@
 <script setup>
 import { computed } from 'vue'
 import { useRoomStore } from '@/stores/useRoomStore'
+import { useActionManagerStore } from '@/stores/useActionManagerStore'
 import { storeToRefs } from 'pinia'
 // Props and emits
 const props = defineProps({
@@ -90,7 +91,8 @@ const props = defineProps({
   selected: Boolean
 })
 
-const { room, actionManager } = storeToRefs(useRoomStore())
+const { room } = storeToRefs(useRoomStore())
+const { actionManager } = storeToRefs(useActionManagerStore())
 const emit = defineEmits(['select'])
 
 

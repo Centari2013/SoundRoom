@@ -4,20 +4,20 @@
     <div class="flex space-x-2 w-1/3">
       <BaseButton
       :disabled="audioEngine.soundSources.value.length === 0"
-      @click="store.isPlaying ? audioEngine.pauseAll() : audioEngine.playAll()"
+      @click="isPlaying ? audioEngine.pauseAll() : audioEngine.playAll()"
       class="px-3 py-1 rounded text-sm bg-neutral-200 dark:bg-neutral-800 hover:bg-neutral-300 dark:hover:bg-neutral-700"
       >
-        {{ store.isPlaying ? 'Pause All' : 'Play All' }}
+        {{ isPlaying ? 'Pause All' : 'Play All' }}
       </BaseButton>
       <BaseButton
-        :disabled="store.actionStackEmpty"
+        :disabled="actionStackEmpty || waiting"
         @click="actionManager.undoLastAction"
         class="px-3 py-1 rounded text-sm bg-neutral-200 dark:bg-neutral-800 hover:bg-neutral-300 dark:hover:bg-neutral-700"
       >
         Undo
       </BaseButton>
       <BaseButton
-        :disabled="store.redoStackEmpty"
+        :disabled="redoStackEmpty || waiting"
         @click="actionManager.redoLastAction"
         class="px-3 py-1 rounded text-sm bg-neutral-200 dark:bg-neutral-800 hover:bg-neutral-300 dark:hover:bg-neutral-700"
       >
@@ -45,16 +45,24 @@
 </template>
 
 <script setup>
+import { ref } from 'vue'
+
 import BaseButton from '@/components/ui/input/BaseButton.vue'
 import BaseInput from '@/components/ui/input/BaseInput.vue'
 import VueSlider from 'vue-3-slider-component'
 import { useAuth } from '@/composables/useAuth'
 
 import { useRoomStore } from '@/stores/useRoomStore'
+import { useAudioEngineStore } from '@/stores/useAudioEngineStore'
+import { useActionManagerStore } from '@/stores/useActionManagerStore'
 import { storeToRefs } from 'pinia'
 
-const store = useRoomStore()
-const { audioEngine, room, actionManager } = storeToRefs(store)
+const roomStore = useRoomStore()
+const engineStore = useAudioEngineStore()
+const actionStore = useActionManagerStore()
+const { room } = storeToRefs(roomStore)
+const { audioEngine, isPlaying } = storeToRefs(engineStore)
+const { actionManager, actionStackEmpty, redoStackEmpty, waiting } = storeToRefs(actionStore)
 
 const { isAuthenticated } = useAuth()
 

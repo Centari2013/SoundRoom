@@ -1,9 +1,18 @@
 import { useRoomStore } from "@/stores/useRoomStore"
+import { useListenerStore } from "@/stores/useListenerStore"
+import { useActionManagerStore } from "@/stores/useActionManagerStore"
+import { useAudioEngineStore } from "@/stores/useAudioEngineStore"
 import { storeToRefs } from "pinia"
 
 export function useKeyboardControls({selectedSource, selectedIndex}) {
-  const store = useRoomStore()
-  const { room, listener, actionManager, audioEngine } = storeToRefs(store)
+  const roomStore = useRoomStore()
+  const listenerStore = useListenerStore()
+  const actionStore = useActionManagerStore()
+  const engineStore = useAudioEngineStore()
+  const { room } = storeToRefs(roomStore)
+  const { listener } = storeToRefs(listenerStore)
+  const { actionManager } = storeToRefs(actionStore)
+  const { audioEngine } = storeToRefs(engineStore)
   const rotationKeys = new Set()
   let listenerAngleStart = null
   let sourceAngleStart = null

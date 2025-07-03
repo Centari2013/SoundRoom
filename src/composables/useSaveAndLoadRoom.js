@@ -1,6 +1,13 @@
 import { useRoomStore } from "@/stores/useRoomStore";
+import { useListenerStore } from "@/stores/useListenerStore";
+import { useAudioEngineStore } from "@/stores/useAudioEngineStore";
+import { useAudioCacheStore } from "@/stores/useAudioCacheStore";
+import { useActionManagerStore } from "@/stores/useActionManagerStore";
 import { useCanvasStore } from "@/stores/useCanvasStore";
 import { storeToRefs } from "pinia";
+import Room from '@/lib/Room'
+import Listener from '@/lib/Listener'
+import AudioEngine from '@/lib/AudioEngine'
 
 import { supabase } from "@/utils/supabase";
 import { downloadMultipleAudio } from "@/utils/downloadAudio";
@@ -12,8 +19,16 @@ export function useSaveAndLoadRoom() {
   const isSavingRoom = ref(false);
   const { user } = useAuth();
   const roomStore = useRoomStore();
+  const listenerStore = useListenerStore();
+  const audioEngineStore = useAudioEngineStore();
+  const cacheStore = useAudioCacheStore();
+  const actionStore = useActionManagerStore();
   const canvasStore = useCanvasStore();
-  const { room, listener, audioEngine, soundLibrarySources, actionManager } = storeToRefs(roomStore);
+  const { room } = storeToRefs(roomStore);
+  const { listener } = storeToRefs(listenerStore);
+  const { audioEngine } = storeToRefs(audioEngineStore);
+  const { soundLibrarySources } = storeToRefs(cacheStore);
+  const { actionManager } = storeToRefs(actionStore);
 
   function saveRoom() {
     isSavingRoom.value = true;
@@ -147,10 +162,10 @@ export function useSaveAndLoadRoom() {
     listener.value.dispose();
 
     roomStore.loadRoom(roomData.room);
-    roomStore.loadListener(roomData.listener);
-    roomStore.loadAudioEngine(roomData.audioEngine);
-    
-    roomStore.setupAudioContext(audioEngine, listener);
+    listenerStore.loadListener(roomData.listener);
+    audioEngineStore.loadAudioEngine(roomData.audioEngine);
+
+    audioEngineStore.setupAudioContext();
     
     setTimeout(() => {
       isLoadingRoom.value = false;
@@ -237,7 +252,7 @@ export function useSaveAndLoadRoom() {
       listener.value = Listener.fromJSON(roomData.listener);
       audioEngine.value = AudioEngine.fromJSON(roomData.audioEngine);
 
-      roomStore.setupAudioContext();
+      audioEngineStore.setupAudioContext();
     }
     localStorage.removeItem("tempSoundRoomData");
     setTimeout(() => {

@@ -2,6 +2,15 @@
 import SoundSource from '@/lib/SoundSource';
 import { computed, ref, watch, reactive } from 'vue'
 
+/**
+ * Central manager for all Web Audio operations.
+ *
+ * The engine maintains a single `AudioContext`, a master gain node and a
+ * collection of `SoundSource` instances. It exposes helpers for creating the
+ * context lazily, playing/pausing all sources and serialising the current
+ * state so a room can be saved and rehydrated.
+ */
+
 export default class AudioEngine {
   soundSources = ref([])
   #masterGain = null
@@ -28,6 +37,8 @@ export default class AudioEngine {
   }
 
   getAudioContext() {
+    // Lazily create the audio context and master gain node on first use.
+    // Subsequent calls return the same context.
     if (!this.#audioContext) {
       this.#audioContext = new (window.AudioContext || window.webkitAudioContext)()
 
@@ -40,6 +51,8 @@ export default class AudioEngine {
   }
 
   setupAudioEngine() {
+    // Recreate `SoundSource` instances from any previously saved data and
+    // register media session handlers so hardware play/pause keys work.
     if (this.#uninitializedSoundSources.length > 0) { // add loaded sound sources
       this.#uninitializedSoundSources.forEach(src => {
         this.addSoundSource(src) // saved sound sources already in payload format
@@ -72,8 +85,10 @@ export default class AudioEngine {
   }
 
   addSoundSource(payload) {
+    // Create a new `SoundSource` instance from a library entry and place it
+    // into the reactive `soundSources` array.
     if (this.maxSourceCountReached){
-      window.alert(`Limit of ${this.#MAX_SOURCE_COUNT} sound${this.#MAX_SOURCE_COUNT == 1 ? '' : 's'} in room reached.`); 
+      window.alert(`Limit of ${this.#MAX_SOURCE_COUNT} sound${this.#MAX_SOURCE_COUNT == 1 ? '' : 's'} in room reached.`);
       return
     }
     const src = payload.src
@@ -96,8 +111,9 @@ export default class AudioEngine {
   }
 
   deleteSoundSource(payload) {
+    // Remove a `SoundSource` from the canvas and clean up its audio nodes.
+    // The index logic is defensive to handle stale state from undo/redo.
 
-    // crappy fix but it works! (stale state)
     const index = this.soundSources.value[payload.index] ? payload.index : payload.src.index
     const src = this.soundSources.value[index]
     const instance = src?.instance
@@ -122,6 +138,8 @@ export default class AudioEngine {
 
 
   playAll() {
+    // Ensure the context is running then start every source. This also updates
+    // the Media Session API so system controls display the correct state.
     if (this.#audioContext?.state === 'suspended') {
       this.#audioContext.resume()
     }
@@ -151,6 +169,7 @@ export default class AudioEngine {
   
 
   pauseAll() {
+    // Stop playback on all active sources and update the Media Session state.
     this.soundSources.value.forEach(s => {
       if (s.instance?.playing) {
         s.instance.stop()
@@ -163,6 +182,7 @@ export default class AudioEngine {
   }
 
   dispose() {
+    // Tear down all nodes and close the audio context entirely.
     this.pauseAll()
     this.soundSources.value.forEach(s => s.instance.dispose())
     this.soundSources.value.length = 0
@@ -194,6 +214,8 @@ export default class AudioEngine {
   }
   
   toJSON() {
+    // Serialize the minimal state required to recreate the engine and all
+    // currently loaded sources. This is used when saving a room layout.
     return {
       soundSources: this.soundSources.value.map(src => ({
         libraryId: src.libraryId,
@@ -220,7 +242,8 @@ export default class AudioEngine {
   }
 
   static fromJSON(json) {
-    let engine = null; 
+    // Rehydrate an AudioEngine instance from data produced by `toJSON`.
+    let engine = null;
 
     if (Array.isArray(json.soundSources)) {
       const uninitializedSoundSources = json.soundSources.map(src => ({

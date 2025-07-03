@@ -41,11 +41,6 @@
 <script setup>
 import { ref, onUnmounted, computed, watch, onMounted, nextTick } from 'vue'
 import downloadAudio from '@/utils/downloadAudio'
-import { useRoomStore } from '@/stores/useRoomStore'
-
-
-// Cache the downloaded preview locally to avoid redundant network calls
-let cachedPreview = null
 
 const props = defineProps({
   soundData: Object,
@@ -53,39 +48,68 @@ const props = defineProps({
   currentlyPlayingId: String
 })
 
-let audio = null
-const audioDuration = ref(null)
-let blobUrl = null
+const emit = defineEmits(['sendAudio', 'updateCurrent'])
 
+const audioDuration = ref(null)
+const duration = ref(15)
 const isPlaying = ref(false)
 const progress = ref(0)
+const hasBeenPromoted = ref(false)
 
+let audio = null
+let blobUrl = null
 let rafId = null
 let timeoutId = null
 
-const circleRef = ref(null) // ref to progress ring svg circle element
+const circleRef = ref(null)
 const radius = ref(0)
 const circumference = computed(() => 2 * Math.PI * radius.value)
 const dashOffset = computed(() => circumference.value * (1 - progress.value))
-const duration = ref(15)
-const emit = defineEmits(['sendAudio', 'updateCurrent'])
-const hasBeenPromoted = ref(false)
+
+watch(() => props.sendAudioUp, (newValue) => {
+  if (newValue) emitAudio()
+})
+
+watch(() => props.currentlyPlayingId, (newId) => {
+  if (newId !== props.soundData.libraryId && isPlaying.value) {
+    stopPlayback()
+  }
+})
+
+function formatSecondsToTime(totalSeconds) {
+  const hours = Math.floor(totalSeconds / 3600)
+  const minutes = Math.floor((totalSeconds % 3600) / 60)
+  const seconds = Math.floor(totalSeconds % 60)
+
+  return hours > 0
+    ? `${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
+    : `${minutes}:${seconds.toString().padStart(2, '0')}`
+}
+
+onMounted(async () => {
+  const duration_seconds = props.soundData.duration_seconds
+  audioDuration.value = formatSecondsToTime(duration_seconds)
+  duration.value = Math.min(duration.value, duration_seconds)
+
+  nextTick(() => {
+    if (circleRef.value) {
+      const bbox = circleRef.value.getBBox()
+      radius.value = bbox.r || bbox.width / 2
+    }
+  })
+})
 
 async function emitAudio() {
-  if (cachedPreview) {
-    blobUrl = cachedPreview.blobUrl
-  } else {
-    
-    ({ blobUrl } = await downloadAudio(
-      props.soundData.bucket,
-      props.soundData.path,
-      false,
-      null,
-      props.soundData.libraryId
-    ))
-    cachedPreview = { blobUrl, audio: null }
-  }
+  const result = await downloadAudio(
+    props.soundData.bucket,
+    props.soundData.path,
+    false,
+    null,
+    props.soundData.libraryId
+  )
+  blobUrl = result.blobUrl
   hasBeenPromoted.value = true
+
   const { cone_inner, cone_outer, id, ...rest } = props.soundData
 
   const source = {
@@ -99,77 +123,27 @@ async function emitAudio() {
   emit('sendAudio', { ...source, blobUrl })
 }
 
-
-watch(() => props.sendAudioUp, (newValue) => { // send downloaded audio up to add to draggable sources when signaled
-  if (newValue) {
-    emitAudio() 
-  }
-})
-
-watch(() => props.currentlyPlayingId, (newId) => { // stop sound playback when new sound is played
-  if (newId !== props.soundData.libraryId && isPlaying.value) {
-    stopPlayback()
-  }
-})
-
-
-function formatSecondsToTime(totalSeconds) {
-  const hours = Math.floor(totalSeconds / 3600)
-  const minutes = Math.floor((totalSeconds % 3600) / 60)
-  const seconds = Math.floor(totalSeconds % 60)
-
-  if (hours > 0) {
-    return `${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
-  } else {
-    return `${minutes}:${seconds.toString().padStart(2, '0')}`
-  }
-}
-
-
-onMounted(async () => {
-  const duration_seconds = props.soundData.duration_seconds
-  audioDuration.value = formatSecondsToTime(duration_seconds)
-  duration.value = duration.value > duration_seconds ? duration_seconds : duration.value
-
-
-  nextTick(() => {
-    if (circleRef.value) {
-      const bbox = circleRef.value.getBBox()
-      radius.value = bbox.r || bbox.width / 2
-    }
-  })
-})
-
-
 async function togglePlay() {
   if (isPlaying.value) {
     stopPlayback()
   } else {
-    if (cachedPreview) {
-      blobUrl = cachedPreview.blobUrl
-      if (cachedPreview.audio) {
-        audio = cachedPreview.audio
-      } else {
-        audio = new Audio(blobUrl)
-        audio.preload = 'auto'
-        audio.addEventListener('ended', stopPlayback)
-        cachedPreview.audio = audio
-      }
-    } else {
-      ({ blobUrl, audio } = await downloadAudio(
-        props.soundData.bucket,
-        props.soundData.path,
-        true,
-        stopPlayback,
-        props.soundData.libraryId
-      ))
-      cachedPreview = { blobUrl, audio }
-    }
+    const result = await downloadAudio(
+      props.soundData.bucket,
+      props.soundData.path,
+      true,
+      stopPlayback,
+      props.soundData.libraryId
+    )
+    blobUrl = result.blobUrl
+    audio = result.audio || new Audio(blobUrl)
+    audio.preload = 'auto'
+    audio.addEventListener('ended', stopPlayback)
+
     audio.currentTime = 0
-    audio.play().then(() => {
-      isPlaying.value = true
-      setupProgressTracking()
-    })
+    await audio.play()
+
+    isPlaying.value = true
+    setupProgressTracking()
     emit('updateCurrent', props.soundData.libraryId)
 
     timeoutId = setTimeout(stopPlayback, duration.value * 1000)
@@ -179,12 +153,10 @@ async function togglePlay() {
 function setupProgressTracking() {
   function updateProgress() {
     if (!audio.paused && isPlaying.value) {
-      const ratio = Math.min(audio.currentTime / duration.value, 1)
-      progress.value = ratio
+      progress.value = Math.min(audio.currentTime / duration.value, 1)
       rafId = requestAnimationFrame(updateProgress)
     }
   }
-
   rafId = requestAnimationFrame(updateProgress)
 }
 
@@ -193,7 +165,6 @@ function stopPlayback() {
 
   audio.pause()
   audio.currentTime = 0
-
   clearTimeout(timeoutId)
   cancelAnimationFrame(rafId)
 
@@ -201,17 +172,11 @@ function stopPlayback() {
   progress.value = 0
 }
 
-
 onUnmounted(() => {
   stopPlayback()
-  if (!hasBeenPromoted.value && cachedPreview) {
-    const store = useRoomStore()
-    store.audioCacheManager.remove(props.soundData.libraryId)
-    cachedPreview = null
-  }
 })
-
 </script>
+
 
 
 <style scoped>

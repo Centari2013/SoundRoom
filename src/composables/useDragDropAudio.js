@@ -1,12 +1,12 @@
 import { reactive } from "vue"
-import { useRoomStore } from "@/stores/useRoomStore";
+import { useActionManagerStore } from "@/stores/useActionManagerStore";
 import { useCanvasStore } from "@/stores/useCanvasStore";
 import { storeToRefs } from "pinia";  
 
 // useDragDropAudio.js
 export function useDragDropAudio({ draggedSource }) {
-  const roomStore = useRoomStore()
-  const { actionManager } = storeToRefs(roomStore)
+  const actionStore = useActionManagerStore()
+  const { actionManager } = storeToRefs(actionStore)
   const handleDragStart = (e, source) => {
     draggedSource.value = source
   }

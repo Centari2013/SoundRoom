@@ -12,7 +12,7 @@ export const useCanvasStore = defineStore('canvas', () => {
     vStageRef.value = stageInstance
   }
 
-  function getThumbnailURI({ pixelRatio = 1, mimeType = 'image/png' } = {}) {
+  function getThumbnailURI({ pixelRatio = 1, mimeType = 'image/jpeg' } = {}) {
     const stage = vStageRef.value?.getNode?.()
 
     if (!stage) {

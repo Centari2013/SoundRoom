@@ -14,6 +14,7 @@
       <span @click="startEditing" class="cursor-pointer hover:underline">
         {{ name || 'Untitled Room' }}
       </span>
+      <p v-if="errorMsg" class="text-red-400 text-xs">{{ errorMsg }}</p>
     </template>
   </div>
 </template>
@@ -25,12 +26,14 @@ const emit = defineEmits(['updated'])
 const props = defineProps({
   roomId: { type: String, required: true },
   name: { type: String, default: '' },
-  onUpdate: { type: Function, required: true }
+  onUpdate: { type: Function, required: true },
+  existingNames: { type: Array, default: () => [] } // All current names
 })
 
-const { name, roomId } = toRefs(props)
+const { name, roomId, existingNames } = toRefs(props)
 const isEditing = ref(false)
 const localName = ref(name.value)
+const errorMsg = ref('')
 
 watch(name, (newVal) => {
   if (!isEditing.value) localName.value = newVal
@@ -39,11 +42,13 @@ watch(name, (newVal) => {
 function startEditing() {
   isEditing.value = true
   localName.value = name.value
+  errorMsg.value = ''
 }
 
 function cancelEdit() {
   isEditing.value = false
   localName.value = name.value
+  errorMsg.value = ''
 }
 
 async function handleBlur() {
@@ -51,16 +56,29 @@ async function handleBlur() {
   const newName = localName.value.trim()
   const oldName = name.value?.trim()
 
-  const success = await props.onUpdate(roomId.value, newName)
-  if (!success) {
-    // Optionally show a toast or revert name
+  if (newName === oldName || !newName) return
+
+  // Check for duplicates, excluding this room's current name
+  const isDuplicate = existingNames.value
+    .filter(n => n !== oldName.toLowerCase())
+    .includes(newName.toLowerCase())
+
+  if (isDuplicate) {
+    errorMsg.value = 'A room with that name already exists.'
     localName.value = name.value
     return
   }
-  emit('updated', newName)
 
+  const success = await props.onUpdate(roomId.value, newName)
+  if (!success) {
+    localName.value = name.value
+    return
+  }
+
+  emit('updated', newName)
 }
 </script>
+
 
 <style scoped>
 .room-name input {

@@ -31,7 +31,6 @@ export async function GET(request) {
 
   try {
    
-    console.log("🔑 R2_ACCESS_KEY_ID:", R2_ACCESS_KEY_ID);
     const client = new AwsClient({
       accessKeyId: R2_ACCESS_KEY_ID,
       secretAccessKey: R2_SECRET_ACCESS_KEY,

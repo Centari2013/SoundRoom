@@ -58,6 +58,7 @@
             <BaseButton
               class="load-BaseButton text-xs px-3 py-1 rounded hover:bg-blue-700 transition-colors"
               @click="() => { toggleAddSource(sound) }"
+              :disabled="waiting || sound.send"
             >
               {{
                 soundLibrarySources.find(
@@ -102,20 +103,24 @@ import MarqueeTitle from '@/components/ui/text/MarqueeTitle.vue'
 import { getSourceName } from '@/composables/useSelectedSource'
 import BaseButton from '@/components/ui/input/BaseButton.vue'
 
-import { useRoomStore } from '@/stores/useRoomStore'
+import { useAudioCacheStore } from '@/stores/useAudioCacheStore'
+import { useActionManagerStore } from '@/stores/useActionManagerStore'
 import { storeToRefs } from 'pinia'
 
 const props = defineProps({
   isLibraryOpen: Boolean
 })
 
-const store = useRoomStore()
-const { soundLibrarySources } = storeToRefs(store)
+const cacheStore = useAudioCacheStore()
+const actionStore = useActionManagerStore()
+const { waiting } = storeToRefs(actionStore)
+const { soundLibrarySources } = storeToRefs(cacheStore)
 const emit = defineEmits(['close'])
 
-function handleAudioSent(source, sound) {
+
+async function handleAudioSent(source, sound) {
   sound.send = false
-  store.addLibrarySoundSource(source)
+  await actionStore.addLibrarySoundSource(source)
 }
 
 const categories = [
@@ -127,11 +132,11 @@ const categories = [
   { id: 'misc', label: 'Misc' },
 ]
 
-function toggleAddSource(s) {
+async function toggleAddSource(s) {
   // if source in soundlibrarysources (draggable sources), delete, otherwise add
   if (soundLibrarySources.value.find((sound) => s.libraryId == sound.libraryId)) {
     s.send = false
-    store.deleteLibrarySoundSource(s)
+    await actionStore.deleteLibrarySoundSource(s)
   } else {
     s.send = true
   }

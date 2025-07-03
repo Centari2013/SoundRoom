@@ -53,11 +53,15 @@
 
 <script setup>
 import { ref, onBeforeUnmount } from 'vue';
+import { useListenerStore } from '@/stores/useListenerStore';
+import { useActionManagerStore } from '@/stores/useActionManagerStore';
 import { useRoomStore } from '@/stores/useRoomStore';
 import { storeToRefs } from 'pinia';
 
 
-const { listener, actionManager, room } = storeToRefs(useRoomStore())
+const { listener } = storeToRefs(useListenerStore())
+const { actionManager } = storeToRefs(useActionManagerStore())
+const { room } = storeToRefs(useRoomStore())
 
 let moveListenerPayload = null
 let initialMouseAngle = null
