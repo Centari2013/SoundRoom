@@ -58,6 +58,7 @@
             <BaseButton
               class="load-BaseButton text-xs px-3 py-1 rounded hover:bg-blue-700 transition-colors"
               @click="() => { toggleAddSource(sound) }"
+              :disabled="waiting || sound.send"
             >
               {{
                 soundLibrarySources.find(
@@ -111,9 +112,13 @@ const props = defineProps({
 })
 
 const cacheStore = useAudioCacheStore()
+cacheStore.audioCacheManager.clearMemoryCache()
+cacheStore.audioCacheManager.clearPersistentCache()
 const actionStore = useActionManagerStore()
+const { waiting } = storeToRefs(actionStore)
 const { soundLibrarySources } = storeToRefs(cacheStore)
 const emit = defineEmits(['close'])
+
 
 async function handleAudioSent(source, sound) {
   sound.send = false
@@ -129,11 +134,11 @@ const categories = [
   { id: 'misc', label: 'Misc' },
 ]
 
-function toggleAddSource(s) {
+async function toggleAddSource(s) {
   // if source in soundlibrarysources (draggable sources), delete, otherwise add
   if (soundLibrarySources.value.find((sound) => s.libraryId == sound.libraryId)) {
     s.send = false
-    actionStore.deleteLibrarySoundSource(s)
+    await actionStore.deleteLibrarySoundSource(s)
   } else {
     s.send = true
   }
