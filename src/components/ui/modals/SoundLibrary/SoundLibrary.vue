@@ -112,8 +112,6 @@ const props = defineProps({
 })
 
 const cacheStore = useAudioCacheStore()
-cacheStore.audioCacheManager.clearMemoryCache()
-cacheStore.audioCacheManager.clearPersistentCache()
 const actionStore = useActionManagerStore()
 const { waiting } = storeToRefs(actionStore)
 const { soundLibrarySources } = storeToRefs(cacheStore)
