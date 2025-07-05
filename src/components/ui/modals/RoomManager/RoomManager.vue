@@ -182,6 +182,7 @@ const handleUpdateRoomName = async (room, newName) => {
   const success = await updateRoomName(room.id, newName)
   if (success) {
     room.name = newName
+    roomStore.commitRoomName(room.id, newName)
   } else {
     console.error('Failed to update room name')
   }

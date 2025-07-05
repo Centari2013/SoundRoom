@@ -53,12 +53,13 @@ function cancelEdit() {
 
 async function handleBlur() {
   isEditing.value = false
-  const newName = localName.value.trim()
+  const baseName = localName.value.trim()
+  const uniqueName = roomStore.generateUniqueRoomName(roomId.value, baseName)
   const oldName = name.value?.trim()
 
-  if (newName === oldName || !newName) return
+  if (uniqueName === oldName) return
 
-  emit('updated', roomStore.generateUniqueRoomName(roomId.value, newName))
+  emit('updated', uniqueName)
 }
 </script>
 

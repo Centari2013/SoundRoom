@@ -62,6 +62,7 @@ export function useSaveAndLoadRoom() {
           console.error("Error updating room:", error);
         } else {
           room.value.id = data[0].id; // Update the room ID with the returned ID
+          roomStore.commitRoomName(room.value.id, room.value.name)
         }
       });
   }
@@ -76,6 +77,8 @@ export function useSaveAndLoadRoom() {
       console.error("Error updating room:", error)
       return false
     }
+
+    roomStore.commitRoomName(roomId, name)
 
     return true
   }
@@ -97,6 +100,7 @@ export function useSaveAndLoadRoom() {
           console.error("Error inserting room:", error);
         } else {
           room.value.id = id; // Update the room ID with the returned ID
+          roomStore.commitRoomName(room.value.id, room.value.name)
         }
       });
   }

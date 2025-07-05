@@ -47,30 +47,34 @@ export const useRoomStore = defineStore('room', () => {
     let name = base
     let count = 1
 
-    //console.log(typeof name, name)
-
-    // Find if a room with the same ID already exists
-    const existingRoomIndex = existingRoomNames.value.findIndex(room => room.id === id)
-    console.log(`Checking for existing room with ID: ${id}, found at index: ${existingRoomIndex}`)
-    // If the room exists, remove it temporarily from the list (we'll update it later)
-    if (existingRoomIndex !== -1) {
-      console.log(`Updating existing room with ID: ${id}`)
-      existingRoomNames.value = existingRoomNames.value.filter(room => room.id !== id)
-    }
-
-    // Get a list of all normalized (lowercase) names for collision checking
-    const normalizedNames = existingRoomNames.value.map(room => room.name.toLowerCase())
+    // Filter out the current room (if it exists) so it doesn't collide with itself
+    const normalizedNames = existingRoomNames.value
+      .filter(room => room.id !== id)
+      .map(room => room.name.toLowerCase())
 
     // Add suffix until the name is unique
     while (normalizedNames.includes(name.toLowerCase())) {
       name = `${base} (${count})`
       count++
     }
-    
-    // Add or re-add the updated room name
-    existingRoomNames.value.push({ name, id })
-    console.log('Updated existingRoomNames:', existingRoomNames.value)
+
     return name
+  }
+
+  /**
+   * Update the tracked room name list once a name is successfully saved.
+   * Reuses existing entry if ID already exists, or adds a new one if not.
+   *
+   * @param {string} id
+   * @param {string} name
+   */
+  function commitRoomName(id, name) {
+    const index = existingRoomNames.value.findIndex(r => r.id === id)
+    if (index !== -1) {
+      existingRoomNames.value[index].name = name
+    } else {
+      existingRoomNames.value.push({ id, name })
+    }
   }
 
 
@@ -124,5 +128,6 @@ export const useRoomStore = defineStore('room', () => {
     isRoomSaveable,
     setExistingRoomNames,
     generateUniqueRoomName,
+    commitRoomName,
   }
 })
