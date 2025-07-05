@@ -24,9 +24,13 @@
         Redo
       </BaseButton>
     </div>
-    <div v-if="isAuthenticated" class=" w-1/3">
-      <BaseInput v-model="room.name" class="text-center"/>
-    </div>
+    <EditableRoomName
+      v-if="isAuthenticated"
+      :roomId="room.id"
+      :name="room.name"
+      class="w-1/3"
+      @updated="room.name = $event"
+    />
     <div class="flex items-center justify-center space-x-2 w-1/3">
      
       <span class="text-xs text-neutral-500">Master</span>
@@ -47,6 +51,7 @@
 <script setup>
 import BaseButton from '@/components/ui/input/BaseButton.vue'
 import BaseInput from '@/components/ui/input/BaseInput.vue'
+import EditableRoomName from '@/components/ui/modals/RoomManager/EditableRoomName.vue'
 import VueSlider from 'vue-3-slider-component'
 import { useAuth } from '@/composables/useAuth'
 
