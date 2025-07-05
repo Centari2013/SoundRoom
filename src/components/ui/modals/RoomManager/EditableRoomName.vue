@@ -21,19 +21,19 @@
 
 <script setup>
 import { ref, watch, toRefs } from 'vue'
+import { useRoomStore } from '@/stores/useRoomStore'
 
 const emit = defineEmits(['updated'])
 const props = defineProps({
   roomId: { type: String, required: true },
   name: { type: String, default: '' },
-  onUpdate: { type: Function, required: true },
-  existingNames: { type: Array, default: () => [] } // All current names
 })
 
-const { name, roomId, existingNames } = toRefs(props)
+const { name, roomId } = toRefs(props)
 const isEditing = ref(false)
 const localName = ref(name.value)
 const errorMsg = ref('')
+const roomStore = useRoomStore()
 
 watch(name, (newVal) => {
   if (!isEditing.value) localName.value = newVal
@@ -58,24 +58,7 @@ async function handleBlur() {
 
   if (newName === oldName || !newName) return
 
-  // Check for duplicates, excluding this room's current name
-  const isDuplicate = existingNames.value
-    .filter(n => n !== oldName.toLowerCase())
-    .includes(newName.toLowerCase())
-
-  if (isDuplicate) {
-    errorMsg.value = 'A room with that name already exists.'
-    localName.value = name.value
-    return
-  }
-
-  const success = await props.onUpdate(roomId.value, newName)
-  if (!success) {
-    localName.value = name.value
-    return
-  }
-
-  emit('updated', newName)
+  emit('updated', roomStore.generateUniqueRoomName(roomId.value, newName))
 }
 </script>
 

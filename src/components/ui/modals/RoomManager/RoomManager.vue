@@ -55,10 +55,9 @@
             />
 
             <EditableRoomName
-              :room-id="room.id"
+              :roomId="room.id"
               :name="room.name"
-              :on-update="updateRoomName"
-              @updated="room.name = $event"
+              @updated="handleUpdateRoomName(room, $event)"
             />
 
             <div class="room-meta text-xs text-neutral-400">{{ formatDate(room.updated_at) }}</div>
@@ -178,6 +177,15 @@ watch(currentPage, () => {
     gridScroll.value?.scrollTo({ top: 0, behavior: 'smooth' })
   })
 })
+
+const handleUpdateRoomName = async (room, newName) => {
+  const success = await updateRoomName(room.id, newName)
+  if (success) {
+    room.name = newName
+  } else {
+    console.error('Failed to update room name')
+  }
+}
 
 const handleLoadRoom = async (rId) => {
   roomId = rId
