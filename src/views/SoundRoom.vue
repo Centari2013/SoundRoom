@@ -159,6 +159,7 @@ onBeforeMount(() => {
   }
   engineStore.setupAudioContext()
   roomStore.setExistingRoomNames() // Initialize with empty names
+  roomStore.room.name = 'Untitled Room' // Default room name
   roomStore.getSaveSnapshot() // Initialize _lastSavedSnapshot with current room state for isRoomSaveable to compare against
 })
 

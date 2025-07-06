@@ -82,7 +82,7 @@ export const useRoomStore = defineStore('room', () => {
     }
 
     // Remove any temporary entry once we have a real ID
-    const tempIndex = existingRoomNames.value.findIndex(r => r.id === TEMP_ID)
+    const tempIndex = existingRoomNames.value.findIndex(r => r.id === null)
     if (tempIndex !== -1) existingRoomNames.value.splice(tempIndex, 1)
 
     const index = existingRoomNames.value.findIndex(r => r.id === id)

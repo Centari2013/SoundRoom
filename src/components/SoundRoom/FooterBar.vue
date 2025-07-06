@@ -59,7 +59,7 @@ const props = defineProps({
 });
 
 const router = useRouter();
-const { isAuthenticated } = useAuth();
+const { isAuthenticated } = storeToRefs(useAuth());
 const { isRoomSaveable } = storeToRefs(useRoomStore());
 
 const showSaveConfirm = ref(false);

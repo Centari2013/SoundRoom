@@ -1,5 +1,5 @@
 // lib/SoundSource.js
-
+//import { v4 as uuidv4 } from 'uuid';
 /**
  * Wrapper around a DOM `<audio>` element and the Web Audio nodes used to
  * spatialise it. The `state` object drives position and orientation of the
@@ -16,6 +16,24 @@ export default class SoundSource {
     // `state` holds the spatial position/angle and is kept in sync with the
     // canvas representation.
     this.state = state;
+    this.state.schedule = state.schedule || {
+      enabled: true,
+      mode: "interval", // "loop", "interval", "count", or "interval+count"
+
+      // Applies to interval-based scheduling
+      gapMin: 5,
+      gapMax: 10,
+
+      // Applies to time-bound or count-based schedules
+      count: 5,           // null = unlimited
+      activeStart: 0,     // time window start (in seconds)
+      activeEnd: 300,     // time window end
+
+      // Internal state
+      timesPlayed: 0,
+      lastPlayedAt: null,
+    };
+
 
     this._rad = (deg) => (deg * Math.PI) / 180;
     this._scale = 0.01;

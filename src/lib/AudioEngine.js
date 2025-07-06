@@ -1,5 +1,6 @@
 // lib/AudioEngine.js
 import SoundSource from '@/lib/SoundSource';
+import SoundScheduler from '@/lib/SoundScheduler';
 import { computed, ref, watch, reactive } from 'vue'
 
 /**
@@ -18,11 +19,13 @@ export default class AudioEngine {
   masterVolume = ref(null)
   #MAX_SOURCE_COUNT = 30
   #uninitializedSoundSources = null
-  
+  #scheduler = null
+
   constructor(uninitializedSoundSources, volume = 1 ) {
     this.#uninitializedSoundSources = uninitializedSoundSources || []
     this.soundSources.value = []  // reactive array of sources
     this.masterVolume.value = volume
+    this.#scheduler = new SoundScheduler(this)
 
     watch(this.masterVolume, (v) => {
       if (this.#masterGain && this.#audioContext) {
@@ -147,6 +150,7 @@ export default class AudioEngine {
     this.soundSources.value.forEach(s => {
       s.instance?.play?.()
     })
+    this.#scheduler.start();
   
     if ('mediaSession' in navigator) {
       navigator.mediaSession.playbackState = 'playing'
@@ -163,7 +167,7 @@ export default class AudioEngine {
         ]
       })
     }
-  
+    
     this.isPlaying.value = true
   }
   
@@ -175,6 +179,8 @@ export default class AudioEngine {
         s.instance.stop()
       }
     })
+    this.#scheduler.stop();
+    
     if ('mediaSession' in navigator) {
       navigator.mediaSession.playbackState = 'paused'
     }
@@ -228,6 +234,7 @@ export default class AudioEngine {
             coneOuter: src.instance.state.coneOuter,
             isPlaying: src.instance.playing,
             volume: src.instance?.getVolume?.() ?? 1,
+            schedule: src.instance.state.schedule
           }
         },
         state: {
