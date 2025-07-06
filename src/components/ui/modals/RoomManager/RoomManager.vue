@@ -143,6 +143,7 @@ import { useRouter } from 'vue-router'
 import { useSaveAndLoadRoom } from '@/composables/useSaveAndLoadRoom'
 import { useRoomStore } from '@/stores/useRoomStore'
 import PulsingOverlay from '@/components/ui/overlays/PulsingOverlay.vue'
+import { resetRoomState } from '@/utils/resetRoomState'
 
 const router = useRouter()
 const buttons = ref([
@@ -251,6 +252,7 @@ onMounted(async () => {
 })
 
 const createNewRoom = () => {
+  resetRoomState()
   router.push('/')
 }
 
