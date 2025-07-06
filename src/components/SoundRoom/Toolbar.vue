@@ -29,7 +29,7 @@
       :roomId="room.id"
       :name="room.name"
       class="w-1/3"
-      @updated="room.name = $event"
+      @updated="handleRoomNameUpdate"
     />
     <div class="flex items-center justify-center space-x-2 w-1/3">
      
@@ -50,10 +50,10 @@
 
 <script setup>
 import BaseButton from '@/components/ui/input/BaseButton.vue'
-import BaseInput from '@/components/ui/input/BaseInput.vue'
 import EditableRoomName from '@/components/ui/modals/RoomManager/EditableRoomName.vue'
 import VueSlider from 'vue-3-slider-component'
 import { useAuth } from '@/composables/useAuth'
+import { useSaveAndLoadRoom } from '@/composables/useSaveAndLoadRoom'
 
 import { useRoomStore } from '@/stores/useRoomStore'
 import { useAudioEngineStore } from '@/stores/useAudioEngineStore'
@@ -69,4 +69,21 @@ const { actionManager, actionStackEmpty, redoStackEmpty, waiting } = storeToRefs
 
 const { isAuthenticated } = useAuth()
 
+const { updateRoomName } = useSaveAndLoadRoom()
+
+async function handleRoomNameUpdate(newName) {
+  // Skip if the name didn't actually change
+  if (room.value.name === newName) return
+
+  room.value.name = newName
+
+  if (room.value.id) {
+    const success = await updateRoomName(room.value.id, newName)
+    if (!success) {
+      console.error('Failed to update room name')
+    }
+  } else {
+    roomStore.commitRoomName(room.value.id, newName)
+  }
+}
 </script>

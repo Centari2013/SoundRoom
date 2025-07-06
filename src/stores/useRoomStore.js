@@ -68,7 +68,24 @@ export const useRoomStore = defineStore('room', () => {
    * @param {string} id
    * @param {string} name
    */
+  const TEMP_ID = 'temp-room'
+
   function commitRoomName(id, name) {
+    // Handle rooms that haven't been saved to the DB yet
+    if (!id) {
+      const tempIndex = existingRoomNames.value.findIndex(r => r.id === TEMP_ID)
+      if (tempIndex !== -1) {
+        existingRoomNames.value[tempIndex].name = name
+      } else {
+        existingRoomNames.value.push({ id: TEMP_ID, name })
+      }
+      return
+    }
+
+    // Remove any temporary entry once we have a real ID
+    const tempIndex = existingRoomNames.value.findIndex(r => r.id === TEMP_ID)
+    if (tempIndex !== -1) existingRoomNames.value.splice(tempIndex, 1)
+
     const index = existingRoomNames.value.findIndex(r => r.id === id)
     if (index !== -1) {
       existingRoomNames.value[index].name = name
