@@ -2,7 +2,10 @@
 <template>
   <div
   class="mb-3 w-8 h-8 rounded-full border-2 relative flex items-center justify-center cursor-pointer hover:scale-105 transition-transform"
-  :class="isPlaying ? 'border-blue-600' : 'border-neutral-500'"
+  :class="[
+    isPlaying ? 'border-blue-600' : 'border-neutral-500',
+    isLoading ? 'opacity-50 cursor-wait' : 'cursor-pointer hover:scale-105'
+  ]"
   @click="togglePlay"
 >
   <!-- Progress Ring -->
@@ -55,6 +58,8 @@ const duration = ref(15)
 const isPlaying = ref(false)
 const progress = ref(0)
 const hasBeenPromoted = ref(false)
+const isLoading = ref(false)
+
 
 let audio = null
 let blobUrl = null
@@ -124,9 +129,11 @@ async function emitAudio() {
 }
 
 async function togglePlay() {
+  if (isLoading.value) return
   if (isPlaying.value) {
     stopPlayback()
   } else {
+     isLoading.value = true
     const result = await downloadAudio(
       props.soundData.bucket,
       props.soundData.path,
@@ -147,6 +154,7 @@ async function togglePlay() {
     emit('updateCurrent', props.soundData.libraryId)
 
     timeoutId = setTimeout(stopPlayback, duration.value * 1000)
+    isLoading.value = false
   }
 }
 
