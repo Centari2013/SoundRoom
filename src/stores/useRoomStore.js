@@ -48,6 +48,8 @@ export const useRoomStore = defineStore('room', () => {
     let count = 1
 
     // Filter out the current room (if it exists) so it doesn't collide with itself
+    console.log('Generating unique room name for:', { id, base })
+    console.log('Existing room names:', existingRoomNames.value)
     const normalizedNames = existingRoomNames.value
       .filter(room => room.id !== id)
       .map(room => room.name.toLowerCase())
@@ -68,16 +70,16 @@ export const useRoomStore = defineStore('room', () => {
    * @param {string} id
    * @param {string} name
    */
-  const TEMP_ID = 'temp-room'
 
   function commitRoomName(id, name) {
+    console.log('Committing room name:', { id, name })
     // Handle rooms that haven't been saved to the DB yet
     if (!id) {
-      const tempIndex = existingRoomNames.value.findIndex(r => r.id === TEMP_ID)
+      const tempIndex = existingRoomNames.value.findIndex(r => r.id === null)
       if (tempIndex !== -1) {
         existingRoomNames.value[tempIndex].name = name
       } else {
-        existingRoomNames.value.push({ id: TEMP_ID, name })
+        existingRoomNames.value.push({ id, name })
       }
       return
     }

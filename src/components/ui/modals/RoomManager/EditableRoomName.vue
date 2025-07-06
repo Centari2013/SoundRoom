@@ -25,7 +25,7 @@ import { useRoomStore } from '@/stores/useRoomStore'
 
 const emit = defineEmits(['updated'])
 const props = defineProps({
-  roomId: { type: String, required: true },
+  roomId: { type: String },
   name: { type: String, default: '' },
 })
 
