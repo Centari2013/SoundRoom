@@ -50,6 +50,7 @@ import { useRouter } from 'vue-router';
 import { storeToRefs } from 'pinia';
 import { useRoomStore } from '@/stores/useRoomStore';
 import { useAuth } from '@/composables/useAuth';
+import { resetRoomState } from '@/utils/resetRoomState';
 import BaseButton from '@/components/ui/input/BaseButton.vue';
 import YesNoModal from '@/components/ui/modals/YesNoModal.vue';
 
@@ -82,10 +83,12 @@ function handleSaveThenNewRoom() {
     return;
   }
   emit('saveRoom');
+  resetRoomState();
   router.push('/');
 }
 
 function handleSkipSaveThenNewRoom() {
+  resetRoomState();
   router.push('/');
 }
 </script>
