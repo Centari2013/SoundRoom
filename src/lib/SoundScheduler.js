@@ -24,14 +24,16 @@ export default class SoundScheduler {
    * This should be called when the room starts playing.
    */
   start() {
-    this.roomStartTime = performance.now(); // capture start time in milliseconds
+    this.roomStartTime = performance.now();
 
     for (const source of this.audioEngine.soundSources) {
       if (source.state.schedule?.enabled) {
+        source.state.schedule.timesPlayed = 0; // reset play count
         this._schedule(source);
       }
     }
   }
+
 
   /**
    * Internal method: sets up a self-repeating timeout loop for a scheduled sound source.
@@ -42,7 +44,7 @@ export default class SoundScheduler {
     const loop = () => {
       const now = (performance.now() - this.roomStartTime) / 1000;
       const sched = source.state.schedule;
-      const { activeStart, activeEnd, gapMin, gapMax, count, mode } = sched;
+      const { activeStart, activeEnd, gapMin, gapMax, count, mode, id: scheduleId } = sched;
 
       const withinWindow = now >= activeStart && now <= activeEnd;
       const canStillPlay = count == null || sched.timesPlayed < count;
@@ -56,7 +58,7 @@ export default class SoundScheduler {
       if (sched.enabled && canStillPlay) {
         const nextGap = mode === "loop" ? 0 : randomInRange(gapMin, gapMax) * 1000;
         const id = setTimeout(loop, nextGap);
-        this.intervals.set(source.libraryId, id);
+        this.intervals.set(scheduleId, id);
       }
     };
 
@@ -92,10 +94,10 @@ export default class SoundScheduler {
    * @param {SoundSource} source - the sound source to cancel
    */
   cancelSchedule(source) {
-    const id = this.intervals.get(source.libraryId);
+    const id = this.intervals.get(source.state.schedule?.id);
     if (id) {
       clearTimeout(id);
-      this.intervals.delete(source.libraryId);
+      this.intervals.delete(source.state.schedule?.id);
     }
   }
 }

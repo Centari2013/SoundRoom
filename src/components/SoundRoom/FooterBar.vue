@@ -22,26 +22,41 @@
 
   <!-- Footer Buttons -->
   <div class="flex justify-start items-center h-15 p-2 space-x-3">
-    <BaseButton
-      @click="showSaveConfirm = true"
-      :disabled="isSaving || !isRoomSaveable"
-      class="px-3 py-2 rounded bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400"
-      type="button"
-      aria-label="Open save room confirmation"
-    >
-      Save Room
-    </BaseButton>
+    <div class="flex space-x-3">
+      <BaseButton
+        @click="showSaveConfirm = true"
+        :disabled="isSaving || !isRoomSaveable"
+        class="px-3 py-2 rounded bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400"
+        type="button"
+        aria-label="Open save room confirmation"
+      >
+        Save Room
+      </BaseButton>
 
-    <BaseButton
-      @click="showNewRoomConfirm = true"
-      :disabled="isSaving || !isRoomSaveable"
-      class="px-3 py-2 rounded bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400"
-      type="button"
-      aria-label="Open new room confirmation"
-    >
-      New Room +
-    </BaseButton>
+      <BaseButton
+        @click="showNewRoomConfirm = true"
+        :disabled="isSaving || !isRoomSaveable"
+        class="px-3 py-2 rounded bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400"
+        type="button"
+        aria-label="Open new room confirmation"
+      >
+        New Room +
+      </BaseButton>
+    </div>
+    
+
+     <div v-if="isAuthenticated" class="mt-auto flex flex-grow justify-end">
+      <RouterLink
+        to="/room-manager"
+        aria-label="Open Room Manager"
+      >
+        <BaseButton class="w-full">
+          RoomManager
+        </BaseButton>
+      </RouterLink>
+    </div>
   </div>
+  
 </template>
 
 <script setup>
@@ -60,7 +75,7 @@ const props = defineProps({
 });
 
 const router = useRouter();
-const { isAuthenticated } = storeToRefs(useAuth());
+const { isAuthenticated } = useAuth();
 const { isRoomSaveable } = storeToRefs(useRoomStore());
 
 const showSaveConfirm = ref(false);
