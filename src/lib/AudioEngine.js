@@ -20,12 +20,14 @@ export default class AudioEngine {
   #MAX_SOURCE_COUNT = 30
   #uninitializedSoundSources = null
   #scheduler = null
+  #scheduleWatchers = null
 
   constructor(uninitializedSoundSources, volume = 1 ) {
     this.#uninitializedSoundSources = uninitializedSoundSources || []
     this.soundSources.value = []  // reactive array of sources
     this.masterVolume.value = volume
     this.#scheduler = new SoundScheduler(this)
+    this.#scheduleWatchers = new Map()
 
     watch(this.masterVolume, (v) => {
       if (this.#masterGain && this.#audioContext) {
@@ -102,7 +104,7 @@ export default class AudioEngine {
       masterGain: this.#masterGain,
       file: src.audioPath,
       state: src.state,
-      loop: true,
+      loop: !src.state.schedule?.enabled,
     })
 
     src.instance = instance
@@ -110,7 +112,38 @@ export default class AudioEngine {
     if (this.#audioContext?.state === 'suspended') {
       this.#audioContext.resume()
     }
-    instance.play()
+    if (!src.state.schedule?.enabled) {
+      instance.play()
+    }
+
+    // Watch schedule changes to hook into the scheduler
+    const sched = instance.state.schedule
+    const enabledUnwatch = watch(
+      () => sched.enabled,
+      (enabled) => {
+        instance._audioElement.loop = !enabled
+        if (this.isPlaying.value) {
+          if (enabled) {
+            instance.stop()
+            this.#scheduler.updateSchedule(instance)
+          } else {
+            this.#scheduler.cancelSchedule(instance)
+            instance.play()
+          }
+        }
+      }
+    )
+
+    const paramsUnwatch = watch(
+      () => [sched.gapMin, sched.gapMax, sched.activeStart, sched.activeEnd, sched.count],
+      () => {
+        if (this.isPlaying.value && sched.enabled) {
+          this.#scheduler.updateSchedule(instance)
+        }
+      }
+    )
+
+    this.#scheduleWatchers.set(sched.id, [enabledUnwatch, paramsUnwatch])
   }
 
   deleteSoundSource(payload) {
@@ -124,6 +157,13 @@ export default class AudioEngine {
     const finalVolume = instance?.getVolume()
     instance?.dispose()
     this.soundSources.value.splice(index, 1)
+
+    // clean up scheduler watchers and any scheduled loops
+    const schedId = src.state.schedule?.id
+    const watchers = this.#scheduleWatchers.get(schedId)
+    watchers?.forEach(unwatch => unwatch())
+    this.#scheduleWatchers.delete(schedId)
+    this.#scheduler.cancelSchedule(instance)
 
     if (!src) {
       console.warn("Tried to delete sound source but index", index, "was invalid.")
@@ -148,7 +188,13 @@ export default class AudioEngine {
     }
   
     this.soundSources.value.forEach(s => {
-      s.instance?.play?.()
+      if (s.state.schedule?.enabled) {
+        s.instance.stop()
+        s.instance._audioElement.loop = false
+      } else {
+        s.instance._audioElement.loop = true
+        s.instance?.play?.()
+      }
     })
     this.#scheduler.start();
   
@@ -179,7 +225,7 @@ export default class AudioEngine {
         s.instance.stop()
       }
     })
-    this.#scheduler.stop();
+    this.#scheduler.pause();
     
     if ('mediaSession' in navigator) {
       navigator.mediaSession.playbackState = 'paused'
