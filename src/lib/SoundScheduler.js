@@ -29,10 +29,11 @@ export default class SoundScheduler {
   start() {
     this.roomStartTime = performance.now();
 
-    for (const source of this.audioEngine.soundSources.value) {
-      if (source.state.schedule?.enabled) {
-        source.state.schedule.timesPlayed = 0; // reset play count
-        this._schedule(source);
+    for (const wrapper of this.audioEngine.soundSources.value) {
+      const src = wrapper.instance;
+      if (src.state.schedule?.enabled) {
+        src.state.schedule.timesPlayed = 0; // reset play count
+        this._schedule(src);
       }
     }
   }
@@ -160,7 +161,7 @@ export default class SoundScheduler {
    */
   updateSchedule(source) {
     this.cancelSchedule(source); // stop current schedule if any
-    if (source.schedule?.enabled) {
+    if (source.state.schedule?.enabled) {
       this._schedule(source); // restart with new config
     }
   }
