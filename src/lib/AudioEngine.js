@@ -135,7 +135,7 @@ export default class AudioEngine {
     )
 
     const paramsUnwatch = watch(
-      () => [sched.gapMin, sched.gapMax, sched.activeStart, sched.activeEnd, sched.count],
+      () => [sched.gapMin, sched.gapMax, sched.activeStart, sched.activeEnd, sched.count, sched.mode],
       () => {
         if (this.isPlaying.value && sched.enabled) {
           this.#scheduler.updateSchedule(instance)

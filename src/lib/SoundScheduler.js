@@ -75,7 +75,9 @@ export default class SoundScheduler {
       sched.timesPlayed = (sched.timesPlayed || 0) + 1;
 
       if (sched.enabled) {
-        const nextGap = randomInRange(sched.gapMin, sched.gapMax) * 1000;
+        const min = sched.mode == "loop" ? 0 : sched.gapMin;
+        const max = sched.mode == "loop" ? 0 : sched.gapMax;
+        const nextGap = randomInRange(min, max) * 1000;
 
         const timeoutId = setTimeout(loop, nextGap);
         this.intervals.set(scheduleId, timeoutId);
@@ -103,7 +105,7 @@ export default class SoundScheduler {
 
       // Pause audio if it's currently playing
       if (sched.isPlaying) {
-        source._audioElement.pause();
+        source.instance._audioElement.pause();
         sched.isPlaying = false;
       }
 
