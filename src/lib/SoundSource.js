@@ -35,7 +35,7 @@ export default class SoundSource {
 
       // Internal state
       timesPlayed: 0,
-      isPlaying: false, // whether the sound is currently playing
+      isPlaying: true, // whether the sound is currently playing
       lastPlayedAt: null,
     };
 
