@@ -94,7 +94,7 @@ export default class SoundScheduler {
   }
 
   pause() {
-    for (const source of this.audioEngine.soundSources) {
+    for (const source of this.audioEngine.soundSources.value) {
       const sched = source.state.schedule;
       const { id } = sched;
       const info = this.pauseInfo.get(id);
@@ -122,7 +122,7 @@ export default class SoundScheduler {
   }
 
   resume() {
-    for (const source of this.audioEngine.soundSources) {
+    for (const source of this.audioEngine.soundSources.value) {
       const sched = source.state.schedule;
       const { id } = sched;
       const info = this.pauseInfo.get(id);
