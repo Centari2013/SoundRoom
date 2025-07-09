@@ -152,6 +152,7 @@ const filteredSounds = ref([])
 watch(
   activeCategory,
   async (newCategory) => {
+    currentlyPlayingId.value = null
     isLoading.value = true
     await nextTick()
     gridScroll.value?.scrollTo({ top: 0 }) // scroll up when new category is selected
