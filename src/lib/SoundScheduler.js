@@ -17,6 +17,9 @@ export default class SoundScheduler {
 
     // Time when scheduling started, used to calculate relative play windows
     this.roomStartTime = null;
+
+    this.pauseInfo = new Map(); // key = scheduleId, value = pause data
+
   }
 
   /**
@@ -26,7 +29,7 @@ export default class SoundScheduler {
   start() {
     this.roomStartTime = performance.now();
 
-    for (const source of this.audioEngine.soundSources) {
+    for (const source of this.audioEngine.soundSources.value) {
       if (source.state.schedule?.enabled) {
         source.state.schedule.timesPlayed = 0; // reset play count
         this._schedule(source);
@@ -41,29 +44,102 @@ export default class SoundScheduler {
    * @param {SoundSource} source - the sound source with a scheduling config
    */
   _schedule(source) {
-    const loop = () => {
+    const sched = source.state.schedule;
+    const { id: scheduleId } = sched;
+
+    const playAndWait = async () => {
+      return new Promise((resolve) => {
+        const el = source._audioElement;
+
+        const onEnded = () => {
+          el.removeEventListener('ended', onEnded);
+          resolve();
+        };
+
+        el.addEventListener('ended', onEnded);
+
+        sched.isPlaying = true;
+        source.forcePlayFromStart();
+      });
+    };
+
+    const loop = async () => {
       const now = (performance.now() - this.roomStartTime) / 1000;
-      const sched = source.state.schedule;
-      const { activeStart, activeEnd, gapMin, gapMax, count, mode, id: scheduleId } = sched;
+      if (!sched.enabled) return;
 
-      const withinWindow = now >= activeStart && now <= activeEnd;
-      const canStillPlay = count == null || sched.timesPlayed < count;
+      await playAndWait();
+      sched.isPlaying = false;
 
-      if (sched.enabled && withinWindow && canStillPlay) {
-        this.audioEngine.playSound(source);
-        sched.lastPlayedAt = now;
-        sched.timesPlayed = (sched.timesPlayed || 0) + 1;
-      }
+      sched.lastPlayedAt = now;
+      sched.timesPlayed = (sched.timesPlayed || 0) + 1;
 
-      if (sched.enabled && canStillPlay) {
-        const nextGap = mode === "loop" ? 0 : randomInRange(gapMin, gapMax) * 1000;
-        const id = setTimeout(loop, nextGap);
-        this.intervals.set(scheduleId, id);
+      if (sched.enabled) {
+        const nextGap = randomInRange(sched.gapMin, sched.gapMax) * 1000;
+
+        const timeoutId = setTimeout(loop, nextGap);
+        this.intervals.set(scheduleId, timeoutId);
+
+        // Save the delay in case we need to pause later
+        this.pauseInfo.set(scheduleId, {
+          remainingGapMs: nextGap,
+          isPaused: false,
+          resumeTimer: null,
+          queuedLoop: loop,
+        });
       }
     };
 
-    loop();
+    loop(); // kickoff
   }
+
+  pause() {
+    for (const source of this.audioEngine.soundSources) {
+      const sched = source.state.schedule;
+      const { id } = sched;
+      const info = this.pauseInfo.get(id);
+
+      if (!sched.enabled || !info) continue;
+
+      // Pause audio if it's currently playing
+      if (sched.isPlaying) {
+        source._audioElement.pause();
+        sched.isPlaying = false;
+      }
+
+      // Cancel upcoming loop timeout
+      const timeoutId = this.intervals.get(id);
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+
+        // Save remaining delay time for resume
+        const elapsed = performance.now() - (sched.lastPlayedAt * 1000 + this.roomStartTime);
+        info.remainingGapMs = Math.max(0, info.remainingGapMs - elapsed);
+        info.isPaused = true;
+        this.intervals.delete(id);
+      }
+    }
+  }
+
+  resume() {
+    for (const source of this.audioEngine.soundSources) {
+      const sched = source.state.schedule;
+      const { id } = sched;
+      const info = this.pauseInfo.get(id);
+
+      if (!sched.enabled || !info || !info.isPaused) continue;
+
+      info.isPaused = false;
+
+      // Resume loop after the remaining delay
+      const resumeTimer = setTimeout(() => {
+        info.queuedLoop();
+      }, info.remainingGapMs);
+
+      info.resumeTimer = resumeTimer;
+      this.intervals.set(id, resumeTimer);
+    }
+  }
+
 
 
   /**

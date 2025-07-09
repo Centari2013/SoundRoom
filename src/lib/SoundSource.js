@@ -32,6 +32,7 @@ export default class SoundSource {
 
       // Internal state
       timesPlayed: 0,
+      isPlaying: false, // whether the sound is currently playing
       lastPlayedAt: null,
     };
 
@@ -78,6 +79,13 @@ export default class SoundSource {
   }
 
   play() {
+    this._audioElement.play();
+    this.updateAudio();
+    this._playing = true;
+  }
+
+  forcePlayFromStart() {
+    this._audioElement.currentTime = 0;
     this._audioElement.play();
     this.updateAudio();
     this._playing = true;
