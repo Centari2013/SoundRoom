@@ -124,7 +124,6 @@ export default class AudioEngine {
         instance._audioElement.loop = !enabled
         if (this.isPlaying.value) {
           if (enabled) {
-            instance.stop()
             this.#scheduler.updateSchedule(instance)
           } else {
             this.#scheduler.cancelSchedule(instance)
