@@ -71,6 +71,11 @@ export default class SoundScheduler {
       await playAndWait();
       sched.isPlaying = false;
 
+      if (sched.stopCurrentLoop) {
+        sched.stopCurrentLoop = false;
+        return;
+      }
+
       sched.lastPlayedAt = now;
       sched.timesPlayed = (sched.timesPlayed || 0) + 1;
 
@@ -162,9 +167,30 @@ export default class SoundScheduler {
    * @param {SoundSource} source - the updated sound source
    */
   updateSchedule(source) {
-    this.cancelSchedule(source); // stop current schedule if any
-    if (source.state.schedule?.enabled) {
-      this._schedule(source); // restart with new config
+    const sched = source.state.schedule;
+    const forceRestart = sched.restart;
+
+    this.cancelSchedule(source); // stop any pending timers
+
+    if (!forceRestart && sched.isPlaying) {
+      // Defer restart until current audio finishes
+      if (!sched.pendingUpdate) {
+        sched.stopCurrentLoop = true;
+        sched.pendingUpdate = true;
+
+        const el = source._audioElement;
+        const onEnded = () => {
+          el.removeEventListener('ended', onEnded);
+          sched.pendingUpdate = false;
+          if (sched.enabled) {
+            this._schedule(source);
+          }
+        };
+
+        el.addEventListener('ended', onEnded);
+      }
+    } else if (sched.enabled) {
+      this._schedule(source); // restart or start with new config
     }
   }
 

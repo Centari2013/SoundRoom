@@ -30,6 +30,9 @@ export default class SoundSource {
       activeStart: 0,     // time window start (in seconds)
       activeEnd: 300,     // time window end
 
+      // Restart behaviour
+      restart: false,     // force immediate restart when schedule changes
+
       // Internal state
       timesPlayed: 0,
       isPlaying: false, // whether the sound is currently playing
