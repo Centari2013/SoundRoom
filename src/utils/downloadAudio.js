@@ -1,6 +1,11 @@
 import { useAudioCacheStore } from '@/stores/useAudioCacheStore'
 
-
+/**
+ * Fetch an audio file from the R2 bucket and return it as a Blob.
+ *
+ * @param {string} key - path key used to generate the signed URL
+ * @returns {Promise<Blob>} resolved audio Blob
+ */
 async function fetchAudioBlob(key) {
   const res = await fetch(`/api/get-signed-url?key=${encodeURIComponent(key)}`);
   if (!res.ok) {
@@ -18,6 +23,16 @@ async function fetchAudioBlob(key) {
 
 
 
+/**
+ * Download an audio file and optionally populate an HTMLAudioElement.
+ *
+ * @param {string} bucket - storage bucket name
+ * @param {string} path - path of the file within the bucket
+ * @param {boolean} [populateAudio=true] - create an `Audio` element when true
+ * @param {?Function} [stopPlayback=null] - callback fired when preview ends
+ * @param {?string} [libraryId=null] - unique ID used for caching
+ * @returns {Promise<{blobUrl:string, audio:HTMLAudioElement|null}>}
+ */
 export default async function downloadAudio(
   bucket,
   path,
@@ -62,6 +77,14 @@ export default async function downloadAudio(
   return { blobUrl, audio }
 }
 
+/**
+ * Download multiple audio files in parallel.
+ *
+ * @param {{id:string, bucket:string, path:string}[]} sourcesList - list of sources to fetch
+ * @param {boolean} [populateAudio=false] - create `Audio` elements when true
+ * @param {?Function} [stopPlayback=null] - callback fired when preview ends
+ * @returns {Promise<{id:string, audioPath:string}[]>} array of successfully downloaded entries
+ */
 export async function downloadMultipleAudio(
   sourcesList,
   populateAudio = false,
