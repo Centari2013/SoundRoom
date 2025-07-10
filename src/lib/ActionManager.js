@@ -30,26 +30,37 @@ export default class ActionManager {
   }
   
 
+  /**
+   * Register callbacks for a named action.
+   *
+   * @param {string} actionName - Identifier for the action.
+   * @param {Function} doAction - Function to execute when performing the action.
+   * @param {Function} undoAction - Function to revert the action.
+   */
   registerActionHandlers(actionName, doAction, undoAction) {
-    // Store callbacks for a named action. The object contains the
-    // "do" and "undo" handlers which will later be invoked by
-    // `doAction`, `undoLastAction` and `redoLastAction`.
     this._actionMap[actionName] = { doAction, undoAction }
   }
 
+  /**
+   * Remove previously registered action handlers.
+   *
+   * @param {string|string[]} actionNames - Name or list of names to remove.
+   */
   unregisterActionHandlers(actionNames) {
-    // Accept a single name or an array of names. Each registered
-    // handler is simply removed from the map.
     if (!Array.isArray(actionNames)) actionNames = [actionNames]
     for (const name of actionNames) {
       delete this._actionMap[name]
     }
   }
 
+  /**
+   * Execute a registered action and record it on the undo stack.
+   *
+   * @param {string} actionName
+   * @param {*} [payload]
+   */
   async doAction(actionName, payload = null) {
     this.waiting.value = true
-    // Execute the "do" handler and push the payload onto the stack
-    // so that it can be undone or redone later.
     const action = this._actionMap[actionName]
     if (!action) {
       console.warn(`No registered action for "${actionName}"`)
@@ -68,9 +79,11 @@ export default class ActionManager {
     this.waiting.value = false
   }
 
+  /**
+   * Undo the most recently executed action.
+   */
   async undoLastAction() {
     this.waiting.value = true
-    // Pop the last action from the stack and call its "undo" handler.
     if (this.actionStackEmpty.value) {
       this.waiting.value = false
       return
@@ -94,9 +107,11 @@ export default class ActionManager {
     this.waiting.value = false
   }
 
+  /**
+   * Reapply the last action that was undone.
+   */
   async redoLastAction() {
     this.waiting.value = true
-    // Reapply the last undone action.
     if (this.redoStackEmpty.value) {
       this.waiting.value = false
       return
@@ -116,9 +131,10 @@ export default class ActionManager {
     this.waiting.value = false
   }
 
+  /**
+   * Reset both undo and redo history stacks.
+   */
   clearHistory() {
-    // Completely reset both stacks. Useful when loading a new room
-    // or discarding all previous actions.
     this._actionStack.value = []
     this._redoStack.value = []
   }
