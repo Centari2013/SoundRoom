@@ -60,7 +60,7 @@
           <label class="text-sm text-left">Schedule Mode</label>
           <select v-model="schedule.mode"
             class="px-2 py-1 rounded border dark:bg-neutral-800 dark:border-neutral-700">
-            <option value="loop">Loop</option>
+            <option v-if="false" value="loop">Loop</option>
             <option value="interval">Interval</option>
             <option v-if="false" value="count">Count</option>
             <option v-if="false" value="interval+count">Interval + Count</option>
