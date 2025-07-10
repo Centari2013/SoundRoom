@@ -3,6 +3,9 @@ import SoundRoom from '@/views/SoundRoom.vue'
 import { useAuth } from '@/composables/useAuth'
 import { watch } from 'vue'
 
+/**
+ * Main application router instance.
+ */
 const router = createRouter({
   history: createWebHistory(),
   routes: [
@@ -50,6 +53,11 @@ const router = createRouter({
 
 
 // Guard setup
+/**
+ * Resolve once the authentication state has finished loading.
+ *
+ * @returns {Promise<void>}
+ */
 function waitForSessionLoaded() {
   return new Promise(resolve => {
     const { sessionLoaded } = useAuth()
@@ -64,6 +72,10 @@ function waitForSessionLoaded() {
   })
 }
 
+/**
+ * Navigation guard that ensures authentication is ready and verifies access
+ * to protected routes.
+ */
 router.beforeEach(async (to, from, next) => {
   await waitForSessionLoaded()
 

@@ -4,6 +4,13 @@ export default class Listener {
   _audioContext = null
   _canvasContext
 
+  /**
+   * Create a listener positioned within the room.
+   *
+   * @param {number} [x=300]     X coordinate in pixels.
+   * @param {number} [y=200]     Y coordinate in pixels.
+   * @param {number} [angle=180] Orientation angle in degrees.
+   */
   constructor(x = 300, y = 200, angle = 180) {
     this.x = x
     this.y = y
@@ -14,6 +21,12 @@ export default class Listener {
     return this._angle
   }
 
+  /**
+   * Recreate a Listener from JSON data.
+   *
+   * @param {Object} json Object with `x`, `y` and `angle` properties.
+   * @returns {Listener}
+   */
   static fromJSON(json) {
     if (json.x !== undefined && json.y !== undefined && json.angle !== undefined) {
       const newListener = new Listener(json.x, json.y, json.angle)
@@ -23,6 +36,11 @@ export default class Listener {
     }
   }
 
+  /**
+   * Serialise the listener to a plain object.
+   *
+   * @returns {{x:number, y:number, angle:number}}
+   */
   toJSON() {
     return {
       x: this.x,
@@ -31,19 +49,37 @@ export default class Listener {
     }
   }
 
+  /**
+   * Update the orientation angle and refresh the audio context.
+   *
+   * @param {number} newAngle
+   */
   updateAngle(newAngle) {
     this._angle = newAngle
     this.updateAudio()
   }
 
+  /**
+   * Set the Web Audio context used for spatialisation.
+   *
+   * @param {AudioContext} audioContext
+   */
   setAudioContext(audioContext) {
     this._audioContext = audioContext
   }
 
+  /**
+   * Provide the canvas context reference used for rendering.
+   *
+   * @param {{ value: CanvasRenderingContext2D }} canvasContextRef
+   */
   setCanvasContext(canvasContextRef) {
     this._canvasContext = canvasContextRef.value
   }
 
+  /**
+   * Synchronise the listener position and orientation with the audio context.
+   */
   updateAudio() {
     if (!this._audioContext) return
 
@@ -62,6 +98,9 @@ export default class Listener {
       1
     )
   }
+  /**
+   * Release stored context references.
+   */
   dispose() {
     this._audioContext = null;
     this._canvasContext = null;
