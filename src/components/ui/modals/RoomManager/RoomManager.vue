@@ -41,34 +41,15 @@
           <LoadingDiv text="Getting your Rooms..." :duration="1000" @done="loading = false"/>
         </div>
         
-         <template v-if="rooms.length > 0 && !loading">
-          <div
+        <template v-if="rooms.length > 0 && !loading">
+          <RoomCard
             v-for="room in paginatedItems"
             :key="room.id"
-            class="room-row p-4 border border-neutral-700 rounded-lg shadow-sm hover:bg-neutral-800 transition"
-          >
-            <img
-              v-if="room.thumbnail"
-              :src="room.thumbnail"
-              alt="Room preview"
-              class="rounded mb-3 w-full aspect-video object-cover border border-neutral-800"
-            />
-
-            <EditableRoomName
-              :roomId="room.id"
-              :name="room.name"
-              @updated="handleUpdateRoomName(room, $event)"
-            />
-
-            <div class="room-meta text-xs text-neutral-400">{{ formatDate(room.updated_at) }}</div>
-            <div class="room-actions mt-3 flex gap-2">
-              <BaseButton @click="handleLoadRoom(room.id)">Load</BaseButton>
-              <BaseButton @click="handleDeleteRoom(room.id)">Delete</BaseButton>
-            </div>
-          </div>
-
-          
-
+            :room="room"
+            @load="handleLoadRoom(room.id)"
+            @delete="handleDeleteRoom(room.id)"
+            @update-name="name => handleUpdateRoomName(room, name)"
+          />
         </template>
 
         <template v-else-if="!loading && rooms.length === 0">
@@ -81,29 +62,13 @@
 
         </div>
         <!-- Bottom Panel -->
-      <div
-        class="absolute flex bottom-0 left-0 right-0 p-4 bg-white dark:bg-neutral-950 border-t border-neutral-300 dark:border-neutral-800"
-      >
-        <span class="w-1/4"></span>
-        <div class="flex items-center justify-center w-1/2 space-x-3" :class="{'invisible': loading}">
-          <BaseButton
-            class="px-3 py-1"
-            :disabled="currentPage === 0"
-            @click="currentPage--"
-          >
-            ← Prev
-          </BaseButton>
-          <span>Page {{ currentPage + 1 }} of {{ totalPages == 0 ? 1 : totalPages }}</span>
-          <BaseButton
-            class="px-3 py-1"
-            :disabled="currentPage + 1 === totalPages"
-            @click="currentPage++"
-          >
-            Next →
-          </BaseButton>
-        </div>
-        <span class="w-1/4"></span>
-      </div>
+      <PaginationControls
+        :loading="loading"
+        :currentPage="currentPage"
+        :totalPages="totalPages"
+        @prev="currentPage--"
+        @next="currentPage++"
+      />
       </div>
       <!-- Yes/No Modal -->
       <YesNoModal
@@ -136,9 +101,9 @@ import { supabase } from '@/utils/supabase'
 import BaseButton from '@/components/ui/input/BaseButton.vue'
 import LoadingDiv from '@/components/ui/loading/LoadingDiv.vue'
 import YesNoModal from '@/components/ui/modals/YesNoModal.vue'
-import EditableRoomName from '@/components/ui/modals/RoomManager/EditableRoomName.vue'
+import RoomCard from '@/components/ui/modals/RoomManager/RoomCard.vue'
+import PaginationControls from '@/components/ui/modals/RoomManager/PaginationControls.vue'
 import { useAuth } from '@/composables/useAuth'
-import { formatDate } from '@/utils/dateUtils'
 import { useRouter } from 'vue-router'
 import { useSaveAndLoadRoom } from '@/composables/useSaveAndLoadRoom'
 import { useRoomStore } from '@/stores/useRoomStore'
