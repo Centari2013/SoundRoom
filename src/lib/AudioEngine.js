@@ -2,6 +2,16 @@
 import SoundSource from '@/lib/SoundSource';
 import { computed, ref, watch, reactive } from 'vue'
 
+/**
+ * High level wrapper around the Web Audio API that manages audio sources
+ * and provides convenience methods for playing, pausing and serialising
+ * the audio state.
+ */
+
+/**
+ * Manages a collection of {@link SoundSource} instances and the underlying
+ * Web Audio context.
+ */
 export default class AudioEngine {
   soundSources = ref([])
   #masterGain = null
@@ -9,7 +19,12 @@ export default class AudioEngine {
   masterVolume = ref(null)
   #MAX_SOURCE_COUNT = 30
   #uninitializedSoundSources = null
-  
+
+  /**
+   * @param {Array<Object>} [uninitializedSoundSources] - Raw sound source data
+   *   that will be instantiated when the engine is set up.
+   * @param {number} [volume=1] - Initial master volume level.
+   */
   constructor(uninitializedSoundSources, volume = 1 ) {
     this.#uninitializedSoundSources = uninitializedSoundSources || []
     this.soundSources.value = []  // reactive array of sources
@@ -27,6 +42,12 @@ export default class AudioEngine {
     )
   }
 
+  /**
+   * Lazily creates and returns the {@link AudioContext} used by the engine.
+   * Also sets up a master gain node connected to the destination.
+   *
+   * @returns {AudioContext}
+   */
   getAudioContext() {
     if (!this.#audioContext) {
       this.#audioContext = new (window.AudioContext || window.webkitAudioContext)()
@@ -39,6 +60,10 @@ export default class AudioEngine {
     return this.#audioContext
   }
 
+  /**
+   * Finalizes initialization by creating {@link SoundSource} instances from any
+   * preloaded data and wiring up MediaSession handlers when supported.
+   */
   setupAudioEngine() {
     if (this.#uninitializedSoundSources.length > 0) { // add loaded sound sources
       this.#uninitializedSoundSources.forEach(src => {
@@ -71,6 +96,12 @@ export default class AudioEngine {
     
   }
 
+  /**
+   * Adds a sound source to the engine and begins playback.
+   *
+   * @param {{src: Object, index?: number}} payload - Data describing the sound
+   *   source to add.
+   */
   addSoundSource(payload) {
     if (this.maxSourceCountReached){
       window.alert(`Limit of ${this.#MAX_SOURCE_COUNT} sound${this.#MAX_SOURCE_COUNT == 1 ? '' : 's'} in room reached.`); 
@@ -95,6 +126,13 @@ export default class AudioEngine {
     instance.play()
   }
 
+  /**
+   * Removes a sound source from the engine and cleans up associated audio
+   * nodes.
+   *
+   * @param {{index: number, src: Object}} payload - Target source information.
+   * @returns {Object} Serializable representation of the removed source.
+   */
   deleteSoundSource(payload) {
 
     // crappy fix but it works! (stale state)
@@ -121,6 +159,10 @@ export default class AudioEngine {
   }
 
 
+  /**
+   * Starts playback of all sound sources managed by the engine.
+   * Resumes the audio context if it was suspended.
+   */
   playAll() {
     if (this.#audioContext?.state === 'suspended') {
       this.#audioContext.resume()
@@ -150,6 +192,9 @@ export default class AudioEngine {
   }
   
 
+  /**
+   * Stops playback of all currently playing sound sources.
+   */
   pauseAll() {
     this.soundSources.value.forEach(s => {
       if (s.instance?.playing) {
@@ -162,6 +207,9 @@ export default class AudioEngine {
     
   }
 
+  /**
+   * Stops all playback and disconnects any nodes so resources are released.
+   */
   dispose() {
     this.pauseAll()
     this.soundSources.value.forEach(s => s.instance.dispose())
@@ -178,21 +226,30 @@ export default class AudioEngine {
     }
   }
 
+  /** @param {number} count */
   set maxSourceCount(count){
     this.#MAX_SOURCE_COUNT = count
   }
+  /** @returns {number} */
   get maxSourceCount() {
     return this.#MAX_SOURCE_COUNT
   }
 
+  /** @returns {boolean} */
   get maxSourceCountReached(){
     return this.soundSourceCount == this.maxSourceCount
   }
 
+  /** @returns {number} */
   get soundSourceCount() {
     return this.soundSources.value.length
   }
   
+  /**
+   * Serializes the current engine state so it can be stored.
+   *
+   * @returns {Object}
+   */
   toJSON() {
     return {
       soundSources: this.soundSources.value.map(src => ({
@@ -219,6 +276,12 @@ export default class AudioEngine {
     }
   }
 
+  /**
+   * Creates an AudioEngine instance from a serialized representation.
+   *
+   * @param {Object} json - Serialized data produced by {@link toJSON}.
+   * @returns {AudioEngine}
+   */
   static fromJSON(json) {
     let engine = null; 
 

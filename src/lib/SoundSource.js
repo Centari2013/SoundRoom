@@ -1,6 +1,13 @@
 // lib/SoundSource.js
+/**
+ * Wraps an HTMLAudioElement and connects it to the Web Audio graph with
+ * spatialisation support.
+ */
 
 export default class SoundSource {
+  /**
+   * @param {{audioContext: AudioContext, masterGain: GainNode, file: string, state: Object, loop?: boolean}} param0
+   */
   constructor({
     audioContext,
     masterGain,
@@ -48,30 +55,36 @@ export default class SoundSource {
 
   }
 
+  /** Start playback of the audio. */
   play() {
     this._audioElement.play();
     this.updateAudio();
     this._playing = true;
   }
 
+  /** Pause playback of the audio. */
   stop() {
     this._audioElement.pause();
     this._playing = false;
   }
 
+  /** @returns {boolean} */
   get playing() {
     return this._playing;
   }
 
+  /** @param {number} v */
   setVolume(v) {
     this._volume = v;
     this._audioElement.volume = v;
   }
 
+  /** @returns {number} */
   getVolume() {
     return this._volume;
   }
 
+  /** Update panner position/orientation based on current state. */
   updateAudio() {
     const angleRad = this._rad(this.state.angle);
     const x = this.state.x * this._scale;
@@ -94,6 +107,9 @@ export default class SoundSource {
     }
   }
 
+  /**
+   * Disconnects all nodes and frees references to help garbage collection.
+   */
   dispose() {
     try {
       if (this._audioElement) {
