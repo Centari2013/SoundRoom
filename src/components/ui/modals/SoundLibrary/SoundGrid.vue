@@ -19,7 +19,7 @@
 </template>
 
 <script setup>
-import { ref, defineExpose } from 'vue'
+import { ref } from 'vue'
 import BaseButton from '@/components/ui/input/BaseButton.vue'
 import SoundGridItem from './SoundGridItem.vue'
 
