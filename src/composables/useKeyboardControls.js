@@ -4,6 +4,13 @@ import { useActionManagerStore } from "@/stores/useActionManagerStore"
 import { useAudioEngineStore } from "@/stores/useAudioEngineStore"
 import { storeToRefs } from "pinia"
 
+/**
+ * Provides global keyboard controls for manipulating the listener and
+ * currently selected sound source.
+ *
+ * @param {{ selectedSource: import('vue').Ref<any>, selectedIndex: import('vue').Ref<number|null> }} param0
+ * @returns {{ onKeyDown: Function, onKeyUp: Function }} handlers for key events
+ */
 export function useKeyboardControls({selectedSource, selectedIndex}) {
   const roomStore = useRoomStore()
   const listenerStore = useListenerStore()
@@ -60,6 +67,12 @@ export function useKeyboardControls({selectedSource, selectedIndex}) {
     }
   )
 
+  /**
+   * Handle keydown events for moving the listener or sources and managing
+   * undo/redo shortcuts.
+   *
+   * @param {KeyboardEvent} e
+   */
   const onKeyDown = async (e) => {
     const key = e.key
     const speed = 5
@@ -145,6 +158,11 @@ export function useKeyboardControls({selectedSource, selectedIndex}) {
     }
   }
 
+  /**
+   * Handle keyup events to finalize rotations triggered on keydown.
+   *
+   * @param {KeyboardEvent} event
+   */
   const onKeyUp = (event) => {
     const key = event.key.toLowerCase()
   

@@ -4,13 +4,30 @@ import { useCanvasStore } from "@/stores/useCanvasStore";
 import { storeToRefs } from "pinia";  
 
 // useDragDropAudio.js
+/**
+ * Setup drag and drop handlers for the sound room canvas.
+ *
+ * @param {{ draggedSource: import('vue').Ref<Object|null> }} param0 - reactive ref holding the currently dragged source
+ * @returns {{ handleDragStart: Function, handleDrop: Function }} handlers for drag start and drop events
+ */
 export function useDragDropAudio({ draggedSource }) {
   const actionStore = useActionManagerStore()
   const { actionManager } = storeToRefs(actionStore)
+  /**
+   * Store the source that is being dragged.
+   * @param {DragEvent} e - drag event
+   * @param {Object} source - the source being dragged
+   */
   const handleDragStart = (e, source) => {
     draggedSource.value = source
   }
 
+  /**
+   * Drop handler for the canvas. Converts the drop coordinates into a new
+   * sound source and registers the action with the action manager.
+   *
+   * @param {DragEvent} e - drop event
+   */
   function handleDrop(e) {
     if (!draggedSource.value) return
     const canvasStore = useCanvasStore()
