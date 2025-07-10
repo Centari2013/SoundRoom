@@ -14,6 +14,21 @@ import { downloadMultipleAudio } from "@/utils/downloadAudio";
 import { useAuth } from "@/composables/useAuth";
 import { ref } from "vue";
 
+/**
+ * Manage saving and loading of rooms from Supabase or local storage.
+ * Provides helper functions and reactive flags used across the app.
+ *
+ * @returns {{
+ *   saveRoom: Function,
+ *   loadRoom: Function,
+ *   deleteRoom: Function,
+ *   isLoadingRoom: import('vue').Ref<boolean>,
+ *   saveRoomLocal: Function,
+ *   loadRoomLocal: Function,
+ *   isSavingRoom: import('vue').Ref<boolean>,
+ *   updateRoomName: Function
+ * }}
+ */
 export function useSaveAndLoadRoom() {
   const isLoadingRoom = ref(false);
   const isSavingRoom = ref(false);
@@ -30,6 +45,12 @@ export function useSaveAndLoadRoom() {
   const { soundLibrarySources } = storeToRefs(cacheStore);
   const { actionManager } = storeToRefs(actionStore);
 
+  /**
+   * Persist the current room to Supabase. Handles insert or update logic
+   * depending on whether the room already has an id.
+   *
+   * @returns {boolean} true when the save operation is initiated
+   */
   function saveRoom() {
     isSavingRoom.value = true;
     const roomData = roomStore.getSaveSnapshot();
@@ -47,6 +68,11 @@ export function useSaveAndLoadRoom() {
     return true; // Indicate that the save operation was initiated
   }
 
+  /**
+   * Update an existing room entry in Supabase.
+   *
+   * @param {Object} roomData - serialized room data
+   */
   function updateRoom(roomData) {
     supabase
       .from("rooms")
@@ -67,6 +93,13 @@ export function useSaveAndLoadRoom() {
       });
   }
 
+  /**
+   * Update the name of a room in Supabase.
+   *
+   * @param {number|string} roomId - id of the room to update
+   * @param {string} name - new room name
+   * @returns {Promise<boolean>} resolves to true if successful
+   */
   async function updateRoomName(roomId, name) {
     const { error } = await supabase
       .from("rooms")
@@ -84,6 +117,11 @@ export function useSaveAndLoadRoom() {
   }
 
 
+  /**
+   * Insert a new room entry in Supabase.
+   *
+   * @param {Object} roomData - serialized room data
+   */
   function insertRoom(roomData) {
     supabase
       .from("rooms")
@@ -105,6 +143,12 @@ export function useSaveAndLoadRoom() {
       });
   }
 
+  /**
+   * Load a room from Supabase and hydrate stores with the data.
+   *
+   * @param {number|string} roomId - id of the room to load
+   * @returns {Promise<boolean>} whether the load succeeded
+   */
   async function loadRoom(roomId) {
     isLoadingRoom.value = true;
     // get room data from supabase
@@ -178,6 +222,12 @@ export function useSaveAndLoadRoom() {
     return true;
   }
 
+  /**
+   * Remove a room from Supabase by id.
+   *
+   * @param {number|string} roomId - room identifier
+   * @returns {Promise<boolean>} true if deletion succeeded
+   */
   async function deleteRoom(roomId) {
 
     const { error, statusText } = await supabase
@@ -193,6 +243,12 @@ export function useSaveAndLoadRoom() {
     return true;
   }
 
+  /**
+   * Fetch sound file metadata for a set of library ids.
+   *
+   * @param {Array<number|string>} ids - ids to fetch
+   * @returns {Promise<Array>} list of sound records
+   */
   async function getSoundsFromDB(ids) {
     const { data, error } = await supabase
       .from("sound_files")
@@ -203,6 +259,9 @@ export function useSaveAndLoadRoom() {
 
     return data;
   }
+  /**
+   * Persist the current room to browser localStorage for offline usage.
+   */
   function saveRoomLocal() {
     isSavingRoom.value = true;
     const roomData = roomStore.getSaveSnapshot();
@@ -212,6 +271,10 @@ export function useSaveAndLoadRoom() {
     }, 2000);
   }
 
+  /**
+   * Load the room configuration from localStorage if present.
+   * @returns {Promise<void>}
+   */
   async function loadRoomLocal() {
     isLoadingRoom.value = true;
     const stored = localStorage.getItem("tempSoundRoomData");
