@@ -5,10 +5,21 @@ import { storeToRefs } from 'pinia'
 // Central constant for sound node part identifier
 export const SOUND_NODE_PART_NAME = 'sound-node-part'
 
+/**
+ * Provide context menu behaviour for sound source nodes on the canvas.
+ *
+ * @param {import('vue').Ref<Object|null>} selectedSource - currently selected source
+ * @returns {{showContextMenu: Function, contextMenuActions: Array}}
+ */
 export function useContextMenuLogic(selectedSource) {
   const actionStore = useActionManagerStore()
   const { actionManager } = storeToRefs(actionStore)
   const canvasStore = useCanvasStore()
+  /**
+   * Display the context menu when the user right-clicks a sound node.
+   *
+   * @param {import('vue').KonvaEventObject<MouseEvent>} e - Konva event wrapper
+   */
   function showContextMenu(e) {
     e.evt.preventDefault()
     e.evt.stopPropagation()
