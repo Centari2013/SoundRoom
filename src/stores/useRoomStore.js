@@ -3,6 +3,11 @@ import { ref, computed } from 'vue'
 
 import { supabase } from '@/utils/supabase'
 
+/**
+ * Store responsible for managing room metadata and serializing the
+ * application state for saving/loading rooms.
+ */
+
 import Room from '@/lib/Room'
 import { useListenerStore } from './useListenerStore'
 import { useAudioEngineStore } from './useAudioEngineStore'
@@ -13,7 +18,13 @@ export const useRoomStore = defineStore('room', () => {
   const _lastSavedSnapshot = ref(null)
   const existingRoomNames = ref([])
 
-  function setExistingRoomNames() { // to be called on app load for duplicate room name checking
+  /**
+   * Populate the list of existing room names for duplicate checks.
+   * Should be invoked once on application startup.
+   *
+   * @returns {void}
+   */
+  function setExistingRoomNames() {
     supabase
       .from('rooms')
       .select('id, name')
@@ -94,14 +105,30 @@ export const useRoomStore = defineStore('room', () => {
   }
 
 
+  /**
+   * Load room configuration from serialized data.
+   *
+   * @param {Object} roomData - data from `Room.toJSON()`
+   * @returns {void}
+   */
   function loadRoom(roomData) {
     room.value = Room.fromJSON(roomData)
   }
 
+  /**
+   * Serialize the current room state.
+   *
+   * @returns {Object}
+   */
   function roomToJSON() {
     return room.value.toJSON()
   }
 
+  /**
+   * Capture a snapshot of all core stores for persistence.
+   *
+   * @returns {Object} serialized snapshot
+   */
   function getSaveSnapshot() {
     const listenerStore = useListenerStore()
     const audioEngineStore = useAudioEngineStore()

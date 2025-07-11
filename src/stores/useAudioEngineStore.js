@@ -4,23 +4,50 @@ import AudioEngine from '@/lib/AudioEngine'
 import { useListenerStore } from './useListenerStore'
 import { useAudioCacheStore } from './useAudioCacheStore'
 
+/**
+ * Store wrapper around {@link AudioEngine} exposing helpers for loading,
+ * serializing and setting up the audio context.
+ */
+
 export const useAudioEngineStore = defineStore('audioEngine', () => {
   const audioEngine = shallowRef(new AudioEngine([]))
 
+  /**
+   * Load a serialized audio engine configuration.
+   *
+   * @param {Object} data - data produced by `AudioEngine.toJSON()`
+   * @returns {void}
+   */
   function loadAudioEngine(data) {
     audioEngine.value = AudioEngine.fromJSON(data)
   }
 
+  /**
+   * Serialize the current audio engine state.
+   *
+   * @returns {Object}
+   */
   function audioEngineToJSON() {
     return audioEngine.value.toJSON()
   }
 
+  /**
+   * Limit how many sound sources can exist on the canvas.
+   *
+   * @param {number} max - maximum number of sources
+   * @returns {void}
+   */
   function setMaxCanvasSources(max) {
     if (audioEngine.value) {
       audioEngine.value.maxSourceCount = max
     }
   }
 
+  /**
+   * Instantiate the Web Audio context and wire up related stores.
+   *
+   * @returns {void}
+   */
   function setupAudioContext() {
     const listenerStore = useListenerStore()
     const cacheStore = useAudioCacheStore()
