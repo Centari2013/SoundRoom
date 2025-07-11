@@ -17,6 +17,16 @@ supabase.auth.onAuthStateChange((_event, session) => {
   sessionLoaded.value = true
 })
 
+/**
+ * Provide reactive authentication state and helper utilities.
+ *
+ * @returns {{
+ *   user: import('vue').Ref<any>,
+ *   isAuthenticated: import('vue').ComputedRef<boolean>,
+ *   sessionLoaded: import('vue').Ref<boolean>,
+ *   clearUser: Function
+ * }}
+ */
 export function useAuth() {
   return {
     user: readonly(user),
