@@ -22,6 +22,12 @@ export default class AudioEngine {
   #scheduler = null
   #scheduleWatchers = null
 
+  /**
+   * Create a new AudioEngine instance.
+   *
+   * @param {Array} [uninitializedSoundSources=[]] sound sources to create on setup
+   * @param {number} [volume=1] initial master volume
+   */
   constructor(uninitializedSoundSources, volume = 1 ) {
     this.#uninitializedSoundSources = uninitializedSoundSources || []
     this.soundSources.value = []  // reactive array of sources
@@ -41,6 +47,11 @@ export default class AudioEngine {
     )
   }
 
+  /**
+   * Lazily create and return the shared `AudioContext` instance.
+   *
+   * @returns {AudioContext}
+   */
   getAudioContext() {
     // Lazily create the audio context and master gain node on first use.
     // Subsequent calls return the same context.
@@ -55,6 +66,9 @@ export default class AudioEngine {
     return this.#audioContext
   }
 
+  /**
+   * Re-create sound sources and register media session handlers.
+   */
   setupAudioEngine() {
     // Recreate `SoundSource` instances from any previously saved data and
     // register media session handlers so hardware play/pause keys work.
@@ -89,9 +103,13 @@ export default class AudioEngine {
     
   }
 
+  /**
+   * Create a new `SoundSource` instance from a library entry and insert it
+   * into the reactive `soundSources` array.
+   *
+   * @param {{src:Object, index?:number}} payload
+   */
   addSoundSource(payload) {
-    // Create a new `SoundSource` instance from a library entry and place it
-    // into the reactive `soundSources` array.
     if (this.maxSourceCountReached){
       window.alert(`Limit of ${this.#MAX_SOURCE_COUNT} sound${this.#MAX_SOURCE_COUNT == 1 ? '' : 's'} in room reached.`);
       return
@@ -145,6 +163,12 @@ export default class AudioEngine {
     this.#scheduleWatchers.set(sched.id, [enabledUnwatch, paramsUnwatch])
   }
 
+  /**
+   * Remove a `SoundSource` from the engine and clean up its audio nodes.
+   *
+   * @param {{index:number, src:Object}} payload
+   * @returns {?Object} serialized source data for undo
+   */
   deleteSoundSource(payload) {
     // Remove a `SoundSource` from the canvas and clean up its audio nodes.
     // The index logic is defensive to handle stale state from undo/redo.
@@ -179,6 +203,9 @@ export default class AudioEngine {
   }
 
 
+  /**
+   * Start playback of all sound sources and initialise scheduling.
+   */
   playAll() {
     // Ensure the context is running then start every source. This also updates
     // the Media Session API so system controls display the correct state.
@@ -217,6 +244,9 @@ export default class AudioEngine {
   }
   
 
+  /**
+   * Pause all active sound sources and suspend scheduling.
+   */
   pauseAll() {
     // Stop playback on all active sources and update the Media Session state.
     this.soundSources.value.forEach(s => {
@@ -232,6 +262,9 @@ export default class AudioEngine {
     
   }
 
+  /**
+   * Tear down all audio nodes and close the context.
+   */
   dispose() {
     // Tear down all nodes and close the audio context entirely.
     this.pauseAll()
@@ -249,21 +282,33 @@ export default class AudioEngine {
     }
   }
 
+  /**
+   * Set the maximum number of sound sources allowed in the room.
+   * @param {number} count
+   */
   set maxSourceCount(count){
     this.#MAX_SOURCE_COUNT = count
   }
+  /** @returns {number} */
   get maxSourceCount() {
     return this.#MAX_SOURCE_COUNT
   }
 
+  /** @returns {boolean} */
   get maxSourceCountReached(){
     return this.soundSourceCount == this.maxSourceCount
   }
 
+  /** @returns {number} */
   get soundSourceCount() {
     return this.soundSources.value.length
   }
   
+  /**
+   * Serialise the engine state so it can be saved.
+   *
+   * @returns {Object}
+   */
   toJSON() {
     // Serialize the minimal state required to recreate the engine and all
     // currently loaded sources. This is used when saving a room layout.
@@ -293,6 +338,12 @@ export default class AudioEngine {
     }
   }
 
+  /**
+   * Rehydrate an AudioEngine instance from JSON produced by {@link toJSON}.
+   *
+   * @param {Object} json
+   * @returns {AudioEngine}
+   */
   static fromJSON(json) {
     // Rehydrate an AudioEngine instance from data produced by `toJSON`.
     let engine = null;

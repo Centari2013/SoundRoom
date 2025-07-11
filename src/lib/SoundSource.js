@@ -6,6 +6,16 @@
  * source so the canvas and audio remain in sync.
  */
 export default class SoundSource {
+  /**
+   * Create a new SoundSource wrapper.
+   *
+   * @param {Object} options
+   * @param {AudioContext} options.audioContext - context used for nodes
+   * @param {GainNode} options.masterGain - master gain node
+   * @param {string} options.file - URL or blob to load
+   * @param {Object} options.state - reactive state object
+   * @param {boolean} [options.loop=true] - loop playback by default
+   */
   constructor({
     audioContext,
     masterGain,
@@ -81,12 +91,14 @@ export default class SoundSource {
 
   }
 
+  /** Start playback of the audio element. */
   play() {
     this._audioElement.play();
     this.updateAudio();
     this._playing = true;
   }
 
+  /** Force playback from the start of the audio file. */
   forcePlayFromStart() {
     this._audioElement.currentTime = 0;
     this._audioElement.play();
@@ -94,24 +106,40 @@ export default class SoundSource {
     this._playing = true;
   }
 
+  /** Pause playback of the audio element. */
   stop() {
     this._audioElement.pause();
     this._playing = false;
   }
 
+  /**
+   * Whether the sound is currently playing.
+   * @returns {boolean}
+   */
   get playing() {
     return this._playing;
   }
 
+  /**
+   * Set the playback volume for this source.
+   * @param {number} v
+   */
   setVolume(v) {
     this._volume = v;
     this._audioElement.volume = v;
   }
 
+  /**
+   * Retrieve the current playback volume.
+   * @returns {number}
+   */
   getVolume() {
     return this._volume;
   }
 
+  /**
+   * Sync Web Audio panner position and orientation with the state used by the canvas.
+   */
   updateAudio() {
     // Sync the Web Audio panner with the state used by the canvas. Both
     // position and orientation are updated each time the source moves.
@@ -136,6 +164,9 @@ export default class SoundSource {
     }
   }
 
+  /**
+   * Gracefully disconnect and release all Web Audio nodes and associated resources.
+   */
   dispose() {
     // Gracefully disconnect and release all Web Audio nodes and the underlying
     // <audio> element when a source is removed from the room.
