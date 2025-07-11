@@ -4,11 +4,13 @@ import relativeTime from 'dayjs/plugin/relativeTime';
 dayjs.extend(relativeTime);
 
 /**
- * Formats a date string as:
- * - "Today at 3:45 PM"
- * - "Yesterday at 9:20 AM"
- * - "3 days ago" (for recent but older events)
- * - "May 28 at 4:20 PM" or "Oct 10, 2023 at 1:22 PM"
+ * Format a date value into a readable string.
+ *
+ * The string returned is relative when recent and falls back to a month/day
+ * representation for older dates.
+ *
+ * @param {string | Date} dateString - date value parseable by `dayjs`
+ * @returns {string} human friendly date string
  */
 export function formatDate(dateString) {
   const date = dayjs(dateString);
