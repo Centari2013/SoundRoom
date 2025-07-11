@@ -122,6 +122,13 @@ provide('selectedIndex', selectedIndex)
 provide('selectedSource', selectedSource)
 
 // Event Handlers
+/**
+ * Deselect the currently active sound source when the user clicks
+ * on an empty area of the canvas stage.
+ *
+ * @param {import('konva/lib/Node').KonvaEventObject<MouseEvent>} e - stage click event
+ * @returns {void}
+ */
 function handleStageClick(e) {
   if (e.target.getAttr('name') !== SOUND_NODE_PART_NAME) { // if NOT part of a konva SoundSourceNode.vue group
     selectedIndex.value = null // deselect sound source node
