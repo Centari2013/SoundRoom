@@ -2,6 +2,11 @@
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
+/**
+ * Navigate the user back to the home page.
+ *
+ * @returns {void}
+ */
 function goHome() {
   router.push('/')
 }

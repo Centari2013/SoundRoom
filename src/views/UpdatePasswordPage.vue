@@ -41,6 +41,11 @@ const validPassword = computed(() => {
   return validatePassword(newPassword.value).isValid
 })
 
+/**
+ * Send the new password to Supabase and handle the response.
+ *
+ * @returns {Promise<void>}
+ */
 async function submitNewPassword() {
   error.value = ''
   loading.value = true

@@ -67,6 +67,13 @@ const { soundLibrarySources } = storeToRefs(cacheStore)
 const emit = defineEmits(['close'])
 
 
+/**
+ * Add a sound to the library and mark it as not being sent anymore.
+ *
+ * @param {Object} source - metadata for the sound being added
+ * @param {Object} sound - sound record from the grid
+ * @returns {Promise<void>}
+ */
 async function handleAudioSent(source, sound) {
   sound.send = false
   await actionStore.addLibrarySoundSource(source)
@@ -81,6 +88,13 @@ const categories = [
   { id: 'misc', label: 'Misc' },
 ]
 
+/**
+ * Toggle whether a sound is included in the current library selection.
+ * Removes it when already present otherwise marks it for sending.
+ *
+ * @param {Object} s - sound record from the grid
+ * @returns {Promise<void>}
+ */
 async function toggleAddSource(s) {
   // if source in soundlibrarysources (draggable sources), delete, otherwise add
   if (soundLibrarySources.value.find((sound) => s.libraryId == sound.libraryId)) {
@@ -113,6 +127,11 @@ watch(
   { immediate: true }
 ) // run at least once, like a do while
 
+/**
+ * Retrieve the sounds for the currently active category from Supabase.
+ *
+ * @returns {Promise<Array>} list of sound metadata records
+ */
 async function listCategoryFiles() {
   // select rows of sound file info where bucket name matches active category name
   const { data, error } = await supabase
@@ -126,10 +145,16 @@ async function listCategoryFiles() {
   return data
 }
 
+/**
+ * Handler for the (currently disabled) upload input.
+ *
+ * @param {Event} event - change event from the file input
+ * @returns {void}
+ */
 function handleUpload(event) {
   const file = event.target.files?.[0]
   if (file) {
-    
+
   }
 }
 </script>
