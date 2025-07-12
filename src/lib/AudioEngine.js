@@ -22,6 +22,11 @@ export default class AudioEngine {
   #scheduler = null
   #scheduleWatchers = null
 
+  #convolver = null
+  #reverbGain = null
+  #currentIRName = null
+
+
   /**
    * Create a new AudioEngine instance.
    *
@@ -63,6 +68,16 @@ export default class AudioEngine {
       this.#masterGain.gain.value = this.masterVolume.value // default volume
       this.#masterGain.connect(this.#audioContext.destination)
     }
+    // Inside getAudioContext()
+    if (!this.#convolver) {
+      this.#convolver = this.#audioContext.createConvolver()
+      this.#reverbGain = this.#audioContext.createGain()
+      this.#reverbGain.gain.value = 0.9 // default wetness, adjust or expose as setting
+
+      this.#convolver.connect(this.#reverbGain)
+      this.#reverbGain.connect(this.#masterGain)
+    }
+
     return this.#audioContext
   }
 
@@ -124,6 +139,8 @@ export default class AudioEngine {
       state: src.state,
       loop: !src.state.schedule?.enabled,
     })
+    this.connectToReverb(instance.reverbSend)
+
 
     src.instance = instance
     this.soundSources.value.splice(src.index, 0, src)
@@ -201,6 +218,25 @@ export default class AudioEngine {
       volume: finalVolume
     }
   }
+
+  connectToReverb(node) {
+    if (this.#convolver) {
+      node.connect(this.#convolver)
+    }
+  }
+
+
+  async loadImpulseResponse(irName, url) {
+    const response = await fetch(url)
+    const arrayBuffer = await response.arrayBuffer()
+    const audioBuffer = await this.getAudioContext().decodeAudioData(arrayBuffer)
+    this.#convolver.buffer = audioBuffer
+    this.#currentIRName = irName
+
+    console.log('Loaded IR:', irName, audioBuffer)
+
+  }
+
 
 
   /**
@@ -335,6 +371,9 @@ export default class AudioEngine {
         index: src.index,
       })),
       masterVolume: this.masterVolume.value,
+      reverb: {
+        preset: this.#currentIRName ?? null,
+      }
     }
   }
 
@@ -349,7 +388,7 @@ export default class AudioEngine {
     let engine = null;
 
     if (Array.isArray(json.soundSources)) {
-      const uninitializedSoundSources = json.soundSources.map(src => ({
+     const uninitializedSoundSources = json.soundSources.map(src => ({
           index: src.index,
           src: {
             libraryId: src.libraryId,
@@ -359,6 +398,24 @@ export default class AudioEngine {
           }
         }))
       engine = new AudioEngine(uninitializedSoundSources, json.masterVolume ?? 1)
+      if (json.reverb?.preset) {
+        const IR_PRESETS = {
+          cathedral: '/impulses/1st_baptist_nashville_far_wide.wav',
+          room: '/impulses/room.wav',
+          tunnel: '/impulses/tunnel.wav',
+        }
+
+        const presetName = json.reverb.preset
+        const url = '/impulses/1st_baptist_nashville_far_wide.wav'
+        if (url) {
+          engine.getAudioContext(); // force context setup early
+          setTimeout(() => {
+            engine.loadImpulseResponse('Mi Blood', url)
+          }, 0)
+        }
+
+      }
+
       
     } else {
       throw new Error('Invalid JSON format for AudioEngine')

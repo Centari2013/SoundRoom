@@ -77,10 +77,21 @@ export default class SoundSource {
     pn.coneOuterAngle = this.state.coneOuter;
     pn.coneOuterGain = 0.2;
 
-    this._sourceNode
-      .connect(this._gainNode)
-      .connect(this._pannerNode)
-      .connect(masterGain ?? audioContext.destination);
+   this._sourceNode
+    .connect(this._gainNode)
+    .connect(this._pannerNode);
+
+    // Save the final node as outputNode (for reverb and dry path)
+    this.outputNode = this._pannerNode
+
+    // Connect dry path directly to master
+    this.outputNode.connect(masterGain ?? audioContext.destination);
+
+    // Optional: expose the panner node output for reverb routing
+    this.reverbSend = audioContext.createGain()
+    this.reverbSend.gain.value = 1 // or tweak per-source reverb level
+
+    this.outputNode.connect(this.reverbSend) // split the signal for reverb
 
     this._playing = false;
     this._volume = this.state.volume ?? 1; // default to 1 if not set
