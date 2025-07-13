@@ -9,7 +9,8 @@ This document provides a high level overview of the major files and modules that
 - **Listener.js** – Represents the user's listening position in the room. It synchronises its orientation with the `AudioContext` listener so rotations and movements are heard correctly.
 - **ActionManager.js** – Provides undo and redo functionality. Actions are registered with handlers which are executed and stored on a stack for later reversal.
 - **SoundScheduler.js** – Handles interval based playback for sources that have a schedule enabled. It keeps track of timers and supports pausing/resuming when the engine is stopped.
-- **Room.js** – Central class that stores room dimensions and owns the `AudioEngine`, `Listener` and `SoundSource` instances. Provides helpers for clamping values, adding sources and serialising basic metadata.
+- **Room.js** – Simple container describing room dimensions and metadata with helper methods for clamping values and serialising to JSON.
+
 
 ## src/utils
 
