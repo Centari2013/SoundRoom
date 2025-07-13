@@ -6,6 +6,8 @@
  * source so the canvas and audio remain in sync.
  */
 export default class SoundSource {
+  /** @type {import('./Room').default|null} */
+  _room = null
   /**
    * Create a new SoundSource wrapper.
    *
@@ -185,6 +187,24 @@ export default class SoundSource {
       p.setPosition(x, y, 0);
       p.setOrientation(Math.cos(angleRad), Math.sin(angleRad), 0);
     }
+  }
+
+  /**
+   * Provide a reference to the room this source belongs to.
+   * @param {import('./Room').default} room
+   */
+  setRoom(room) {
+    this._room = room
+  }
+
+  /**
+   * Optional hook for responding to room size changes.
+   * Currently a no-op but reserved for future use.
+   * @param {number} _width
+   * @param {number} _height
+   */
+  onRoomResize(_width, _height) {
+    // placeholder
   }
 
   /**
