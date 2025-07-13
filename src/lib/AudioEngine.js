@@ -76,6 +76,13 @@ export default class AudioEngine {
 
       this.#convolver.connect(this.#reverbGain)
       this.#reverbGain.connect(this.#masterGain)
+
+      // Ensure any already-created sources are routed through the new convolver
+      this.soundSources.value.forEach(s => {
+        if (s.instance?.reverbSend) {
+          s.instance.reverbSend.connect(this.#convolver)
+        }
+      })
     }
 
     return this.#audioContext
@@ -139,7 +146,8 @@ export default class AudioEngine {
       state: src.state,
       loop: !src.state.schedule?.enabled,
     })
-    this.connectToReverb(instance.reverbSend)
+    // Route the new source through the reverb chain
+    this.connectToReverb(instance)
 
 
     src.instance = instance
@@ -220,18 +228,40 @@ export default class AudioEngine {
   }
 
   connectToReverb(node) {
-    if (this.#convolver) {
-      node.connect(this.#convolver)
+    // Ensure the convolver node exists then route the provided node through it
+    this.getAudioContext()
+
+    if (!this.#convolver || !node) return
+
+    try {
+      if (typeof node.connectReverb === 'function') {
+        node.connectReverb(this.#convolver)
+      } else if (typeof node.connect === 'function') {
+        node.connect(this.#convolver)
+      }
+    } catch (err) {
+      console.warn('Failed to connect node to convolver:', err)
     }
   }
 
 
   async loadImpulseResponse(irName, url) {
+    // Ensure audio context and convolver are ready
+    this.getAudioContext()
+
     const response = await fetch(url)
     const arrayBuffer = await response.arrayBuffer()
-    const audioBuffer = await this.getAudioContext().decodeAudioData(arrayBuffer)
+    const audioBuffer = await this.#audioContext.decodeAudioData(arrayBuffer)
+
     this.#convolver.buffer = audioBuffer
     this.#currentIRName = irName
+
+    // Reconnect all sources to ensure they use the new impulse
+    this.soundSources.value.forEach(s => {
+      if (s.instance?.connectReverb) {
+        s.instance.connectReverb(this.#convolver)
+      }
+    })
 
     console.log('Loaded IR:', irName, audioBuffer)
 
@@ -406,11 +436,11 @@ export default class AudioEngine {
         }
 
         const presetName = json.reverb.preset
-        const url = '/impulses/1st_baptist_nashville_far_wide.wav'
+        const url = IR_PRESETS[presetName]
         if (url) {
-          engine.getAudioContext(); // force context setup early
+          engine.getAudioContext() // ensure nodes exist
           setTimeout(() => {
-            engine.loadImpulseResponse('Mi Blood', url)
+            engine.loadImpulseResponse(presetName, url)
           }, 0)
         }
 
