@@ -102,6 +102,18 @@ export default class SoundSource {
 
   }
 
+  /**
+   * Connect this source's reverb send to the provided convolver.
+   * @param {AudioNode} convolver
+   */
+  connectReverb(convolver) {
+    try {
+      this.reverbSend.connect(convolver)
+    } catch (err) {
+      console.warn('Failed to connect reverb send:', err)
+    }
+  }
+
   /** Start playback of the audio element. */
   play() {
     this._audioElement.play();
@@ -191,10 +203,12 @@ export default class SoundSource {
       this._sourceNode?.disconnect()
       this._gainNode?.disconnect()
       this._pannerNode?.disconnect()
-  
+      this.reverbSend?.disconnect()
+
       this._sourceNode = null
       this._gainNode = null
       this._pannerNode = null
+      this.reverbSend = null
   
       this._audioContext = null
       this.state = null
