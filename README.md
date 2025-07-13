@@ -124,6 +124,11 @@ Planned next-phase upgrades:
 - Scene state is client-only for now — no localStorage or persistence yet.
 - Supabase bucket permissions are currently public-read for MVP testing.
 
+## 📚 Developer Docs
+
+See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for a tour of the key
+non-Vue modules that power SoundRoom.
+
 ---
 
 ## 🪪 License
