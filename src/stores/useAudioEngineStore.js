@@ -52,10 +52,23 @@ export const useAudioEngineStore = defineStore('audioEngine', () => {
     const listenerStore = useListenerStore()
     const cacheStore = useAudioCacheStore()
     const audioContext = audioEngine.value.getAudioContext()
+
     listenerStore.listener.setAudioContext(audioContext)
     cacheStore.audioCacheManager.setAudioContext(audioContext)
     audioEngine.value.setupAudioEngine()
     listenerStore.listener.updateAudio()
+  }
+
+  /**
+   * Loads an impulse response (IR) into the audio engine.
+   *
+   * @async
+   * @param {string} irName - The name of the impulse response.
+   * @param {string} URL - The URL from which to fetch the impulse response audio file.
+   * @returns {Promise<void>} Resolves when the impulse response has been loaded.
+   */
+  async function loadIR(irName, URL) {
+    await audioEngine.value.loadImpulseResponse(irName, URL)
   }
 
   const isPlaying = computed(() => audioEngine.value.isPlaying.value)
@@ -67,6 +80,7 @@ export const useAudioEngineStore = defineStore('audioEngine', () => {
     audioEngineToJSON,
     setMaxCanvasSources,
     setupAudioContext,
+    loadIR,
     isPlaying,
     MAX_CANVAS_SOURCES
   }
