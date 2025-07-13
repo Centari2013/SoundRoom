@@ -127,7 +127,9 @@ Planned next-phase upgrades:
 ## 📚 Developer Docs
 
 See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for a tour of the key
-non-Vue modules that power SoundRoom.
+non-Vue modules that power SoundRoom. The new
+[docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) document covers local setup and
+general guidelines for hacking on the project.
 
 ---
 
