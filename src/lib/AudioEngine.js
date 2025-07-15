@@ -211,7 +211,7 @@ export default class AudioEngine {
     const watchers = this.#scheduleWatchers.get(schedId)
     watchers?.forEach(unwatch => unwatch())
     this.#scheduleWatchers.delete(schedId)
-    this.#scheduler.cancelSchedule(instance)
+    this.#scheduler.cancelSchedule(src)
 
     if (!src) {
       console.warn("Tried to delete sound source but index", index, "was invalid.")
