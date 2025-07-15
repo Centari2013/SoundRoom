@@ -114,6 +114,8 @@ export default class AudioEngine {
       })
     }
 
+    this.#scheduler.start();
+
     if ('mediaSession' in navigator) {
       navigator.mediaSession.setActionHandler('play', () => {
         this.playAll()
@@ -136,7 +138,7 @@ export default class AudioEngine {
         ]
       })
     }
-    
+
   }
 
   /**
@@ -169,10 +171,10 @@ export default class AudioEngine {
     if (this.#audioContext?.state === 'suspended') {
       this.#audioContext.resume()
     }
-    if (!src.state.schedule?.enabled) {
+    if (!src.instance.state.schedule?.enabled && instance.isPlaying) {
       instance.play()
     }
-
+    
     // Watch schedule changes to hook into the scheduler
     const sched = instance.state.schedule
     const enabledUnwatch = watch(
@@ -187,7 +189,8 @@ export default class AudioEngine {
             instance.play()
           }
         }
-      }
+      },
+      { immediate: true }
     )
 
     const paramsUnwatch = watch(
@@ -280,6 +283,31 @@ export default class AudioEngine {
 
   }
 
+  playSoundSource(src) {
+    if (!src || !src.instance) {
+      console.warn("Tried to play sound source but it was not valid:", src)
+      return
+    }
+    if (src.instance.state.schedule?.enabled) {
+        this.#scheduler.updateSchedule(src.instance);
+        src.instance._audioElement.loop = false
+      } else {
+        src.instance._audioElement.loop = true
+        src.instance?.play?.()
+      }
+  }
+
+  pauseSoundSource(src) {
+    if (!src || !src.instance) {
+      console.warn("Tried to pause sound source but it was not valid:", src)
+      return
+    }
+    const sched = src.instance.state.schedule;
+    if (sched?.enabled) {
+      this.#scheduler.cancelSchedule(src);
+    }
+    src.instance.stop();
+  }
 
 
   /**
@@ -293,15 +321,13 @@ export default class AudioEngine {
     }
   
     this.soundSources.value.forEach(s => {
-      if (s.state.schedule?.enabled) {
-        s.instance.stop()
-        s.instance._audioElement.loop = false
-      } else {
-        s.instance._audioElement.loop = true
-        s.instance?.play?.()
-      }
+      this.playSoundSource(s) // play each source
     })
-    this.#scheduler.start();
+    if (this.#scheduler.roomStartTime === null) {
+      this.#scheduler.start(); // initial start
+    } else {
+      this.#scheduler.resume(); // resume from pause
+    }
   
     if ('mediaSession' in navigator) {
       navigator.mediaSession.playbackState = 'playing'
@@ -329,9 +355,7 @@ export default class AudioEngine {
   pauseAll() {
     // Stop playback on all active sources and update the Media Session state.
     this.soundSources.value.forEach(s => {
-      if (s.instance?.playing) {
-        s.instance.stop()
-      }
+      this.pauseSoundSource(s) // pause each source
     })
     this.#scheduler.pause();
     
@@ -393,6 +417,7 @@ export default class AudioEngine {
     // currently loaded sources. This is used when saving a room layout.
     return {
       soundSources: this.soundSources.value.map(src => ({
+        
         libraryId: src.libraryId,
         instance: {
           state:{

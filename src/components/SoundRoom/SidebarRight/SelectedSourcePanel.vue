@@ -144,6 +144,7 @@ import { computed, inject } from 'vue';
 import VueSlider from 'vue-3-slider-component';
 import { useVolumeSlider } from '@/composables/useVolumeSlider';
 import { useActionManagerStore } from '@/stores/useActionManagerStore';
+import { useAudioEngineStore } from '@/stores/useAudioEngineStore';
 import { storeToRefs } from 'pinia';
 
 const props = defineProps({
@@ -152,6 +153,7 @@ const props = defineProps({
 
 const selectedSource = inject('selectedSource');
 const { actionManager } = storeToRefs(useActionManagerStore());
+const audioEngineStore = useAudioEngineStore();
 
 const state = computed(() => selectedSource.value.instance.state);
 const schedule = computed(() => state.value.schedule);
@@ -169,8 +171,8 @@ const playPauseLabel = computed(() =>
 );
 
 const playPauseSource = () => {
-  const inst = selectedSource.value.instance;
-  inst.playing ? inst.stop() : inst.play();
+  const src = selectedSource.value;
+  src.playing ? audioEngineStore.pauseSoundSource(src) : audioEngineStore.playSoundSource(src);
 };
 
 const deleteSource = () => {

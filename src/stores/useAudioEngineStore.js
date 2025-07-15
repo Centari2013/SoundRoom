@@ -74,6 +74,23 @@ export const useAudioEngineStore = defineStore('audioEngine', () => {
     await audioEngine.value.loadImpulseResponse(irName, URL)
   }
 
+  /**
+   * Plays sound source.
+   * @param {SoundSource} src - The sound source to play.
+   * @returns {void}
+   */
+  function playSoundSource(src) {
+    audioEngine.value.playSoundSource(src)
+  }
+  /**
+   * Pauses sound source.
+   * @param {SoundSource} src - The sound source to pause.
+   * @returns {void}
+   */
+  function pauseSoundSource(src) {
+    audioEngine.value.pauseSoundSource(src)
+  }
+
   const isPlaying = computed(() => audioEngine.value.isPlaying.value)
   const MAX_CANVAS_SOURCES = computed(() => audioEngine.value.maxSourceCount)
 
@@ -84,6 +101,8 @@ export const useAudioEngineStore = defineStore('audioEngine', () => {
     setMaxCanvasSources,
     setupAudioContext,
     loadIR,
+    playSoundSource,
+    pauseSoundSource,
     isPlaying,
     MAX_CANVAS_SOURCES
   }

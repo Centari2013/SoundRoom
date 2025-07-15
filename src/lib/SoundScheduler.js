@@ -170,6 +170,8 @@ export default class SoundScheduler {
     const sched = source.state.schedule;
     const forceRestart = sched.restart;
 
+    console.log(sched)
+
     this.cancelSchedule(source); // stop any pending timers
 
     if (!forceRestart && sched.isPlaying) {

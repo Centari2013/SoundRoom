@@ -98,11 +98,24 @@ export default class SoundSource {
     this._playing = false;
     this._volume = this.state.volume ?? 1; // default to 1 if not set
 
-    if (this.state.isPlaying) { // if sound was playing when saved
-      this.play()
-    }
+    this._audioElement.addEventListener('play', this._onPlay);
+    this._audioElement.addEventListener('pause', this._onPause);
+    this._audioElement.addEventListener('ended', this._onEnded);
+
+
 
   }
+  _onPlay = () => {
+    this._playing = true;
+  };
+
+  _onPause = () => {
+    this._playing = false;
+  };
+
+  _onEnded = () => {
+    this._playing = false;
+  };
 
   /**
    * Connect this source's reverb send to the provided convolver.
@@ -120,7 +133,6 @@ export default class SoundSource {
   play() {
     this._audioElement.play();
     this.updateAudio();
-    this._playing = true;
   }
 
   /** Force playback from the start of the audio file. */
@@ -128,13 +140,11 @@ export default class SoundSource {
     this._audioElement.currentTime = 0;
     this._audioElement.play();
     this.updateAudio();
-    this._playing = true;
   }
 
   /** Pause playback of the audio element. */
   stop() {
     this._audioElement.pause();
-    this._playing = false;
   }
 
   /**
@@ -182,7 +192,49 @@ export default class SoundSource {
     p.orientationX.setValueAtTime(Math.cos(angleRad), ctx.currentTime);
     p.orientationY.setValueAtTime(Math.sin(angleRad), ctx.currentTime);
     p.orientationZ.setValueAtTime(0, ctx.currentTime);
-    
+
+    this._room ?? this.updateRoomInteraction(this._room);
+  }
+
+
+  /**
+   * Adjust source properties based on proximity to room walls and corners.
+   * @param {import('./Room').default} room
+   */
+  updateRoomInteraction(room) {
+    if (!room) return;
+
+    const { x, y } = this.state;
+    const roomWidth = room.width;
+    const roomHeight = room.height;
+
+    // Distance to each wall
+    const distLeft = x;
+    const distRight = roomWidth - x;
+    const distTop = y;
+    const distBottom = roomHeight - y;
+
+    // Nearest wall
+    const minWallDist = Math.min(distLeft, distRight, distTop, distBottom);
+
+    // Distance to corners
+    const distTopLeft = Math.hypot(x, y);
+    const distTopRight = Math.hypot(roomWidth - x, y);
+    const distBottomLeft = Math.hypot(x, roomHeight - y);
+    const distBottomRight = Math.hypot(roomWidth - x, roomHeight - y);
+    const minCornerDist = Math.min(distTopLeft, distTopRight, distBottomLeft, distBottomRight);
+
+    // Normalize to 0–1 where 0 = touching, 1 = far
+    const normWall = Math.min(minWallDist / 100, 1);
+    const normCorner = Math.min(minCornerDist / 150, 1);
+
+    // Simulate some corner muffling or reverb boost
+    const cornerGain = 1 - normCorner;
+    const wallGain = 1 - normWall;
+
+    // Example usage: reduce gain near corners, increase reverbSend near corners
+    this._gainNode.gain.setValueAtTime(0.5 + 0.5 * wallGain, this._audioContext.currentTime);
+    this.reverbSend.gain.setValueAtTime(0.2 + 0.8 * cornerGain, this._audioContext.currentTime);
   }
 
   /**
@@ -213,6 +265,10 @@ export default class SoundSource {
       if (this._audioElement) {
         this._audioElement.pause()
         this._audioElement.load()
+        this._audioElement?.removeEventListener('play', this._onPlay);
+        this._audioElement?.removeEventListener('pause', this._onPause);
+        this._audioElement?.removeEventListener('ended', this._onEnded);
+
         this._audioElement = null
       }
   
