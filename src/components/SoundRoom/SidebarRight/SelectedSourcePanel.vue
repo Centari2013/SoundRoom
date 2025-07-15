@@ -172,7 +172,7 @@ const playPauseLabel = computed(() =>
 
 const playPauseSource = () => {
   const src = selectedSource.value;
-  src.playing ? audioEngineStore.pauseSoundSource(src) : audioEngineStore.playSoundSource(src);
+  src.instance.playing ? audioEngineStore.pauseSoundSource(src) : audioEngineStore.playSoundSource(src);
 };
 
 const deleteSource = () => {
