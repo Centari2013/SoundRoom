@@ -63,6 +63,11 @@ export default class AudioEngine {
         return src.instance.playing
       })
     )
+
+    // Keep the public flag in sync with the computed value so UI updates
+    watch(this.isAudioPlaying, (v) => {
+      this.isPlaying.value = v
+    }, { immediate: true })
   }
 
   /**
