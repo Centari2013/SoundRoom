@@ -8,7 +8,7 @@
     :fill="color"
     :stroke="color"
     :strokeWidth="strokeWidth"
-    listening="false"
+    :listening="false"
   />
 
   <v-arc
@@ -20,7 +20,7 @@
     :fill="color"
     :stroke="color"
     :strokeWidth="strokeWidth"
-    listening="false"
+    :listening="false"
   />
 </template>
 
