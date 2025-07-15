@@ -155,7 +155,8 @@ export default class SoundScheduler {
         clearTimeout(timeoutId);
 
         // Save remaining delay time for resume
-        const elapsed = performance.now() - (sched.lastPlayedAt * 1000 + this.roomStartTime);
+        const last = sched.lastPlayedAt ?? 0;
+        const elapsed = performance.now() - (last * 1000 + this.roomStartTime);
         info.remainingGapMs = Math.max(0, info.remainingGapMs - elapsed);
         info.isPaused = true;
         this.intervals.delete(id);
@@ -210,7 +211,8 @@ export default class SoundScheduler {
     if (timeoutId) {
       clearTimeout(timeoutId);
 
-      const elapsed = performance.now() - (sched.lastPlayedAt * 1000 + this.roomStartTime);
+      const last = sched.lastPlayedAt ?? 0;
+      const elapsed = performance.now() - (last * 1000 + this.roomStartTime);
       info.remainingGapMs = Math.max(0, info.remainingGapMs - elapsed);
       info.isPaused = true;
       this.intervals.delete(id);

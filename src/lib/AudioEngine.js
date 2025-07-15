@@ -49,8 +49,11 @@ export default class AudioEngine {
       }
     })
 
-    // Computed: tracks if anything is playing
-    this.isPlaying = computed(() =>
+    // Reactive flag: true while playback is active via playAll()
+    this.isPlaying = ref(false)
+
+    // Computed helper to know if any source audio is currently audible
+    this.isAudioPlaying = computed(() =>
       this.soundSources.value.some(s => s.instance?.playing)
     )
   }
@@ -333,6 +336,8 @@ export default class AudioEngine {
     } else {
       this.#scheduler.resume(); // resume from pause
     }
+
+    this.isPlaying.value = true
   
     if ('mediaSession' in navigator) {
       navigator.mediaSession.playbackState = 'playing'
@@ -362,6 +367,8 @@ export default class AudioEngine {
       this.pauseSoundSource(s) // pause each source
     })
     this.#scheduler.pause();
+
+    this.isPlaying.value = false
     
     if ('mediaSession' in navigator) {
       navigator.mediaSession.playbackState = 'paused'
