@@ -175,18 +175,14 @@ export default class SoundSource {
     const p = this._pannerNode;
     const ctx = this._audioContext;
 
-    if (p.positionX) {
-      p.positionX.setValueAtTime(x, ctx.currentTime);
-      p.positionY.setValueAtTime(y, ctx.currentTime);
-      p.positionZ.setValueAtTime(0, ctx.currentTime);
+    p.positionX.setValueAtTime(x, ctx.currentTime);
+    p.positionY.setValueAtTime(y, ctx.currentTime);
+    p.positionZ.setValueAtTime(0, ctx.currentTime);
 
-      p.orientationX.setValueAtTime(Math.cos(angleRad), ctx.currentTime);
-      p.orientationY.setValueAtTime(Math.sin(angleRad), ctx.currentTime);
-      p.orientationZ.setValueAtTime(0, ctx.currentTime);
-    } else {
-      p.setPosition(x, y, 0);
-      p.setOrientation(Math.cos(angleRad), Math.sin(angleRad), 0);
-    }
+    p.orientationX.setValueAtTime(Math.cos(angleRad), ctx.currentTime);
+    p.orientationY.setValueAtTime(Math.sin(angleRad), ctx.currentTime);
+    p.orientationZ.setValueAtTime(0, ctx.currentTime);
+    
   }
 
   /**
