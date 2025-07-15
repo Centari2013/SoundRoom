@@ -5,8 +5,7 @@ import AudioEngine from "./AudioEngine";
 export default class Room {
   width = ref(600)
   height = ref(400)
-  height = 0
-  name = ''
+  name = ref('')
   id = null
   audioEngine = shallowRef(null)
 
