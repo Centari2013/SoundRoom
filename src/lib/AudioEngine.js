@@ -289,7 +289,12 @@ export default class AudioEngine {
       return
     }
     if (src.instance.state.schedule?.enabled) {
-        this.#scheduler.updateSchedule(src.instance);
+        const schedId = src.instance.state.schedule.id;
+        if (this.#scheduler.pauseInfo.has(schedId) && this.#scheduler.pauseInfo.get(schedId).isPaused) {
+          this.#scheduler.resumeSource(src.instance);
+        } else {
+          this.#scheduler.updateSchedule(src.instance);
+        }
         src.instance._audioElement.loop = false
       } else {
         src.instance._audioElement.loop = true
@@ -304,7 +309,7 @@ export default class AudioEngine {
     }
     const sched = src.instance.state.schedule;
     if (sched?.enabled) {
-      this.#scheduler.cancelSchedule(src);
+      this.#scheduler.pauseSource(src.instance);
     }
     src.instance.stop();
   }
@@ -345,7 +350,6 @@ export default class AudioEngine {
       })
     }
     
-    this.isPlaying.value = true
   }
   
 

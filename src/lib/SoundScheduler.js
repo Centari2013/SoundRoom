@@ -52,12 +52,23 @@ export default class SoundScheduler {
       return new Promise((resolve) => {
         const el = source._audioElement;
 
-        const onEnded = () => {
+        const cleanup = () => {
           el.removeEventListener('ended', onEnded);
+          el.removeEventListener('pause', onPause);
+        };
+
+        const onEnded = () => {
+          cleanup();
+          resolve();
+        };
+
+        const onPause = () => {
+          cleanup();
           resolve();
         };
 
         el.addEventListener('ended', onEnded);
+        el.addEventListener('pause', onPause);
 
         sched.isPlaying = true;
         source.forcePlayFromStart();
@@ -148,6 +159,58 @@ export default class SoundScheduler {
     }
   }
 
+  /**
+   * Pause scheduling for a single sound source.
+   * Stores remaining delay and stops any pending loop.
+   * @param {SoundSource} source
+   */
+  pauseSource(source) {
+    const sched = source.state.schedule;
+    const { id } = sched;
+    const info = this.pauseInfo.get(id);
+
+    if (!sched.enabled || !info) return;
+
+    if (sched.isPlaying) {
+      source._audioElement.pause();
+      sched.isPlaying = false;
+    }
+
+    const timeoutId = this.intervals.get(id);
+    if (timeoutId) {
+      clearTimeout(timeoutId);
+
+      const elapsed = performance.now() - (sched.lastPlayedAt * 1000 + this.roomStartTime);
+      info.remainingGapMs = Math.max(0, info.remainingGapMs - elapsed);
+      info.isPaused = true;
+      this.intervals.delete(id);
+    }
+
+    sched.stopCurrentLoop = true;
+  }
+
+  /**
+   * Resume scheduling for a single sound source that was paused.
+   * @param {SoundSource} source
+   */
+  resumeSource(source) {
+    const sched = source.state.schedule;
+    const { id } = sched;
+    const info = this.pauseInfo.get(id);
+
+    if (!sched.enabled || !info || !info.isPaused) return;
+
+    info.isPaused = false;
+    sched.stopCurrentLoop = false;
+
+    const resumeTimer = setTimeout(() => {
+      info.queuedLoop();
+    }, info.remainingGapMs);
+
+    info.resumeTimer = resumeTimer;
+    this.intervals.set(id, resumeTimer);
+  }
+
 
 
   /**
@@ -201,11 +264,19 @@ export default class SoundScheduler {
    * @param {SoundSource} source - the sound source to cancel
    */
   cancelSchedule(source) {
-    const id = this.intervals.get(source.state.schedule?.id);
+    const sched = source.state.schedule;
+    const id = this.intervals.get(sched?.id);
     if (id) {
       clearTimeout(id);
-      this.intervals.delete(source.state.schedule?.id);
+      this.intervals.delete(sched?.id);
     }
+
+    const info = this.pauseInfo.get(sched?.id);
+    if (info?.resumeTimer) {
+      clearTimeout(info.resumeTimer);
+    }
+
+    sched.stopCurrentLoop = true;
   }
 }
 
