@@ -1,11 +1,14 @@
 // lib/Room.js
+import { ref, shallowRef } from "vue";
+import AudioEngine from "./AudioEngine";
 
 export default class Room {
-  width = 0
+  width = ref(600)
+  height = ref(400)
   height = 0
   name = ''
   id = null
-
+  audioEngine = shallowRef(null)
 
   /**
    * Create a new room instance.
@@ -20,6 +23,17 @@ export default class Room {
     this.height = height
     this.name = name
     this.id = id
+  }
+  /**
+   * Set the audio engine for this room.
+   * @param {AudioEngine} audioEngine - The audio engine instance to use.
+   */
+  setAudioEngine(audioEngine = null) {
+    if (audioEngine && !(audioEngine instanceof AudioEngine)) {
+      throw new Error("Expected an instance of AudioEngine");
+    }
+    this.audioEngine.value = (audioEngine ?? new AudioEngine());
+    this.audioEngine.value.setRoom(this);
   }
 
   /**

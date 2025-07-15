@@ -1,6 +1,7 @@
-import { defineStore } from 'pinia'
+import { defineStore, storeToRefs } from 'pinia'
 import { shallowRef, computed } from 'vue'
 import AudioEngine from '@/lib/AudioEngine'
+import { useRoomStore } from './useRoomStore'
 import { useListenerStore } from './useListenerStore'
 import { useAudioCacheStore } from './useAudioCacheStore'
 
@@ -10,7 +11,9 @@ import { useAudioCacheStore } from './useAudioCacheStore'
  */
 
 export const useAudioEngineStore = defineStore('audioEngine', () => {
-  const audioEngine = shallowRef(new AudioEngine([]))
+  const roomStore = useRoomStore()
+  const { room } = storeToRefs(roomStore)
+  const audioEngine = computed(() => room.value.audioEngine.value)
 
   /**
    * Load a serialized audio engine configuration.
@@ -19,7 +22,7 @@ export const useAudioEngineStore = defineStore('audioEngine', () => {
    * @returns {void}
    */
   function loadAudioEngine(data) {
-    audioEngine.value = AudioEngine.fromJSON(data)
+    room.value.setAudioEngine(AudioEngine.fromJSON(data))
   }
 
   /**

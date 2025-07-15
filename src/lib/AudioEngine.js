@@ -1,6 +1,7 @@
 // lib/AudioEngine.js
 import SoundSource from '@/lib/SoundSource';
 import SoundScheduler from '@/lib/SoundScheduler';
+import Room from './Room';
 import { computed, ref, watch, reactive } from 'vue'
 
 /**
@@ -26,6 +27,8 @@ export default class AudioEngine {
   #reverbGain = null
   #currentIRName = null
 
+  #room = null
+
 
   /**
    * Create a new AudioEngine instance.
@@ -50,6 +53,17 @@ export default class AudioEngine {
     this.isPlaying = computed(() =>
       this.soundSources.value.some(s => s.instance?.playing)
     )
+  }
+
+  /**
+   * Set the room this engine is associated with.
+   * @param {Room} room - the room instance to associate with this engine
+   */
+  setRoom(room) {
+    if (room && !(room instanceof Room)) {
+      throw new Error("Expected an instance of Room");
+    }
+    this.#room = room;
   }
 
   /**
@@ -148,7 +162,7 @@ export default class AudioEngine {
     })
     // Route the new source through the reverb chain
     this.connectToReverb(instance)
-
+    instance.setRoom(this.#room)
 
     src.instance = instance
     this.soundSources.value.splice(src.index, 0, src)

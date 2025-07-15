@@ -1,6 +1,5 @@
 import { defineStore } from 'pinia'
-import { ref, computed } from 'vue'
-
+import { ref, shallowRef, computed } from 'vue'
 import { supabase } from '@/utils/supabase'
 
 /**
@@ -14,7 +13,8 @@ import { useAudioEngineStore } from './useAudioEngineStore'
 import { useAudioCacheStore } from './useAudioCacheStore'
 
 export const useRoomStore = defineStore('room', () => {
-  const room = ref(new Room())
+  const room = shallowRef(new Room())
+  room.value.setAudioEngine()
   const _lastSavedSnapshot = ref(null)
   const existingRoomNames = ref([])
 
