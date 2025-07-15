@@ -86,7 +86,7 @@ export default class AudioEngine {
     if (!this.#convolver) {
       this.#convolver = this.#audioContext.createConvolver()
       this.#reverbGain = this.#audioContext.createGain()
-      this.#reverbGain.gain.value = 1 // default wetness, adjust or expose as setting
+      this.#reverbGain.gain.value = 0.6 // default wetness, adjust or expose as setting
 
       this.#convolver.connect(this.#reverbGain)
       this.#reverbGain.connect(this.#masterGain)
