@@ -1,4 +1,5 @@
 // lib/SoundSource.js
+import { ref } from 'vue';
 
 /**
  * Wrapper around a DOM `<audio>` element and the Web Audio nodes used to
@@ -47,8 +48,9 @@ export default class SoundSource {
 
       // Internal state
       timesPlayed: 0,
-      isPlaying: true, // whether the sound is currently playing
+      isPlaying: false, // whether the sound is currently playing
       lastPlayedAt: null,
+      paused: false,
     };
 
 
@@ -95,7 +97,7 @@ export default class SoundSource {
 
     this.outputNode.connect(this.reverbSend) // split the signal for reverb
 
-    this._playing = false;
+    this._playing = ref(false);
     this._volume = this.state.volume ?? 1; // default to 1 if not set
 
     this._audioElement.addEventListener('play', this._onPlay);
@@ -106,15 +108,15 @@ export default class SoundSource {
 
   }
   _onPlay = () => {
-    this._playing = true;
+    this._playing.value = true;
   };
 
   _onPause = () => {
-    this._playing = false;
+    this._playing.value = false;
   };
 
   _onEnded = () => {
-    this._playing = false;
+    this._playing.value = false;
   };
 
   /**
@@ -152,7 +154,7 @@ export default class SoundSource {
    * @returns {boolean}
    */
   get playing() {
-    return this._playing;
+    return this._playing.value;
   }
 
   /**

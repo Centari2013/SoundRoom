@@ -166,13 +166,23 @@ const schedulingEnabled = computed({
 
 const { onStart, onChange, onEnd } = useVolumeSlider(selectedSource, actionManager);
 
-const playPauseLabel = computed(() =>
-  selectedSource.value.instance.playing ? "Pause" : "Play"
-);
+const playPauseLabel = computed(() => {
+  const src = selectedSource.value;
+  const sched = src.instance.state.schedule;
+  if (sched.enabled) {
+    return sched.paused ? 'Play' : 'Pause';
+  }
+  return src.instance.playing ? 'Pause' : 'Play';
+});
 
 const playPauseSource = () => {
   const src = selectedSource.value;
-  src.playing ? audioEngineStore.pauseSoundSource(src) : audioEngineStore.playSoundSource(src);
+  const sched = src.instance.state.schedule;
+  if (sched.enabled) {
+    sched.paused ? audioEngineStore.playSoundSource(src) : audioEngineStore.pauseSoundSource(src);
+  } else {
+    src.instance.playing ? audioEngineStore.pauseSoundSource(src) : audioEngineStore.playSoundSource(src);
+  }
 };
 
 const deleteSource = () => {
