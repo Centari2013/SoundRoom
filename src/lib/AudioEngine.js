@@ -49,12 +49,19 @@ export default class AudioEngine {
       }
     })
 
-    // Reactive flag: true while playback is active via playAll()
+    // Reactive flag reflecting whether the engine has any active playback
     this.isPlaying = ref(false)
 
-    // Computed helper to know if any source audio is currently audible
+    // Computed helper to check if any source is currently audible or scheduled
     this.isAudioPlaying = computed(() =>
-      this.soundSources.value.some(s => s.instance?.playing)
+      this.soundSources.value.some(src => {
+        if (!src.instance) return false
+        const sched = src.instance.state.schedule
+        if (sched?.enabled) {
+          return !sched.paused
+        }
+        return src.instance.playing
+      })
     )
   }
 
@@ -264,6 +271,11 @@ export default class AudioEngine {
     }
   }
 
+  /** Update the reactive playback flag based on current sources */
+  updateIsPlaying() {
+    this.isPlaying.value = this.isAudioPlaying.value
+  }
+
 
   async loadImpulseResponse(irName, url) {
     // Ensure audio context and convolver are ready
@@ -303,6 +315,7 @@ export default class AudioEngine {
         src.instance._audioElement.loop = true
         src.instance?.play?.()
       }
+    this.updateIsPlaying()
   }
 
   pauseSoundSource(src) {
@@ -315,6 +328,7 @@ export default class AudioEngine {
       this.#scheduler.pauseSource(src.instance);
     }
     src.instance.stop();
+    this.updateIsPlaying()
   }
 
 
@@ -329,7 +343,9 @@ export default class AudioEngine {
     }
   
     this.soundSources.value.forEach(s => {
-      this.playSoundSource(s) // play each source
+      if (!s.instance.state.schedule?.enabled) {
+        this.playSoundSource(s)
+      }
     })
     if (this.#scheduler.roomStartTime === null) {
       this.#scheduler.start(); // initial start
@@ -337,7 +353,7 @@ export default class AudioEngine {
       this.#scheduler.resume(); // resume from pause
     }
 
-    this.isPlaying.value = true
+    this.updateIsPlaying()
   
     if ('mediaSession' in navigator) {
       navigator.mediaSession.playbackState = 'playing'
@@ -368,7 +384,7 @@ export default class AudioEngine {
     })
     this.#scheduler.pause();
 
-    this.isPlaying.value = false
+    this.updateIsPlaying()
     
     if ('mediaSession' in navigator) {
       navigator.mediaSession.playbackState = 'paused'

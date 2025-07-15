@@ -33,6 +33,7 @@ export default class SoundScheduler {
       const src = wrapper.instance;
       if (src.state.schedule?.enabled) {
         src.state.schedule.paused = false;
+        src.state.schedule.stopCurrentLoop = false;
         src.state.schedule.timesPlayed = 0; // reset play count
         this._schedule(src);
       }
@@ -173,6 +174,7 @@ export default class SoundScheduler {
       if (!sched.enabled || !info || !info.isPaused) continue;
 
       sched.paused = false;
+      sched.stopCurrentLoop = false;
 
       info.isPaused = false;
 
