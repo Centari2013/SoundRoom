@@ -58,7 +58,9 @@ export default class AudioEngine {
         if (!src.instance) return false
         const sched = src.instance.state.schedule
         if (sched?.enabled) {
-          return !sched.paused
+          // Consider the engine playing if a schedule is active or the source
+          // itself is currently playing
+          return src.instance.playing || (!sched.paused && this.#scheduler.roomStartTime !== null)
         }
         return src.instance.playing
       })

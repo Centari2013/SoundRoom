@@ -57,6 +57,7 @@ export default class SoundScheduler {
 
     sched.loopFn = null;
     sched.paused = false;
+    sched.stopCurrentLoop = false;
 
     // Ensure pause info exists so pausing before the first loop works
     this.pauseInfo.set(scheduleId, {
@@ -288,7 +289,6 @@ export default class SoundScheduler {
     const sched = source.state.schedule;
     const forceRestart = sched.restart;
 
-    console.log(sched)
 
     this.cancelSchedule(source); // stop any pending timers
 
