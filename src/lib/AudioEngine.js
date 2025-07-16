@@ -196,7 +196,8 @@ export default class AudioEngine {
       () => sched.enabled,
       (enabled) => {
         instance._audioElement.loop = !enabled
-        if (this.isPlaying.value) {
+        const schedulerActive = this.#scheduler.roomStartTime !== null && !this.#scheduler.isPaused
+        if (schedulerActive) {
           if (enabled) {
             this.#scheduler.updateSchedule(instance)
           } else {
@@ -211,7 +212,8 @@ export default class AudioEngine {
     const paramsUnwatch = watch(
       () => [sched.gapMin, sched.gapMax, sched.activeStart, sched.activeEnd, sched.count, sched.mode],
       () => {
-        if (this.isPlaying.value && sched.enabled) {
+        const schedulerActive = this.#scheduler.roomStartTime !== null && !this.#scheduler.isPaused
+        if (schedulerActive && sched.enabled) {
           this.#scheduler.updateSchedule(instance)
         }
       }

@@ -20,6 +20,10 @@ export default class SoundScheduler {
 
     this.pauseInfo = new Map(); // key = scheduleId, value = pause data
 
+    // Track whether scheduling is currently paused so newly enabled schedules
+    // can be started immediately when playback is active
+    this.isPaused = true;
+
   }
 
   /**
@@ -28,6 +32,7 @@ export default class SoundScheduler {
    */
   start() {
     this.roomStartTime = performance.now();
+    this.isPaused = false;
 
     for (const wrapper of this.audioEngine.soundSources.value) {
       const src = wrapper.instance;
@@ -131,6 +136,7 @@ export default class SoundScheduler {
   }
 
   pause() {
+    this.isPaused = true;
     for (const source of this.audioEngine.soundSources.value) {
       const sched = source.state.schedule;
       const { id } = sched;
@@ -166,6 +172,7 @@ export default class SoundScheduler {
   }
 
   resume() {
+    this.isPaused = false;
     for (const source of this.audioEngine.soundSources.value) {
       const sched = source.state.schedule;
       const { id } = sched;
@@ -265,6 +272,7 @@ export default class SoundScheduler {
    * This should be called when the room stops or pauses.
    */
   stop() {
+    this.isPaused = true;
     for (const id of this.intervals.values()) {
       clearTimeout(id);
     }
