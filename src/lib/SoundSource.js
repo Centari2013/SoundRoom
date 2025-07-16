@@ -135,6 +135,8 @@ export default class SoundSource {
   play() {
     this._audioElement.play();
     this.updateAudio();
+    // immediately flag as playing for reactive UI updates
+    this._playing.value = true;
   }
 
   /** Force playback from the start of the audio file. */
@@ -142,11 +144,13 @@ export default class SoundSource {
     this._audioElement.currentTime = 0;
     this._audioElement.play();
     this.updateAudio();
+    this._playing.value = true;
   }
 
   /** Pause playback of the audio element. */
   stop() {
     this._audioElement.pause();
+    this._playing.value = false;
   }
 
   /**
