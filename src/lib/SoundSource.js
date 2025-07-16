@@ -97,6 +97,9 @@ export default class SoundSource {
 
     this.outputNode.connect(this.reverbSend) // split the signal for reverb
 
+    // `_playing` tracks whether the underlying audio element is currently
+    // playing. Historically this was a simple boolean so guard against any
+    // stale data by converting booleans to a Vue ref.
     this._playing = ref(false);
     this._volume = this.state.volume ?? 1; // default to 1 if not set
 
@@ -108,15 +111,27 @@ export default class SoundSource {
 
   }
   _onPlay = () => {
-    this._playing.value = true;
+    if (typeof this._playing === 'object') {
+      this._playing.value = true;
+    } else {
+      this._playing = true;
+    }
   };
 
   _onPause = () => {
-    this._playing.value = false;
+    if (typeof this._playing === 'object') {
+      this._playing.value = false;
+    } else {
+      this._playing = false;
+    }
   };
 
   _onEnded = () => {
-    this._playing.value = false;
+    if (typeof this._playing === 'object') {
+      this._playing.value = false;
+    } else {
+      this._playing = false;
+    }
   };
 
   /**
@@ -136,7 +151,11 @@ export default class SoundSource {
     this._audioElement.play();
     this.updateAudio();
     // immediately flag as playing for reactive UI updates
-    this._playing.value = true;
+    if (typeof this._playing === 'object') {
+      this._playing.value = true;
+    } else {
+      this._playing = true;
+    }
   }
 
   /** Force playback from the start of the audio file. */
@@ -144,13 +163,21 @@ export default class SoundSource {
     this._audioElement.currentTime = 0;
     this._audioElement.play();
     this.updateAudio();
-    this._playing.value = true;
+    if (typeof this._playing === 'object') {
+      this._playing.value = true;
+    } else {
+      this._playing = true;
+    }
   }
 
   /** Pause playback of the audio element. */
   stop() {
     this._audioElement.pause();
-    this._playing.value = false;
+    if (typeof this._playing === 'object') {
+      this._playing.value = false;
+    } else {
+      this._playing = false;
+    }
   }
 
   /**
@@ -158,7 +185,7 @@ export default class SoundSource {
    * @returns {boolean}
    */
   get playing() {
-    return this._playing.value;
+    return typeof this._playing === 'object' ? this._playing.value : this._playing;
   }
 
   /**
