@@ -203,7 +203,12 @@ export default class AudioEngine {
           } else {
             this.#scheduler.cancelSchedule(instance)
             instance.play()
+            this.updateIsPlaying()
           }
+        } else if (!enabled) {
+          // Scheduler isn't active so just ensure manual looping resumes
+          instance.play()
+          this.updateIsPlaying()
         }
       },
       { immediate: true }

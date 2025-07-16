@@ -330,8 +330,12 @@ export default class SoundScheduler {
     if (info?.resumeTimer) {
       clearTimeout(info.resumeTimer);
     }
-
+    // Reset any scheduling state so the sound can loop manually
     sched.stopCurrentLoop = true;
+    sched.paused = false;
+    sched.isPlaying = false;
+    sched.loopFn = null;
+    this.pauseInfo.delete(sched?.id);
   }
 }
 
