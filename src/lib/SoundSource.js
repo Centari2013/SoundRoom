@@ -39,9 +39,9 @@ export default class SoundSource {
       gapMax: 10,
 
       // Applies to time-bound or count-based schedules
-      count: 5,           // null = unlimited
-      activeStart: 0,     // time window start (in seconds)
-      activeEnd: 300,     // time window end
+      count: null,           // null = unlimited
+      activeStart: null,     // time window start (in seconds) null = no limit
+      activeEnd: null,       // time window end (in seconds) null = no limit
 
       // Restart behaviour
       restart: false,     // force immediate restart when schedule changes

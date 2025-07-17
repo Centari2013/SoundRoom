@@ -42,7 +42,7 @@ export default class SoundScheduler {
     const run = async () => {
       if (this._stopped || !sched.enabled) return;
       const nowSec = (performance.now() - this.roomStartTime) / 1000;
-      const within = nowSec >= sched.activeStart && nowSec <= sched.activeEnd;
+      const within = (sched.activeStart === null && sched.activeEnd === null) || (nowSec >= sched.activeStart && nowSec <= sched.activeEnd);
       const countOk = sched.count == null || sched.timesPlayed < sched.count;
 
       if (within && countOk) {
@@ -53,7 +53,7 @@ export default class SoundScheduler {
       }
 
       if (this._stopped || !sched.enabled) return;
-      if (countOk && nowSec <= sched.activeEnd) {
+      if (countOk && (sched.activeEnd === null || nowSec <= sched.activeEnd)) {
         const nextGap = sched.mode === 'loop' ? 0 : randomInRange(sched.gapMin, sched.gapMax) * 1000;
         this._schedule(source, nextGap);
       }
