@@ -501,9 +501,9 @@ export default class AudioEngine {
           index: src.index,
           src: {
             libraryId: src.libraryId,
-            name: src.name,  
-            state: src.instance.state,
-            audioPath: src.audioPath, 
+            name: src.name,
+            state: reactive({ ...src.instance.state }),
+            audioPath: src.audioPath,
           }
         }))
       engine = new AudioEngine(uninitializedSoundSources, json.masterVolume ?? 1)
