@@ -26,7 +26,7 @@ import { useRoomStore } from '@/stores/useRoomStore'
 const emit = defineEmits(['updated'])
 const props = defineProps({
   roomId: { type: String },
-  name: { type: String, default: '' },
+  name: { default: '' },
 })
 
 const { name, roomId } = toRefs(props)

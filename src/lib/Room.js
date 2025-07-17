@@ -20,7 +20,7 @@ export default class Room {
   constructor (width = 600, height = 400, name = 'Untitled Room', id = null) {
     this.width = width
     this.height = height
-    this.name = name
+    this.name.value = name
     this.id = id
   }
   /**
@@ -71,7 +71,7 @@ export default class Room {
     return {
       width: this.width,
       height: this.height,
-      name: this.name
+      name: this.name.value
     }
   }
 }
