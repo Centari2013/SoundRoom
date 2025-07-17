@@ -404,6 +404,14 @@ export default class AudioEngine {
   dispose() {
     // Tear down all nodes and close the audio context entirely.
     this.pauseAll()
+
+    // Stop all scheduler timers and remove reactive watchers
+    this.#scheduler.stop()
+    this.#scheduleWatchers.forEach(watchers => {
+      watchers.forEach(unwatch => unwatch())
+    })
+    this.#scheduleWatchers.clear()
+
     this.soundSources.value.forEach(s => s.instance.dispose())
     this.soundSources.value.length = 0
   
