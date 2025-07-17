@@ -5,9 +5,6 @@ import { useAudioCacheStore } from "@/stores/useAudioCacheStore";
 import { useActionManagerStore } from "@/stores/useActionManagerStore";
 import { useCanvasStore } from "@/stores/useCanvasStore";
 import { storeToRefs } from "pinia";
-import Room from '@/lib/Room'
-import Listener from '@/lib/Listener'
-import AudioEngine from '@/lib/AudioEngine'
 
 import { supabase } from "@/utils/supabase";
 import { downloadMultipleAudio } from "@/utils/downloadAudio";
@@ -315,9 +312,9 @@ export function useSaveAndLoadRoom() {
       audioEngine.value.dispose();
       listener.value.dispose();
 
-      room.value = Room.fromJSON(roomData.room);
-      listener.value = Listener.fromJSON(roomData.listener);
-      audioEngine.value = AudioEngine.fromJSON(roomData.audioEngine);
+      roomStore.loadRoom(roomData.room);
+      listenerStore.loadListener(roomData.listener);
+      audioEngineStore.loadAudioEngine(roomData.audioEngine);
 
       audioEngineStore.setupAudioContext();
     }

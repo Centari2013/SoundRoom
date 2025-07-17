@@ -73,13 +73,16 @@ export default class SoundScheduler {
   async _playAndWait(source) {
     return new Promise((resolve) => {
       const el = source._audioElement;
+      const sched = source.state.schedule;
       const cleanup = () => {
         el.removeEventListener('ended', onEnded);
         el.removeEventListener('pause', onPause);
+        sched.isPlaying = false;
         resolve();
       };
       const onEnded = () => cleanup();
       const onPause = () => cleanup();
+      sched.isPlaying = true;
       el.addEventListener('ended', onEnded);
       el.addEventListener('pause', onPause);
       source.forcePlayFromStart();
