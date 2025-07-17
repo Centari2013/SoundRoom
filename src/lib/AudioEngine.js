@@ -201,7 +201,9 @@ export default class AudioEngine {
         const schedulerActive = this.#scheduler.roomStartTime !== null && !this.#scheduler.isPaused
         if (!enabled) {
           this.#scheduler.cancelSchedule(instance)
-          instance.play()
+          if (schedulerActive) {
+            instance.play()
+          }
           this.updateIsPlaying()
         } else if (schedulerActive) {
           this.#scheduler.updateSchedule(instance)

@@ -179,7 +179,12 @@ export default class SoundScheduler {
       const { id } = sched;
       const info = this.pauseInfo.get(id);
 
-      if (!sched.enabled || !info || !info.isPaused) continue;
+      if (!sched.enabled) continue;
+      if (!info) {
+        this._schedule(source);
+        continue;
+      }
+      if (!info.isPaused) continue;
 
       sched.paused = false;
       sched.stopCurrentLoop = false;
