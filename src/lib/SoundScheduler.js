@@ -33,6 +33,7 @@ export default class SoundScheduler {
       const src = wrapper.instance;
       if (src.state.schedule?.enabled) {
         src.state.schedule.timesPlayed = 0; // reset play count
+        src.state.schedule.paused = false;
         this._schedule(src);
       }
     }
@@ -49,6 +50,7 @@ export default class SoundScheduler {
     const { id: scheduleId } = sched;
 
     sched.loopFn = null;
+    sched.paused = false;
 
     // Ensure pause info exists so pausing before the first loop works
     this.pauseInfo.set(scheduleId, {
@@ -139,6 +141,8 @@ export default class SoundScheduler {
         this.pauseInfo.set(id, info);
       }
 
+      sched.paused = true;
+
       // Pause audio if it's currently playing
       if (sched.isPlaying) {
         source.instance._audioElement.pause();
@@ -168,6 +172,7 @@ export default class SoundScheduler {
       if (!sched.enabled || !info || !info.isPaused) continue;
 
       info.isPaused = false;
+      sched.paused = false;
 
       // Resume loop after the remaining delay
       const resumeTimer = setTimeout(() => {
@@ -194,6 +199,8 @@ export default class SoundScheduler {
       info = { remainingGapMs: 0, isPaused: false, resumeTimer: null, queuedLoop: sched.loopFn || null };
       this.pauseInfo.set(id, info);
     }
+
+    sched.paused = true;
 
     if (sched.isPlaying) {
       source._audioElement.pause();
@@ -232,6 +239,7 @@ export default class SoundScheduler {
     if (!info.isPaused) return;
 
     info.isPaused = false;
+    sched.paused = false;
     sched.stopCurrentLoop = false;
 
     const resumeTimer = setTimeout(() => {
@@ -312,6 +320,7 @@ export default class SoundScheduler {
     }
 
     sched.stopCurrentLoop = true;
+    sched.paused = true;
   }
 }
 
