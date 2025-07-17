@@ -38,7 +38,7 @@ export function useContextMenuLogic(selectedSource) {
         if (sched?.enabled) {
           return sched.paused ? 'Play' : 'Pause';
         }
-        return src?.instance.playing ? 'Pause' : 'Play';
+        return src?.instance.playing.value ? 'Pause' : 'Play';
       }),
       function: () => {
         const src = selectedSource.value;
@@ -46,7 +46,7 @@ export function useContextMenuLogic(selectedSource) {
         if (sched.enabled) {
           sched.paused ? audioEngineStore.playSoundSource(src) : audioEngineStore.pauseSoundSource(src);
         } else {
-          src.instance.playing ? audioEngineStore.pauseSoundSource(src) : audioEngineStore.playSoundSource(src);
+          src.instance.playing.value ? audioEngineStore.pauseSoundSource(src) : audioEngineStore.playSoundSource(src);
         }
       },
     },

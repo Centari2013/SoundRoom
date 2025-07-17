@@ -108,7 +108,7 @@ const emit = defineEmits(['select'])
 const sched = computed(() => props.source.instance.state.schedule)
 const isScheduled = computed(() => sched.value?.enabled)
 const isScheduledPlaying = computed(() => sched.value?.isPlaying)
-const sourceIsPlaying = computed(() => props.source.instance.playing);
+const sourceIsPlaying = computed(() => props.source.instance.playing.value);
 
 const getFillColor = computed(() => {
   if (props.selected) return '#ff0' // Yellow for selected node

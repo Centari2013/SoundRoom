@@ -60,9 +60,9 @@ export default class AudioEngine {
         if (sched?.enabled) {
           // Consider the engine playing if a schedule is active or the source
           // itself is currently playing
-          return src.instance.playing || (!sched.paused && this.#scheduler.roomStartTime !== null)
+          return src.instance.playing.value || (!sched.paused && this.#scheduler.roomStartTime !== null)
         }
-        return src.instance.playing
+        return src.instance.playing.value
       })
     )
 
@@ -188,7 +188,7 @@ export default class AudioEngine {
     if (this.#audioContext?.state === 'suspended') {
       this.#audioContext.resume()
     }
-    if (!src.instance.state.schedule?.enabled && instance.isPlaying) {
+    if (!src.instance.state.schedule?.enabled && instance.playing.value) {
       instance.play()
     }
     
@@ -246,7 +246,7 @@ export default class AudioEngine {
     const watchers = this.#scheduleWatchers.get(schedId)
     watchers?.forEach(unwatch => unwatch())
     this.#scheduleWatchers.delete(schedId)
-    this.#scheduler.cancelSchedule(src)
+    this.#scheduler.cancelSchedule(src.instance)
 
     if (!src) {
       console.warn("Tried to delete sound source but index", index, "was invalid.")
@@ -461,7 +461,7 @@ export default class AudioEngine {
             angle: src.instance.state.angle,
             coneInner: src.instance.state.coneInner,
             coneOuter: src.instance.state.coneOuter,
-            isPlaying: src.instance.playing,
+            isPlaying: src.instance.playing.value,
             volume: src.instance?.getVolume?.() ?? 1,
             schedule: src.instance.state.schedule
           }
