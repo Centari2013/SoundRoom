@@ -172,7 +172,7 @@ const playPauseLabel = computed(() => {
   if (sched.enabled) {
     return sched.paused ? 'Play' : 'Pause';
   }
-  return src.instance.playing.value ? 'Pause' : 'Play';
+  return src.instance.playing ? 'Pause' : 'Play';
 });
 
 const playPauseSource = () => {
@@ -181,7 +181,7 @@ const playPauseSource = () => {
   if (sched.enabled) {
     sched.paused ? audioEngineStore.playSoundSource(src) : audioEngineStore.pauseSoundSource(src);
   } else {
-    src.instance.playing.value ? audioEngineStore.pauseSoundSource(src) : audioEngineStore.playSoundSource(src);
+    src.instance.playing ? audioEngineStore.pauseSoundSource(src) : audioEngineStore.playSoundSource(src);
   }
 };
 

@@ -100,7 +100,7 @@ export default class SoundSource {
     // `playing` is a Vue ref tracking whether the underlying audio element is
     // currently playing. Older data may serialise this as a boolean so we
     // initialise from whatever is provided and normalise to a ref.
-    this._playing = ref(!!this.state.isPlaying);
+    this._playing = ref(this.state.isPlaying);
     this._volume = this.state.volume ?? 1; // default to 1 if not set
 
     this._audioElement.addEventListener('play', this._onPlay);
@@ -138,12 +138,7 @@ export default class SoundSource {
   play() {
     this._audioElement.play();
     this.updateAudio();
-    // immediately flag as playing for reactive UI updates
-    if (typeof this._playing === 'object' && 'value' in this._playing) {
-      this._playing.value = true;
-    } else {
-      this._playing = ref(true);
-    }
+    this._playing.value = true;
   }
 
   /** Force playback from the start of the audio file. */
@@ -151,21 +146,13 @@ export default class SoundSource {
     this._audioElement.currentTime = 0;
     this._audioElement.play();
     this.updateAudio();
-    if (typeof this._playing === 'object' && 'value' in this._playing) {
-      this._playing.value = true;
-    } else {
-      this._playing = ref(true);
-    }
+    this._playing.value = true;
   }
 
   /** Pause playback of the audio element. */
   stop() {
     this._audioElement.pause();
-    if (typeof this._playing === 'object' && 'value' in this._playing) {
-      this._playing.value = false;
-    } else {
-      this._playing = ref(false);
-    }
+    this._playing.value = false;
   }
 
   /**
@@ -173,7 +160,7 @@ export default class SoundSource {
    * @returns {boolean}
    */
   get playing() {
-    return this._playing;
+    return this._playing.value;
   }
 
   /**

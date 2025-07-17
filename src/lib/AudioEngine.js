@@ -57,12 +57,8 @@ export default class AudioEngine {
       this.soundSources.value.some(src => {
         if (!src.instance) return false
         const sched = src.instance.state.schedule
-        if (sched?.enabled) {
-          // Consider the engine playing if a schedule is active or the source
-          // itself is currently playing
-          return src.instance.playing.value || (!sched.paused && this.#scheduler.roomStartTime !== null)
-        }
-        return src.instance.playing.value
+        
+        return src.instance.playing
       })
     )
 
@@ -188,7 +184,7 @@ export default class AudioEngine {
     if (this.#audioContext?.state === 'suspended') {
       this.#audioContext.resume()
     }
-    if (!src.instance.state.schedule?.enabled && instance.playing.value) {
+    if (!src.instance.state.schedule?.enabled && instance.playing) {
       instance.play()
     }
     
@@ -463,7 +459,7 @@ export default class AudioEngine {
             angle: src.instance.state.angle,
             coneInner: src.instance.state.coneInner,
             coneOuter: src.instance.state.coneOuter,
-            isPlaying: src.instance.playing.value,
+            isPlaying: src.instance.playing,
             volume: src.instance?.getVolume?.() ?? 1,
             schedule: src.instance.state.schedule
           }
