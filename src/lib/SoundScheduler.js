@@ -24,6 +24,9 @@ export default class SoundScheduler {
     // can be started immediately when playback is active
     this.isPaused = true;
 
+    // Flag to indicate when the scheduler is fully stopped
+    this._stopped = true;
+
   }
 
   /**
@@ -33,6 +36,7 @@ export default class SoundScheduler {
   start() {
     this.roomStartTime = performance.now();
     this.isPaused = false;
+    this._stopped = false;
 
     for (const wrapper of this.audioEngine.soundSources.value) {
       const src = wrapper.instance;
@@ -52,6 +56,7 @@ export default class SoundScheduler {
    * @param {SoundSource} source - the sound source with a scheduling config
    */
   _schedule(source) {
+    if (this._stopped) return;
     const sched = source.state.schedule;
     const { id: scheduleId } = sched;
 
@@ -95,20 +100,22 @@ export default class SoundScheduler {
     };
 
       const loop = async () => {
-        if (!sched.enabled) return;
+        if (this._stopped || !sched.enabled) return;
 
         await playAndWait();
+        if (this._stopped) return;
         sched.isPlaying = false;
 
         if (sched.stopCurrentLoop) {
           sched.stopCurrentLoop = false;
           return;
         }
+        if (this._stopped) return;
         const now = (performance.now() - this.roomStartTime) / 1000;
         sched.lastPlayedAt = now;
       sched.timesPlayed = (sched.timesPlayed || 0) + 1;
 
-      if (sched.enabled) {
+      if (sched.enabled && !this._stopped) {
         const min = sched.mode == "loop" ? 0 : sched.gapMin;
         const max = sched.mode == "loop" ? 0 : sched.gapMax;
         const nextGap = randomInRange(min, max) * 1000;
@@ -279,10 +286,12 @@ export default class SoundScheduler {
    */
   stop() {
     this.isPaused = true;
+    this._stopped = true;
     for (const id of this.intervals.values()) {
       clearTimeout(id);
     }
     this.intervals.clear();
+    this.pauseInfo.clear();
   }
 
   /**
