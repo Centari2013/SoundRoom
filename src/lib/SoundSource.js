@@ -49,6 +49,7 @@ export default class SoundSource {
       timesPlayed: 0,
       isPlaying: false, // whether the sound is currently playing
       lastPlayedAt: null,
+      paused: true, // whether scheduling is currently paused
     };
 
 
@@ -150,8 +151,12 @@ export default class SoundSource {
   /**
    * Whether the sound is currently playing.
    * @returns {boolean}
-   */
+  */
   get playing() {
+    const sched = this.state.schedule;
+    if (sched?.enabled) {
+      return !sched.paused;
+    }
     return this._playing.value;
   }
 
