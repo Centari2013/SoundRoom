@@ -283,6 +283,15 @@ export default class SoundScheduler {
       clearTimeout(id);
     }
     this.intervals.clear();
+
+    // Clear any pending resume timers so no callbacks fire after stopping
+    for (const info of this.pauseInfo.values()) {
+      if (info?.resumeTimer) {
+        clearTimeout(info.resumeTimer);
+      }
+    }
+    // Remove all pause information so timers cannot be revived
+    this.pauseInfo.clear();
   }
 
   /**
