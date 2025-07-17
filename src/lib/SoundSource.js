@@ -139,7 +139,11 @@ export default class SoundSource {
     this._audioElement.play();
     this.updateAudio();
     // immediately flag as playing for reactive UI updates
-    this._playing.value = true;
+    if (typeof this._playing === 'object' && 'value' in this._playing) {
+      this._playing.value = true;
+    } else {
+      this._playing = ref(true);
+    }
   }
 
   /** Force playback from the start of the audio file. */
@@ -147,13 +151,21 @@ export default class SoundSource {
     this._audioElement.currentTime = 0;
     this._audioElement.play();
     this.updateAudio();
-    this._playing.value = true;
+    if (typeof this._playing === 'object' && 'value' in this._playing) {
+      this._playing.value = true;
+    } else {
+      this._playing = ref(true);
+    }
   }
 
   /** Pause playback of the audio element. */
   stop() {
     this._audioElement.pause();
-    this._playing.value = false;
+    if (typeof this._playing === 'object' && 'value' in this._playing) {
+      this._playing.value = false;
+    } else {
+      this._playing = ref(false);
+    }
   }
 
   /**
