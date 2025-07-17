@@ -180,14 +180,15 @@ export default class AudioEngine {
     const enabledUnwatch = watch(
       () => sched.enabled,
       (enabled) => {
-        instance._audioElement.loop = !enabled
-        if (this.isPlaying.value) {
-          if (enabled) {
-            this.#scheduler.updateSchedule(instance)
-          } else {
-            this.#scheduler.cancelSchedule(instance)
-            instance.play()
-          }
+        if (enabled) {
+          instance._audioElement.loop = false // disable looping for scheduled sounds
+          this.#scheduler.updateSchedule(instance)
+        } else {
+          instance._audioElement.loop = true
+          instance.stop() // stop immediately if scheduling is disabled
+          instance._audioElement.currentTime = 0 // reset time
+          this.#scheduler.cancelSchedule(instance)
+          instance.play()
         }
       },
       { immediate: true }
@@ -196,7 +197,7 @@ export default class AudioEngine {
     const paramsUnwatch = watch(
       () => [sched.gapMin, sched.gapMax, sched.activeStart, sched.activeEnd, sched.count, sched.mode],
       () => {
-        if (this.isPlaying.value && sched.enabled) {
+        if (sched.enabled) {
           this.#scheduler.updateSchedule(instance)
         }
       }

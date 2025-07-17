@@ -115,7 +115,13 @@ export default class SoundSource {
   };
 
   _onEnded = () => {
-    this._playing.value = false;
+        // When looping is enabled the media element will fire an `ended` event
+    // before immediately restarting playback. In that case we should keep the
+    // internal playing state set to `true` so UI play/pause controls remain
+    // accurate.
+    if (!this._audioElement.loop) {
+      this._playing.value = false;
+    }
   };
 
   /**
@@ -155,7 +161,7 @@ export default class SoundSource {
   get playing() {
     const sched = this.state.schedule;
     if (sched?.enabled) {
-      return !sched.paused;
+      //return !sched.paused;
     }
     return this._playing.value;
   }
