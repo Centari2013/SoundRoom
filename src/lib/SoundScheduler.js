@@ -32,9 +32,13 @@ export default class SoundScheduler {
     for (const wrapper of this.audioEngine.soundSources.value) {
       const src = wrapper.instance;
       src.state.schedule.timesPlayed = 0; // reset play count
-      src.state.schedule.paused = false;
-      this._schedule(src);
-      
+      if (src.state.schedule.isPlaying) {
+        src.state.schedule.paused = false;
+        this._schedule(src);
+      } else {
+        src.state.schedule.paused = true;
+      }
+
     }
   }
 

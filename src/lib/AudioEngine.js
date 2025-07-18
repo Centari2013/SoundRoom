@@ -175,16 +175,17 @@ export default class AudioEngine {
     const sched = instance.state.schedule
     const enabledUnwatch = watch(
       () => sched.enabled,
-      (_enabled) => {
-        this.#scheduler.updateSchedule(instance)
-      },
-      { immediate: true }
+      () => {
+        if (!sched.paused) {
+          this.#scheduler.updateSchedule(instance)
+        }
+      }
     )
 
     const paramsUnwatch = watch(
       () => [sched.gapMin, sched.gapMax, sched.activeStart, sched.activeEnd, sched.count, sched.mode],
       () => {
-        if (sched.enabled) {
+        if (sched.enabled && !sched.paused) {
           this.#scheduler.updateSchedule(instance)
         }
       }
