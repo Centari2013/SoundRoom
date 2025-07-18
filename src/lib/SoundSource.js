@@ -29,7 +29,7 @@ export default class SoundSource {
     this.state.schedule = state.schedule || {
       id: crypto.randomUUID(),
       enabled: false,
-      mode: "interval", // "loop", "interval", "count", or "interval+count"
+      mode: "loop", // "loop", "interval", "count", or "interval+count"
 
       // Applies to interval-based scheduling
       gapMin: 5,
@@ -47,7 +47,7 @@ export default class SoundSource {
       timesPlayed: 0,
       isPlaying: true, // whether the sound is currently playing
       lastPlayedAt: null,
-      paused: true, // whether scheduling is currently paused
+      paused: false, // whether scheduling is currently paused
     };
 
 
