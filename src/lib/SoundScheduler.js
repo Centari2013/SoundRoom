@@ -99,8 +99,8 @@ export default class SoundScheduler {
         sched.lastPlayedAt = now;
         sched.timesPlayed = (sched.timesPlayed || 0) + 1;
 
-        const min = sched.mode == !sched.enabled ? 0 : sched.gapMin;
-        const max = sched.mode == !sched.enabled ? 0 : sched.gapMax;
+        const min = !sched.enabled ? 0 : sched.gapMin;
+        const max = !sched.enabled ? 0 : sched.gapMax;
         const nextGap = randomInRange(min, max) * 1000;
 
         const timeoutId = setTimeout(loop, nextGap);
