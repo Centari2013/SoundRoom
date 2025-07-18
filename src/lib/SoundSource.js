@@ -152,6 +152,7 @@ export default class SoundSource {
   /** Pause playback of the audio element. */
   stop() {
     this._audioElement.pause();
+    this._playing.value = false;
   }
 
   /**
@@ -161,9 +162,9 @@ export default class SoundSource {
   get playing() {
     const sched = this.state.schedule;
     if (sched?.enabled) {
-      //return !sched.paused;
+      return !sched.paused;
     }
-    return this._playing.value;
+    return this._playing;
   }
 
   /**

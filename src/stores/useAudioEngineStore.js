@@ -91,7 +91,7 @@ export const useAudioEngineStore = defineStore('audioEngine', () => {
     audioEngine.value.pauseSoundSource(src)
   }
 
-  const isPlaying = computed(() => audioEngine.value.isPlaying.value)
+  const isPlaying = computed(() => audioEngine.value.soundSources.value.some(wrapper => wrapper.instance.playing.value))
   const MAX_CANVAS_SOURCES = computed(() => audioEngine.value.maxSourceCount)
 
   return {
