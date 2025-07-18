@@ -47,11 +47,10 @@ import downloadAudio from '@/utils/downloadAudio'
 
 const props = defineProps({
   soundData: Object,
-  sendAudioUp: Boolean,
   currentlyPlayingId: String
 })
 
-const emit = defineEmits(['sendAudio', 'updateCurrent'])
+const emit = defineEmits(['updateCurrent'])
 
 const audioDuration = ref(null)
 const duration = ref(15)
@@ -71,9 +70,6 @@ const radius = ref(0)
 const circumference = computed(() => 2 * Math.PI * radius.value)
 const dashOffset = computed(() => circumference.value * (1 - progress.value))
 
-watch(() => props.sendAudioUp, (newValue) => {
-  if (newValue) emitAudio()
-})
 
 watch(() => props.currentlyPlayingId, (newId) => {
   if (newId !== props.soundData.libraryId && isPlaying.value) {
@@ -104,29 +100,6 @@ onMounted(async () => {
   })
 })
 
-async function emitAudio() {
-  const result = await downloadAudio(
-    props.soundData.bucket,
-    props.soundData.path,
-    false,
-    null,
-    props.soundData.libraryId
-  )
-  blobUrl = result.blobUrl
-  hasBeenPromoted.value = true
-
-  const { cone_inner, cone_outer, id, ...rest } = props.soundData
-
-  const source = {
-    audioPath: blobUrl,
-    coneInner: cone_inner,
-    coneOuter: cone_outer,
-    libraryId: id,
-    ...rest
-  }
-
-  emit('sendAudio', { ...source, blobUrl })
-}
 
 async function togglePlay() {
   if (isLoading.value) return

@@ -11,7 +11,6 @@
         :sound="sound"
         v-bind="{ waiting, soundLibrarySources, currentlyPlayingId }"
         @toggle="$emit('toggleSound', $event)"
-        @sendAudio="$emit('sendAudio', $event)"
         @updateCurrent="$emit('updateCurrent', $event)"
       />
     </div>
@@ -30,7 +29,7 @@ const props = defineProps({
   currentlyPlayingId: String
 })
 
-defineEmits(['close', 'toggleSound', 'sendAudio', 'updateCurrent'])
+defineEmits(['close', 'toggleSound', 'updateCurrent'])
 
 const gridScroll = ref(null)
 function scrollTop() {

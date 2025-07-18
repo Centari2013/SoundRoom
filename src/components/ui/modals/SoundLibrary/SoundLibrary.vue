@@ -19,7 +19,6 @@
         :currentlyPlayingId="currentlyPlayingId"
         @close="$emit('close')"
         @toggleSound="toggleAddSource"
-        @sendAudio="payload => handleAudioSent(payload.source, payload.sound)"
         @updateCurrent="currentlyPlayingId = $event"
       />
 
@@ -67,17 +66,6 @@ const { soundLibrarySources } = storeToRefs(cacheStore)
 const emit = defineEmits(['close'])
 
 
-/**
- * Add a sound to the library and mark it as not being sent anymore.
- *
- * @param {Object} source - metadata for the sound being added
- * @param {Object} sound - sound record from the grid
- * @returns {Promise<void>}
- */
-async function handleAudioSent(source, sound) {
-  sound.send = false
-  await actionStore.addLibrarySoundSource(source)
-}
 
 const categories = [
   { id: 'nature', label: 'Nature' },
@@ -98,10 +86,13 @@ const categories = [
 async function toggleAddSource(s) {
   // if source in soundlibrarysources (draggable sources), delete, otherwise add
   if (soundLibrarySources.value.find((sound) => s.libraryId == sound.libraryId)) {
-    s.send = false
+    s.send = true
     await actionStore.deleteLibrarySoundSource(s)
+    s.send = false
   } else {
     s.send = true
+    await actionStore.addLibrarySoundSource(s)
+    s.send = false
   }
 }
 

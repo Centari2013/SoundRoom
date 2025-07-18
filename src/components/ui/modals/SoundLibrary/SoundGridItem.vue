@@ -3,9 +3,7 @@
     <MarqueeTitle :text="getSourceName(sound.name)" />
     <SoundPreviewCircle
       :soundData="sound"
-      :sendAudioUp="sound.send"
       :currentlyPlayingId="currentlyPlayingId"
-      @sendAudio="$emit('sendAudio', { source: $event, sound })"
       @updateCurrent="$emit('updateCurrent', $event)"
     />
     <BaseButton
@@ -31,5 +29,5 @@ const props = defineProps({
   currentlyPlayingId: String
 })
 
-defineEmits(['toggle', 'sendAudio', 'updateCurrent'])
+defineEmits(['toggle', 'updateCurrent'])
 </script>
