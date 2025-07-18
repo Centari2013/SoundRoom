@@ -77,7 +77,7 @@ export function useSaveAndLoadRoom() {
     supabase
       .from("rooms")
       .update({
-        name: room.value.name,
+        name: room.value.name.value,
         room_config: roomData,
         thumbnail: canvasStore.getThumbnailURI() // Get the thumbnail URI from the canvas store
       })

@@ -1,5 +1,5 @@
 import { defineStore, storeToRefs } from 'pinia'
-import { shallowRef, computed } from 'vue'
+import { computed } from 'vue'
 import AudioEngine from '@/lib/AudioEngine'
 import { useRoomStore } from './useRoomStore'
 import { useListenerStore } from './useListenerStore'
