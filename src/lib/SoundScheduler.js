@@ -54,6 +54,7 @@ export default class SoundScheduler {
 
     sched.loopFn = null;
     sched.paused = false;
+    sched.stopCurrentLoop = false; // reset any cancelled loop state
 
     // Ensure pause info exists so pausing before the first loop works
     this.pauseInfo.set(scheduleId, {
