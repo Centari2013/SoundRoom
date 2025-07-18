@@ -45,7 +45,7 @@ export default class SoundSource {
 
       // Internal state
       timesPlayed: 0,
-      isPlaying: false, // whether the sound is currently playing
+      isPlaying: true, // whether the sound is currently playing
       lastPlayedAt: null,
       paused: true, // whether scheduling is currently paused
     };
@@ -94,7 +94,7 @@ export default class SoundSource {
 
     this.outputNode.connect(this.reverbSend) // split the signal for reverb
 
-    this._playing = ref(this.state.isPlaying ?? false);
+    this._playing = ref(this.state.schedule.isPlaying ?? true);
     this._volume = this.state.volume ?? 1; // default to 1 if not set
 
     this._audioElement.addEventListener('play', this._onPlay);
