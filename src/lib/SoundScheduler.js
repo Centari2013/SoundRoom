@@ -31,11 +31,10 @@ export default class SoundScheduler {
 
     for (const wrapper of this.audioEngine.soundSources.value) {
       const src = wrapper.instance;
-      if (src.state.schedule?.enabled) {
-        src.state.schedule.timesPlayed = 0; // reset play count
-        src.state.schedule.paused = false;
-        this._schedule(src);
-      }
+      src.state.schedule.timesPlayed = 0; // reset play count
+      src.state.schedule.paused = false;
+      this._schedule(src);
+      
     }
   }
 
@@ -88,7 +87,6 @@ export default class SoundScheduler {
     };
 
       const loop = async () => {
-        if (!sched.enabled) return;
 
         await playAndWait();
         sched.isPlaying = false;
@@ -99,11 +97,10 @@ export default class SoundScheduler {
         }
         const now = (performance.now() - this.roomStartTime) / 1000;
         sched.lastPlayedAt = now;
-      sched.timesPlayed = (sched.timesPlayed || 0) + 1;
+        sched.timesPlayed = (sched.timesPlayed || 0) + 1;
 
-      if (sched.enabled) {
-        const min = sched.mode == "loop" ? 0 : sched.gapMin;
-        const max = sched.mode == "loop" ? 0 : sched.gapMax;
+        const min = sched.mode == !sched.enabled ? 0 : sched.gapMin;
+        const max = sched.mode == !sched.enabled ? 0 : sched.gapMax;
         const nextGap = randomInRange(min, max) * 1000;
 
         const timeoutId = setTimeout(loop, nextGap);
@@ -117,7 +114,6 @@ export default class SoundScheduler {
         info.queuedLoop = loop;
         this.pauseInfo.set(scheduleId, info);
       }
-      };
 
       const initInfo = this.pauseInfo.get(scheduleId);
       if (initInfo && !initInfo.queuedLoop) {
@@ -135,7 +131,6 @@ export default class SoundScheduler {
       const { id } = sched;
       let info = this.pauseInfo.get(id);
 
-      if (!sched.enabled) continue;
       if (!info) {
         info = { remainingGapMs: 0, isPaused: false, resumeTimer: null, queuedLoop: sched.loopFn || null };
         this.pauseInfo.set(id, info);
@@ -169,7 +164,7 @@ export default class SoundScheduler {
       const { id } = sched;
       const info = this.pauseInfo.get(id);
 
-      if (!sched.enabled || !info || !info.isPaused) continue;
+      if (!info || !info.isPaused) continue;
 
       info.isPaused = false;
       sched.paused = false;
@@ -194,7 +189,6 @@ export default class SoundScheduler {
     const { id } = sched;
     let info = this.pauseInfo.get(id);
 
-    if (!sched.enabled) return;
     if (!info) {
       info = { remainingGapMs: 0, isPaused: false, resumeTimer: null, queuedLoop: sched.loopFn || null };
       this.pauseInfo.set(id, info);
@@ -228,8 +222,6 @@ export default class SoundScheduler {
     const sched = source.state.schedule;
     const { id } = sched;
     const info = this.pauseInfo.get(id);
-
-    if (!sched.enabled) return;
 
     if (!info) {
       this._schedule(source);
@@ -288,14 +280,12 @@ export default class SoundScheduler {
         const onEnded = () => {
           el.removeEventListener('ended', onEnded);
           sched.pendingUpdate = false;
-          if (sched.enabled) {
-            this._schedule(source);
-          }
+          this._schedule(source);
         };
 
         el.addEventListener('ended', onEnded);
       }
-    } else if (sched.enabled) {
+    } else {
       this._schedule(source); // restart or start with new config
     }
   }

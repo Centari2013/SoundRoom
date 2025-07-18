@@ -16,14 +16,12 @@ export default class SoundSource {
    * @param {GainNode} options.masterGain - master gain node
    * @param {string} options.file - URL or blob to load
    * @param {Object} options.state - reactive state object
-   * @param {boolean} [options.loop=true] - loop playback by default
    */
   constructor({
     audioContext,
     masterGain,
     file,
-    state,
-    loop = true
+    state
   }) {
     // `state` holds the spatial position/angle and is kept in sync with the
     // canvas representation.
@@ -62,7 +60,7 @@ export default class SoundSource {
     // Web Audio graph so we can apply spatialisation and gain control.
     this._audioElement = new Audio(file);
     this._audioElement.preload = 'auto';
-    this._audioElement.loop = loop;
+    this._audioElement.loop = false;
     this._audioElement.volume = this.state.volume ?? 1;
 
     this._sourceNode = audioContext.createMediaElementSource(this._audioElement);
@@ -152,7 +150,6 @@ export default class SoundSource {
   /** Pause playback of the audio element. */
   stop() {
     this._audioElement.pause();
-    this._playing.value = false;
   }
 
   /**
@@ -161,10 +158,8 @@ export default class SoundSource {
   */
   get playing() {
     const sched = this.state.schedule;
-    if (sched?.enabled) {
-      return !sched.paused;
-    }
-    return this._playing;
+    return !sched.paused;
+    
   }
 
   /**

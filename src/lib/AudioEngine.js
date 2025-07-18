@@ -159,8 +159,7 @@ export default class AudioEngine {
       audioContext: this.getAudioContext(),
       masterGain: this.#masterGain,
       file: src.audioPath,
-      state: src.state,
-      loop: !src.state.schedule?.enabled,
+      state: src.state
     })
     // Route the new source through the reverb chain
     this.connectToReverb(instance)
@@ -171,25 +170,13 @@ export default class AudioEngine {
     if (this.#audioContext?.state === 'suspended') {
       this.#audioContext.resume()
     }
-    if (!src.instance.state.schedule?.enabled && instance.isPlaying) {
-      instance.play()
-    }
     
     // Watch schedule changes to hook into the scheduler
     const sched = instance.state.schedule
     const enabledUnwatch = watch(
       () => sched.enabled,
-      (enabled) => {
-        if (enabled) {
-          instance._audioElement.loop = false // disable looping for scheduled sounds
-          this.#scheduler.updateSchedule(instance)
-        } else {
-          instance._audioElement.loop = true
-          instance.stop() // stop immediately if scheduling is disabled
-          instance._audioElement.currentTime = 0 // reset time
-          this.#scheduler.cancelSchedule(instance)
-          instance.play()
-        }
+      (_enabled) => {
+        this.#scheduler.updateSchedule(instance)
       },
       { immediate: true }
     )
@@ -289,18 +276,14 @@ export default class AudioEngine {
       console.warn("Tried to play sound source but it was not valid:", src)
       return
     }
-    if (src.instance.state.schedule?.enabled) {
-        const schedId = src.instance.state.schedule.id;
-        if (this.#scheduler.pauseInfo.has(schedId) && this.#scheduler.pauseInfo.get(schedId).isPaused) {
-          this.#scheduler.resumeSource(src.instance);
-        } else {
-          this.#scheduler.updateSchedule(src.instance);
-        }
-        src.instance._audioElement.loop = false
-      } else {
-        src.instance._audioElement.loop = true
-        src.instance?.play?.()
-      }
+
+    const schedId = src.instance.state.schedule.id;
+    if (this.#scheduler.pauseInfo.has(schedId) && this.#scheduler.pauseInfo.get(schedId).isPaused) {
+      this.#scheduler.resumeSource(src.instance);
+    } else {
+      this.#scheduler.updateSchedule(src.instance);
+    }
+    src.instance._audioElement.loop = false
   }
 
   pauseSoundSource(src) {
@@ -308,10 +291,7 @@ export default class AudioEngine {
       console.warn("Tried to pause sound source but it was not valid:", src)
       return
     }
-    const sched = src.instance.state.schedule;
-    if (sched?.enabled) {
-      this.#scheduler.pauseSource(src.instance);
-    }
+    this.#scheduler.pauseSource(src.instance);
     src.instance.stop();
   }
 
