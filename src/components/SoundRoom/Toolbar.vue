@@ -73,9 +73,9 @@ const { updateRoomName } = useSaveAndLoadRoom()
 
 async function handleRoomNameUpdate(newName) {
   // Skip if the name didn't actually change
-  if (room.value.name === newName) return
+  if (room.value.name.value === newName) return
 
-  room.value.name = newName
+  room.value.name.value = newName
 
   if (room.value.id) {
     const success = await updateRoomName(room.value.id, newName)
