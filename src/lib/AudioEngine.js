@@ -160,7 +160,7 @@ export default class AudioEngine {
       masterGain: this.#masterGain,
       file: src.audioPath,
       state: src.state,
-      loop: !src.state.schedule?.enabled,
+      loop: false,
     })
     // Route the new source through the reverb chain
     this.connectToReverb(instance)
@@ -172,7 +172,7 @@ export default class AudioEngine {
       this.#audioContext.resume()
     }
     if (!src.instance.state.schedule?.enabled && instance.isPlaying) {
-      instance.play()
+      this.#scheduler.updateSchedule(instance, { force: true })
     }
     
     // Watch schedule changes to hook into the scheduler
@@ -180,15 +180,14 @@ export default class AudioEngine {
     const enabledUnwatch = watch(
       () => sched.enabled,
       (enabled) => {
+        this.#scheduler.cancelSchedule(instance)
+        instance.stop()
+        instance._audioElement.currentTime = 0
+
         if (enabled) {
-          instance._audioElement.loop = false // disable looping for scheduled sounds
           this.#scheduler.updateSchedule(instance)
         } else {
-          instance._audioElement.loop = true
-          instance.stop() // stop immediately if scheduling is disabled
-          instance._audioElement.currentTime = 0 // reset time
-          this.#scheduler.cancelSchedule(instance)
-          instance.play()
+          this.#scheduler.updateSchedule(instance, { force: true })
         }
       },
       { immediate: true }
@@ -199,6 +198,8 @@ export default class AudioEngine {
       () => {
         if (sched.enabled) {
           this.#scheduler.updateSchedule(instance)
+        } else {
+          this.#scheduler.updateSchedule(instance, { force: true })
         }
       }
     )
@@ -296,10 +297,8 @@ export default class AudioEngine {
         } else {
           this.#scheduler.updateSchedule(src.instance);
         }
-        src.instance._audioElement.loop = false
       } else {
-        src.instance._audioElement.loop = true
-        src.instance?.play?.()
+        this.#scheduler.updateSchedule(src.instance, { force: true });
       }
   }
 
@@ -308,10 +307,7 @@ export default class AudioEngine {
       console.warn("Tried to pause sound source but it was not valid:", src)
       return
     }
-    const sched = src.instance.state.schedule;
-    if (sched?.enabled) {
-      this.#scheduler.pauseSource(src.instance);
-    }
+    this.#scheduler.pauseSource(src.instance);
     src.instance.stop();
   }
 

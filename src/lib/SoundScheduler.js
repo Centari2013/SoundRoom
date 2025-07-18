@@ -31,10 +31,14 @@ export default class SoundScheduler {
 
     for (const wrapper of this.audioEngine.soundSources.value) {
       const src = wrapper.instance;
-      if (src.state.schedule?.enabled) {
-        src.state.schedule.timesPlayed = 0; // reset play count
-        src.state.schedule.paused = false;
+      const sched = src.state.schedule;
+
+      if (sched.enabled) {
+        sched.timesPlayed = 0; // reset play count
+        sched.paused = false;
         this._schedule(src);
+      } else if (src.state.isPlaying) {
+        this._schedule(src, true);
       }
     }
   }
@@ -45,7 +49,7 @@ export default class SoundScheduler {
    * Plays the sound if within the allowed time window, then re-schedules itself.
    * @param {SoundSource} source - the sound source with a scheduling config
    */
-  _schedule(source) {
+  _schedule(source, force = false) {
     const sched = source.state.schedule;
     const { id: scheduleId } = sched;
 
@@ -88,7 +92,7 @@ export default class SoundScheduler {
     };
 
       const loop = async () => {
-        if (!sched.enabled) return;
+        if (!sched.enabled && !force) return;
 
         await playAndWait();
         sched.isPlaying = false;
@@ -101,9 +105,9 @@ export default class SoundScheduler {
         sched.lastPlayedAt = now;
       sched.timesPlayed = (sched.timesPlayed || 0) + 1;
 
-      if (sched.enabled) {
-        const min = sched.mode == "loop" ? 0 : sched.gapMin;
-        const max = sched.mode == "loop" ? 0 : sched.gapMax;
+      if (sched.enabled || force) {
+        const min = (sched.mode == "loop" || force) ? 0 : sched.gapMin;
+        const max = (sched.mode == "loop" || force) ? 0 : sched.gapMax;
         const nextGap = randomInRange(min, max) * 1000;
 
         const timeoutId = setTimeout(loop, nextGap);
@@ -135,7 +139,7 @@ export default class SoundScheduler {
       const { id } = sched;
       let info = this.pauseInfo.get(id);
 
-      if (!sched.enabled) continue;
+      if (!sched.enabled && !this.intervals.has(id)) continue;
       if (!info) {
         info = { remainingGapMs: 0, isPaused: false, resumeTimer: null, queuedLoop: sched.loopFn || null };
         this.pauseInfo.set(id, info);
@@ -169,7 +173,7 @@ export default class SoundScheduler {
       const { id } = sched;
       const info = this.pauseInfo.get(id);
 
-      if (!sched.enabled || !info || !info.isPaused) continue;
+      if (!info || !info.isPaused) continue;
 
       info.isPaused = false;
       sched.paused = false;
@@ -194,7 +198,7 @@ export default class SoundScheduler {
     const { id } = sched;
     let info = this.pauseInfo.get(id);
 
-    if (!sched.enabled) return;
+    if (!sched.enabled && !this.intervals.has(id)) return;
     if (!info) {
       info = { remainingGapMs: 0, isPaused: false, resumeTimer: null, queuedLoop: sched.loopFn || null };
       this.pauseInfo.set(id, info);
@@ -229,10 +233,8 @@ export default class SoundScheduler {
     const { id } = sched;
     const info = this.pauseInfo.get(id);
 
-    if (!sched.enabled) return;
-
     if (!info) {
-      this._schedule(source);
+      this._schedule(source, !sched.enabled);
       return;
     }
 
@@ -246,7 +248,7 @@ export default class SoundScheduler {
       if (info.queuedLoop) {
         info.queuedLoop();
       } else {
-        this._schedule(source);
+        this._schedule(source, !sched.enabled);
       }
     }, info.remainingGapMs);
 
@@ -272,7 +274,7 @@ export default class SoundScheduler {
    * Clears the old timeout and starts a fresh one with new settings.
    * @param {SoundSource} source - the updated sound source
    */
-  updateSchedule(source) {
+  updateSchedule(source, { force = false } = {}) {
     const sched = source.state.schedule;
     const forceRestart = sched.restart;
 
@@ -288,15 +290,15 @@ export default class SoundScheduler {
         const onEnded = () => {
           el.removeEventListener('ended', onEnded);
           sched.pendingUpdate = false;
-          if (sched.enabled) {
-            this._schedule(source);
+          if (sched.enabled || force) {
+            this._schedule(source, force);
           }
         };
 
         el.addEventListener('ended', onEnded);
       }
-    } else if (sched.enabled) {
-      this._schedule(source); // restart or start with new config
+    } else if (sched.enabled || force) {
+      this._schedule(source, force); // restart or start with new config
     }
   }
 
