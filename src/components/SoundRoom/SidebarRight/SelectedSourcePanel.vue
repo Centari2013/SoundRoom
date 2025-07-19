@@ -49,7 +49,10 @@
 
       <!-- Scheduling Toggle -->
       <div class="w-full flex items-center space-x-2 text-left px-1">
-        <input type="checkbox" v-model="schedulingEnabled" class="accent-blue-500" />
+        <input type="checkbox" 
+        v-model="schedulingEnabled" 
+        class="accent-blue-500"
+        @change="() => { beginScheduleEdit(); commitScheduleEdit() }"/>
         <label class="text-sm">Enable Scheduling</label>
       </div>
 
@@ -76,7 +79,8 @@
               type="number"
               :min="0"
               v-model.number="schedule.gapMin"
-              @blur="validateGap"
+              @focus="beginScheduleEdit"
+              @blur="() => { validateGap(); commitScheduleEdit() }"
               class="px-2 py-1 rounded border dark:bg-neutral-800 dark:border-neutral-700"
             />
           </div>
@@ -87,7 +91,8 @@
               type="number"
               :min="schedule.gapMin"
               v-model.number="schedule.gapMax"
-              @blur="validateGap"
+              @focus="beginScheduleEdit"
+              @blur="() => { validateGap(); commitScheduleEdit() }"
               class="px-2 py-1 rounded border dark:bg-neutral-800 dark:border-neutral-700"
             />
             <p v-if="schedule.gapMax < schedule.gapMin" class="text-red-500 text-xs">
@@ -104,7 +109,8 @@
             <input
               type="number"
               v-model.number="schedule.count"
-              @blur="validateCount"
+              @focus="beginScheduleEdit"
+              @blur="() => { validateGap(); commitScheduleEdit() }"
               placeholder="Unlimited"
               class="px-2 py-1 rounded border dark:bg-neutral-800 dark:border-neutral-700"
             />
@@ -115,7 +121,8 @@
             <input
               type="number"
               v-model.number="schedule.activeStart"
-              @blur="validateTimeWindow"
+              @focus="beginScheduleEdit"
+              @blur="() => { validateTimeWindow(); commitScheduleEdit() }"
               class="px-2 py-1 rounded border dark:bg-neutral-800 dark:border-neutral-700"
             />
           </div>
@@ -125,7 +132,8 @@
             <input
               type="number"
               v-model.number="schedule.activeEnd"
-              @blur="validateTimeWindow"
+              @focus="beginScheduleEdit"
+              @blur="() => { validateTimeWindow(); commitScheduleEdit() }"
               class="px-2 py-1 rounded border dark:bg-neutral-800 dark:border-neutral-700"
             />
           </div>
@@ -140,7 +148,7 @@
 </template>
 
 <script setup>
-import { computed, inject } from 'vue';
+import { computed, inject, ref, toRaw } from 'vue';
 import VueSlider from 'vue-3-slider-component';
 import { useVolumeSlider } from '@/composables/useVolumeSlider';
 import { useActionManagerStore } from '@/stores/useActionManagerStore';
@@ -211,6 +219,35 @@ function validateTimeWindow() {
     schedule.value.activeEnd = schedule.value.activeStart;
   }
 }
+
+let scheduleSnapshot = null
+
+function beginScheduleEdit() {
+  scheduleSnapshot = structuredClone(toRaw(selectedSource.value.instance.schedule));
+}
+
+function commitScheduleEdit() {
+  if (!scheduleSnapshot) return
+
+  const changedKeys = Object.keys(scheduleSnapshot).filter(
+    key => schedule.value[key] !== scheduleSnapshot[key]
+  )
+
+  if (changedKeys.length > 0) {
+    const changedParameters = {}
+    for (const key of changedKeys) {
+      changedParameters[key] = schedule.value[key]
+    }
+
+    actionManager.value.doAction('update_sound_source_schedule', {
+      src: selectedSource.value,
+      changedParameters: structuredClone(changedParameters)
+    })
+  }
+
+  scheduleSnapshot = null
+}
+
 
 </script>
 
