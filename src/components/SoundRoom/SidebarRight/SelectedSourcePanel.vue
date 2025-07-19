@@ -140,7 +140,7 @@
 </template>
 
 <script setup>
-import { computed, inject } from 'vue';
+import { computed, inject, watch } from 'vue';
 import VueSlider from 'vue-3-slider-component';
 import { useVolumeSlider } from '@/composables/useVolumeSlider';
 import { useActionManagerStore } from '@/stores/useActionManagerStore';
@@ -152,7 +152,7 @@ const props = defineProps({
 });
 
 const selectedSource = inject('selectedSource');
-const { actionManager } = storeToRefs(useActionManagerStore());
+const { actionManager, waiting } = storeToRefs(useActionManagerStore());
 const audioEngineStore = useAudioEngineStore();
 
 const state = computed(() => selectedSource.value.instance.state);
@@ -160,8 +160,43 @@ const schedule = computed(() => state.value.schedule);
 
 const schedulingEnabled = computed({
   get: () => schedule.value.enabled,
-  set: (val) => schedule.value.enabled = val
+  set: (val) => {
+    const prev = schedule.value.enabled;
+    schedule.value.enabled = val;
+    if (prev !== val) {
+      actionManager.value.doAction('update_sound_source_schedule', {
+        index: selectedSource.value.index,
+        from: { enabled: prev },
+        to: { enabled: val }
+      });
+    }
+  }
 });
+
+let watchIndex = selectedSource.value?.index;
+watch(selectedSource, () => {
+  watchIndex = selectedSource.value?.index;
+});
+
+function trackScheduleChange(field, newVal, oldVal) {
+  if (waiting.value || watchIndex !== selectedSource.value.index) {
+    watchIndex = selectedSource.value.index;
+    return;
+  }
+  if (newVal === oldVal) return;
+  actionManager.value.doAction('update_sound_source_schedule', {
+    index: selectedSource.value.index,
+    from: { [field]: oldVal },
+    to: { [field]: newVal }
+  });
+}
+
+watch(() => schedule.value.gapMin, (n, o) => trackScheduleChange('gapMin', n, o));
+watch(() => schedule.value.gapMax, (n, o) => trackScheduleChange('gapMax', n, o));
+watch(() => schedule.value.mode, (n, o) => trackScheduleChange('mode', n, o));
+watch(() => schedule.value.count, (n, o) => trackScheduleChange('count', n, o));
+watch(() => schedule.value.activeStart, (n, o) => trackScheduleChange('activeStart', n, o));
+watch(() => schedule.value.activeEnd, (n, o) => trackScheduleChange('activeEnd', n, o));
 
 
 const { onStart, onChange, onEnd } = useVolumeSlider(selectedSource, actionManager);

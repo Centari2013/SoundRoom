@@ -14,6 +14,7 @@ export function registerSoundRoomActions() {
   if (actionsRegistered) return
   registerCanvasActions()
   registerDraggableActions()
+  registerScheduleActions()
   actionsRegistered = true
 }
 
@@ -28,7 +29,8 @@ export function unregisterSoundRoomActions() {
     'delete_canvas_sound_source',
     'move_canvas_sound_source',
     'delete_draggable_sound_source',
-    'add_draggable_sound_source'
+    'add_draggable_sound_source',
+    'update_sound_source_schedule'
   ])
   actionsRegistered = false
 }
@@ -202,6 +204,28 @@ function registerDraggableActions() {
   actionManager.value.registerActionHandlers('add_draggable_sound_source',
     async payload => await addDraggableSoundSource(payload),
     payload => deleteDraggableSoundSource(payload),
+  )
+}
+
+/**
+ * Setup undoable actions for modifying a sound source's scheduling data.
+ */
+function registerScheduleActions() {
+  const { audioEngine } = storeToRefs(useAudioEngineStore())
+  const { actionManager } = storeToRefs(useActionManagerStore())
+
+  const applySchedule = (payload, type) => {
+    const wrapper = audioEngine.value.soundSources.value[payload.index]
+    if (!wrapper) return
+    const sched = wrapper.instance.state.schedule
+    const updates = type === 'do' ? payload.to : payload.from
+    Object.assign(sched, updates)
+  }
+
+  actionManager.value.registerActionHandlers(
+    'update_sound_source_schedule',
+    payload => applySchedule(payload, 'do'),
+    payload => applySchedule(payload, 'undo')
   )
 }
 
