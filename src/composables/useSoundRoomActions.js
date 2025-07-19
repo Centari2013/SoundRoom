@@ -28,7 +28,8 @@ export function unregisterSoundRoomActions() {
     'delete_canvas_sound_source',
     'move_canvas_sound_source',
     'delete_draggable_sound_source',
-    'add_draggable_sound_source'
+    'add_draggable_sound_source',
+    'update_sound_source_schedule'
   ])
   actionsRegistered = false
 }
@@ -87,6 +88,17 @@ function registerCanvasActions() {
   actionManager.value.registerActionHandlers('move_canvas_sound_source',
     payload => moveSoundSource(audioEngine.value.soundSources.value[payload.index], payload.to),
     payload => moveSoundSource(audioEngine.value.soundSources.value[payload.index], payload.from)
+  )
+
+  const setSchedule = (sched, data) => {
+    for (const key in data) {
+      sched[key] = data[key]
+    }
+  }
+
+  actionManager.value.registerActionHandlers('update_sound_source_schedule',
+    payload => setSchedule(payload.src.instance.state.schedule, payload.to),
+    payload => setSchedule(payload.src.instance.state.schedule, payload.from)
   )
 }
 

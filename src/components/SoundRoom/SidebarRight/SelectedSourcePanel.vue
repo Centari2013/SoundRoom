@@ -49,7 +49,13 @@
 
       <!-- Scheduling Toggle -->
       <div class="w-full flex items-center space-x-2 text-left px-1">
-        <input type="checkbox" v-model="schedulingEnabled" class="accent-blue-500" />
+        <input
+          type="checkbox"
+          v-model="schedulingEnabled"
+          class="accent-blue-500"
+          @focus="beginScheduleEdit"
+          @change="commitScheduleEdit"
+        />
         <label class="text-sm">Enable Scheduling</label>
       </div>
 
@@ -59,7 +65,9 @@
         <div class="flex flex-col space-y-1">
           <label class="text-sm text-left">Schedule Mode</label>
           <select v-model="schedule.mode"
-            class="px-2 py-1 rounded border dark:bg-neutral-800 dark:border-neutral-700">
+            class="px-2 py-1 rounded border dark:bg-neutral-800 dark:border-neutral-700"
+            @focus="beginScheduleEdit"
+            @change="commitScheduleEdit">
             <option v-if="false" value="loop">Loop</option>
             <option value="interval">Interval</option>
             <option v-if="false" value="count">Count</option>
@@ -76,7 +84,8 @@
               type="number"
               :min="0"
               v-model.number="schedule.gapMin"
-              @blur="validateGap"
+              @focus="beginScheduleEdit"
+              @blur="() => { validateGap(); commitScheduleEdit(); }"
               class="px-2 py-1 rounded border dark:bg-neutral-800 dark:border-neutral-700"
             />
           </div>
@@ -87,7 +96,8 @@
               type="number"
               :min="schedule.gapMin"
               v-model.number="schedule.gapMax"
-              @blur="validateGap"
+              @focus="beginScheduleEdit"
+              @blur="() => { validateGap(); commitScheduleEdit(); }"
               class="px-2 py-1 rounded border dark:bg-neutral-800 dark:border-neutral-700"
             />
             <p v-if="schedule.gapMax < schedule.gapMin" class="text-red-500 text-xs">
@@ -104,7 +114,8 @@
             <input
               type="number"
               v-model.number="schedule.count"
-              @blur="validateCount"
+              @focus="beginScheduleEdit"
+              @blur="() => { validateCount(); commitScheduleEdit(); }"
               placeholder="Unlimited"
               class="px-2 py-1 rounded border dark:bg-neutral-800 dark:border-neutral-700"
             />
@@ -115,7 +126,8 @@
             <input
               type="number"
               v-model.number="schedule.activeStart"
-              @blur="validateTimeWindow"
+              @focus="beginScheduleEdit"
+              @blur="() => { validateTimeWindow(); commitScheduleEdit(); }"
               class="px-2 py-1 rounded border dark:bg-neutral-800 dark:border-neutral-700"
             />
           </div>
@@ -125,7 +137,8 @@
             <input
               type="number"
               v-model.number="schedule.activeEnd"
-              @blur="validateTimeWindow"
+              @focus="beginScheduleEdit"
+              @blur="() => { validateTimeWindow(); commitScheduleEdit(); }"
               class="px-2 py-1 rounded border dark:bg-neutral-800 dark:border-neutral-700"
             />
           </div>
@@ -190,6 +203,25 @@ const cleanSourceXY = computed(() => ({
   x: Math.round(state.value.x),
   y: Math.round(state.value.y)
 }));
+
+let schedulePayload = null;
+
+function beginScheduleEdit() {
+  if (!schedulePayload) {
+    schedulePayload = {
+      src: selectedSource.value,
+      from: JSON.parse(JSON.stringify(selectedSource.value.instance.state.schedule))
+    };
+  }
+}
+
+function commitScheduleEdit() {
+  if (schedulePayload) {
+    schedulePayload.to = JSON.parse(JSON.stringify(selectedSource.value.instance.state.schedule));
+    actionManager.value.doAction('update_sound_source_schedule', schedulePayload);
+    schedulePayload = null;
+  }
+}
 
 
 function validateGap() {
