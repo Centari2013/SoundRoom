@@ -28,6 +28,7 @@ export default class AudioEngine {
   #currentIRName = null
 
   #room = null
+  #roomInitialized = false
 
 
   /**
@@ -137,6 +138,7 @@ export default class AudioEngine {
           }
         ]
       })
+      this.#roomInitialized = true; // mark room as initialized
     }
 
   }
@@ -192,7 +194,7 @@ export default class AudioEngine {
     )
     this.#scheduleWatchers.set(sched.id, [enabledUnwatch, paramsUnwatch])
 
-    if (!sched.paused) {
+    if (!sched.paused && this.#roomInitialized) {
       this.#scheduler.scheduleNewSource(instance)
     }
 
