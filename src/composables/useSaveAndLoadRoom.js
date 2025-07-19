@@ -127,7 +127,7 @@ export function useSaveAndLoadRoom() {
       .from("rooms")
       .insert({
         owner_id: user.value.id,
-        name: room.value.name,
+        name: room.value.name.value,
         room_config: roomData,
         thumbnail: canvasStore.getThumbnailURI() // Get the thumbnail URI from the canvas store
       })

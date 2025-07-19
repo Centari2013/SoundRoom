@@ -190,8 +190,12 @@ export default class AudioEngine {
         }
       }
     )
-
     this.#scheduleWatchers.set(sched.id, [enabledUnwatch, paramsUnwatch])
+
+    if (!sched.paused) {
+      this.#scheduler.scheduleNewSource(instance)
+    }
+
   }
 
   /**

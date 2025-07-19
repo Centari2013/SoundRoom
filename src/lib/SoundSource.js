@@ -29,7 +29,7 @@ export default class SoundSource {
     this.state.schedule = state.schedule || {
       id: crypto.randomUUID(),
       enabled: false,
-      mode: "loop", // "loop", "interval", "count", or "interval+count"
+      mode: "interval", // "loop", "interval", "count", or "interval+count"
 
       // Applies to interval-based scheduling
       gapMin: 5,
