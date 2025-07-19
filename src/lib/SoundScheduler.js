@@ -43,12 +43,6 @@ export default class SoundScheduler {
   }
 
   scheduleNewSource(source) {
-    const sched = source.state.schedule;
-
-    sched.timesPlayed = 0;
-    sched.paused = false;
-    sched.isPlaying = true; // Mark it active to trigger _schedule
-
     this._schedule(source);
   }
 
@@ -215,7 +209,6 @@ export default class SoundScheduler {
     if (sched.isPlaying) {
       source._audioElement.pause();
       sched.isPlaying = false;
-      sched.paused = true; // mark as paused for scheduling
     }
 
     const timeoutId = this.intervals.get(id);
