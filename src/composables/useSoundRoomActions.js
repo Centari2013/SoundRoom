@@ -217,17 +217,15 @@ function registerSchedulingActions() {
    *
    * @param {Object} payload
    */
-  const updateSchedule = (payload) => {
-      const src = payload.src
-      //Object.assign(src.instance.schedule, payload.changedParameters)
-      for (const key in payload.changedParameters) {
-        src.instance.schedule[key] = payload.changedParameters[key]
-      }
+  const updateSchedule = (src, params) => {
+    for (const key in params) {
+      src.instance.schedule[key] = params[key]
+    }
   }
 
   actionManager.value.registerActionHandlers('update_sound_source_schedule',
-    payload => updateSchedule(payload),
-    payload => updateSchedule(payload)
+    payload => updateSchedule(payload.src, payload.to),
+    payload => updateSchedule(payload.src, payload.from)
   )
   
 }

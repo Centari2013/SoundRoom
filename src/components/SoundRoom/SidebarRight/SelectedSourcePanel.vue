@@ -235,13 +235,16 @@ function commitScheduleEdit() {
 
   if (changedKeys.length > 0) {
     const changedParameters = {}
+    const originalParameters = {}
     for (const key of changedKeys) {
       changedParameters[key] = schedule.value[key]
+      originalParameters[key] = scheduleSnapshot[key]
     }
 
     actionManager.value.doAction('update_sound_source_schedule', {
       src: selectedSource.value,
-      changedParameters: structuredClone(changedParameters)
+      from: structuredClone(originalParameters),
+      to: structuredClone(changedParameters)
     })
   }
 
