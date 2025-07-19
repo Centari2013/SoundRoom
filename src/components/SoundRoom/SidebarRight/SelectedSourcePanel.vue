@@ -140,7 +140,7 @@
 </template>
 
 <script setup>
-import { computed, inject } from 'vue';
+import { computed, inject, watch } from 'vue';
 import VueSlider from 'vue-3-slider-component';
 import { useVolumeSlider } from '@/composables/useVolumeSlider';
 import { useActionManagerStore } from '@/stores/useActionManagerStore';
@@ -157,6 +157,36 @@ const audioEngineStore = useAudioEngineStore();
 
 const state = computed(() => selectedSource.value.instance.state);
 const schedule = computed(() => state.value.schedule);
+
+let suppressScheduleWatch = false;
+
+watch(
+  () => selectedSource.value?.instance.state.schedule.id,
+  () => {
+    suppressScheduleWatch = true;
+    queueMicrotask(() => { suppressScheduleWatch = false; });
+  }
+);
+
+function registerScheduleWatcher(getter, prop) {
+  watch(getter, (newVal, oldVal) => {
+    if (suppressScheduleWatch) return;
+    if (oldVal === undefined || newVal === oldVal) return;
+    actionManager.value.doAction('update_sound_source_schedule', {
+      index: selectedSource.value.index,
+      from: { [prop]: oldVal },
+      to: { [prop]: newVal }
+    });
+  });
+}
+
+registerScheduleWatcher(() => schedule.value.enabled, 'enabled');
+registerScheduleWatcher(() => schedule.value.mode, 'mode');
+registerScheduleWatcher(() => schedule.value.gapMin, 'gapMin');
+registerScheduleWatcher(() => schedule.value.gapMax, 'gapMax');
+registerScheduleWatcher(() => schedule.value.count, 'count');
+registerScheduleWatcher(() => schedule.value.activeStart, 'activeStart');
+registerScheduleWatcher(() => schedule.value.activeEnd, 'activeEnd');
 
 const schedulingEnabled = computed({
   get: () => schedule.value.enabled,
