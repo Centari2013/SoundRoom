@@ -277,6 +277,7 @@ function commitScheduleEdit() {
     for (const key of changedKeys) {
       previousParameters[key] = schedule.value[key]
     }
+    changedParameters.restart = true; // Always restart on schedule change
 
     console.log('Committing schedule changes:', changedParameters);
     actionManager.value.doAction('update_sound_source_schedule', {
