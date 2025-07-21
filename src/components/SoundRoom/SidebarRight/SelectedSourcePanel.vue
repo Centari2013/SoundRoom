@@ -49,10 +49,14 @@
 
       <!-- Scheduling Toggle -->
       <div class="w-full flex items-center space-x-2 text-left px-1">
-        <input type="checkbox" 
-        v-model="schedulingEnabled" 
-        class="accent-blue-500"
-        @change="() => { beginScheduleEdit(); commitScheduleEdit() }"/>
+        <input type="checkbox"
+        :value="schedulingEnabled" 
+        @change="e => {
+          scheduleCopy = getScheduleCopy();
+          scheduleCopy.enabled = e.target.checked;
+          commitScheduleEdit();
+        }" 
+        class="accent-blue-500"/>
         <label class="text-sm">Enable Scheduling</label>
       </div>
 
@@ -61,7 +65,12 @@
         <!-- Mode -->
         <div class="flex flex-col space-y-1">
           <label class="text-sm text-left">Schedule Mode</label>
-          <select v-model="schedule.mode"
+          <select :value="schedule.mode"
+            @change="e => {
+              scheduleCopy= getScheduleCopy();
+              scheduleCopy.mode = e.target.value;
+            }"
+            @blur="commitScheduleEdit"
             class="px-2 py-1 rounded border dark:bg-neutral-800 dark:border-neutral-700">
             <option v-if="false" value="loop">Loop</option>
             <option value="interval">Interval</option>
@@ -78,9 +87,13 @@
             <input
               type="number"
               :min="0"
-              v-model.number="schedule.gapMin"
-              @focus="beginScheduleEdit"
-              @blur="() => { validateGap(); commitScheduleEdit() }"
+              :value="schedule.gapMin"
+              @change="e => {
+                scheduleCopy = getScheduleCopy();
+                scheduleCopy.gapMin = e.target.value;
+              }" 
+              
+              @blur="commitScheduleEdit"
               class="px-2 py-1 rounded border dark:bg-neutral-800 dark:border-neutral-700"
             />
           </div>
@@ -90,9 +103,13 @@
             <input
               type="number"
               :min="schedule.gapMin"
-              v-model.number="schedule.gapMax"
-              @focus="beginScheduleEdit"
-              @blur="() => { validateGap(); commitScheduleEdit() }"
+              :value="schedule.gapMax"
+              @change="e => {
+                scheduleCopy = getScheduleCopy();
+                scheduleCopy.gapMax = e.target.value;
+                validateGap();
+              }"
+              @blur="commitScheduleEdit"
               class="px-2 py-1 rounded border dark:bg-neutral-800 dark:border-neutral-700"
             />
             <p v-if="schedule.gapMax < schedule.gapMin" class="text-red-500 text-xs">
@@ -108,9 +125,13 @@
             <!-- Count -->
             <input
               type="number"
-              v-model.number="schedule.count"
-              @focus="beginScheduleEdit"
-              @blur="() => { validateGap(); commitScheduleEdit() }"
+              :value="schedule.count"
+              @change="e => {
+                scheduleCopy = getScheduleCopy();
+                scheduleCopy.count = e.target.value;
+                validateCount();
+              }"
+              @blur="commitScheduleEdit"
               placeholder="Unlimited"
               class="px-2 py-1 rounded border dark:bg-neutral-800 dark:border-neutral-700"
             />
@@ -120,9 +141,13 @@
             <!-- Active Start -->
             <input
               type="number"
-              v-model.number="schedule.activeStart"
-              @focus="beginScheduleEdit"
-              @blur="() => { validateTimeWindow(); commitScheduleEdit() }"
+              :value="schedule.activeStart"
+              @change="e => {
+                scheduleCopy = getScheduleCopy();
+                scheduleCopy.activeStart = e.target.value;
+                validateTimeWindow();
+              }"
+              @blur="commitScheduleEdit"
               class="px-2 py-1 rounded border dark:bg-neutral-800 dark:border-neutral-700"
             />
           </div>
@@ -131,9 +156,12 @@
             <!-- Active End -->
             <input
               type="number"
-              v-model.number="schedule.activeEnd"
-              @focus="beginScheduleEdit"
-              @blur="() => { validateTimeWindow(); commitScheduleEdit() }"
+              :value="schedule.activeEnd"
+              @change="e => {
+                scheduleCopy.activeEnd = e.target.value;
+                validateTimeWindow();
+              }" 
+              @blur="commitScheduleEdit"
               class="px-2 py-1 rounded border dark:bg-neutral-800 dark:border-neutral-700"
             />
           </div>
@@ -148,7 +176,7 @@
 </template>
 
 <script setup>
-import { computed, inject, ref, toRaw } from 'vue';
+import { computed, inject, ref, watch, onMounted } from 'vue';
 import VueSlider from 'vue-3-slider-component';
 import { useVolumeSlider } from '@/composables/useVolumeSlider';
 import { useActionManagerStore } from '@/stores/useActionManagerStore';
@@ -163,8 +191,9 @@ const selectedSource = inject('selectedSource');
 const { actionManager } = storeToRefs(useActionManagerStore());
 const audioEngineStore = useAudioEngineStore();
 
-const state = computed(() => selectedSource.value.instance.state);
-const schedule = computed(() => state.value.schedule);
+const state = computed(() => selectedSource.value?.instance?.state ?? {});
+const schedule = computed(() => state.value?.schedule ?? {});
+
 
 const schedulingEnabled = computed({
   get: () => schedule.value.enabled,
@@ -172,6 +201,19 @@ const schedulingEnabled = computed({
 });
 
 
+let scheduleCopy = ref(null)
+
+const getScheduleCopy = () => {
+  return {
+  mode: schedule.value.mode,
+  gapMin: schedule.value.gapMin,
+  gapMax: schedule.value.gapMax,
+  count: schedule.value.count,
+  activeStart: schedule.value.activeStart,
+  activeEnd: schedule.value.activeEnd,
+  enabled: schedule.value.enabled
+}
+}
 const { onStart, onChange, onEnd } = useVolumeSlider(selectedSource, actionManager);
 
 const playPauseLabel = computed(() =>
@@ -201,52 +243,57 @@ const cleanSourceXY = computed(() => ({
 
 
 function validateGap() {
-  if (schedule.value.gapMin < 0) schedule.value.gapMin = 0;
-  if (schedule.value.gapMax < schedule.value.gapMin) {
-    schedule.value.gapMax = schedule.value.gapMin;
+  if (scheduleCopy.value.gapMin < 0) scheduleCopy.value.gapMin = 0;
+  if (scheduleCopy.value.gapMax < scheduleCopy.value.gapMin) {
+    scheduleCopy.value.gapMax = scheduleCopy.value.gapMin;
   }
 }
 
 function validateCount() {
-  if (schedule.value.count !== null && schedule.value.count < 0) {
-    schedule.value.count = 0;
+  if (scheduleCopy.value.count !== null && scheduleCopy.value.count < 0) {
+    scheduleCopy.value.count = 0;
   }
 }
 
 function validateTimeWindow() {
-  if (schedule.value.activeStart < 0) schedule.value.activeStart = 0;
-  if (schedule.value.activeEnd < schedule.value.activeStart) {
-    schedule.value.activeEnd = schedule.value.activeStart;
+  if (scheduleCopy.value.activeStart < 0) scheduleCopy.value.activeStart = 0;
+  if (scheduleCopy.value.activeEnd < scheduleCopy.value.activeStart) {
+    scheduleCopy.value.activeEnd = scheduleCopy.value.activeStart;
   }
 }
 
-let scheduleSnapshot = null
-
-function beginScheduleEdit() {
-  scheduleSnapshot = structuredClone(toRaw(selectedSource.value.instance.schedule));
-}
-
 function commitScheduleEdit() {
-  if (!scheduleSnapshot) return
 
-  const changedKeys = Object.keys(scheduleSnapshot).filter(
-    key => schedule.value[key] !== scheduleSnapshot[key]
+  const changedKeys = Object.keys(scheduleCopy.value).filter(
+    key => schedule.value[key] !== scheduleCopy.value[key]
   )
 
   if (changedKeys.length > 0) {
     const changedParameters = {}
     for (const key of changedKeys) {
-      changedParameters[key] = schedule.value[key]
+      changedParameters[key] = scheduleCopy.value[key]
+    }
+    const previousParameters = {}
+    for (const key of changedKeys) {
+      previousParameters[key] = schedule.value[key]
     }
 
+    console.log('Committing schedule changes:', changedParameters);
     actionManager.value.doAction('update_sound_source_schedule', {
       src: selectedSource.value,
-      changedParameters: structuredClone(changedParameters)
+      changedParameters: structuredClone(changedParameters),
+      previousParameters: structuredClone(previousParameters)
     })
   }
-
-  scheduleSnapshot = null
 }
+ watch(
+  schedule,
+  (src) => {
+    scheduleCopy.value = getScheduleCopy();
+    
+  },
+  { deep: true,  }
+  );
 
 
 </script>

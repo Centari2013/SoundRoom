@@ -104,6 +104,7 @@ export default class SoundSource {
 
 
   }
+  
   _onPlay = () => {
     this._playing.value = true;
   };

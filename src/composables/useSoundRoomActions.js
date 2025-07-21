@@ -4,6 +4,7 @@ import { useAudioEngineStore } from '@/stores/useAudioEngineStore'
 import { useListenerStore } from '@/stores/useListenerStore'
 import { useAudioCacheStore } from '@/stores/useAudioCacheStore'
 import { storeToRefs } from 'pinia'
+import { toRaw } from 'vue'
 
 let actionsRegistered = false
 
@@ -212,22 +213,30 @@ function registerDraggableActions() {
 function registerSchedulingActions() {
   const { actionManager } = storeToRefs(useActionManagerStore())
 
-  /**
-   * Update the scheduling state of a sound source.
-   *
-   * @param {Object} payload
-   */
-  const updateSchedule = (payload) => {
-      const src = payload.src
-      //Object.assign(src.instance.schedule, payload.changedParameters)
-      for (const key in payload.changedParameters) {
-        src.instance.schedule[key] = payload.changedParameters[key]
-      }
-  }
+  const applyScheduleChanges = (src, params) => {
+    for (const key in params) {
+      src.instance.state.schedule[key] = params[key];
+    }
+  };
 
-  actionManager.value.registerActionHandlers('update_sound_source_schedule',
-    payload => updateSchedule(payload),
-    payload => updateSchedule(payload)
-  )
+  const updateSchedule = (payload) => {
+    const { src, changedParameters } = payload;
+    applyScheduleChanges(src, toRaw(changedParameters));
+    console.log('Updated schedule:', src.instance.state.schedule);
+  };
+
+  const revertSchedule = (payload) => {
+    console.log('Reverting schedule changes:', payload);
+    const { src, previousParameters } = payload;
+    applyScheduleChanges(src, toRaw(previousParameters));
+    console.log('Reverted schedule:', src.instance.state.schedule);
+  };
+
+  actionManager.value.registerActionHandlers(
+    'update_sound_source_schedule',
+    updateSchedule,
+    revertSchedule
+  );
+
   
 }
