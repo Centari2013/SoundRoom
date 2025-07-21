@@ -287,12 +287,18 @@ function commitScheduleEdit() {
   }
 }
  watch(
-  schedule,
+  () => [
+    schedule.value.mode,
+    schedule.value.gapMin,
+    schedule.value.gapMax,
+    schedule.value.count,
+    schedule.value.activeStart,
+    schedule.value.activeEnd,
+    schedule.value.enabled
+  ],
   (src) => {
     scheduleCopy.value = getScheduleCopy();
-    
-  },
-  { deep: true,  }
+  }
   );
 
 
