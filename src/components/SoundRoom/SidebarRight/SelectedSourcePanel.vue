@@ -52,10 +52,10 @@
         <input type="checkbox"
         :value="schedulingEnabled" 
         @change="e => {
-          scheduleCopy = getScheduleCopy();
-          scheduleCopy.enabled = e.target.checked;
+          scheduleCopy.value = getScheduleCopy();
+          scheduleCopy.value.enabled = e.target.checked;
           commitScheduleEdit();
-        }" 
+        }"
         class="accent-blue-500"/>
         <label class="text-sm">Enable Scheduling</label>
       </div>
@@ -67,8 +67,8 @@
           <label class="text-sm text-left">Schedule Mode</label>
           <select :value="schedule.mode"
             @change="e => {
-              scheduleCopy= getScheduleCopy();
-              scheduleCopy.mode = e.target.value;
+              scheduleCopy.value = getScheduleCopy();
+              scheduleCopy.value.mode = e.target.value;
             }"
             @blur="commitScheduleEdit"
             class="px-2 py-1 rounded border dark:bg-neutral-800 dark:border-neutral-700">
@@ -89,9 +89,9 @@
               :min="0"
               :value="schedule.gapMin"
               @change="e => {
-                scheduleCopy = getScheduleCopy();
-                scheduleCopy.gapMin = e.target.value;
-              }" 
+                scheduleCopy.value = getScheduleCopy();
+                scheduleCopy.value.gapMin = e.target.value;
+              }"
               
               @blur="commitScheduleEdit"
               class="px-2 py-1 rounded border dark:bg-neutral-800 dark:border-neutral-700"
@@ -105,8 +105,8 @@
               :min="schedule.gapMin"
               :value="schedule.gapMax"
               @change="e => {
-                scheduleCopy = getScheduleCopy();
-                scheduleCopy.gapMax = e.target.value;
+                scheduleCopy.value = getScheduleCopy();
+                scheduleCopy.value.gapMax = e.target.value;
                 validateGap();
               }"
               @blur="commitScheduleEdit"
@@ -127,8 +127,8 @@
               type="number"
               :value="schedule.count"
               @change="e => {
-                scheduleCopy = getScheduleCopy();
-                scheduleCopy.count = e.target.value;
+                scheduleCopy.value = getScheduleCopy();
+                scheduleCopy.value.count = e.target.value;
                 validateCount();
               }"
               @blur="commitScheduleEdit"
@@ -143,8 +143,8 @@
               type="number"
               :value="schedule.activeStart"
               @change="e => {
-                scheduleCopy = getScheduleCopy();
-                scheduleCopy.activeStart = e.target.value;
+                scheduleCopy.value = getScheduleCopy();
+                scheduleCopy.value.activeStart = e.target.value;
                 validateTimeWindow();
               }"
               @blur="commitScheduleEdit"
@@ -158,9 +158,9 @@
               type="number"
               :value="schedule.activeEnd"
               @change="e => {
-                scheduleCopy.activeEnd = e.target.value;
+                scheduleCopy.value.activeEnd = e.target.value;
                 validateTimeWindow();
-              }" 
+              }"
               @blur="commitScheduleEdit"
               class="px-2 py-1 rounded border dark:bg-neutral-800 dark:border-neutral-700"
             />
@@ -202,6 +202,10 @@ const schedulingEnabled = computed({
 
 
 let scheduleCopy = ref(null)
+
+onMounted(() => {
+  scheduleCopy.value = getScheduleCopy();
+});
 
 const getScheduleCopy = () => {
   return {
