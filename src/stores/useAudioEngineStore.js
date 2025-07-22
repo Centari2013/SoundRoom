@@ -13,7 +13,10 @@ import { useAudioCacheStore } from './useAudioCacheStore'
 export const useAudioEngineStore = defineStore('audioEngine', () => {
   const roomStore = useRoomStore()
   const { room } = storeToRefs(roomStore)
-  const audioEngine = computed(() => room.value.audioEngine.value)
+  const audioEngine = computed({
+    get: () => room.value.audioEngine.value,
+    set: (val) => { room.value.audioEngine.value = val }
+  })
 
   /**
    * Load a serialized audio engine configuration.
@@ -32,6 +35,14 @@ export const useAudioEngineStore = defineStore('audioEngine', () => {
    */
   function audioEngineToJSON() {
     return audioEngine.value.toJSON()
+  }
+
+  /**
+   * Reset the audio engine to its initial state.
+   */
+  function resetAudioEngine() {
+    if (audioEngine.value) audioEngine.value.dispose()
+    room.value.setAudioEngine()
   }
 
   /**
@@ -100,6 +111,7 @@ export const useAudioEngineStore = defineStore('audioEngine', () => {
     audioEngineToJSON,
     setMaxCanvasSources,
     setupAudioContext,
+    resetAudioEngine,
     loadIR,
     playSoundSource,
     pauseSoundSource,

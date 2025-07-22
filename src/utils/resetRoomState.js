@@ -3,6 +3,7 @@ import { useListenerStore } from '@/stores/useListenerStore'
 import { useAudioEngineStore } from '@/stores/useAudioEngineStore'
 import { useAudioCacheStore } from '@/stores/useAudioCacheStore'
 import { useRoomStore } from '@/stores/useRoomStore'
+import { storeToRefs } from 'pinia'
 import ActionManager from '@/lib/ActionManager'
 import Listener from '@/lib/Listener'
 import AudioEngine from '@/lib/AudioEngine'
@@ -21,23 +22,27 @@ export function resetRoomState() {
   const cacheStore = useAudioCacheStore()
   const roomStore = useRoomStore()
 
-  // Clear undo/redo history and create a new manager instance
-  actionStore.actionManager.clearHistory()
-  actionStore.actionManager = new ActionManager()
+  const { room } = storeToRefs(roomStore)
+  const { listener } = storeToRefs(listenerStore)
+  const { audioCacheManager } = storeToRefs(cacheStore)
+  const { actionManager } = storeToRefs(actionStore)
 
-  // Dispose of audio engine and start from scratch
-  engineStore.audioEngine.dispose()
-  engineStore.audioEngine = new AudioEngine([])
+  // Clear undo/redo history and create a new manager instance
+  actionManager.value.clearHistory()
 
   // Reset listener
-  listenerStore.listener.dispose()
-  listenerStore.listener = new Listener()
+  listener.value.dispose()
+  listener.value = new Listener()
 
   // Remove any loaded library sounds and cached blobs
   cacheStore.clearSoundLibrarySources()
-  cacheStore.audioCacheManager.clearMemoryCache()
+  audioCacheManager.value.clearMemoryCache()
 
   // Reset room metadata
-  roomStore.room = new Room()
+  room.value = new Room()
+
+  // Dispose of audio engine and start from scratch
+  engineStore.resetAudioEngine()
+  
   roomStore.getSaveSnapshot()
 }
