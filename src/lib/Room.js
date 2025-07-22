@@ -31,6 +31,9 @@ export default class Room {
     if (audioEngine && !(audioEngine instanceof AudioEngine)) {
       throw new Error("Expected an instance of AudioEngine");
     }
+    if (this.audioEngine.value) {
+      this.audioEngine.value.dispose();
+    }
     this.audioEngine.value = (audioEngine ?? new AudioEngine());
     this.audioEngine.value.setRoom(this);
   }
@@ -74,4 +77,15 @@ export default class Room {
       name: this.name.value
     }
   }
+
+  /**
+   * Dispose resources used by this Room instance.
+   */
+  dispose() {
+    if (this.audioEngine.value && typeof this.audioEngine.value.dispose === 'function') {
+      this.audioEngine.value.dispose();
+    }
+    this.audioEngine.value = null;
+  }
+
 }

@@ -143,6 +143,13 @@ export const useRoomStore = defineStore('room', () => {
     return savedState
   }
 
+  /** Reset the room state to its initial values. */
+  function resetRoom() {
+    room.value.dispose()
+    room.value = new Room()
+    room.value.setAudioEngine()
+  }
+
   const isRoomSaveable = computed(() => {
     const listenerStore = useListenerStore()
     const audioEngineStore = useAudioEngineStore()
@@ -166,6 +173,7 @@ export const useRoomStore = defineStore('room', () => {
   return {
     room,
     loadRoom,
+    resetRoom,
     roomToJSON,
     getSaveSnapshot,
     isRoomSaveable,

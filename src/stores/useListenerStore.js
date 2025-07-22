@@ -28,9 +28,18 @@ export const useListenerStore = defineStore('listener', () => {
     return listener.value.toJSON()
   }
 
+  /**
+   * Reset the listener to its initial state.
+   */
+  function resetListener() {
+    listener.value.dispose()
+    listener.value = new Listener()
+  }
+
   return {
     listener,
     loadListener,
-    listenerToJSON
+    listenerToJSON,
+    resetListener
   }
 })

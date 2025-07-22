@@ -34,10 +34,18 @@ export const useActionManagerStore = defineStore('actionManager', () => {
     await actionManager.value.doAction('delete_draggable_sound_source', { src })
   }
 
+  /**
+   * Reset the action manager's history and state.
+   */
+  function resetActionManager() {
+    actionManager.value.clearHistory()
+    actionManager.value = new ActionManager()
+  }
   return {
     actionManager,
     actionStackEmpty,
     redoStackEmpty,
+    resetActionManager,
     waiting,
     addLibrarySoundSource,
     deleteLibrarySoundSource
