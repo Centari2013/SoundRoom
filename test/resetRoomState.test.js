@@ -45,7 +45,10 @@ vi.mock('../src/stores/useRoomStore.js', () => ({
 
 beforeEach(async () => {
   setActivePinia(createPinia())
-  global.navigator = { mediaSession: {} }
+  Object.defineProperty(global, 'navigator', {
+    value: { mediaSession: {} },
+    configurable: true,
+  })
   actionStore = (await import('../src/stores/useActionManagerStore.js')).useActionManagerStore()
   listenerStore = (await import('../src/stores/useListenerStore.js')).useListenerStore()
   engineStore = (await import('../src/stores/useAudioEngineStore.js')).useAudioEngineStore()
