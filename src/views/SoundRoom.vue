@@ -164,8 +164,8 @@ onBeforeMount(() => {
     //const router = useRouter()
     //router.push('/welcome')
   }
-  engineStore.setupAudioContext()
   engineStore.loadIR('cathedral', '/impulses/1st_baptist_nashville_far_wide.wav') // Load the default impulse response
+  engineStore.setupAudioContext()
   roomStore.setExistingRoomNames() // Initialize with empty names
   roomStore.room.name.value = 'Untitled Room' // Default room name
   roomStore.getSaveSnapshot() // Initialize _lastSavedSnapshot with current room state for isRoomSaveable to compare against
