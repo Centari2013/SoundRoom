@@ -52,8 +52,8 @@
         <input type="checkbox"
         :checked="schedulingEnabled" 
         @change="e => {
-          scheduleCopy.value = getScheduleCopy();
-          scheduleCopy.value.enabled = e.target.checked;
+          scheduleCopy = getScheduleCopy();
+          scheduleCopy.enabled = e.target.checked;
           commitScheduleEdit();
         }"
         class="accent-blue-500"/>
@@ -67,8 +67,8 @@
           <label class="text-sm text-left">Schedule Mode</label>
           <select :value="schedule.mode"
             @change="e => {
-              scheduleCopy.value = getScheduleCopy();
-              scheduleCopy.value.mode = e.target.value;
+              scheduleCopy = getScheduleCopy();
+              scheduleCopy.mode = e.target.value;
             }"
             @blur="commitScheduleEdit"
             class="px-2 py-1 rounded border dark:bg-neutral-800 dark:border-neutral-700">
@@ -89,8 +89,8 @@
               :min="0"
               :value="schedule.gapMin"
               @change="e => {
-                scheduleCopy.value = getScheduleCopy();
-                scheduleCopy.value.gapMin = e.target.value;
+                scheduleCopy = getScheduleCopy();
+                scheduleCopy.gapMin = Number(e.target.value);
               }"
               
               @blur="commitScheduleEdit"
@@ -105,8 +105,8 @@
               :min="schedule.gapMin"
               :value="schedule.gapMax"
               @change="e => {
-                scheduleCopy.value = getScheduleCopy();
-                scheduleCopy.value.gapMax = e.target.value;
+                scheduleCopy = getScheduleCopy();
+                scheduleCopy.gapMax = Number(e.target.value);
                 validateGap();
               }"
               @blur="commitScheduleEdit"
@@ -127,8 +127,8 @@
               type="number"
               :value="schedule.count"
               @change="e => {
-                scheduleCopy.value = getScheduleCopy();
-                scheduleCopy.value.count = e.target.value;
+                scheduleCopy = getScheduleCopy();
+                scheduleCopy.count = Number(e.target.value);
                 validateCount();
               }"
               @blur="commitScheduleEdit"
@@ -143,8 +143,8 @@
               type="number"
               :value="schedule.activeStart"
               @change="e => {
-                scheduleCopy.value = getScheduleCopy();
-                scheduleCopy.value.activeStart = e.target.value;
+                scheduleCopy = getScheduleCopy();
+                scheduleCopy.activeStart = Number(e.target.value);
                 validateTimeWindow();
               }"
               @blur="commitScheduleEdit"
@@ -158,7 +158,7 @@
               type="number"
               :value="schedule.activeEnd"
               @change="e => {
-                scheduleCopy.value.activeEnd = e.target.value;
+                scheduleCopy.activeEnd = Number(e.target.value);
                 validateTimeWindow();
               }"
               @blur="commitScheduleEdit"
@@ -267,20 +267,14 @@ function validateTimeWindow() {
 }
 
 function commitScheduleEdit() {
-  const changedKeys = Object.keys(toRaw(scheduleCopy.value)).filter(key => {
-  const scheduleVal = unref(schedule.value[key]);
-  const copyVal = unref(scheduleCopy.value[key]);
+  const changedKeys = Object.keys(scheduleCopy.value).filter(key => {
+  const scheduleVal = schedule.value[key]
+  const copyVal = scheduleCopy.value[key];
 
   const same = scheduleVal === copyVal;
-  console.log(`Comparing key: ${key}, schedule value:`, scheduleVal, `(type: ${typeof scheduleVal})`);
-  console.log(`                 copy value:`, copyVal, `(type: ${typeof copyVal})`);
-  console.log(`                 same?: ${same}`);
 
   return !same;
 });
-
-  console.log('Changed keys:', changedKeys);
-  console.log('Schedule copy keys:', Object.keys(scheduleCopy.value));
 
   if (changedKeys.length > 0) {
     const changedParameters = {}
@@ -291,12 +285,11 @@ function commitScheduleEdit() {
     for (const key of changedKeys) {
       previousParameters[key] = schedule.value[key]
     }
-    changedParameters.value.restart = true; // Always restart on schedule change
-    console.log('Committing schedule edit with changed parameters:', JSON.parse(JSON.stringify(changedParameters.value)));
-    console.log('Previous parameters:', previousParameters);
+    changedParameters.restart = true; // Always restart on schedule change
+    
     actionManager.value.doAction('update_sound_source_schedule', {
       src: selectedSource.value,
-      changedParameters: JSON.parse(JSON.stringify(changedParameters.value)),
+      changedParameters: JSON.parse(JSON.stringify(changedParameters)),
       previousParameters: JSON.parse(JSON.stringify(previousParameters))
     })
   }
