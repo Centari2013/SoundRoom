@@ -214,6 +214,7 @@ function registerSchedulingActions() {
   const { actionManager } = storeToRefs(useActionManagerStore())
 
   const applyScheduleChanges = (src, params) => {
+    console.log('Applying schedule changes:', params);
     for (const key in params) {
       src.instance.state.schedule[key] = params[key];
     }
@@ -221,14 +222,14 @@ function registerSchedulingActions() {
 
   const updateSchedule = (payload) => {
     const { src, changedParameters } = payload;
-    applyScheduleChanges(src, toRaw(changedParameters));
+    applyScheduleChanges(src, JSON.parse(JSON.stringify(changedParameters)));
     console.log('Updated schedule:', src.instance.state.schedule);
   };
 
   const revertSchedule = (payload) => {
     console.log('Reverting schedule changes:', payload);
     const { src, previousParameters } = payload;
-    applyScheduleChanges(src, toRaw(previousParameters));
+    applyScheduleChanges(src, JSON.parse(JSON.stringify(previousParameters)));
     console.log('Reverted schedule:', src.instance.state.schedule);
   };
 

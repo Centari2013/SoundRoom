@@ -50,7 +50,7 @@
       <!-- Scheduling Toggle -->
       <div class="w-full flex items-center space-x-2 text-left px-1">
         <input type="checkbox"
-        :value="schedulingEnabled" 
+        :checked="schedulingEnabled" 
         @change="e => {
           scheduleCopy.value = getScheduleCopy();
           scheduleCopy.value.enabled = e.target.checked;
@@ -176,7 +176,7 @@
 </template>
 
 <script setup>
-import { computed, inject, ref, watch, onMounted } from 'vue';
+import { computed, inject, ref, watch, onMounted, unref, isRef, toRaw } from 'vue';
 import VueSlider from 'vue-3-slider-component';
 import { useVolumeSlider } from '@/composables/useVolumeSlider';
 import { useActionManagerStore } from '@/stores/useActionManagerStore';
@@ -267,10 +267,20 @@ function validateTimeWindow() {
 }
 
 function commitScheduleEdit() {
+  const changedKeys = Object.keys(toRaw(scheduleCopy.value)).filter(key => {
+  const scheduleVal = unref(schedule.value[key]);
+  const copyVal = unref(scheduleCopy.value[key]);
 
-  const changedKeys = Object.keys(scheduleCopy.value).filter(
-    key => schedule.value[key] !== scheduleCopy.value[key]
-  )
+  const same = scheduleVal === copyVal;
+  console.log(`Comparing key: ${key}, schedule value:`, scheduleVal, `(type: ${typeof scheduleVal})`);
+  console.log(`                 copy value:`, copyVal, `(type: ${typeof copyVal})`);
+  console.log(`                 same?: ${same}`);
+
+  return !same;
+});
+
+  console.log('Changed keys:', changedKeys);
+  console.log('Schedule copy keys:', Object.keys(scheduleCopy.value));
 
   if (changedKeys.length > 0) {
     const changedParameters = {}
@@ -281,13 +291,13 @@ function commitScheduleEdit() {
     for (const key of changedKeys) {
       previousParameters[key] = schedule.value[key]
     }
-    changedParameters.restart = true; // Always restart on schedule change
-
-    console.log('Committing schedule changes:', changedParameters);
+    changedParameters.value.restart = true; // Always restart on schedule change
+    console.log('Committing schedule edit with changed parameters:', JSON.parse(JSON.stringify(changedParameters.value)));
+    console.log('Previous parameters:', previousParameters);
     actionManager.value.doAction('update_sound_source_schedule', {
       src: selectedSource.value,
-      changedParameters: structuredClone(changedParameters),
-      previousParameters: structuredClone(previousParameters)
+      changedParameters: JSON.parse(JSON.stringify(changedParameters.value)),
+      previousParameters: JSON.parse(JSON.stringify(previousParameters))
     })
   }
 }
