@@ -3,10 +3,7 @@ import { isMobileBrowser } from '../src/utils/device.js'
 
 beforeEach(() => {
   Object.defineProperty(global, 'navigator', {
-    value: {
-      userAgent: '',
-      vendor: ''
-    },
+    value: { userAgent: '', vendor: '' },
     configurable: true,
   })
 })
