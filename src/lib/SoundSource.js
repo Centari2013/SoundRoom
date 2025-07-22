@@ -1,5 +1,5 @@
 // lib/SoundSource.js
-import { ref } from 'vue'
+import { ref, reactive } from 'vue'
 /**
  * Wrapper around a DOM `<audio>` element and the Web Audio nodes used to
  * spatialise it. The `state` object drives position and orientation of the
@@ -26,7 +26,7 @@ export default class SoundSource {
     // `state` holds the spatial position/angle and is kept in sync with the
     // canvas representation.
     this.state = state;
-    this.state.schedule = state.schedule || {
+    this.state.schedule = reactive(state.schedule || {
       id: crypto.randomUUID(),
       enabled: false,
       mode: "interval", // "loop", "interval", "count", or "interval+count"
@@ -48,7 +48,7 @@ export default class SoundSource {
       isPlaying: true, // whether the sound is currently playing
       lastPlayedAt: null,
       paused: false, // whether scheduling is currently paused
-    };
+    });
 
 
     this._rad = (deg) => (deg * Math.PI) / 180;
