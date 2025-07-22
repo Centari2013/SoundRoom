@@ -92,7 +92,7 @@
                 scheduleCopy = getScheduleCopy();
                 scheduleCopy.gapMin = Number(e.target.value);
               }"
-              
+              @keyup.enter="commitScheduleEdit"
               @blur="commitScheduleEdit"
               class="px-2 py-1 rounded border dark:bg-neutral-800 dark:border-neutral-700"
             />
@@ -109,6 +109,7 @@
                 scheduleCopy.gapMax = Number(e.target.value);
                 validateGap();
               }"
+              @keyup.enter="commitScheduleEdit"
               @blur="commitScheduleEdit"
               class="px-2 py-1 rounded border dark:bg-neutral-800 dark:border-neutral-700"
             />
@@ -131,6 +132,7 @@
                 scheduleCopy.count = Number(e.target.value);
                 validateCount();
               }"
+              @keyup.enter="commitScheduleEdit"
               @blur="commitScheduleEdit"
               placeholder="Unlimited"
               class="px-2 py-1 rounded border dark:bg-neutral-800 dark:border-neutral-700"
@@ -147,6 +149,7 @@
                 scheduleCopy.activeStart = Number(e.target.value);
                 validateTimeWindow();
               }"
+              @keyup.enter="commitScheduleEdit"
               @blur="commitScheduleEdit"
               class="px-2 py-1 rounded border dark:bg-neutral-800 dark:border-neutral-700"
             />
@@ -161,6 +164,7 @@
                 scheduleCopy.activeEnd = Number(e.target.value);
                 validateTimeWindow();
               }"
+              @keyup.enter="commitScheduleEdit"
               @blur="commitScheduleEdit"
               class="px-2 py-1 rounded border dark:bg-neutral-800 dark:border-neutral-700"
             />
