@@ -1,8 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { ref, nextTick } from 'vue'
 import { createPinia, setActivePinia, storeToRefs } from 'pinia'
-import { useActionManagerStore } from '../src/stores/useActionManagerStore.js'
-import { useVolumeSlider } from '../src/composables/useVolumeSlider.js'
+import { useActionManagerStore } from '../../src/stores/useActionManagerStore.js'
+import { useVolumeSlider } from '../../src/composables/useVolumeSlider.js'
 
 let store
 let selected

@@ -1,17 +1,19 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { ref } from 'vue'
-import { useSelectedSource, getSourceName } from '../src/composables/useSelectedSource.js'
+import { useSelectedSource, getSourceName } from '../../src/composables/useSelectedSource.js'
+import { setActivePinia, createPinia } from 'pinia'
 
 let sources
 let engine
 
-vi.mock('../src/stores/useAudioEngineStore.js', () => ({
+vi.mock('../../src/stores/useAudioEngineStore.js', () => ({
   useAudioEngineStore: () => engine
 }))
 
 beforeEach(() => {
   sources = []
   engine = { audioEngine: ref({ soundSources: { get value() { return sources } } }) }
+  setActivePinia(createPinia())
 })
 
 describe('getSourceName', () => {

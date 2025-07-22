@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import AudioCacheManager from '../src/lib/AudioCacheManager.js'
+import AudioCacheManager from '../../src/lib/AudioCacheManager.js'
 
 vi.mock('idb-keyval', () => ({
   get: vi.fn(async () => undefined),

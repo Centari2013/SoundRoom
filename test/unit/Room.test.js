@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import Room from '../src/lib/Room.js'
+import Room from '../../src/lib/Room.js'
 
 describe('Room', () => {
   it('clamps values correctly', () => {

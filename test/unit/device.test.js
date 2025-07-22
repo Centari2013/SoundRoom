@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest'
-import { isMobileBrowser } from '../src/utils/device.js'
+import { isMobileBrowser } from '../../src/utils/device.js'
 
 beforeEach(() => {
   Object.defineProperty(global, 'navigator', {

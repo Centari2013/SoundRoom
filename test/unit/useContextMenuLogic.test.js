@@ -1,16 +1,16 @@
 import { describe, it, expect, vi } from 'vitest'
 import { ref } from 'vue'
-import { useContextMenuLogic, SOUND_NODE_PART_NAME } from '../src/composables/useContextMenuLogic.js'
+import { useContextMenuLogic, SOUND_NODE_PART_NAME } from '../../src/composables/useContextMenuLogic.js'
 
-vi.mock('../src/stores/useActionManagerStore.js', () => ({
+vi.mock('../../src/stores/useActionManagerStore.js', () => ({
   useActionManagerStore: () => ({ actionManager: { doAction: vi.fn() } })
 }))
 
 let show
-vi.mock('../src/stores/useCanvasStore.js', () => ({
+vi.mock('../../src/stores/useCanvasStore.js', () => ({
   useCanvasStore: () => ({ stageDivRef: { contextMenuRef: { show: (...args) => show(...args) } } })
 }))
-vi.mock('../src/stores/useAudioEngineStore.js', () => ({
+vi.mock('../../src/stores/useAudioEngineStore.js', () => ({
   useAudioEngineStore: () => ({ playSoundSource: vi.fn(), pauseSoundSource: vi.fn() })
 }))
 

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import SoundScheduler from '../src/lib/SoundScheduler.js'
+import SoundScheduler from '../../src/lib/SoundScheduler.js'
 
 const createSource = (playing = true) => {
   return {

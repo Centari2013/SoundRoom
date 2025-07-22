@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import AudioEngine from '../src/lib/AudioEngine.js'
+import AudioEngine from '../../src/lib/AudioEngine.js'
 
 const sampleJson = {
   soundSources: [

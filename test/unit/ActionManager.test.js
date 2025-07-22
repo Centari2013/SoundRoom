@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest'
-import ActionManager from '../src/lib/ActionManager.js'
+import ActionManager from '../../src/lib/ActionManager.js'
 
 let manager
 

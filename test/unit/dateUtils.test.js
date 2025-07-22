@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeAll, afterAll, vi } from 'vitest'
-import { formatDate } from '../src/utils/dateUtils.js'
+import { formatDate } from '../../src/utils/dateUtils.js'
 
 beforeAll(() => {
   vi.useFakeTimers()

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { validateEmail, validatePassword } from '../src/utils/validateData.js'
+import { validateEmail, validatePassword } from '../../src/utils/validateData.js'
 
 describe('validateEmail', () => {
   it('returns true for valid email', () => {

@@ -1,19 +1,21 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { ref } from 'vue'
-import { useDragDropAudio } from '../src/composables/useDragDropAudio.js'
+import { useDragDropAudio } from '../../src/composables/useDragDropAudio.js'
+import { setActivePinia, createPinia } from 'pinia'
 
 let actionManagerRef, canvasStore
 
-vi.mock('../src/stores/useActionManagerStore.js', () => ({
+vi.mock('../../src/stores/useActionManagerStore.js', () => ({
   useActionManagerStore: () => ({ actionManager: actionManagerRef })
 }))
-vi.mock('../src/stores/useCanvasStore.js', () => ({
+vi.mock('../../src/stores/useCanvasStore.js', () => ({
   useCanvasStore: () => canvasStore
 }))
 
 beforeEach(() => {
   actionManagerRef = ref({ doAction: vi.fn() })
   canvasStore = { stageDivRef: { getBoundingClientRect: () => ({ left: 10, top: 20 }) } }
+  setActivePinia(createPinia())
 })
 
 describe('useDragDropAudio', () => {

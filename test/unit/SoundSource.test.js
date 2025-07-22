@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import SoundSource from '../src/lib/SoundSource.js'
-import Room from '../src/lib/Room.js'
+import SoundSource from '../../src/lib/SoundSource.js'
+import Room from '../../src/lib/Room.js'
 
 let ctx
 let panner

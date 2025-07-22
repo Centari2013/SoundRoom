@@ -1,9 +1,10 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
-import downloadAudio, { downloadMultipleAudio } from '../src/utils/downloadAudio.js'
+import downloadAudio, { downloadMultipleAudio } from '../../src/utils/downloadAudio.js'
+import { setActivePinia, createPinia } from 'pinia'
 
 let store
 
-vi.mock('../src/stores/useAudioCacheStore.js', () => ({
+vi.mock('../../src/stores/useAudioCacheStore.js', () => ({
   useAudioCacheStore: () => store
 }))
 
@@ -18,6 +19,7 @@ beforeEach(() => {
     this.preload = ''
     this.addEventListener = vi.fn()
   })
+  setActivePinia(createPinia())
 })
 
 describe('downloadAudio', () => {

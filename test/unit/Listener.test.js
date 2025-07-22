@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest'
-import Listener from '../src/lib/Listener.js'
+import Listener from '../../src/lib/Listener.js'
 
 const createCtx = () => ({
   listener: {
