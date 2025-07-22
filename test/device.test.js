@@ -2,10 +2,13 @@ import { describe, it, expect, beforeEach } from 'vitest'
 import { isMobileBrowser } from '../src/utils/device.js'
 
 beforeEach(() => {
-  global.navigator = {
-    userAgent: '',
-    vendor: ''
-  }
+  Object.defineProperty(global, 'navigator', {
+    value: {
+      userAgent: '',
+      vendor: ''
+    },
+    configurable: true,
+  })
 })
 
 describe('isMobileBrowser', () => {
