@@ -19,5 +19,8 @@ export default defineConfig({
       }
     ]
   },
-  base: isGitHubPages ? '/SoundRoom/' : '/'
+  base: isGitHubPages ? '/SoundRoom/' : '/',
+  test: {
+    exclude: ['e2e/**'], // ⛔ prevent Vitest from running Playwright tests
+  },
 })
