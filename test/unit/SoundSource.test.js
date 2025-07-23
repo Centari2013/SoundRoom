@@ -30,8 +30,9 @@ beforeEach(() => {
       return { connect: vi.fn(function(){ return this }), gain: { setValueAtTime: vi.fn(), value: 1 } }
     }),
     createPanner: vi.fn(() => panner),
+    createStereoPanner: vi.fn(() => ({ connect: vi.fn(function(){ return this }), pan: { value: 0, setValueAtTime: vi.fn() } })),
     createDelay: vi.fn(() => ({ connect: vi.fn(function(){ return this }), delayTime: { value: 0 } })),
-    createBiquadFilter: vi.fn(() => ({ connect: vi.fn(function(){ return this }), frequency: { value: 0, setValueAtTime: vi.fn() } })),
+    createBiquadFilter: vi.fn(() => ({ connect: vi.fn(function(){ return this }), frequency: { value: 0, setValueAtTime: vi.fn(), setTargetAtTime: vi.fn() } })),
     createDynamicsCompressor: vi.fn(() => ({
       connect: vi.fn(function(){ return this }),
       threshold: { value: 0 },
