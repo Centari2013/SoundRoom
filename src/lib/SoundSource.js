@@ -98,9 +98,6 @@ export default class SoundSource {
     // Save the final node as outputNode (for reverb and dry path)
     this.outputNode = this._pannerNode
 
-    // Connect dry path directly to master
-    this.outputNode.connect(masterGain ?? audioContext.destination);
-
     // Optional: expose the panner node output for reverb routing
     this.reverbSend = audioContext.createGain()
     this.reverbSend.gain.value = 1 // or tweak per-source reverb level

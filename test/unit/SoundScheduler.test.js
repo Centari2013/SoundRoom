@@ -32,7 +32,7 @@ beforeEach(() => {
 })
 
 describe('SoundScheduler.start', () => {
-  it('starts only playing sources', () => {
+  it('initializes start time without scheduling sources', () => {
     const src1 = createSource(true)
     const src2 = createSource(false)
     engine.soundSources.value = [{ instance: src1 }, { instance: src2 }]
@@ -40,10 +40,10 @@ describe('SoundScheduler.start', () => {
 
     scheduler.start()
 
-    expect(spy).toHaveBeenCalledTimes(1)
-    expect(spy).toHaveBeenCalledWith(src1)
+    expect(typeof scheduler.roomStartTime).toBe('number')
+    expect(spy).not.toHaveBeenCalled()
     expect(src1.state.schedule.paused).toBe(false)
-    expect(src2.state.schedule.paused).toBe(true)
+    expect(src2.state.schedule.paused).toBe(false)
   })
 })
 

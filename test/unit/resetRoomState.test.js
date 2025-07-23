@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { createPinia, setActivePinia } from 'pinia'
+import { reactive } from 'vue'
 import { resetRoomState } from '../../src/utils/resetRoomState.js'
 
 vi.mock('../../src/utils/supabase.js', () => ({ supabase: {} }))
@@ -8,19 +9,19 @@ let actionStore, listenerStore, engineStore, cacheStore, roomStore
 
 vi.mock('../../src/stores/useActionManagerStore.js', () => ({
   useActionManagerStore: () => {
-    if (!actionStore) actionStore = { actionManager: { clearHistory: vi.fn() } }
+    if (!actionStore) actionStore = { actionManager: { clearHistory: vi.fn() }, resetActionManager: vi.fn() }
     return actionStore
   }
 }))
 vi.mock('../../src/stores/useListenerStore.js', () => ({
   useListenerStore: () => {
-    if (!listenerStore) listenerStore = { listener: { dispose: vi.fn() } }
+    if (!listenerStore) listenerStore = { listener: { dispose: vi.fn() }, resetListener: vi.fn() }
     return listenerStore
   }
 }))
 vi.mock('../../src/stores/useAudioEngineStore.js', () => ({
   useAudioEngineStore: () => {
-    if (!engineStore) engineStore = { audioEngine: { dispose: vi.fn() } }
+    if (!engineStore) engineStore = { audioEngine: { dispose: vi.fn() }, resetAudioEngine: vi.fn() }
     return engineStore
   }
 }))
@@ -29,7 +30,7 @@ vi.mock('../../src/stores/useAudioCacheStore.js', () => ({
     if (!cacheStore) {
       cacheStore = {
         soundLibrarySources: [],
-        audioCacheManager: { clearMemoryCache: vi.fn(function(){ this.memoryCache.clear() }), memoryCache: new Map() },
+        audioCacheManager: reactive({ clearMemoryCache: vi.fn(function(){ this.memoryCache.clear() }), memoryCache: new Map() }),
         clearSoundLibrarySources: () => { cacheStore.soundLibrarySources.length = 0 }
       }
     }
@@ -38,7 +39,7 @@ vi.mock('../../src/stores/useAudioCacheStore.js', () => ({
 }))
 vi.mock('../../src/stores/useRoomStore.js', () => ({
   useRoomStore: () => {
-    if (!roomStore) roomStore = { room: {}, getSaveSnapshot: vi.fn() }
+    if (!roomStore) roomStore = { room: {}, getSaveSnapshot: vi.fn(), resetRoom: vi.fn() }
     return roomStore
   }
 }))
