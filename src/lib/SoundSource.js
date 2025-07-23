@@ -237,46 +237,47 @@ export default class SoundSource {
    * @param {import('./Room').default} room
    */
   updateRoomInteraction(room) {
-    if (!room) return;
+  if (!room) return;
 
-    const { x, y } = this.state;
-    const roomWidth = room.width;
-    const roomHeight = room.height;
+  const { x, y } = this.state;
+  const roomWidth = room.width;
+  const roomHeight = room.height;
 
-    // Wall and corner proximity
-    const distLeft = x;
-    const distRight = roomWidth - x;
-    const distTop = y;
-    const distBottom = roomHeight - y;
-    const minWallDist = Math.min(distLeft, distRight, distTop, distBottom);
+  const distLeft = x;
+  const distRight = roomWidth - x;
+  const distTop = y;
+  const distBottom = roomHeight - y;
+  const minWallDist = Math.min(distLeft, distRight, distTop, distBottom);
 
-    const distTopLeft = Math.hypot(x, y);
-    const distTopRight = Math.hypot(roomWidth - x, y);
-    const distBottomLeft = Math.hypot(x, roomHeight - y);
-    const distBottomRight = Math.hypot(roomWidth - x, roomHeight - y);
-    const minCornerDist = Math.min(distTopLeft, distTopRight, distBottomLeft, distBottomRight);
+  const distTopLeft = Math.hypot(x, y);
+  const distTopRight = Math.hypot(roomWidth - x, y);
+  const distBottomLeft = Math.hypot(x, roomHeight - y);
+  const distBottomRight = Math.hypot(roomWidth - x, roomHeight - y);
+  const minCornerDist = Math.min(distTopLeft, distTopRight, distBottomLeft, distBottomRight);
 
-    const normWall = Math.min(minWallDist / 100, 1);
-    const normCorner = Math.min(minCornerDist / 150, 1);
+  const normWall = Math.min(minWallDist / 100, 1);
+  const normCorner = Math.min(minCornerDist / 150, 1);
 
-    const wallGain = 1 - normWall;
-    const cornerGain = 1 - normCorner;
+  const wallGain = 1 - normWall;
+  const cornerGain = 1 - normCorner;
 
-    // Update dry gain and reverb
-    this._gainNode.gain.setValueAtTime(0.4 + 0.6 * wallGain, this._audioContext.currentTime);
-    this.reverbSend.gain.setValueAtTime(0.2 + 0.8 * cornerGain, this._audioContext.currentTime);
+  // ↓ Simulate dry gain drop near corners/walls (further from listener, muffled)
+  const dryGain = 0.6 * normWall * normCorner;
+  this._gainNode.gain.setValueAtTime(dryGain, this._audioContext.currentTime);
 
-    // Update early reflection gains based on wall
-    this.earlyReflections.forEach(ref => {
-      ref.gain.gain.setValueAtTime(0.05 + 0.25 * wallGain, this._audioContext.currentTime);
-    });
+  // ↓ IR send level: blend more into IR in corners, but don't exaggerate
+  this.reverbSend.gain.setValueAtTime(0.3 + 0.4 * cornerGain, this._audioContext.currentTime);
 
-    // Update corner filter frequency (muffling)
-    const muffledFreq = 800 + 12000 * normCorner;
-    this.cornerFilter.frequency.setValueAtTime(muffledFreq, this._audioContext.currentTime);
+  // ↓ Still useful for lowpass muffling (e.g. corner boxiness)
+  const muffledFreq = 800 + 12000 * normCorner;
+  this.cornerFilter.frequency.setValueAtTime(muffledFreq, this._audioContext.currentTime);
 
-    // You could also dynamically control compressor ratio/knee if you want
-  }
+  // Optional: early reflections on wall proximity (can be subtle)
+  this.earlyReflections.forEach(ref => {
+    ref.gain.gain.setValueAtTime(0.05 + 0.2 * wallGain, this._audioContext.currentTime);
+  });
+}
+
 
 
   /**
