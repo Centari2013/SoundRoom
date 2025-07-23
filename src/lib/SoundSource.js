@@ -63,8 +63,21 @@ export default class SoundSource {
     this._audioElement.loop = false;
     this._audioElement.volume = this.state.volume ?? 1;
 
-    this._sourceNode = audioContext.createMediaElementSource(this._audioElement);
-    this._gainNode = audioContext.createGain();
+    this._sourceNode = this._audioContext.createMediaElementSource(this._audioElement);
+    this._gainNode = this._audioContext.createGain();
+
+    this.earlyReflections = [];
+    for (let i = 0; i < 2; i++) {
+      const delay = this._audioContext.createDelay();
+      delay.delayTime.value = 0.005 + i * 0.003; // short slapback
+      const gain = this._audioContext.createGain();
+      gain.gain.value = 0.2;
+
+      this._gainNode.connect(delay).connect(gain).connect(masterGain); // or stereo panner
+      this.earlyReflections.push({ delay, gain });
+    }
+
+
     this._pannerNode = audioContext.createPanner();
 
     // Configure the panner to simulate distance and directionality.
@@ -92,6 +105,24 @@ export default class SoundSource {
     this.reverbSend = audioContext.createGain()
     this.reverbSend.gain.value = 1 // or tweak per-source reverb level
 
+    // Corner muffling effect using lowpass filter
+    this.cornerFilter = this._audioContext.createBiquadFilter();
+    this.cornerFilter.type = 'lowpass';
+    this.cornerFilter.frequency.value = 18000; // high at start (no muffling)
+
+    this.cornerCompressor = this._audioContext.createDynamicsCompressor();
+    this.cornerCompressor.threshold.value = -50;
+    this.cornerCompressor.knee.value = 20;
+    this.cornerCompressor.ratio.value = 6;
+    this.cornerCompressor.attack.value = 0.005;
+    this.cornerCompressor.release.value = 0.1;
+
+    // Chain: output → filter → compressor → master
+    this.outputNode.connect(this.cornerFilter);
+    this.cornerFilter.connect(this.cornerCompressor);
+    this.cornerCompressor.connect(masterGain ?? this._audioContext.destination);
+
+
     this.outputNode.connect(this.reverbSend) // split the signal for reverb
 
     this._playing = ref(this.state.schedule.isPlaying ?? true);
@@ -100,9 +131,6 @@ export default class SoundSource {
     this._audioElement.addEventListener('play', this._onPlay);
     this._audioElement.addEventListener('pause', this._onPause);
     this._audioElement.addEventListener('ended', this._onEnded);
-
-
-
   }
   
   _onPlay = () => {
@@ -200,8 +228,10 @@ export default class SoundSource {
     p.orientationX.setValueAtTime(Math.cos(angleRad), ctx.currentTime);
     p.orientationY.setValueAtTime(Math.sin(angleRad), ctx.currentTime);
     p.orientationZ.setValueAtTime(0, ctx.currentTime);
+    if (this._room) {
+      this.updateRoomInteraction(this._room);
+    }
 
-    this._room ?? this.updateRoomInteraction(this._room);
   }
 
 
@@ -216,34 +246,41 @@ export default class SoundSource {
     const roomWidth = room.width;
     const roomHeight = room.height;
 
-    // Distance to each wall
+    // Wall and corner proximity
     const distLeft = x;
     const distRight = roomWidth - x;
     const distTop = y;
     const distBottom = roomHeight - y;
-
-    // Nearest wall
     const minWallDist = Math.min(distLeft, distRight, distTop, distBottom);
 
-    // Distance to corners
     const distTopLeft = Math.hypot(x, y);
     const distTopRight = Math.hypot(roomWidth - x, y);
     const distBottomLeft = Math.hypot(x, roomHeight - y);
     const distBottomRight = Math.hypot(roomWidth - x, roomHeight - y);
     const minCornerDist = Math.min(distTopLeft, distTopRight, distBottomLeft, distBottomRight);
 
-    // Normalize to 0–1 where 0 = touching, 1 = far
     const normWall = Math.min(minWallDist / 100, 1);
     const normCorner = Math.min(minCornerDist / 150, 1);
 
-    // Simulate some corner muffling or reverb boost
-    const cornerGain = 1 - normCorner;
     const wallGain = 1 - normWall;
+    const cornerGain = 1 - normCorner;
 
-    // Example usage: reduce gain near corners, increase reverbSend near corners
-    this._gainNode.gain.setValueAtTime(0.5 + 0.5 * wallGain, this._audioContext.currentTime);
+    // Update dry gain and reverb
+    this._gainNode.gain.setValueAtTime(0.4 + 0.6 * wallGain, this._audioContext.currentTime);
     this.reverbSend.gain.setValueAtTime(0.2 + 0.8 * cornerGain, this._audioContext.currentTime);
+
+    // Update early reflection gains based on wall
+    this.earlyReflections.forEach(ref => {
+      ref.gain.gain.setValueAtTime(0.05 + 0.25 * wallGain, this._audioContext.currentTime);
+    });
+
+    // Update corner filter frequency (muffling)
+    const muffledFreq = 800 + 12000 * normCorner;
+    this.cornerFilter.frequency.setValueAtTime(muffledFreq, this._audioContext.currentTime);
+
+    // You could also dynamically control compressor ratio/knee if you want
   }
+
 
   /**
    * Provide a reference to the room this source belongs to.

@@ -144,25 +144,58 @@ export function useSaveAndLoadRoom() {
   }
 
   /**
+   * Get room data from Supabase by id.
+   * @returns {<Object>} room data object
+   * @throws {Error} if room not found or other error occurs
+   */
+  async function getRoomDataById(roomId=null) {
+    if (roomId){
+      return await supabase
+      .from("rooms")
+      .select("room_config, name")
+      .eq("id", roomId)
+      .single();
+    } else {
+      return await supabase
+      .from("rooms")
+      .select("room_config, name")
+      .eq("owner_id", user.value.id)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .single();
+    }
+
+  }
+
+  /**
+   * Load most recent room for the authenticated user.
+   * If no room is found, it will return false.
+   */
+  async function loadMostRecentRoom() {
+    return await loadRoom();
+  }
+
+  /**
    * Load a room from Supabase and hydrate stores with the data.
    *
    * @param {number|string} roomId - id of the room to load
    * @returns {Promise<boolean>} whether the load succeeded
    */
-  async function loadRoom(roomId) {
+  async function loadRoom(roomId=null) {
     isLoadingRoom.value = true;
     // get room data from supabase
-    const { data, error } = await supabase
-      .from("rooms")
-      .select("room_config, name")
-      .eq("id", roomId)
-      .single();
+    const { data, error } = await getRoomDataById(roomId);
+    if (!data) {
+      console.warn("No room data found.");
+      isLoadingRoom.value = false;
+      return false;
+    }
     if (error) {
       console.error("Error loading room:", error);
       isLoadingRoom.value = false;
       return false;
     }
-    
+    console.log("Loaded room data:", data);
     const roomData = data.room_config;
     roomData.room.id = roomId; // Set the room ID from the database
     roomData.room.name = data.name; // Set the room name from the database
@@ -329,6 +362,7 @@ export function useSaveAndLoadRoom() {
   return {
     saveRoom,
     loadRoom,
+    loadMostRecentRoom,
     deleteRoom,
     isLoadingRoom,
     saveRoomLocal,
