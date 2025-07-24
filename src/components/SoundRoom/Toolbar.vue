@@ -1,5 +1,5 @@
 <template>
-  <div class="flex items-center justify-between p-3 border-b border-neutral-300 dark:border-neutral-800 bg-neutral-100 dark:bg-neutral-900 space-x-10 w-full">
+  <div class="flex items-center justify-between p-3 border-neutral-300 dark:border-neutral-800 bg-neutral-100 dark:bg-neutral-900 space-x-10 w-full">
           
     <div class="flex space-x-2 w-1/3">
       <BaseButton

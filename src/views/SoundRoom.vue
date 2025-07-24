@@ -45,6 +45,8 @@
             :text="isLoadingRoom ? 'Loading your room...' : 'Saving your room...'"
             />
         </div>
+        <!-- IR Bar -->
+        <IRbar/>
       </main>
 
       <!-- Right Sidebar -->
@@ -74,6 +76,7 @@ const SOUND_NODE_PART_NAME = 'sound-node-part'
 
 // UI Components
 import Toolbar from '@/components/SoundRoom/Toolbar.vue'
+import IRbar from '@/components/SoundRoom/IRbar.vue'
 import SoundLibrary from '@/components/ui/modals/SoundLibrary/SoundLibrary.vue'
 import SidebarLeft from '@/components/SoundRoom/SidebarLeft/SidebarLeft.vue'
 import SidebarRight from '@/components/SoundRoom/SidebarRight/SidebarRight.vue'
