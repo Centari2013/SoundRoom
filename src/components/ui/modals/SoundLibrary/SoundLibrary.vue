@@ -56,6 +56,7 @@ import { useAudioCacheStore } from '@/stores/useAudioCacheStore'
 import { useActionManagerStore } from '@/stores/useActionManagerStore'
 import { useAuth } from '@/composables/useAuth'
 import uploadAudio from '@/utils/uploadAudio'
+import { classifyAudio, generateNameFromTags } from '@/utils/audioTaggerNamer'
 import { storeToRefs } from 'pinia'
 
 const props = defineProps({
@@ -166,6 +167,22 @@ async function handleUpload(event) {
         console.warn(`Skipping ${file.name} – file is larger than 10MB`)
         return
       }
+
+      await classifyAudio(file)
+        .then(async (tags) => {
+          console.log(`Classified ${file.name} with tags:`, tags)
+          if (tags.length > 0) {
+            file.name = await generateNameFromTags(tags, file.name)
+            console.log(`Generated name for ${file.name}:`, file.name)
+          }
+        })
+        .catch((err) => {
+          console.error(`Failed to classify audio for ${file.name}:`, err)
+        })
+
+    
+
+      return
 
       let key
       try {
