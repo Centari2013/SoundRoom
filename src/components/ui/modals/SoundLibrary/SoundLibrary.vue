@@ -24,7 +24,7 @@
 
       <!-- Bottom Upload Panel -->
       <div
-        v-if="false"
+        v-if="isAuthenticated"
         class="absolute bottom-0 left-0 right-0 p-4 bg-white dark:bg-neutral-950 border-t border-neutral-300 dark:border-neutral-800"
       >
         <div class="flex justify-between items-center">
@@ -53,11 +53,14 @@ import SoundGrid from '@/components/ui/modals/SoundLibrary/SoundGrid.vue'
 
 import { useAudioCacheStore } from '@/stores/useAudioCacheStore'
 import { useActionManagerStore } from '@/stores/useActionManagerStore'
+import { useAuth } from '@/composables/useAuth'
 import { storeToRefs } from 'pinia'
 
 const props = defineProps({
   isLibraryOpen: Boolean
 })
+
+const { isAuthenticated } = useAuth()
 
 const cacheStore = useAudioCacheStore()
 const actionStore = useActionManagerStore()
