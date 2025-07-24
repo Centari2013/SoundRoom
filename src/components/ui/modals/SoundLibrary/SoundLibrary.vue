@@ -55,13 +55,14 @@ import SoundGrid from '@/components/ui/modals/SoundLibrary/SoundGrid.vue'
 import { useAudioCacheStore } from '@/stores/useAudioCacheStore'
 import { useActionManagerStore } from '@/stores/useActionManagerStore'
 import { useAuth } from '@/composables/useAuth'
+import uploadAudio from '@/utils/uploadAudio'
 import { storeToRefs } from 'pinia'
 
 const props = defineProps({
   isLibraryOpen: Boolean
 })
 
-const { isAuthenticated } = useAuth()
+const { user, isAuthenticated } = useAuth()
 
 const cacheStore = useAudioCacheStore()
 const actionStore = useActionManagerStore()
@@ -166,15 +167,11 @@ async function handleUpload(event) {
         return
       }
 
-      const filePath = `${Date.now()}-${file.name}`
-
-      const { error: uploadError } = await supabase
-        .storage
-        .from('pending')
-        .upload(filePath, file)
-
-      if (uploadError) {
-        console.error('Failed to upload file:', uploadError)
+      let key
+      try {
+        key = await uploadAudio(file, user.value.id)
+      } catch (err) {
+        console.error('Failed to upload file:', err)
         return
       }
 
@@ -188,18 +185,16 @@ async function handleUpload(event) {
       const { error: dbError } = await supabase
         .from('sound_files')
         .insert({
-          path: filePath,
+          path: key,
+          name: stripExtension(file.name),
           bucket: 'pending',
-          status: 'pending',
           duration_seconds,
           size: file.size,
           mime_type: file.type,
-          name: stripExtension(file.name),
-          tags: null,
           cone_inner: null,
           cone_outer: null,
-          vibe: null,
-          ai_generated: null,
+          tags: null,
+          owner_id: user.value.id,
         })
 
       if (dbError) {
