@@ -47,6 +47,7 @@
 import { ref, watch, nextTick } from 'vue'
 
 import { supabase } from '@/utils/supabase'
+import { getFileDuration, stripExtension, ALLOWED_AUDIO_TYPES } from '@/utils/audioFileUtils'
 
 import CategoryList from '@/components/ui/modals/SoundLibrary/CategoryList.vue'
 import SoundGrid from '@/components/ui/modals/SoundLibrary/SoundGrid.vue'
@@ -142,11 +143,69 @@ async function listCategoryFiles() {
  * @param {Event} event - change event from the file input
  * @returns {void}
  */
-function handleUpload(event) {
-  const file = event.target.files?.[0]
-  if (file) {
+async function handleUpload(event) {
+  const input = event.target
+  const files = Array.from(input.files || [])
 
-  }
+  if (files.length === 0) return
+
+  const MAX_SIZE = 10 * 1024 * 1024 // 10MB
+
+  await Promise.all(
+    files.map(async (file) => {
+      if (!ALLOWED_AUDIO_TYPES.includes(file.type)) {
+        console.warn(`Skipping unsupported file type: ${file.name}`)
+        return
+      }
+
+      if (file.size > MAX_SIZE) {
+        console.warn(`Skipping ${file.name} – file is larger than 10MB`)
+        return
+      }
+
+      const filePath = `${Date.now()}-${file.name}`
+
+      const { error: uploadError } = await supabase
+        .storage
+        .from('pending')
+        .upload(filePath, file)
+
+      if (uploadError) {
+        console.error('Failed to upload file:', uploadError)
+        return
+      }
+
+      let duration_seconds = 0
+      try {
+        duration_seconds = await getFileDuration(file)
+      } catch (err) {
+        console.error(`Failed to decode ${file.name}:`, err)
+      }
+
+      const { error: dbError } = await supabase
+        .from('sound_files')
+        .insert({
+          path: filePath,
+          bucket: 'pending',
+          status: 'pending',
+          duration_seconds,
+          size: file.size,
+          mime_type: file.type,
+          name: stripExtension(file.name),
+          tags: null,
+          cone_inner: null,
+          cone_outer: null,
+          vibe: null,
+          ai_generated: null,
+        })
+
+      if (dbError) {
+        console.error('Failed to insert metadata for', file.name, dbError)
+      }
+    })
+  )
+
+  input.value = ''
 }
 </script>
 
