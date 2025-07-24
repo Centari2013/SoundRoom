@@ -28,7 +28,6 @@ export default class AudioEngine {
   #currentIRName = null
 
   #room = null
-  #roomInitialized = false
 
 
   /**
@@ -138,7 +137,6 @@ export default class AudioEngine {
           }
         ]
       })
-      this.#roomInitialized = true; // mark room as initialized
     }
 
   }
