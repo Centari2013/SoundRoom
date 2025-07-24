@@ -21,7 +21,7 @@
   />
 
   <!-- Footer Buttons -->
-  <div class="flex justify-start items-center h-15 p-2 space-x-3">
+  <div class="relative flex items-center justify-between h-15 p-2">
     <div class="flex space-x-3">
       <BaseButton
         @click="showSaveConfirm = true"
@@ -43,9 +43,11 @@
         New Room +
       </BaseButton>
     </div>
-    
+    <div class="absolute left-1/2 -translate-x-1/2">
+      <IRSelect />
+    </div>
 
-     <div v-if="isAuthenticated" class="mt-auto flex flex-grow justify-end">
+    <div v-if="isAuthenticated" class="ml-auto">
       <RouterLink
         to="/room-manager"
         aria-label="Open Room Manager"
@@ -68,6 +70,7 @@ import { useAuth } from '@/composables/useAuth';
 import { resetRoomState } from '@/utils/resetRoomState';
 import BaseButton from '@/components/ui/input/BaseButton.vue';
 import YesNoModal from '@/components/ui/modals/YesNoModal.vue';
+import IRSelect from '@/components/SoundRoom/IRSelect.vue';
 
 const emit = defineEmits(['saveRoom']);
 const props = defineProps({
@@ -80,6 +83,7 @@ const { isRoomSaveable } = storeToRefs(useRoomStore());
 
 const showSaveConfirm = ref(false);
 const showNewRoomConfirm = ref(false);
+
 
 function handleSaveOnly() {
   if (!isAuthenticated.value) {
