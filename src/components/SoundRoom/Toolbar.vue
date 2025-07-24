@@ -6,22 +6,23 @@
       :disabled="audioEngine.soundSources.value.length === 0"
       @click="isPlaying ? audioEngine.pauseAll() : audioEngine.playAll()"
       class="px-3 py-1 rounded text-sm bg-neutral-200 dark:bg-neutral-800 hover:bg-neutral-300 dark:hover:bg-neutral-700"
-      >
-        {{ isPlaying ? 'Pause All' : 'Play All' }}
+      > 
+        
+        <component :is="isPlaying ? Pause : Play" class="h-4 w-4 fill-black dark:fill-white" />
       </BaseButton>
       <BaseButton
         :disabled="actionStackEmpty || waiting"
         @click="actionManager.undoLastAction"
         class="px-3 py-1 rounded text-sm bg-neutral-200 dark:bg-neutral-800 hover:bg-neutral-300 dark:hover:bg-neutral-700"
       >
-        Undo
+        <UndoRedo class="h-4 w-4 fill-black dark:fill-white"/>
       </BaseButton>
       <BaseButton
         :disabled="redoStackEmpty || waiting"
         @click="actionManager.redoLastAction"
         class="px-3 py-1 rounded text-sm bg-neutral-200 dark:bg-neutral-800 hover:bg-neutral-300 dark:hover:bg-neutral-700"
       >
-        Redo
+        <UndoRedo class="h-4 w-4 scale-x-[-1] fill-black dark:fill-white"/>
       </BaseButton>
     </div>
     <EditableRoomName
@@ -51,6 +52,11 @@
 <script setup>
 import BaseButton from '@/components/ui/input/BaseButton.vue'
 import EditableRoomName from '@/components/ui/modals/RoomManager/EditableRoomName.vue'
+
+import UndoRedo from '@/assets/icons/undo-redo.svg'
+import Pause from '@/assets/icons/pause.svg'
+import Play from '@/assets/icons/play.svg'
+
 import VueSlider from 'vue-3-slider-component'
 import { useAuth } from '@/composables/useAuth'
 import { useSaveAndLoadRoom } from '@/composables/useSaveAndLoadRoom'

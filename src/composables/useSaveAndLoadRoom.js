@@ -195,7 +195,7 @@ export function useSaveAndLoadRoom() {
       isLoadingRoom.value = false;
       return false;
     }
-    console.log("Loaded room data:", data);
+    
     const roomData = data.room_config;
     roomData.room.id = roomId; // Set the room ID from the database
     roomData.room.name = data.name; // Set the room name from the database
