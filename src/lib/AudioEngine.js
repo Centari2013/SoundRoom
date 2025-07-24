@@ -461,8 +461,7 @@ export default class AudioEngine {
       if (json.reverb?.preset) {
         const IR_PRESETS = {
           cathedral: '/impulses/1st_baptist_nashville_far_wide.wav',
-          room: '/impulses/room.wav',
-          tunnel: '/impulses/tunnel.wav',
+          forest: '/impulses/forest.wav',
         }
 
         const presetName = json.reverb.preset
