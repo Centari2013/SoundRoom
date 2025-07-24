@@ -31,17 +31,78 @@ export async function initModels() {
 }
 
 /**
+ * Decode a File/Blob to a mono Float32Array at 16kHz
+ *
+ * @param {File|Blob} file
+ * @returns {Promise<Float32Array>}
+ */
+async function decodeFileToMonoPCM(file) {
+  const baseContext = new (window.AudioContext || window.webkitAudioContext)();
+  try {
+    const arrayBuffer = await file.arrayBuffer();
+    const audioBuffer = await baseContext.decodeAudioData(arrayBuffer);
+
+    // Resample if needed using OfflineAudioContext
+    let resampled = audioBuffer;
+    if (audioBuffer.sampleRate !== 16000) {
+      const offlineCtx = new OfflineAudioContext(
+        audioBuffer.numberOfChannels,
+        Math.ceil(audioBuffer.duration * 16000),
+        16000
+      );
+      const source = offlineCtx.createBufferSource();
+      source.buffer = audioBuffer;
+      source.connect(offlineCtx.destination);
+      source.start();
+      resampled = await offlineCtx.startRendering();
+    }
+
+    const length = resampled.length;
+    const channels = resampled.numberOfChannels;
+    if (channels === 1) {
+      return resampled.getChannelData(0);
+    }
+    const output = new Float32Array(length);
+    const channelData = [];
+    for (let c = 0; c < channels; c++) {
+      channelData.push(resampled.getChannelData(c));
+    }
+    for (let i = 0; i < length; i++) {
+      let sum = 0;
+      for (let c = 0; c < channels; c++) {
+        sum += channelData[c][i];
+      }
+      output[i] = sum / channels;
+    }
+    return output;
+  } finally {
+    baseContext.close();
+  }
+}
+
+/**
  * Classifies an audio buffer using YAMNet.
  * @param {Float32Array} monoBuffer - 1-channel Float32 PCM data @ 16kHz
  * @returns {Promise<Array<{label: string, score: number}>>}
  */
-export async function classifyAudio(monoBuffer) {
+export async function classifyAudio(input) {
   await initModels();
 
-  const inputTensor = tf.tensor(monoBuffer, [monoBuffer.length], 'float32');
-  const output = yamnetModel.predict(inputTensor);
+  let monoBuffer;
+  if (input instanceof Float32Array) {
+    monoBuffer = input;
+  } else if (input instanceof Blob) {
+    monoBuffer = await decodeFileToMonoPCM(input);
+  } else {
+    throw new Error('Unsupported input type for classifyAudio');
+  }
 
-  const scores = output[0].arraySync(); // shape [frames, 521]
+  const inputTensor = tf.tensor(monoBuffer, [monoBuffer.length], 'float32');
+  const prediction = yamnetModel.predict(inputTensor);
+
+  // tf.GraphModel.predict may return either a tensor or an array of tensors
+  const scoresTensor = Array.isArray(prediction) ? prediction[0] : prediction;
+  const scores = scoresTensor.arraySync(); // shape [frames, 521]
   const averaged = tf.tensor(scores).mean(0).arraySync(); // shape [521]
 
   const topTags = Array.from(averaged)
