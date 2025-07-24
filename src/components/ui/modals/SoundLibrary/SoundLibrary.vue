@@ -152,7 +152,7 @@ async function handleUpload(event) {
 
   if (files.length === 0) return
 
-  const MAX_SIZE = 10 * 1024 * 1024 // 10MB
+  const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10MB
 
   await Promise.all(
     files.map(async (file) => {
@@ -161,7 +161,7 @@ async function handleUpload(event) {
         return
       }
 
-      if (file.size > MAX_SIZE) {
+      if (file.size > MAX_FILE_SIZE) {
         console.warn(`Skipping ${file.name} – file is larger than 10MB`)
         return
       }
