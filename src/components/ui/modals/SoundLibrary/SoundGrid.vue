@@ -30,8 +30,9 @@
             <input
               type="file"
               accept="audio/*"
+              multiple
               class="hidden"
-              @change="emit('upload')"
+              @change="emit('upload', $event)"
             />
           </label>
         </div>
