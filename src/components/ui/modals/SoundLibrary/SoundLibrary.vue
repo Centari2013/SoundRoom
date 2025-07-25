@@ -17,28 +17,13 @@
         :waiting="waiting"
         :soundLibrarySources="soundLibrarySources"
         :currentlyPlayingId="currentlyPlayingId"
+        :activeCategory="activeCategory"
         @close="$emit('close')"
         @toggleSound="toggleAddSource"
         @updateCurrent="currentlyPlayingId = $event"
+        @upload="handleUpload"
       />
-
-      <!-- Bottom Upload Panel -->
-      <div
-        v-if="isAuthenticated"
-        class="absolute bottom-0 left-0 right-0 p-4 bg-white dark:bg-neutral-950 border-t border-neutral-300 dark:border-neutral-800"
-      >
-        <div class="flex justify-between items-center">
-          <label class="text-sm cursor-pointer">
-            Upload your own sound
-            <input
-              type="file"
-              accept="audio/*"
-              class="hidden"
-              @change="handleUpload"
-            />
-          </label>
-        </div>
-      </div>
+     
     </div>
   </div>
 </template>
@@ -164,7 +149,7 @@ async function handleUpload(event) {
       }
 
       if (file.size > MAX_FILE_SIZE) {
-        console.warn(`Skipping ${file.name} – file is larger than 10MB`)
+        console.warn(`Skipping ${file.name} - file is larger than 10MB`)
         return
       }
 

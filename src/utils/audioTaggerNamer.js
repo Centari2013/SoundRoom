@@ -10,24 +10,32 @@ let yamnetLabels = [];
  * Initializes models if not already loaded.
  */
 export async function initModels() {
+  const startTime = performance.now();
+  console.log('[audioTaggerNamer] Initializing models...');
+
   if (!yamnetModel) {
-    yamnetModel = await tf.loadGraphModel(
-      'https://tfhub.dev/google/tfjs-model/yamnet/tfjs/1/model.json',
-      { fromTFHub: true }
-    );
+    const yamnetStart = performance.now();
+    yamnetModel = await tf.loadGraphModel('/models/yamnet/model.json');
+    console.log(`[audioTaggerNamer] YAMNet model loaded in ${(performance.now() - yamnetStart).toFixed(2)} ms`);
+
     // Load label file manually (521 classes)
-    const labelText = await fetch('https://raw.githubusercontent.com/tensorflow/models/master/research/audioset/yamnet/yamnet_class_map.csv')
-      .then(res => res.text());
+    const labelsStart = performance.now();
+    const labelText = await fetch('/models/yamnet/labels.csv').then(res => res.text());
     yamnetLabels = labelText
       .split('\n')
       .slice(1)
       .map(line => line.split(',')[2]?.replace(/"/g, '').trim())
       .filter(Boolean);
+    console.log(`[audioTaggerNamer] YAMNet labels loaded in ${(performance.now() - labelsStart).toFixed(2)} ms`);
   }
 
   if (!nameGenerator) {
+    const nameGenStart = performance.now();
     nameGenerator = await pipeline('text-generation', 'Xenova/distilgpt2');
+    console.log(`[audioTaggerNamer] Name generator pipeline loaded in ${(performance.now() - nameGenStart).toFixed(2)} ms`);
   }
+
+  console.log(`[audioTaggerNamer] Models initialized in ${(performance.now() - startTime).toFixed(2)} ms`);
 }
 
 /**

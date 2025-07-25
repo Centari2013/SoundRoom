@@ -13,23 +13,49 @@
         @toggle="$emit('toggleSound', $event)"
         @updateCurrent="$emit('updateCurrent', $event)"
       />
+      <template v-if="sounds.length === 0">
+          <div class="col-span-full text-center text-neutral-400 mt-32">
+            <div class="text-xl font-semibold mb-2">Nothing to hear!</div>
+            <div class="mb-4">Upload your first sound below and it'll show up here.</div>
+          </div>
+        </template>
     </div>
+     <div
+        v-if="isAuthenticated && activeCategory == 'your-sounds'"
+        class="absolute bottom-0 left-0 right-0 p-4 bg-white dark:bg-neutral-950 border-t border-neutral-300 dark:border-neutral-800"
+      >
+        <div class="flex justify-between items-center">
+          <label class="text-sm cursor-pointer">
+            Upload your own sound
+            <input
+              type="file"
+              accept="audio/*"
+              class="hidden"
+              @change="emit('upload')"
+            />
+          </label>
+        </div>
+      </div>
   </div>
+  
 </template>
 
 <script setup>
 import { ref } from 'vue'
 import BaseButton from '@/components/ui/input/BaseButton.vue'
 import SoundGridItem from './SoundGridItem.vue'
+import { useAuth } from '@/composables/useAuth'
 
 const props = defineProps({
   sounds: Array,
   waiting: Boolean,
   soundLibrarySources: Array,
-  currentlyPlayingId: String
+  currentlyPlayingId: String,
+  activeCategory: String
 })
 
-defineEmits(['close', 'toggleSound', 'updateCurrent'])
+const { isAuthenticated } = useAuth()
+const emit = defineEmits(['close', 'toggleSound', 'updateCurrent', 'upload'])
 
 const gridScroll = ref(null)
 function scrollTop() {
