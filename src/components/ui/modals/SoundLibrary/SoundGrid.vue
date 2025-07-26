@@ -31,7 +31,7 @@
               type="file"
               accept="audio/*"
               multiple
-              class="hidden"
+              class="hidden cursor-pointer"
               @change="emit('upload', $event)"
             />
           </label>
