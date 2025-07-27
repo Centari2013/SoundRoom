@@ -41,7 +41,7 @@ import { useAudioCacheStore } from '@/stores/useAudioCacheStore'
 import { useActionManagerStore } from '@/stores/useActionManagerStore'
 import { useAuth } from '@/composables/useAuth'
 import uploadAudio from '@/utils/uploadAudio'
-import { classifyAudio, generateNameFromEmbedding, extractClapEmbedding } from '@/utils/audioTaggerNamer'
+import { classifyAudio, generateNameFromTags } from '@/utils/audioTaggerNamer'
 import { storeToRefs } from 'pinia'
 
 const props = defineProps({
@@ -157,8 +157,7 @@ async function handleUpload(event) {
         .then(async (tags) => {
           console.log(`Classified ${file.name} with tags:`, tags)
           if (tags.length > 0) {
-            const embedding = await extractClapEmbedding(file)
-            const suggestedName = await generateNameFromEmbedding(embedding, tags)
+            const suggestedName = await generateNameFromTags(tags)
             console.log(`Generated name for ${file.name}:`, suggestedName)
           }
         })
