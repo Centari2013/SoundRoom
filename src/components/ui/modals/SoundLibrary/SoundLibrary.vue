@@ -21,11 +21,13 @@
         @close="$emit('close')"
         @toggleSound="toggleAddSource"
         @updateCurrent="currentlyPlayingId = $event"
-        @upload="handleUpload"
+        @upload="showUploadPanel = true"
       />
      
     </div>
   </div>
+  <UploadPanel v-if="showUploadPanel" @close="showUploadPanel = false" @finished="refreshUserSounds" />
+
 </template>
 
 <script setup>
@@ -36,12 +38,11 @@ import { getFileDuration, stripExtension, ALLOWED_AUDIO_TYPES } from '@/utils/au
 
 import CategoryList from '@/components/ui/modals/SoundLibrary/CategoryList.vue'
 import SoundGrid from '@/components/ui/modals/SoundLibrary/SoundGrid.vue'
+import UploadPanel from '@/components/ui/modals/SoundLibrary/UploadPanel.vue'
 
 import { useAudioCacheStore } from '@/stores/useAudioCacheStore'
 import { useActionManagerStore } from '@/stores/useActionManagerStore'
 import { useAuth } from '@/composables/useAuth'
-import uploadAudio from '@/utils/uploadAudio'
-import { classifyAudio, generateNameFromTags } from '@/utils/audioTaggerNamer'
 import { storeToRefs } from 'pinia'
 
 const props = defineProps({
@@ -55,7 +56,7 @@ const actionStore = useActionManagerStore()
 const { waiting } = storeToRefs(actionStore)
 const { soundLibrarySources } = storeToRefs(cacheStore)
 const emit = defineEmits(['close'])
-
+const showUploadPanel = ref(false)
 
 
 const categories = [
@@ -98,8 +99,14 @@ watch(
     currentlyPlayingId.value = null
     await nextTick()
     gridRef.value?.scrollTop() // scroll up when new category is selected
+    let sounds = []
+    if (newCategory === 'your-sounds') {
+      filteredSounds.value = [] // reset filtered sounds for immediate visual feedback
+      sounds = await listUserSounds()
+    } else {
+      sounds = await listCategoryFiles(newCategory)
+    }
 
-    const sounds = await listCategoryFiles(newCategory)
     filteredSounds.value = sounds.map(({ id, ...rest }) => ({
       libraryId: id,
       ...rest,
@@ -108,6 +115,16 @@ watch(
   },
   { immediate: true }
 ) // run at least once, like a do while
+
+const refreshUserSounds = async () => {
+  if (activeCategory.value === 'your-sounds') {
+    const sounds = await listUserSounds()
+    filteredSounds.value = sounds.map(({ id, ...rest }) => ({
+      libraryId: id,
+      ...rest,
+    }))
+  }
+}
 
 /**
  * Retrieve the sounds for the currently active category from Supabase.
@@ -128,85 +145,23 @@ async function listCategoryFiles() {
 }
 
 /**
- * Handler for the (currently disabled) upload input.
- *
- * @param {Event} event - change event from the file input
- * @returns {void}
+ * Retrieve the sounds uploaded by the authenticated user.
  */
-async function handleUpload(event) {
-  const input = event.target
-  const files = Array.from(input.files || [])
 
-  if (files.length === 0) return
+async function listUserSounds() {
+  if (!isAuthenticated.value) return []
 
-  const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10MB
-
-  await Promise.all(
-    files.map(async (file) => {
-      if (!ALLOWED_AUDIO_TYPES.includes(file.type)) {
-        console.warn(`Skipping unsupported file type: ${file.name}`)
-        return
-      }
-
-      if (file.size > MAX_FILE_SIZE) {
-        console.warn(`Skipping ${file.name} - file is larger than 10MB`)
-        return
-      }
-
-      await classifyAudio(file)
-        .then(async (tags) => {
-          console.log(`Classified ${file.name} with tags:`, tags)
-          if (tags.length > 0) {
-            const suggestedName = await generateNameFromTags(tags)
-            console.log(`Generated name for ${file.name}:`, suggestedName)
-          }
-        })
-        .catch((err) => {
-          console.error(`Failed to classify audio for ${file.name}:`, err)
-        })
-
-    
-
-      return
-
-      let key
-      try {
-        key = await uploadAudio(file, user.value.id)
-      } catch (err) {
-        console.error('Failed to upload file:', err)
-        return
-      }
-
-      let duration_seconds = 0
-      try {
-        duration_seconds = await getFileDuration(file)
-      } catch (err) {
-        console.error(`Failed to decode ${file.name}:`, err)
-      }
-
-      const { error: dbError } = await supabase
-        .from('sound_files')
-        .insert({
-          path: key,
-          name: stripExtension(file.name),
-          bucket: 'pending',
-          duration_seconds,
-          size: file.size,
-          mime_type: file.type,
-          cone_inner: null,
-          cone_outer: null,
-          tags: null,
-          owner_id: user.value.id,
-        })
-
-      if (dbError) {
-        console.error('Failed to insert metadata for', file.name, dbError)
-      }
-    })
-  )
-
-  input.value = ''
+  const { data, error } = await supabase
+    .from('sound_files')
+    .select()
+    .eq('owner_id', user.value.id)
+  if (error) {
+    console.error('Failed to list user sounds:', error)
+    return []
+  }
+  return data
 }
+
 </script>
 
 <style scoped>

@@ -20,19 +20,34 @@ async function getSignedUploadUrl(userId, filename) {
  *
  * @param {File|Blob} file - file to upload
  * @param {string} userId - Supabase user ID
+ * @param {function} [onProgress] - optional progress callback (percent => void)
  * @returns {Promise<string>} key of the uploaded file
  */
-export default async function uploadAudio(file, userId) {
+export default async function uploadAudio(file, userId, onProgress) {
   const { signedUrl, key } = await getSignedUploadUrl(userId, file.name);
-  const uploadRes = await fetch(signedUrl, {
-    method: 'PUT',
-    body: file,
-    headers: {
-      'Content-Type': file.type,
-    },
+
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+
+    xhr.upload.addEventListener('progress', (event) => {
+      if (event.lengthComputable && typeof onProgress === 'function') {
+        const percent = (event.loaded / event.total) * 100;
+        onProgress(percent);
+      }
+    });
+
+    xhr.onload = () => {
+      if (xhr.status >= 200 && xhr.status < 300) {
+        resolve(key);
+      } else {
+        reject(new Error(`Upload failed with status ${xhr.status}`));
+      }
+    };
+
+    xhr.onerror = () => reject(new Error('Upload failed due to a network error'));
+
+    xhr.open('PUT', signedUrl);
+    xhr.setRequestHeader('Content-Type', file.type);
+    xhr.send(file);
   });
-  if (!uploadRes.ok) {
-    throw new Error('Failed to upload file to R2');
-  }
-  return key;
 }

@@ -1,53 +1,77 @@
 // audioTaggerNamer.js
-import * as tf from '@tensorflow/tfjs';
 import { pipeline, read_audio, env } from '@huggingface/transformers';
 //import { AutoProcessor, ClapAudioModelWithProjection, read_audio } from '@xenova/transformers';
 
-env.useBrowserCache = false;
-env.allowLocalModels = false; // Disable local models for now, use CDN
-env.allowRemoteModels = true; // Allow remote models
+env.useBrowserCache = true;
+env.allowLocalModels = true; // Disable local models for now, use CDN
+env.allowRemoteModels = false;
 
 let nameGenerator = null;
+let nameGeneratorPromise = null;
+
 let clapClassifier = null;
+let clapInitPromise = null;
+
 
 /**
  * Initializes CLAP audio embedding components properly.
  */
 export async function initClapModel() {
+  if (clapClassifier) return Promise.resolve();
+  if (clapInitPromise) return clapInitPromise;
+
   const start = performance.now();
-  if (!clapClassifier) {
-    clapClassifier = await pipeline('zero-shot-audio-classification', 'Xenova/clap-htsat-unfused'); 
+  clapInitPromise = pipeline('zero-shot-audio-classification', 'Xenova/clap-htsat-unfused', {
+    local_files_only: true,
+    trust_remote_code: true,
+    dtype: 'q8',
+    use_cache: true,
+  }).then(pipelineInstance => {
+    clapClassifier = pipelineInstance;
     console.log(`[Timing] CLAP model loaded in ${(performance.now() - start).toFixed(2)} ms`);
-  } else {
-    console.log(`[Timing] CLAP model already initialized, skipped loading.`);
-  }
+  }).catch(err => {
+    console.error('CLAP init failed:', err);
+    throw err;
+  });
+
+  return clapInitPromise;
 }
 
 /**
  * Initializes SmolLM2-135M-Instruct for generating human-readable names.
  */
-export async function initSmolLM2() {
+export async function initLLM() {
+  if (nameGenerator) return Promise.resolve();
+  if (nameGeneratorPromise) return nameGeneratorPromise;
+
   const start = performance.now();
-  if (!nameGenerator) {
-    const nameGenStart = performance.now();
-    nameGenerator = await pipeline('text-generation', 'HuggingFaceTB/SmolLM2-135M-Instruct', {
-      max_length: 20,
-      do_sample: true,
-      temperature: 0.5,
-      top_p: 0.9,
-      top_k: 50,
-      repetition_penalty: 1.2,
-      num_return_sequences: 1,
-      use_cache: true,
-      trust_remote_code: true,
-      dtype: 'q8' // or 'int8', 'fp32' if needed
-    });
-    console.log(`[Timing] Name generator pipeline loaded in ${(performance.now() - nameGenStart).toFixed(2)} ms`);
-  } else {
-    console.log(`[Timing] Name generator already initialized, skipped loading.`);
-  }
-  console.log(`[Timing] initSmolLM2 total: ${(performance.now() - start).toFixed(2)} ms`);
+  nameGeneratorPromise = pipeline('text-generation', 'Xenova/llama2.c-stories110M'
+    //'HuggingFaceTB/SmolLM2-135M-Instruct'
+, 
+    {
+    local_files_only: true,
+    max_length: 20,
+    do_sample: true,
+    temperature: 0.5,
+    top_p: 0.9,
+    top_k: 50,
+    repetition_penalty: 1.2,
+    num_return_sequences: 1,
+    use_cache: true,
+    trust_remote_code: true,
+    dtype: 'fp16'
+  }).then(pipelineInstance => {
+    nameGenerator = pipelineInstance;
+    console.log(`[Timing] LLM loaded in ${(performance.now() - start).toFixed(2)} ms`);
+    return nameGenerator;
+  }).catch(err => {
+    console.error('LLM init failed:', err);
+    throw err;
+  });
+
+  return nameGeneratorPromise;
 }
+
 
 /**
  * Classifies an audio file using the CLAP zero-shot audio classifier.
@@ -78,7 +102,7 @@ export async function classifyAudio(input) {
   console.log(`[Timing] Audio classified in ${(performance.now() - classifyStart).toFixed(2)} ms`);
 
   const topTags = scores
-    .filter(t => t.score > 0.1)
+    .filter(t => t.score > 0.07)
     .sort((a, b) => b.score - a.score)
     .slice(0, 5)
     .map(t => t.label);
@@ -94,15 +118,35 @@ export async function classifyAudio(input) {
  */
 export async function generateNameFromTags(tags) {
   const start = performance.now();
-  await initSmolLM2();
-  const prompt = `Suggest a natural-sounding, title-cased filename for an ambient sound based on these tags: ${tags.join(', ')}. It should sound like a library title — no punctuation, no quotes. Examples: Ocean Waves, Forest Morning, River Creek. Avoid generic terms like "Audio" or "Sound Effect". Use 1-3 words max.`;
+  await initLLM();
+  /* const prompt = `
+    You are naming an ambient sound for a curated sound library. Use the following tags as inspiration:
+
+    Tags: ${tags.join(', ')}
+
+    Generate a natural-sounding, title-cased name that feels descriptive and aesthetic - like something found in an ambient or nature sound collection.
+
+    Only output the name. Keep it short (1-3 words). Examples:
+
+    - Ocean Waves
+    - Forest Morning
+    - Metal Door Creak
+    - Deep Synth Pulse
+    - Quiet Street
+
+    Name:
+    `.trim(); */
+
+  const prompt = `Tags: ${tags.join(', ')}\nShort Title:`;
+
   console.log(`[Timing] generateNameFromTags prompt: ${prompt}`);
   const genStart = performance.now();
   const output = await nameGenerator(prompt, { max_new_tokens: 12 });
   console.log(`[Timing] nameGenerator output in ${(performance.now() - genStart).toFixed(2)} ms`);
   console.log(`[Timing] generateNameFromTags total: ${(performance.now() - start).toFixed(2)} ms`);
+  const nameOnly = output[0].generated_text.split(prompt).pop().trim();
   console.log(`[NameGen] Generated output:`, output);
-  return output[0]?.generated_text.replace(prompt, '').trim();
+  return cleanGeneratedName(nameOnly);
 }
 
 function cleanGeneratedName(text) {
@@ -113,7 +157,7 @@ function cleanGeneratedName(text) {
     .replace(/\s{2,}/g, ' ')             // Collapse multiple spaces
     .trim()
     .split(' ')
-    .slice(0, 4)                         // Max 3–4 words
-    .map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+    //.slice(0, 4)                         // Max 3–4 words
+    //.map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
     .join(' ');
 }

@@ -64,11 +64,18 @@
   <WelcomeOverlay
     v-if="showWelcomeOverlay"
   />
+  <PulsingOverlay
+    v-if="showInitOverlay"
+    :text="'Initializing Your SoundRoom...'"
+    @done="showInitOverlay = false"
+  />
 
 </template>
 
 <script setup>
 import { ref, provide, onBeforeMount, onUnmounted } from 'vue'
+import { initClapModel, initLLM } from '@/utils/audioTaggerNamer'
+
 // Shared constants
 const SOUND_NODE_PART_NAME = 'sound-node-part'
 
@@ -151,12 +158,14 @@ const { saveRoom, isLoadingRoom, isSavingRoom, loadRoomLocal, loadMostRecentRoom
 setMaxLibSources(MAX_LIB_SOURCES)
 
 const showWelcomeOverlay = ref(false)
-onBeforeMount(() => {
+const showInitOverlay = ref(false)
+onBeforeMount(async () => {
   registerSoundRoomActions()
   cacheStore.clearSoundLibrarySources() // Clear any previous sound library sources
   const { isAuthenticated } = useAuth()
   if (sessionStorage.getItem('justLoggedIn') === 'true') {
     sessionStorage.removeItem('justLoggedIn')
+    initClapModel()
     showWelcomeOverlay.value = true
     const tempSoundRoomData = localStorage.getItem('tempSoundRoomData')
     if (tempSoundRoomData) {
@@ -175,6 +184,10 @@ onBeforeMount(() => {
     //const router = useRouter()
     //router.push('/welcome')
   } else {
+    showInitOverlay.value = true
+    await initClapModel().then(() => {
+      showInitOverlay.value = false
+    })
     // auto-load most recent room if available
     if (isAuthenticated.value) {
       // leave commented out until resume lastplaying sources is implemented to combat:

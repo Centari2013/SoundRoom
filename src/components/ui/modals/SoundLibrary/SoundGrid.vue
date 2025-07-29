@@ -25,15 +25,9 @@
         class="absolute bottom-0 left-0 right-0 p-4 bg-white dark:bg-neutral-950 border-t border-neutral-300 dark:border-neutral-800"
       >
         <div class="flex justify-between items-center">
-          <label class="text-sm cursor-pointer">
+          <label class="text-sm cursor-pointer"
+            @click="$emit('upload')">
             Upload your own sound
-            <input
-              type="file"
-              accept="audio/*"
-              multiple
-              class="hidden cursor-pointer"
-              @change="emit('upload', $event)"
-            />
           </label>
         </div>
       </div>

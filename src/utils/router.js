@@ -45,7 +45,7 @@ const router = createRouter({
     { path: '/update-password', component: () => import('@/views/UpdatePasswordPage.vue')},
     { path: '/auth/callback', component: () => import('@/views/AuthCallback.vue') },
     { path: '/auth/error', component: () => import('@/views/AuthError.vue') },
-    { path: '/welcome', component: () => import('@/components/ui/modals/Welcome.vue') },
+    { path: '/welcome', component: () => import('@/components/ui/modals/Onboarding.vue') },
     { path: '/logged-out', component: () => import('@/views/LoggedOut.vue') },
     { path: '/pricing', component: () => import('@/views/Pricing/Pricing.vue') },
 
