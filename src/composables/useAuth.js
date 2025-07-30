@@ -1,8 +1,6 @@
 // utils/userAuth.ts
 import { ref, readonly, computed } from 'vue'
 import { supabase } from '@/utils/supabase'
-import { get } from 'http'
-
 const user = ref(null)
 const sessionLoaded = ref(false) // ✅ Track when session is ready
 
