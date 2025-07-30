@@ -1,5 +1,7 @@
 // audioTaggerNamer.js
 import { pipeline, read_audio, env } from '@huggingface/transformers';
+import AudioTaggerWorker from '@/workers/audioTaggerWorker.js?worker&type=module'
+
 //import { AutoProcessor, ClapAudioModelWithProjection, read_audio } from '@xenova/transformers';
 
 env.useBrowserCache = true;
@@ -9,33 +11,6 @@ env.allowRemoteModels = false;
 let nameGenerator = null;
 let nameGeneratorPromise = null;
 
-let clapClassifier = null;
-let clapInitPromise = null;
-
-
-/**
- * Initializes CLAP audio embedding components properly.
- */
-export async function initClapModel() {
-  if (clapClassifier) return Promise.resolve();
-  if (clapInitPromise) return clapInitPromise;
-
-  const start = performance.now();
-  clapInitPromise = pipeline('zero-shot-audio-classification', 'Xenova/clap-htsat-unfused', {
-    local_files_only: true,
-    trust_remote_code: true,
-    dtype: 'q8',
-    use_cache: true,
-  }).then(pipelineInstance => {
-    clapClassifier = pipelineInstance;
-    console.log(`[Timing] CLAP model loaded in ${(performance.now() - start).toFixed(2)} ms`);
-  }).catch(err => {
-    console.error('CLAP init failed:', err);
-    throw err;
-  });
-
-  return clapInitPromise;
-}
 
 /**
  * Initializes SmolLM2-135M-Instruct for generating human-readable names.
@@ -78,38 +53,41 @@ export async function initLLM() {
  * @param {Blob} input - Audio file as a Blob.
  * @returns {Promise<Array<string>>} - Array of top predicted tags.
  */
-export async function classifyAudio(input) {
-  const start = performance.now();
-  await initClapModel();
+const classifyCallbacks = new Map()
 
-  const labelsLoadStart = performance.now();
-  const labels = await fetch('/models/labels.json')
-    .then(res => res.json())
-    .catch(err => {
-      console.error('Failed to load labels:', err);
-      return [];
-    });
-  console.log(`[Timing] Labels loaded in ${(performance.now() - labelsLoadStart).toFixed(2)} ms`);
+const classifierWorker = new AudioTaggerWorker()
 
-  // Convert input file to a URL for reading
-  const objectUrl = URL.createObjectURL(input);
-  const audioReadStart = performance.now();
-  const audio = await read_audio(objectUrl); // handles decoding + resampling
-  console.log(`[Timing] Audio read in ${(performance.now() - audioReadStart).toFixed(2)} ms`);
 
-  const classifyStart = performance.now();
-  const scores = await clapClassifier(audio, labels);
-  console.log(`[Timing] Audio classified in ${(performance.now() - classifyStart).toFixed(2)} ms`);
-
-  const topTags = scores
-    .filter(t => t.score > 0.07)
-    .sort((a, b) => b.score - a.score)
-    .slice(0, 5)
-    .map(t => t.label);
-
-  console.log(`[Timing] classifyAudio total: ${(performance.now() - start).toFixed(2)} ms`);
-  return topTags;
+classifierWorker.onmessage = (event) => {
+  const { id, tags, error } = event.data
+  const cb = classifyCallbacks.get(id)
+  if (cb) {
+    if (error) cb.reject(new Error(error))
+    else cb.resolve(tags)
+    classifyCallbacks.delete(id)
+  }
 }
+
+/**
+ * Offload audio classification to background worker.
+ * @param {Blob} blob
+ * @returns {Promise<string[]>}
+ */
+export async function classifyAudio(blob) {
+  const audioArray = await read_audio(URL.createObjectURL(blob));
+  const id = crypto.randomUUID();
+
+  return new Promise((resolve, reject) => {
+    classifyCallbacks.set(id, { resolve, reject })
+
+
+      classifierWorker.postMessage(
+        { id, audioArray } // transferable for better performance
+      )
+    })
+}
+
+
 
 /**
  * Generates a human-readable name from a list of tags.

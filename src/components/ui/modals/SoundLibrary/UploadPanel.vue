@@ -90,6 +90,13 @@ function handleFileSelect(e) {
 
 async function autoTag(file) {
   try {
+    console.log('file.raw:', file.raw)
+    console.log('typeof file.raw:', typeof file.raw)
+    console.log('file.raw.constructor.name:', file.raw?.constructor?.name)
+    console.log('file.raw instanceof Blob:', file.raw instanceof Blob)
+    console.log('file.raw instanceof File:', file.raw instanceof File)
+    console.log('file.raw.arrayBuffer:', file.raw?.arrayBuffer)
+
     const tags = await classifyAudio(file.raw)
     file.tags = tags
     //file.name = await generateNameFromTags(tags)
