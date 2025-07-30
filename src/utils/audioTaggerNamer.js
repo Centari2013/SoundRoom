@@ -37,10 +37,8 @@ export async function initLLM() {
     dtype: 'fp16'
   }).then(pipelineInstance => {
     nameGenerator = pipelineInstance;
-    console.log(`[Timing] LLM loaded in ${(performance.now() - start).toFixed(2)} ms`);
     return nameGenerator;
   }).catch(err => {
-    console.error('LLM init failed:', err);
     throw err;
   });
 
@@ -117,13 +115,9 @@ export async function generateNameFromTags(tags) {
 
   const prompt = `Tags: ${tags.join(', ')}\nShort Title:`;
 
-  console.log(`[Timing] generateNameFromTags prompt: ${prompt}`);
   const genStart = performance.now();
   const output = await nameGenerator(prompt, { max_new_tokens: 12 });
-  console.log(`[Timing] nameGenerator output in ${(performance.now() - genStart).toFixed(2)} ms`);
-  console.log(`[Timing] generateNameFromTags total: ${(performance.now() - start).toFixed(2)} ms`);
   const nameOnly = output[0].generated_text.split(prompt).pop().trim();
-  console.log(`[NameGen] Generated output:`, output);
   return cleanGeneratedName(nameOnly);
 }
 
@@ -139,3 +133,4 @@ function cleanGeneratedName(text) {
     //.map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
     .join(' ');
 }
+
