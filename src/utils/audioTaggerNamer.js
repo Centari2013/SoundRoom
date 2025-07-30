@@ -11,6 +11,16 @@ env.allowRemoteModels = false;
 let nameGenerator = null;
 let nameGeneratorPromise = null;
 
+/** * Initializes the audio classifier worker and loads the CLAP model.
+ * @returns {Promise<void>}
+ */
+export function initAudioClassifier() {
+  const id = crypto.randomUUID();
+  return new Promise((resolve, reject) => {
+    classifyCallbacks.set(id, { resolve, reject });
+    classifierWorker.postMessage({ id, type: 'init' });
+  });
+}
 
 /**
  * Initializes SmolLM2-135M-Instruct for generating human-readable names.
@@ -80,7 +90,8 @@ export async function classifyAudio(blob) {
 
 
       classifierWorker.postMessage(
-        { id, audioArray } // transferable for better performance
+        { id, audioArray }, // transferable for better performance
+        [audioArray.buffer] // transfer the ArrayBuffer for performance
       )
     })
 }

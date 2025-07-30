@@ -6,31 +6,40 @@ env.allowRemoteModels = false;
 env.useBrowserCache = true;
 
 let classifier = null
+let classifierInitPromise = null;
 let labels = []
 
 
 async function loadModelAndLabels() {
-  if (!classifier) {
-    classifier = await pipeline('zero-shot-audio-classification', 'Xenova/clap-htsat-unfused', {
-      local_files_only: true,
-      trust_remote_code: true,
-      use_cache: true,
-      dtype: 'q8'
-    })
-  }
+  if (classifier) return Promise.resolve();
+
+  classifierInitPromise = pipeline('zero-shot-audio-classification', 'Xenova/clap-htsat-unfused', {
+    local_files_only: true,
+    trust_remote_code: true,
+    use_cache: true,
+    dtype: 'q8'
+  }).then(pipelineInstance => {
+    classifier = pipelineInstance;
+  });
+
 
   if (!labels.length) {
     const res = await fetch('/models/labels.json')
     labels = await res.json()
   }
+  return classifierInitPromise;
 }
 
 
 self.onmessage = async (event) => {
-  const { id, audioArray } = event.data
+  const { id, audioArray, type = 'classify' } = event.data
 
   try {
-    await loadModelAndLabels()
+    if (type === 'init') {
+      await loadModelAndLabels();
+      self.postMessage({ id, status: 'ready' });
+      return;
+    }
 
     const result = await classifier(audioArray, labels)
 
