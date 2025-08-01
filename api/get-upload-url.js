@@ -65,7 +65,7 @@ export async function GET(request) {
       { aws: { signQuery: true } }
     );
 
-    return new Response(JSON.stringify({ signedUrl: signed.url, key }), {
+    return new Response(JSON.stringify({ signedUrl: signed.url, key: filename }), {
       status: 200,
       headers: {
         ...corsHeaders,

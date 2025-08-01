@@ -28,6 +28,7 @@ async function fetchAudioBlob(key) {
  *
  * @param {string} bucket - storage bucket name
  * @param {string} path - path of the file within the bucket
+ * @param {string} base - base URL for the R2 bucket
  * @param {boolean} [populateAudio=true] - create an `Audio` element when true
  * @param {?Function} [stopPlayback=null] - callback fired when preview ends
  * @param {?string} [libraryId=null] - unique ID used for caching
@@ -36,6 +37,7 @@ async function fetchAudioBlob(key) {
 export default async function downloadAudio(
   bucket,
   path,
+  base,
   populateAudio = true,
   stopPlayback = null,
   libraryId = null
@@ -43,21 +45,10 @@ export default async function downloadAudio(
   const cacheStore = useAudioCacheStore()
   const cacheManager = cacheStore.audioCacheManager
 
-  // uncomment for debugging cache and download issues
-  //cacheManager.clearPersistentCache()
   const fileId = libraryId ?? `${bucket}/${path}`
 
   const blobUrl = await cacheManager.getAudioURL(fileId, async () => {
-  /*  const { data: fileData, error: fileError } = await supabase.storage
-      .from(bucket)
-      .download(path)
-
-    if (fileError) {
-      console.error(`Failed to download:`, fileError)
-      return new Blob()
-    } */
-    
-    const audioBlob = await fetchAudioBlob(`free/${bucket}/${path}`)
+    const audioBlob = await fetchAudioBlob(`${base}/${bucket}/${path}`)
     return audioBlob
   })
 
@@ -80,7 +71,7 @@ export default async function downloadAudio(
 /**
  * Download multiple audio files in parallel.
  *
- * @param {{id:string, bucket:string, path:string}[]} sourcesList - list of sources to fetch
+ * @param {{id:string, bucket:string, path:string, base:string}[]} sourcesList - list of sources to fetch
  * @param {boolean} [populateAudio=false] - create `Audio` elements when true
  * @param {?Function} [stopPlayback=null] - callback fired when preview ends
  * @returns {Promise<{id:string, audioPath:string}[]>} array of successfully downloaded entries
@@ -95,6 +86,7 @@ export async function downloadMultipleAudio(
       const result = await downloadAudio(
         src.bucket,
         src.path,
+        src.base,
         populateAudio,
         stopPlayback,
         src.id

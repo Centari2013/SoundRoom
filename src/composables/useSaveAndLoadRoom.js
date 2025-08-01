@@ -287,7 +287,12 @@ export function useSaveAndLoadRoom() {
       .in("id", ids);
 
     if (error) console.warn("Failed to list files:", error);
-
+    if (data) {
+      data.forEach(sound => {
+        sound.base = sound.plan_tier;
+      });
+    }
+    console.log("Fetched sounds from DB:", data);
     return data;
   }
   /**
