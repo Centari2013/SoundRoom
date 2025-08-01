@@ -38,6 +38,11 @@ const router = createRouter({
           props: { component: () => import('@/components/ui/modals/RoomManager/RoomManager.vue') },
           meta: { requiresAuth: true }
         },
+        { path: '/your-sounds',
+          component: () => import('@/components/ui/modals/ModalWrapper.vue'),
+          props: { component: () => import('@/components/ui/modals/UserSoundLibrary/UserSoundLibrary.vue') },
+          meta: { requiresAuth: true }
+        },
       ]
     },
     { path: '/terms', component: () => import('@/views/TermsOfService.vue') },
