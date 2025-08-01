@@ -135,8 +135,8 @@ export default class ActionManager {
    * Reset both undo and redo history stacks.
    */
   clearHistory() {
-    this._actionStack.value = []
-    this._redoStack.value = []
+    this._actionStack.value.length = 0
+    this._redoStack.value.length = 0
   }
 
   // Optional: expose history for UI/debugging
