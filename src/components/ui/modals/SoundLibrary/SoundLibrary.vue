@@ -21,10 +21,12 @@
         @close="$emit('close')"
         @toggleSound="toggleAddSource"
         @updateCurrent="currentlyPlayingId = $event"
+        @upload="showUploadPanel = true"
       />
      
     </div>
   </div>
+  <UploadPanel v-if="showUploadPanel" @close="showUploadPanel = false" @finished="refreshUserSounds" />
 
 </template>
 
@@ -32,9 +34,11 @@
 import { ref, watch, nextTick } from 'vue'
 
 import { supabase } from '@/utils/supabase'
+import { getFileDuration, stripExtension, ALLOWED_AUDIO_TYPES } from '@/utils/audioFileUtils'
 
 import CategoryList from '@/components/ui/modals/SoundLibrary/CategoryList.vue'
 import SoundGrid from '@/components/ui/modals/SoundLibrary/SoundGrid.vue'
+import UploadPanel from '@/components/ui/modals/SoundLibrary/UploadPanel.vue'
 
 import { useAudioCacheStore } from '@/stores/useAudioCacheStore'
 import { useActionManagerStore } from '@/stores/useActionManagerStore'
@@ -112,6 +116,15 @@ watch(
   { immediate: true }
 ) // run at least once, like a do while
 
+const refreshUserSounds = async () => {
+  if (activeCategory.value === 'your-sounds') {
+    const sounds = await listUserSounds()
+    filteredSounds.value = sounds.map(({ id, ...rest }) => ({
+      libraryId: id,
+      ...rest,
+    }))
+  }
+}
 
 /**
  * Retrieve the sounds for the currently active category from Supabase.
