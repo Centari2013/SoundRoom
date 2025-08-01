@@ -18,5 +18,4 @@ createApp(App)
 
 
 initAudioClassifier().then(() => {
-  console.log('[AudioClassifier] Warmed up in background')
 })

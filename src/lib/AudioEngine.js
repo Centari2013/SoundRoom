@@ -212,6 +212,7 @@ export default class AudioEngine {
     const src = this.soundSources.value[index]
     const instance = src?.instance
 
+    const currentlyPaused = instance.state.schedule.paused
     const finalVolume = instance?.getVolume()
     instance?.dispose()
     this.soundSources.value.splice(index, 1)
@@ -227,7 +228,7 @@ export default class AudioEngine {
       console.warn("Tried to delete sound source but index", index, "was invalid.")
       return {}
     }
-
+    src.state.schedule.paused = currentlyPaused // preserve pause state for undo
     return {
       state: reactive(Object.assign({}, src.state)),
       audioPath: src.audioPath,

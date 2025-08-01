@@ -26,7 +26,7 @@ export default class SoundSource {
     // `state` holds the spatial position/angle and is kept in sync with the
     // canvas representation.
     this.state = state;
-    this.state.schedule = reactive(state.schedule || {
+    this.state.schedule = reactive(state.schedule ?? {
       id: crypto.randomUUID(),
       enabled: false,
       mode: "interval", // "loop", "interval", "count", or "interval+count"
@@ -50,6 +50,7 @@ export default class SoundSource {
       paused: false, // whether scheduling is currently paused
     });
 
+    this._disposed = false; // whether this source has been disposed
 
     this._rad = (deg) => (deg * Math.PI) / 180;
     this._scale = 0.01;
@@ -310,6 +311,8 @@ export default class SoundSource {
    * Gracefully disconnect and release all Web Audio nodes and associated resources.
    */
   dispose() {
+    this._disposed = true;
+
     // Gracefully disconnect and release all Web Audio nodes and the underlying
     // <audio> element when a source is removed from the room.
     try {
