@@ -34,7 +34,6 @@
 import { ref, watch, nextTick } from 'vue'
 
 import { supabase } from '@/utils/supabase'
-import { getFileDuration, stripExtension, ALLOWED_AUDIO_TYPES } from '@/utils/audioFileUtils'
 
 import CategoryList from '@/components/ui/modals/SoundLibrary/CategoryList.vue'
 import SoundGrid from '@/components/ui/modals/SoundLibrary/SoundGrid.vue'
