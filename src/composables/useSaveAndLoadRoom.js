@@ -9,6 +9,8 @@ import Room from '@/lib/Room'
 import Listener from '@/lib/Listener'
 import AudioEngine from '@/lib/AudioEngine'
 
+
+import { resetRoomState } from "@/utils/resetRoomState";
 import { supabase } from "@/utils/supabase";
 import { downloadMultipleAudio } from "@/utils/downloadAudio";
 import { useAuth } from "@/composables/useAuth";
@@ -237,10 +239,7 @@ export function useSaveAndLoadRoom() {
       }
     });
     
-    actionManager.value.clearHistory();
-
-    audioEngine.value.dispose();
-    listener.value.dispose();
+    resetRoomState();
 
     roomStore.loadRoom(roomData.room);
     listenerStore.loadListener(roomData.listener);
@@ -343,10 +342,7 @@ export function useSaveAndLoadRoom() {
         }
       });
 
-      actionManager.clearHistory();
-
-      audioEngine.value.dispose();
-      listener.value.dispose();
+      resetRoomState();
 
       room.value = Room.fromJSON(roomData.room);
       listener.value = Listener.fromJSON(roomData.listener);

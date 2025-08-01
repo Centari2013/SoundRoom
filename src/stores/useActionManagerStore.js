@@ -39,7 +39,9 @@ export const useActionManagerStore = defineStore('actionManager', () => {
    */
   function resetActionManager() {
     actionManager.value.clearHistory()
-    actionManager.value = new ActionManager()
+    console.log('Redo stack cleared:', actionManager.value.redoStackEmpty)
+    console.log('Action stack cleared:', actionManager.value.actionStackEmpty)
+    
   }
   return {
     actionManager,
