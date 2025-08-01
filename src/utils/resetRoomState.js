@@ -1,5 +1,6 @@
 import { useActionManagerStore } from '@/stores/useActionManagerStore'
 import { useListenerStore } from '@/stores/useListenerStore'
+import { useAudioEngineStore } from '@/stores/useAudioEngineStore'
 import { useRoomStore } from '@/stores/useRoomStore'
 
 
@@ -12,6 +13,7 @@ import { useRoomStore } from '@/stores/useRoomStore'
 export function resetRoomState() {
   const actionStore = useActionManagerStore()
   const listenerStore = useListenerStore()
+  const engineStore = useAudioEngineStore()
   const roomStore = useRoomStore()
 
  
@@ -24,6 +26,9 @@ export function resetRoomState() {
 
   // Reset room metadata
   roomStore.resetRoom()
+
+  // Dispose of audio engine and start from scratch
+  engineStore.resetAudioEngine()
 
   roomStore.getSaveSnapshot()
 }
