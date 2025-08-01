@@ -305,6 +305,8 @@ export default class SoundScheduler {
       clearTimeout(info.resumeTimer);
     }
 
+    this.pauseInfo.delete(sched?.id);
+
     sched.stopCurrentLoop = true;
     sched.paused = true;
   }
