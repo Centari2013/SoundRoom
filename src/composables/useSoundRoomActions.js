@@ -4,7 +4,6 @@ import { useAudioEngineStore } from '@/stores/useAudioEngineStore'
 import { useListenerStore } from '@/stores/useListenerStore'
 import { useAudioCacheStore } from '@/stores/useAudioCacheStore'
 import { storeToRefs } from 'pinia'
-import { toRaw } from 'vue'
 
 let actionsRegistered = false
 
@@ -92,7 +91,7 @@ function registerCanvasActions() {
   )
 }
 
-let MAX_LIB_SOURCES = null
+let MAX_LIB_SOURCES = 20
 
 /**
  * Limit how many library sources can be added to a room.

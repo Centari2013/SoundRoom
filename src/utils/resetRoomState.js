@@ -2,6 +2,7 @@ import { useActionManagerStore } from '@/stores/useActionManagerStore'
 import { useListenerStore } from '@/stores/useListenerStore'
 import { useAudioEngineStore } from '@/stores/useAudioEngineStore'
 import { useRoomStore } from '@/stores/useRoomStore'
+import { registerSoundRoomActions, unregisterSoundRoomActions } from '@/composables/useSoundRoomActions'
 
 
 /**
@@ -11,6 +12,7 @@ import { useRoomStore } from '@/stores/useRoomStore'
  * brand new room can be instantiated without leftover state.
  */
 export function resetRoomState() {
+  unregisterSoundRoomActions()
   const actionStore = useActionManagerStore()
   const listenerStore = useListenerStore()
   const engineStore = useAudioEngineStore()
@@ -31,4 +33,5 @@ export function resetRoomState() {
   engineStore.resetAudioEngine()
 
   roomStore.getSaveSnapshot()
+  registerSoundRoomActions()
 }

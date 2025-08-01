@@ -45,7 +45,6 @@ export function useSaveAndLoadRoom() {
   const { listener } = storeToRefs(listenerStore);
   const { audioEngine } = storeToRefs(audioEngineStore);
   const { soundLibrarySources } = storeToRefs(cacheStore);
-  const { actionManager } = storeToRefs(actionStore);
 
   /**
    * Persist the current room to Supabase. Handles insert or update logic
