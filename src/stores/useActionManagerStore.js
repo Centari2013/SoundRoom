@@ -10,9 +10,9 @@ import ActionManager from '@/lib/ActionManager'
 export const useActionManagerStore = defineStore('actionManager', () => {
   const actionManager = ref(new ActionManager())
 
-  const actionStackEmpty = computed(() => actionManager.value.actionStackEmpty.value)
-  const redoStackEmpty = computed(() => actionManager.value.redoStackEmpty.value)
-  const waiting = computed(() => actionManager.value.waiting.value) // Indicates if an action is currently being processed
+  const actionStackEmpty = computed(() => actionManager.value.actionStackEmpty)
+  const redoStackEmpty = computed(() => actionManager.value.redoStackEmpty)
+  const waiting = computed(() => actionManager.value.waiting) // Indicates if an action is currently being processed
 
   /**
    * Add a sound source to the library via the {@link ActionManager}.
@@ -39,8 +39,7 @@ export const useActionManagerStore = defineStore('actionManager', () => {
    */
   function resetActionManager() {
     actionManager.value.clearHistory()
-    console.log('Redo stack cleared:', actionManager.value.redoStackEmpty)
-    console.log('Action stack cleared:', actionManager.value.actionStackEmpty)
+    actionManager.value = new ActionManager()
     
   }
   return {

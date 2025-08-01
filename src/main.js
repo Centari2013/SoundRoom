@@ -17,5 +17,4 @@ createApp(App)
 
 
 
-initAudioClassifier().then(() => {
-})
+initAudioClassifier()

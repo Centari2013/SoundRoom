@@ -110,6 +110,7 @@ async function togglePlay() {
     const result = await downloadAudio(
       props.soundData.bucket,
       props.soundData.path,
+      props.soundData.plan_tier,
       true,
       stopPlayback,
       props.soundData.libraryId

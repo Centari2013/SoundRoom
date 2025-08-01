@@ -2,14 +2,14 @@
   <aside class="w-60 bg-neutral-200 dark:bg-neutral-900 border-r border-neutral-300 dark:border-neutral-800 p-4 space-y-3 overflow-y-auto">
     <h2 class="font-bold text-sm mb-2">Categories</h2>
     <BaseButton
-      v-if="isAuthenticated"
+      v-if="isAuthenticated && userTier === 'pro'"
       :key="'your-sounds'"
       @click="$emit('update:active', 'your-sounds')"
       :class="['sound-lib-button', { active: active === 'your-sounds' }]"
     >
     Your Sounds
     </BaseButton>
-    <hr v-if="isAuthenticated" class="text-neutral-300 dark:text-neutral-800"/>
+    <hr v-if="isAuthenticated && userTier === 'pro'" class="text-neutral-300 dark:text-neutral-800"/>
     <BaseButton
       v-for="cat in categories"
       :key="cat.id"
@@ -32,7 +32,7 @@ const props = defineProps({
 
 defineEmits(['update:active'])
 
-const { isAuthenticated } = useAuth()
+const { isAuthenticated, tier: userTier } = useAuth()
 
 </script>
 

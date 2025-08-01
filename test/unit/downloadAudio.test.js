@@ -25,18 +25,18 @@ beforeEach(() => {
 describe('downloadAudio', () => {
   it('downloads and returns an Audio element', async () => {
     const stop = vi.fn()
-    const result = await downloadAudio('bucket', 'path', true, stop)
-    expect(store.audioCacheManager.getAudioURL).toHaveBeenCalledWith('bucket/path', expect.any(Function))
-    expect(global.Audio).toHaveBeenCalledWith('blob:bucket/path')
+    const result = await downloadAudio('bucket', 'path', 'base', true, stop)
+    expect(store.audioCacheManager.getAudioURL).toHaveBeenCalledWith('base/bucket/path', expect.any(Function))
+    expect(global.Audio).toHaveBeenCalledWith('blob:base/bucket/path')
     const handler = result.audio.addEventListener.mock.calls[0][1]
     handler()
     expect(stop).toHaveBeenCalled()
-    expect(result.blobUrl).toBe('blob:bucket/path')
+    expect(result.blobUrl).toBe('blob:base/bucket/path')
     expect(result.audio).not.toBeNull()
   })
 
   it('skips creating Audio when populateAudio is false', async () => {
-    const result = await downloadAudio('b', 'p', false)
+    const result = await downloadAudio('b', 'p', 'base', false)
     expect(result.audio).toBeNull()
   })
 })
@@ -44,13 +44,13 @@ describe('downloadAudio', () => {
 describe('downloadMultipleAudio', () => {
   it('returns audio paths for each source', async () => {
     const list = [
-      { id: '1', bucket: 'b1', path: 'p1' },
-      { id: '2', bucket: 'b2', path: 'p2' }
+      { id: '1', bucket: 'b1', path: 'p1', base: 'base1' },
+      { id: '2', bucket: 'b2', path: 'p2', base: 'base2' }
     ]
     const results = await downloadMultipleAudio(list, false)
     expect(results).toEqual([
-      { id: '1', audioPath: 'blob:1' },
-      { id: '2', audioPath: 'blob:2' }
+      { id: '1', audioPath: 'blob:base1/b1/p1' },
+      { id: '2', audioPath: 'blob:base2/b2/p2' }
     ])
   })
 })

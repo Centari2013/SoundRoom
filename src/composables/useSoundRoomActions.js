@@ -4,7 +4,6 @@ import { useAudioEngineStore } from '@/stores/useAudioEngineStore'
 import { useListenerStore } from '@/stores/useListenerStore'
 import { useAudioCacheStore } from '@/stores/useAudioCacheStore'
 import { storeToRefs } from 'pinia'
-import { toRaw } from 'vue'
 
 let actionsRegistered = false
 
@@ -92,7 +91,7 @@ function registerCanvasActions() {
   )
 }
 
-let MAX_LIB_SOURCES = null
+let MAX_LIB_SOURCES = 20
 
 /**
  * Limit how many library sources can be added to a room.
@@ -171,10 +170,12 @@ function registerDraggableActions() {
    */
   const addDraggableSoundSource = async (payload) => {
     if (maxLibSourcesReached(soundLibrarySources)) return;
+    console.log('Adding draggable sound source:', payload.src);
     // download blob and re-instate draggable source
     const { blobUrl } = await downloadAudio(
       payload.src.bucket,
       payload.src.path,
+      payload.src.plan_tier,
       false,
       null,
       payload.src.libraryId
