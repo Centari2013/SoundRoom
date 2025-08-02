@@ -19,7 +19,7 @@
 
   <button
     :disabled="soundLibrarySources.length == MAX_SOURCES"
-    @click="addSourceClick"
+    @click="() => { router.push('/sound-library') }"
     class="w-full mt-4 bg-neutral-300 dark:bg-neutral-800 text-xs rounded hover:bg-neutral-400 dark:hover:bg-neutral-700"
   >
     + Add Source
@@ -36,13 +36,14 @@ import ContextMenu from '@/components/ui/context/ContextMenu.vue'
 import { useAudioCacheStore } from '@/stores/useAudioCacheStore'
 import { useActionManagerStore } from '@/stores/useActionManagerStore'
 import { storeToRefs } from 'pinia'
+import { useRouter } from 'vue-router'
 
 const props = defineProps({
   MAX_SOURCES: Number,
   handleDragStart: Function,
-  addSourceClick: Function
 })
 
+const router = useRouter()
 const cacheStore = useAudioCacheStore()
 const actionStore = useActionManagerStore()
 const { soundLibrarySources } = storeToRefs(cacheStore)

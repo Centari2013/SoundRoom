@@ -11,8 +11,7 @@
         class="h-full"
         v-bind="{
           MAX_SOURCES,
-          handleDragStart,
-          addSourceClick
+          handleDragStart
         }"
       />
     </div>
@@ -30,7 +29,6 @@ import ListenerReadout from '@/components/SoundRoom/SidebarLeft/ListenerReadout.
 
 defineProps([
   'MAX_SOURCES',
-  'handleDragStart',
-  'addSourceClick'
+  'handleDragStart'
 ])
 </script>
