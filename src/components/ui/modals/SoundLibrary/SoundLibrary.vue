@@ -1,7 +1,6 @@
 <template>
   <div
-    v-if="isLibraryOpen"
-    @click.self="emit('close')"
+    @click.self="router.push('/')"
     class="modal-backdrop"
   >
     <div class="modal-panel flex">
@@ -18,16 +17,18 @@
         :soundLibrarySources="soundLibrarySources"
         :currentlyPlayingId="currentlyPlayingId"
         :activeCategory="activeCategory"
-        @close="$emit('close')"
+        @close="router.push('/')"
         @toggleSound="toggleAddSource"
         @updateCurrent="currentlyPlayingId = $event"
         @upload="showUploadPanel = true"
       />
      
     </div>
-  </div>
   <UploadPanel v-if="showUploadPanel" @close="showUploadPanel = false" @finished="refreshUserSounds" />
 
+  </div>
+  
+  
 </template>
 
 <script setup>
@@ -38,23 +39,22 @@ import { supabase } from '@/utils/supabase'
 import CategoryList from '@/components/ui/modals/SoundLibrary/CategoryList.vue'
 import SoundGrid from '@/components/ui/modals/SoundLibrary/SoundGrid.vue'
 import UploadPanel from '@/components/ui/modals/SoundLibrary/UploadPanel.vue'
+import { useRouter } from 'vue-router'
 
 import { useAudioCacheStore } from '@/stores/useAudioCacheStore'
 import { useActionManagerStore } from '@/stores/useActionManagerStore'
 import { useAuth } from '@/composables/useAuth'
 import { storeToRefs } from 'pinia'
 
-const props = defineProps({
-  isLibraryOpen: Boolean
-})
+
 
 const { user, isAuthenticated } = useAuth()
 
+const router = useRouter()
 const cacheStore = useAudioCacheStore()
 const actionStore = useActionManagerStore()
 const { waiting } = storeToRefs(actionStore)
 const { soundLibrarySources } = storeToRefs(cacheStore)
-const emit = defineEmits(['close'])
 const showUploadPanel = ref(false)
 
 

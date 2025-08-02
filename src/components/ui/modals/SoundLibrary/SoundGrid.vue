@@ -9,11 +9,13 @@
         v-for="sound in sounds"
         :key="sound.id"
         :sound="sound"
+        :userSound="activeCategory === 'your-sounds'"
         v-bind="{ waiting, soundLibrarySources, currentlyPlayingId }"
         @toggle="$emit('toggleSound', $event)"
         @updateCurrent="$emit('updateCurrent', $event)"
+        @contextmenu="showContextMenu"
       />
-      <template v-if="userTier === 'pro' && sounds.length === 0">
+      <template v-if="userTier === 'pro' && activeCategory === 'your-sounds' && sounds.length === 0">
           <div class="col-span-full text-center text-neutral-400 mt-32">
             <div class="text-xl font-semibold mb-2">Nothing to hear!</div>
             <div class="mb-4">Upload your first sound below and it'll show up here.</div>

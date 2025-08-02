@@ -2,21 +2,12 @@
   <div class="h-full bg-white text-neutral-900 dark:bg-neutral-950 dark:text-white flex flex-col">
     <!-- Main Layout -->
     <div class="flex flex-1 overflow-hidden">
-      
-
-      <SoundLibrary
-        v-bind="{
-          isLibraryOpen
-        }"
-        @close="isLibraryOpen = false"
-      />
 
       <!-- Left Sidebar -->
       <SidebarLeft 
         class="min-w-[7.5rem] max-w-64 w-[20%] flex-shrink"
         :MAX_SOURCES="MAX_LIB_SOURCES"
         :handleDragStart="handleDragStart"
-        :addSourceClick="() => { isLibraryOpen = true }"
         :listener="listener"
       />
 
@@ -106,7 +97,6 @@ import { useAuth } from '@/composables/useAuth'
 import { storeToRefs } from 'pinia'
 
 // State
-const isLibraryOpen = ref(false)
 const selectedIndex = ref(null)
 const draggedSource = ref(null)
 
