@@ -12,6 +12,7 @@
     "test:e2e": "playwright test"
   },
   "dependencies": {
+    "@huggingface/transformers": "^3.7.0",
     "@supabase/supabase-js": "^2.49.7",
     "@tailwindcss/vite": "^4.1.7",
     "@tensorflow/tfjs-converter": "^4.22.0",

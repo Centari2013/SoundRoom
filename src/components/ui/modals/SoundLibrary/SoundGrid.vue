@@ -13,7 +13,6 @@
         v-bind="{ waiting, soundLibrarySources, currentlyPlayingId }"
         @toggle="$emit('toggleSound', $event)"
         @updateCurrent="$emit('updateCurrent', $event)"
-        @contextmenu="showContextMenu"
       />
       <template v-if="userTier === 'pro' && activeCategory === 'your-sounds' && sounds.length === 0">
           <div class="col-span-full text-center text-neutral-400 mt-32">
