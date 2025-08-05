@@ -31,6 +31,7 @@ export async function DELETE(request) {
     const { searchParams } = new URL(request.url);
     const bucket = searchParams.get('bucket');
     const path = searchParams.get('path');
+    const base = searchParams.get('base');
 
     if (!bucket || !path) {
       return new Response(
@@ -47,7 +48,7 @@ export async function DELETE(request) {
       secretAccessKey: R2_SECRET_ACCESS_KEY,
     });
 
-    const url = `https://${R2_BUCKET_NAME}.${R2_ACCOUNT_ID}.r2.cloudflarestorage.com/${bucket}/${path}`;
+    const url = `https://${R2_BUCKET_NAME}.${R2_ACCOUNT_ID}.r2.cloudflarestorage.com/${base}/${bucket}/${path}`;
     const signed = await client.sign(
       new Request(url, { method: 'DELETE' }),
       { aws: { signQuery: true } }
