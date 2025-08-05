@@ -24,8 +24,7 @@
       />
      
     </div>
-  <UploadPanel v-if="showUploadPanel" @close="showUploadPanel = false" @finished="refreshUserSounds" />
-
+  
   </div>
   
   
@@ -38,7 +37,6 @@ import { supabase } from '@/utils/supabase'
 
 import CategoryList from '@/components/ui/modals/SoundLibrary/CategoryList.vue'
 import SoundGrid from '@/components/ui/modals/SoundLibrary/SoundGrid.vue'
-import UploadPanel from '@/components/ui/modals/SoundLibrary/UploadPanel.vue'
 import { useRouter } from 'vue-router'
 
 import { useAudioCacheStore } from '@/stores/useAudioCacheStore'
