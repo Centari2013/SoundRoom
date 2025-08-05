@@ -16,8 +16,12 @@
     >
       {{ soundLibrarySources.find((s) => s.libraryId == sound.libraryId) ? 'Remove' : 'Load' }}
     </BaseButton>
-    <BaseButton v-if="userSound" class="hover:underline !bg-transparent !border-none hover:text-red-500 !text-xs">
-    Delete
+    <BaseButton
+      v-if="userSound"
+      class="hover:underline !bg-transparent !border-none hover:text-red-500 !text-xs"
+      @click="$emit('delete', sound)"
+    >
+      Delete
     </BaseButton>
   </div>
 </template>
@@ -37,7 +41,7 @@ const props = defineProps({
   userSound: Boolean
 })
 
-defineEmits(['toggle', 'updateCurrent'])
+defineEmits(['toggle', 'updateCurrent', 'delete'])
 </script>
 <style>
 .close-button {

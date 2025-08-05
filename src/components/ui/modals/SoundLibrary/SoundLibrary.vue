@@ -21,13 +21,23 @@
         @toggleSound="toggleAddSource"
         @updateCurrent="currentlyPlayingId = $event"
         @upload="showUploadPanel = true"
+        @delete="promptDeleteSound"
       />
-     
+
     </div>
-  
+
+    <YesNoModal
+      v-if="deleteSoundModalVisible"
+      :yesFunction="doDeleteSound"
+      :noFunction="cancelDeleteSound"
+      message="Are you sure you want to delete this sound?"
+      title="Delete Sound"
+      @close="cancelDeleteSound"
+    />
+
   </div>
-  
-  
+
+
 </template>
 
 <script setup>
@@ -37,12 +47,14 @@ import { supabase } from '@/utils/supabase'
 
 import CategoryList from '@/components/ui/modals/SoundLibrary/CategoryList.vue'
 import SoundGrid from '@/components/ui/modals/SoundLibrary/SoundGrid.vue'
+import YesNoModal from '@/components/ui/modals/YesNoModal.vue'
 import { useRouter } from 'vue-router'
 
 import { useAudioCacheStore } from '@/stores/useAudioCacheStore'
 import { useActionManagerStore } from '@/stores/useActionManagerStore'
 import { useAuth } from '@/composables/useAuth'
 import { storeToRefs } from 'pinia'
+import deleteAudio from '@/utils/deleteAudio'
 
 
 
@@ -54,6 +66,8 @@ const actionStore = useActionManagerStore()
 const { waiting } = storeToRefs(actionStore)
 const { soundLibrarySources } = storeToRefs(cacheStore)
 const showUploadPanel = ref(false)
+const deleteSoundModalVisible = ref(false)
+const soundToDelete = ref(null)
 
 
 const categories = [
@@ -121,6 +135,32 @@ const refreshUserSounds = async () => {
       ...rest,
     }))
   }
+}
+
+function promptDeleteSound(sound) {
+  soundToDelete.value = sound
+  deleteSoundModalVisible.value = true
+}
+
+function cancelDeleteSound() {
+  deleteSoundModalVisible.value = false
+  soundToDelete.value = null
+}
+
+async function doDeleteSound() {
+  if (!soundToDelete.value) return
+  const s = soundToDelete.value
+  try {
+    if (soundLibrarySources.value.find(sound => sound.libraryId == s.libraryId)) {
+      await actionStore.deleteLibrarySoundSource(s)
+    }
+    await deleteAudio(s.bucket, s.path, s.plan_tier ?? 'users')
+    await supabase.from('sound_files').delete().eq('id', s.libraryId)
+    await refreshUserSounds()
+  } catch (error) {
+    console.error('Failed to delete user sound:', error)
+  }
+  cancelDeleteSound()
 }
 
 /**
