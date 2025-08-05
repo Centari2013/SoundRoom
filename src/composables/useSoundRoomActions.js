@@ -175,7 +175,7 @@ function registerDraggableActions() {
     const { blobUrl } = await downloadAudio(
       payload.src.bucket,
       payload.src.path,
-      payload.src.plan_tier,
+      payload.src.plan_tier ?? 'users',
       false,
       null,
       payload.src.libraryId

@@ -168,7 +168,7 @@ async function uploadAll() {
       await supabase.from('sound_files').insert({
         path: key,
         name: file.name,
-        bucket: 'pending',
+        bucket: user.value.id,
         duration_seconds: duration,
         size: file.raw.size,
         mime_type: file.raw.type,

@@ -56,8 +56,8 @@ export async function GET(request) {
       );
     }
 
-    const key = `users/${userId}/${filename}`;
-    const url = new URL(`https://${R2_BUCKET_NAME}.${R2_ACCOUNT_ID}.r2.cloudflarestorage.com/${key}`);
+    const key = `${filename}`;
+    const url = new URL(`https://${R2_BUCKET_NAME}.${R2_ACCOUNT_ID}.r2.cloudflarestorage.com/users/${userId}/${key}`);
     url.searchParams.set('X-Amz-Expires', '120');
 
     const signed = await client.sign(
