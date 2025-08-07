@@ -13,7 +13,8 @@
         v-bind="{ waiting, soundLibrarySources, currentlyPlayingId }"
         @toggle="$emit('toggleSound', $event)"
         @updateCurrent="$emit('updateCurrent', $event)"
-      />
+        @delete="$emit('delete', $event)"
+        />
       <template v-if="userTier === 'pro' && activeCategory === 'your-sounds' && sounds.length === 0">
           <div class="col-span-full text-center text-neutral-400 mt-32">
             <div class="text-xl font-semibold mb-2">Nothing to hear!</div>
@@ -51,7 +52,7 @@ const props = defineProps({
 })
 
 const { isAuthenticated, tier: userTier } = useAuth()
-const emit = defineEmits(['close', 'toggleSound', 'updateCurrent', 'upload'])
+const emit = defineEmits(['close', 'toggleSound', 'updateCurrent', 'upload', 'delete'])
 
 const gridScroll = ref(null)
 function scrollTop() {
