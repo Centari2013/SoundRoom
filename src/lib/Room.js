@@ -1,23 +1,61 @@
 // lib/Room.js
+import { ref, shallowRef } from "vue";
+import AudioEngine from "./AudioEngine";
 
 export default class Room {
-  width = 0
-  height = 0
-  name = ''
+  width = ref(600)
+  height = ref(400)
+  name = ref('')
   id = null
+  audioEngine = shallowRef(null)
 
+  /**
+   * Create a new room instance.
+   *
+   * @param {number} [width=600]  Width of the room in pixels.
+   * @param {number} [height=400] Height of the room in pixels.
+   * @param {string} [name='Untitled Room'] Human readable room name.
+   * @param {?string} [id=null]   Optional unique identifier.
+   */
   constructor (width = 600, height = 400, name = 'Untitled Room', id = null) {
     this.width = width
     this.height = height
-    this.name = name
+    this.name.value = name
     this.id = id
   }
+  /**
+   * Set the audio engine for this room.
+   * @param {AudioEngine} audioEngine - The audio engine instance to use.
+   */
+  setAudioEngine(audioEngine = null) {
+    if (audioEngine && !(audioEngine instanceof AudioEngine)) {
+      throw new Error("Expected an instance of AudioEngine");
+    }
+    if (this.audioEngine.value) {
+      this.audioEngine.value.dispose();
+    }
+    this.audioEngine.value = (audioEngine ?? new AudioEngine());
+    this.audioEngine.value.setRoom(this);
+  }
 
-  // clamp values to be within room boundaries
+  /**
+   * Clamp a value so it stays within the given range.
+   *
+   * @param {number} val   Value to constrain.
+   * @param {number} min   Minimum allowed value.
+   * @param {number} max   Maximum allowed value.
+   * @returns {number}     Constrained value.
+   */
   clamp(val, min, max) {
     return Math.max(min, Math.min(val, max))
   }
 
+  /**
+   * Recreate a Room instance from JSON data.
+   *
+   * @param {Object} json JSON containing `width`, `height`, `name` and `id`.
+   * @returns {Room}
+   */
   static fromJSON(json) {
     if (json.width && json.height && json.name && json.id !== undefined) {
       const newRoom = new Room(json.width, json.height, json.name, json.id)
@@ -27,11 +65,27 @@ export default class Room {
     }
   }
 
+  /**
+   * Serialise this instance to a plain object for persistence.
+   *
+   * @returns {{width:number, height:number, name:string}}
+   */
   toJSON() {
     return {
       width: this.width,
       height: this.height,
-      name: this.name
+      name: this.name.value
     }
   }
+
+  /**
+   * Dispose resources used by this Room instance.
+   */
+  dispose() {
+    if (this.audioEngine.value && typeof this.audioEngine.value.dispose === 'function') {
+      this.audioEngine.value.dispose();
+    }
+    this.audioEngine.value = null;
+  }
+
 }

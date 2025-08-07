@@ -1,14 +1,27 @@
 import { computed, reactive } from 'vue'
 import { useActionManagerStore } from '@/stores/useActionManagerStore'
+import { useAudioEngineStore } from '@/stores/useAudioEngineStore'
 import { useCanvasStore } from '@/stores/useCanvasStore'
 import { storeToRefs } from 'pinia'
 // Central constant for sound node part identifier
 export const SOUND_NODE_PART_NAME = 'sound-node-part'
 
+/**
+ * Provide context menu behaviour for sound source nodes on the canvas.
+ *
+ * @param {import('vue').Ref<Object|null>} selectedSource - currently selected source
+ * @returns {{showContextMenu: Function, contextMenuActions: Array}}
+ */
 export function useContextMenuLogic(selectedSource) {
   const actionStore = useActionManagerStore()
+  const audioEngineStore = useAudioEngineStore()
   const { actionManager } = storeToRefs(actionStore)
   const canvasStore = useCanvasStore()
+  /**
+   * Display the context menu when the user right-clicks a sound node.
+   *
+   * @param {import('vue').KonvaEventObject<MouseEvent>} e - Konva event wrapper
+   */
   function showContextMenu(e) {
     e.evt.preventDefault()
     e.evt.stopPropagation()
@@ -23,8 +36,8 @@ export function useContextMenuLogic(selectedSource) {
         selectedSource.value?.instance.playing ? 'Pause' : 'Play'
       ),
       function: () => {
-        const inst = selectedSource.value.instance
-        inst.playing ? inst.stop() : inst.play()
+        const src = selectedSource.value;
+        src.playing ? audioEngineStore.pauseSoundSource(src) : audioEngineStore.playSoundSource(src);
       },
     },
     {

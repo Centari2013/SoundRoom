@@ -9,31 +9,14 @@
     </h2>
 
     <SelectedSourcePanel v-bind="{ selectedSource }" />
-
-    <div v-if="isAuthenticated" class="mt-auto">
-      <RouterLink
-        to="/room-manager"
-        class="w-full mb-2"
-        aria-label="Open Room Manager"
-      >
-        <BaseButton class="w-full">
-          RoomManager
-        </BaseButton>
-      </RouterLink>
-    </div>
     
   </aside>
 </template>
 
 
 <script setup>
-import { ref } from 'vue'
-import { useAuth } from '@/composables/useAuth';
 import SelectedSourcePanel from '@/components/SoundRoom/SidebarRight/SelectedSourcePanel.vue'
-import BaseButton from '@/components/ui/input/BaseButton.vue';
 defineProps(['selectedSource'])
-
-const { isAuthenticated } = useAuth();
 
 
 </script>

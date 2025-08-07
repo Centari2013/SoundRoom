@@ -2,7 +2,10 @@
 <template>
   <div
   class="mb-3 w-8 h-8 rounded-full border-2 relative flex items-center justify-center cursor-pointer hover:scale-105 transition-transform"
-  :class="isPlaying ? 'border-blue-600' : 'border-neutral-500'"
+  :class="[
+    isPlaying ? 'border-blue-600' : 'border-neutral-500',
+    isLoading ? 'opacity-50 cursor-wait' : 'cursor-pointer hover:scale-105'
+  ]"
   @click="togglePlay"
 >
   <!-- Progress Ring -->
@@ -44,17 +47,18 @@ import downloadAudio from '@/utils/downloadAudio'
 
 const props = defineProps({
   soundData: Object,
-  sendAudioUp: Boolean,
   currentlyPlayingId: String
 })
 
-const emit = defineEmits(['sendAudio', 'updateCurrent'])
+const emit = defineEmits(['updateCurrent'])
 
 const audioDuration = ref(null)
 const duration = ref(15)
 const isPlaying = ref(false)
 const progress = ref(0)
 const hasBeenPromoted = ref(false)
+const isLoading = ref(false)
+
 
 let audio = null
 let blobUrl = null
@@ -66,9 +70,6 @@ const radius = ref(0)
 const circumference = computed(() => 2 * Math.PI * radius.value)
 const dashOffset = computed(() => circumference.value * (1 - progress.value))
 
-watch(() => props.sendAudioUp, (newValue) => {
-  if (newValue) emitAudio()
-})
 
 watch(() => props.currentlyPlayingId, (newId) => {
   if (newId !== props.soundData.libraryId && isPlaying.value) {
@@ -99,37 +100,17 @@ onMounted(async () => {
   })
 })
 
-async function emitAudio() {
-  const result = await downloadAudio(
-    props.soundData.bucket,
-    props.soundData.path,
-    false,
-    null,
-    props.soundData.libraryId
-  )
-  blobUrl = result.blobUrl
-  hasBeenPromoted.value = true
-
-  const { cone_inner, cone_outer, id, ...rest } = props.soundData
-
-  const source = {
-    audioPath: blobUrl,
-    coneInner: cone_inner,
-    coneOuter: cone_outer,
-    libraryId: id,
-    ...rest
-  }
-
-  emit('sendAudio', { ...source, blobUrl })
-}
 
 async function togglePlay() {
+  if (isLoading.value) return
   if (isPlaying.value) {
     stopPlayback()
   } else {
+     isLoading.value = true
     const result = await downloadAudio(
       props.soundData.bucket,
       props.soundData.path,
+      props.soundData.plan_tier ?? 'users',
       true,
       stopPlayback,
       props.soundData.libraryId
@@ -147,6 +128,7 @@ async function togglePlay() {
     emit('updateCurrent', props.soundData.libraryId)
 
     timeoutId = setTimeout(stopPlayback, duration.value * 1000)
+    isLoading.value = false
   }
 }
 

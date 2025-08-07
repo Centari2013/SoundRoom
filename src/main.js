@@ -6,6 +6,7 @@ import PortalVue from 'portal-vue'
 import { createPinia } from 'pinia';
 import router from '@/utils/router.js'
 import '@/composables/useAuth.js' // Ensure auth is initialized before app mounts
+import { initAudioClassifier } from '@/utils/audioTaggerNamer'
 
 createApp(App)
 .use(VueKonva)
@@ -13,3 +14,7 @@ createApp(App)
 .use(router)
 .use(createPinia())
 .mount('#app')
+
+
+
+initAudioClassifier()

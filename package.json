@@ -6,11 +6,16 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "npm run test:unit && npm run test:e2e",
+    "test:unit": "vitest run",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
+    "@huggingface/transformers": "^3.7.0",
     "@supabase/supabase-js": "^2.49.7",
     "@tailwindcss/vite": "^4.1.7",
+    "@tensorflow/tfjs-converter": "^4.22.0",
     "@vercel/functions": "^2.2.2",
     "@vercel/speed-insights": "^1.2.0",
     "aws4fetch": "^1.0.20",
@@ -18,6 +23,7 @@
     "dotenv": "^16.5.0",
     "idb-keyval": "^3.0.0",
     "konva": "^9.3.20",
+    "p-limit": "^6.2.0",
     "pinia": "^3.0.3",
     "portal-vue": "^3.0.0-beta.0",
     "tailwindcss": "^4.1.7",
@@ -32,6 +38,7 @@
     "@playwright/test": "^1.53.1",
     "@types/node": "^24.0.7",
     "@vitejs/plugin-vue": "^5.2.4",
-    "vite": "^6.3.5"
+    "vite": "^6.3.5",
+    "vitest": "^3.2.4"
   }
 }

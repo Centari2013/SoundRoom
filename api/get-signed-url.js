@@ -2,6 +2,12 @@ import { getEnv } from '@vercel/functions';
 import { AwsClient } from "aws4fetch";
 
 
+/**
+ * API endpoint that signs a temporary URL for a file in the R2 bucket.
+ *
+ * @param {Request} request - incoming HTTP request
+ * @returns {Promise<Response>} signed URL response
+ */
 export async function GET(request) {
   const ALLOWED_ORIGIN =
   process.env.NODE_ENV === 'production'

@@ -1,96 +1,42 @@
 <template>
   <div
-    v-if="isLibraryOpen"
-    @click.self="emit('close')"
+    @click.self="router.push('/')"
     class="modal-backdrop"
   >
-    <div
-      class="modal-panel flex"
-    >
-      <!-- Left Sidebar: Categories -->
-      <aside
-        class="w-60 bg-neutral-200 dark:bg-neutral-900 border-r border-neutral-300 dark:border-neutral-800 p-4 space-y-3 overflow-y-auto"
-      >
-        <h2 class="font-bold text-sm mb-2">Categories</h2>
-        <BaseButton
-          v-for="cat in categories"
-          :key="cat.id"
-          @click="activeCategory = cat.id"
-          :class="['sound-lib-button', { active: activeCategory === cat.id }]"
-        >
-          {{ cat.label }}
-        </BaseButton>
-      </aside>
+    <div class="modal-panel flex">
+      <CategoryList
+        :categories="categories"
+        :active="activeCategory"
+        @update:active="val => activeCategory = val"
+      />
 
-      <!-- Main Content: Sound Grid -->
-      <div class="flex-1 relative overflow-hidden">
-        <!-- Floating Top Bar -->
-        <div
-          class="absolute top-0 left-0 right-0 z-10 flex justify-between items-center px-6 py-4 bg-white/50 dark:bg-neutral-950/50 backdrop-blur-md border-b border-neutral-300 dark:border-neutral-800"
-        >
-          <h2 class="text-2xl font-bold">SoundLibrary</h2>
-          <BaseButton class="text-sm" @click="$emit('close')">Close</BaseButton>
-        </div>
-
-        <!-- Scrollable Sound Grid -->
-        <div
-          ref="gridScroll"
-          class="mt-5 place-content-start p-6 pt-20 overflow-y-auto h-full grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"
-        >
-          <div
-            v-for="sound in filteredSounds"
-            :key="sound.id"
-            class="aspect-square flex flex-col items-center justify-between p-4 rounded-xl bg-neutral-100 dark:bg-neutral-800 shadow border border-neutral-300 dark:border-neutral-700"
-          >
-            <!-- Title -->
-            <MarqueeTitle :text="getSourceName(sound.name)" />
-
-            <!-- Preview Button -->
-            <SoundPreviewCircle
-              :soundData="sound"
-              :sendAudioUp="sound.send"
-              :currentlyPlayingId="currentlyPlayingId"
-              @sendAudio="(soundData) => { handleAudioSent(soundData, sound) }"
-              @updateCurrent="currentlyPlayingId = $event"
-            />
-
-            <!-- Load Button -->
-            <BaseButton
-              class="load-BaseButton text-xs px-3 py-1 rounded hover:bg-blue-700 transition-colors"
-              @click="() => { toggleAddSource(sound) }"
-              :disabled="waiting || sound.send"
-            >
-              {{
-                soundLibrarySources.find(
-                  (s) => s.libraryId == sound.libraryId
-                )
-                  ? 'Remove'
-                  : 'Load'
-              }}
-            </BaseButton>
-          </div>
-        </div>
-      </div>
-
-      <!-- Bottom Upload Panel -->
-      <div
-        v-if="false"
-        class="absolute bottom-0 left-0 right-0 p-4 bg-white dark:bg-neutral-950 border-t border-neutral-300 dark:border-neutral-800"
-      >
-        <div class="flex justify-between items-center">
-          <label class="text-sm cursor-pointer">
-            Upload your own sound
-            <input
-              type="file"
-              accept="audio/*"
-              class="hidden"
-              @change="handleUpload"
-            />
-          </label>
-        </div>
-      </div>
+      <SoundGrid
+        ref="gridRef"
+        :sounds="filteredSounds"
+        :waiting="waiting"
+        :soundLibrarySources="soundLibrarySources"
+        :currentlyPlayingId="currentlyPlayingId"
+        :activeCategory="activeCategory"
+        @close="router.push('/')"
+        @toggleSound="toggleAddSource"
+        @updateCurrent="currentlyPlayingId = $event"
+        @upload="showUploadPanel = true"
+        @delete="promptDeleteSound"
+      />
+     
     </div>
+  <UploadPanel v-if="showUploadPanel" @close="showUploadPanel = false" @finished="refreshUserSounds" />
+    <YesNoModal
+      v-if="deleteSoundModalVisible"
+      :yesFunction="doDeleteSound"
+      :noFunction="cancelDeleteSound"
+      message="Are you sure you want to delete this sound?"
+      title="Delete Sound"
+      @close="cancelDeleteSound"
+    />
   </div>
+  
+  
 </template>
 
 <script setup>
@@ -98,30 +44,29 @@ import { ref, watch, nextTick } from 'vue'
 
 import { supabase } from '@/utils/supabase'
 
-import SoundPreviewCircle from '@/components/ui/modals/SoundLibrary/SoundPreviewCircle.vue'
-import MarqueeTitle from '@/components/ui/text/MarqueeTitle.vue'
-import { getSourceName } from '@/composables/useSelectedSource'
-import BaseButton from '@/components/ui/input/BaseButton.vue'
+import CategoryList from '@/components/ui/modals/SoundLibrary/CategoryList.vue'
+import SoundGrid from '@/components/ui/modals/SoundLibrary/SoundGrid.vue'
+import UploadPanel from '@/components/ui/modals/SoundLibrary/UploadPanel.vue'
+import YesNoModal from '@/components/ui/modals/YesNoModal.vue'
+import { useRouter } from 'vue-router'
 
 import { useAudioCacheStore } from '@/stores/useAudioCacheStore'
 import { useActionManagerStore } from '@/stores/useActionManagerStore'
+import { useAuth } from '@/composables/useAuth'
 import { storeToRefs } from 'pinia'
+import deleteAudio from '@/utils/deleteAudio'
 
-const props = defineProps({
-  isLibraryOpen: Boolean
-})
 
+const { user, isAuthenticated } = useAuth()
+
+const router = useRouter()
 const cacheStore = useAudioCacheStore()
 const actionStore = useActionManagerStore()
 const { waiting } = storeToRefs(actionStore)
 const { soundLibrarySources } = storeToRefs(cacheStore)
-const emit = defineEmits(['close'])
-
-
-async function handleAudioSent(source, sound) {
-  sound.send = false
-  await actionStore.addLibrarySoundSource(source)
-}
+const showUploadPanel = ref(false)
+const deleteSoundModalVisible = ref(false)
+const soundToDelete = ref(null)
 
 const categories = [
   { id: 'nature', label: 'Nature' },
@@ -132,41 +77,97 @@ const categories = [
   { id: 'misc', label: 'Misc' },
 ]
 
+/**
+ * Toggle whether a sound is included in the current library selection.
+ * Removes it when already present otherwise marks it for sending.
+ *
+ * @param {Object} s - sound record from the grid
+ * @returns {Promise<void>}
+ */
 async function toggleAddSource(s) {
   // if source in soundlibrarysources (draggable sources), delete, otherwise add
   if (soundLibrarySources.value.find((sound) => s.libraryId == sound.libraryId)) {
-    s.send = false
+    s.send = true
     await actionStore.deleteLibrarySoundSource(s)
+    s.send = false
   } else {
     s.send = true
+    await actionStore.addLibrarySoundSource(s)
+    s.send = false
   }
 }
 
 const currentlyPlayingId = ref(null) // id of current sound playing to stop multiple previews playing at once
 
 const activeCategory = ref(categories?.[0]?.id || '')
-const gridScroll = ref(null) // ref to scrollable div of library sounds
-
-const isLoading = ref(false)
+const gridRef = ref(null) // ref to SoundGrid component
 const filteredSounds = ref([])
 watch(
   activeCategory,
   async (newCategory) => {
-    isLoading.value = true
+    currentlyPlayingId.value = null
     await nextTick()
-    gridScroll.value?.scrollTo({ top: 0 }) // scroll up when new category is selected
+    gridRef.value?.scrollTop() // scroll up when new category is selected
+    let sounds = []
+    if (newCategory === 'your-sounds') {
+      filteredSounds.value = [] // reset filtered sounds for immediate visual feedback
+      sounds = await listUserSounds()
+    } else {
+      sounds = await listCategoryFiles(newCategory)
+    }
 
-    const sounds = await listCategoryFiles(newCategory)
     filteredSounds.value = sounds.map(({ id, ...rest }) => ({
       libraryId: id,
       ...rest,
     }))
 
-    isLoading.value = false
   },
   { immediate: true }
 ) // run at least once, like a do while
 
+const refreshUserSounds = async () => {
+  if (activeCategory.value === 'your-sounds') {
+    const sounds = await listUserSounds()
+    filteredSounds.value = sounds.map(({ id, ...rest }) => ({
+      libraryId: id,
+      ...rest,
+    }))
+  }
+}
+
+function promptDeleteSound(sound) {
+  soundToDelete.value = sound
+  deleteSoundModalVisible.value = true
+}
+
+function cancelDeleteSound() {
+  deleteSoundModalVisible.value = false
+  soundToDelete.value = null
+}
+
+async function doDeleteSound() {
+  if (!soundToDelete.value) return
+  const s = soundToDelete.value
+  try {
+    if (soundLibrarySources.value.find(sound => sound.libraryId == s.libraryId)) {
+      await actionStore.deleteLibrarySoundSource(s)
+    }
+    await deleteAudio(s.bucket, s.path, s.plan_tier ?? 'users')
+    await supabase.from('sound_files').delete().eq('id', s.libraryId)
+    await refreshUserSounds()
+  } catch (error) {
+    console.error('Failed to delete user sound:', error)
+  }
+  refreshUserSounds()
+  cancelDeleteSound()
+  
+}
+
+/**
+ * Retrieve the sounds for the currently active category from Supabase.
+ *
+ * @returns {Promise<Array>} list of sound metadata records
+ */
 async function listCategoryFiles() {
   // select rows of sound file info where bucket name matches active category name
   const { data, error } = await supabase
@@ -180,12 +181,24 @@ async function listCategoryFiles() {
   return data
 }
 
-function handleUpload(event) {
-  const file = event.target.files?.[0]
-  if (file) {
-    
+/**
+ * Retrieve the sounds uploaded by the authenticated user.
+ */
+
+async function listUserSounds() {
+  if (!isAuthenticated.value) return []
+
+  const { data, error } = await supabase
+    .from('sound_files')
+    .select()
+    .eq('owner_id', user.value.id)
+  if (error) {
+    console.error('Failed to list user sounds:', error)
+    return []
   }
+  return data
 }
+
 </script>
 
 <style scoped>
@@ -199,37 +212,4 @@ function handleUpload(event) {
   }
 }
 
-/* Base button styling */
-.sound-lib-button {
-  display: block;
-  width: 100%;
-  text-align: left;
-  padding: 0.5rem 0.75rem;
-  font-size: 0.875rem; /* text-sm */
-  border-radius: 0.375rem; /* rounded */
-  transition: background-color 0.2s;
-}
-
-/* Hover state */
-.sound-lib-button:hover {
-  background-color: #e5e5e5; /* neutral-200 */
-}
-
-@media (prefers-color-scheme: dark) {
-  .sound-lib-button:hover {
-    background-color: #1f2937; /* neutral-800 */
-  }
-}
-
-/* Active/selected state */
-.sound-lib-button.active {
-  font-weight: 600;
-  background-color: #d4d4d4; /* neutral-200 */
-}
-
-@media (prefers-color-scheme: dark) {
-  .sound-lib-button.active {
-    background-color: #1f2937; /* neutral-800 */
-  }
-}
 </style>

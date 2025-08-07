@@ -1,32 +1,37 @@
 <template>
-  <div class="flex items-center justify-between p-3 border-b border-neutral-300 dark:border-neutral-800 bg-neutral-100 dark:bg-neutral-900 space-x-10 w-full">
+  <div class="flex items-center justify-between p-3 border-neutral-300 dark:border-neutral-800 bg-neutral-100 dark:bg-neutral-900 space-x-10 w-full">
           
     <div class="flex space-x-2 w-1/3">
       <BaseButton
       :disabled="audioEngine.soundSources.value.length === 0"
       @click="isPlaying ? audioEngine.pauseAll() : audioEngine.playAll()"
       class="px-3 py-1 rounded text-sm bg-neutral-200 dark:bg-neutral-800 hover:bg-neutral-300 dark:hover:bg-neutral-700"
-      >
-        {{ isPlaying ? 'Pause All' : 'Play All' }}
+      > 
+        
+        <component :is="isPlaying ? Pause : Play" class="h-4 w-4 fill-black dark:fill-white" />
       </BaseButton>
       <BaseButton
         :disabled="actionStackEmpty || waiting"
         @click="actionManager.undoLastAction"
         class="px-3 py-1 rounded text-sm bg-neutral-200 dark:bg-neutral-800 hover:bg-neutral-300 dark:hover:bg-neutral-700"
       >
-        Undo
+        <UndoRedo class="h-4 w-4 fill-black dark:fill-white"/>
       </BaseButton>
       <BaseButton
         :disabled="redoStackEmpty || waiting"
         @click="actionManager.redoLastAction"
         class="px-3 py-1 rounded text-sm bg-neutral-200 dark:bg-neutral-800 hover:bg-neutral-300 dark:hover:bg-neutral-700"
       >
-        Redo
+        <UndoRedo class="h-4 w-4 scale-x-[-1] fill-black dark:fill-white"/>
       </BaseButton>
     </div>
-    <div v-if="isAuthenticated" class=" w-1/3">
-      <BaseInput v-model="room.name" class="text-center"/>
-    </div>
+    <EditableRoomName
+      v-if="isAuthenticated"
+      :roomId="room.id"
+      :name="room.name"
+      class="w-1/3"
+      @updated="handleRoomNameUpdate"
+    />
     <div class="flex items-center justify-center space-x-2 w-1/3">
      
       <span class="text-xs text-neutral-500">Master</span>
@@ -45,12 +50,16 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
-
 import BaseButton from '@/components/ui/input/BaseButton.vue'
-import BaseInput from '@/components/ui/input/BaseInput.vue'
+import EditableRoomName from '@/components/ui/modals/RoomManager/EditableRoomName.vue'
+
+import UndoRedo from '@/assets/icons/undo-redo.svg'
+import Pause from '@/assets/icons/pause.svg'
+import Play from '@/assets/icons/play.svg'
+
 import VueSlider from 'vue-3-slider-component'
 import { useAuth } from '@/composables/useAuth'
+import { useSaveAndLoadRoom } from '@/composables/useSaveAndLoadRoom'
 
 import { useRoomStore } from '@/stores/useRoomStore'
 import { useAudioEngineStore } from '@/stores/useAudioEngineStore'
@@ -66,4 +75,21 @@ const { actionManager, actionStackEmpty, redoStackEmpty, waiting } = storeToRefs
 
 const { isAuthenticated } = useAuth()
 
+const { updateRoomName } = useSaveAndLoadRoom()
+
+async function handleRoomNameUpdate(newName) {
+  // Skip if the name didn't actually change
+  if (room.value.name.value === newName) return
+
+  room.value.name.value = newName
+
+  if (room.value.id) {
+    const success = await updateRoomName(room.value.id, newName)
+    if (!success) {
+      console.error('Failed to update room name')
+    }
+  } else {
+    roomStore.commitRoomName(room.value.id, newName)
+  }
+}
 </script>

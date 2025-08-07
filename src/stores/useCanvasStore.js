@@ -1,17 +1,39 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 
+/**
+ * Store containing references to the Konva stage and helpers for canvas
+ * operations like thumbnail generation.
+ */
+
 export const useCanvasStore = defineStore('canvas', () => {
   const stageDivRef = ref(null)
   const vStageRef = ref(null)
 
+  /**
+   * Save a reference to the outer div that hosts the canvas.
+   *
+   * @param {HTMLElement} stageInstance - DOM element containing the stage
+   */
   function setStageDivRef(stageInstance) {
     stageDivRef.value = stageInstance
   }
+
+  /**
+   * Save a reference to the VueKonva stage component.
+   *
+   * @param {Object} stageInstance - Konva stage wrapper
+   */
   function setVStageRef(stageInstance) {
     vStageRef.value = stageInstance
   }
 
+  /**
+   * Return a data URI thumbnail of the current stage.
+   *
+   * @param {{ pixelRatio?: number, mimeType?: string }} [opts]
+   * @returns {string|null} data URI or `null` if unavailable
+   */
   function getThumbnailURI({ pixelRatio = 1, mimeType = 'image/jpeg' } = {}) {
     const stage = vStageRef.value?.getNode?.()
 

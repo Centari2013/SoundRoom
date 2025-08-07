@@ -7,13 +7,20 @@ import { storeToRefs } from 'pinia'
 
 let actionsRegistered = false
 
+/**
+ * Register all SoundRoom related undoable actions.
+ */
 export function registerSoundRoomActions() {
   if (actionsRegistered) return
   registerCanvasActions()
   registerDraggableActions()
+  registerSchedulingActions()
   actionsRegistered = true
 }
 
+/**
+ * Unregister previously registered SoundRoom actions.
+ */
 export function unregisterSoundRoomActions() {
   if (!actionsRegistered) return
   const { actionManager } = storeToRefs(useActionManagerStore())
@@ -27,23 +34,42 @@ export function unregisterSoundRoomActions() {
   actionsRegistered = false
 }
 
+/**
+ * Setup undoable actions for sources that appear on the canvas.
+ */
 function registerCanvasActions() {
   const { audioEngine } = storeToRefs(useAudioEngineStore())
   const { actionManager } = storeToRefs(useActionManagerStore())
   const { listener } = storeToRefs(useListenerStore())
   const { soundLibrarySources } = storeToRefs(useAudioCacheStore())
+  /**
+   * Move a sound source on the canvas and update audio.
+   *
+   * @param {Object} src - sound source instance
+   * @param {{x: number, y: number}} coords - new coordinates
+   */
   const moveSoundSource = (src, coords) => {
     src.instance.state.x = coords.x
     src.instance.state.y = coords.y
     src.instance.updateAudio()
     listener.value.updateAudio()
   }
+  /**
+   * Add a sound source to the audio engine and refresh listener audio.
+   *
+   * @param {Object} payload - action payload
+   */
   const addSoundSource = (payload) => {
     payload.src.audioPath = soundLibrarySources.value.find(s => s.libraryId === payload.src.libraryId).audioPath
     audioEngine.value.addSoundSource(payload)
     listener.value.updateAudio()
   }
 
+  /**
+   * Remove a sound source from the audio engine.
+   *
+   * @param {Object} payload - action payload
+   */
   const deleteSoundSource = (payload) => {
     payload.src = audioEngine.value.deleteSoundSource(payload)
     listener.value.updateAudio()
@@ -65,8 +91,20 @@ function registerCanvasActions() {
   )
 }
 
-let MAX_LIB_SOURCES = null
+let MAX_LIB_SOURCES = 20
+
+/**
+ * Limit how many library sources can be added to a room.
+ *
+ * @param {number} limit - maximum count
+ */
 export function setMaxLibSources(limit){MAX_LIB_SOURCES = limit};
+/**
+ * Helper to check if the configured library source limit has been reached.
+ *
+ * @param {import('vue').Ref<Array>} soundLibrarySources - reactive list of sources
+ * @returns {boolean}
+ */
 const maxLibSourcesReached = function(soundLibrarySources){
   if (MAX_LIB_SOURCES){
     if (soundLibrarySources.value.length == MAX_LIB_SOURCES){
@@ -76,12 +114,20 @@ const maxLibSourcesReached = function(soundLibrarySources){
   }
   return false
 }
+/**
+ * Setup undoable actions for the draggable sound source list.
+ */
 function registerDraggableActions() {
   const { audioEngine } = storeToRefs(useAudioEngineStore())
   const { actionManager } = storeToRefs(useActionManagerStore())
   const cacheStore = useAudioCacheStore()
   const { soundLibrarySources } = storeToRefs(cacheStore)
 
+  /**
+   * Remove a sound source from the draggable list and store the state so it can be re-added.
+   *
+   * @param {Object} payload
+   */
   const deleteDraggableSoundSource = (payload) => {
       const originalSrc = payload.src // 🔐 store it safely
 
@@ -117,12 +163,19 @@ function registerDraggableActions() {
     }
 
   
+  /**
+   * Add a sound source back to the draggable list and recreate any canvas nodes.
+   *
+   * @param {Object} payload
+   */
   const addDraggableSoundSource = async (payload) => {
     if (maxLibSourcesReached(soundLibrarySources)) return;
+    console.log('Adding draggable sound source:', payload.src);
     // download blob and re-instate draggable source
     const { blobUrl } = await downloadAudio(
       payload.src.bucket,
       payload.src.path,
+      payload.src.plan_tier ?? 'users',
       false,
       null,
       payload.src.libraryId
@@ -155,3 +208,33 @@ function registerDraggableActions() {
   )
 }
 
+/**
+ * Setup undoable actions for the draggable sound source list.
+ */
+function registerSchedulingActions() {
+  const { actionManager } = storeToRefs(useActionManagerStore())
+
+  const applyScheduleChanges = (src, params) => {
+    for (const key in params) {
+      src.instance.state.schedule[key] = params[key];
+    }
+  };
+
+  const updateSchedule = (payload) => {
+    const { src, changedParameters } = payload;
+    applyScheduleChanges(src, JSON.parse(JSON.stringify(changedParameters)));
+  };
+
+  const revertSchedule = (payload) => {
+    const { src, previousParameters } = payload;
+    applyScheduleChanges(src, JSON.parse(JSON.stringify(previousParameters)));
+  };
+
+  actionManager.value.registerActionHandlers(
+    'update_sound_source_schedule',
+    updateSchedule,
+    revertSchedule
+  );
+
+  
+}

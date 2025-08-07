@@ -36,7 +36,7 @@
 
   
 <script setup>
-import { ref } from 'vue';
+import { computed } from 'vue';
 import SmallModal from '@/components/ui/modals/SmallModalBase.vue';
 import BaseButton from '@/components/ui/input/BaseButton.vue';
 
@@ -50,6 +50,10 @@ const props = defineProps({
     type: Function,
     required: true
   },
+  showCancelButton: {
+    type: Boolean,
+    default: false
+  },
   message: {
     type: String,
     default: 'Would you like to ___?'
@@ -60,10 +64,14 @@ const props = defineProps({
   }
 })
 
-
-const buttons = ref([
-  { label: 'Yes', action: () => {props.yesFunction(); emit('close')} },
-  { label: 'No', action: () => {props.noFunction(); emit('close')} }
-]);
-
+const buttons = computed(() => {
+  const arr = [
+    { label: 'Yes', action: () => { props.yesFunction(); emit('close') } },
+    { label: 'No', action: () => { props.noFunction(); emit('close') } }
+  ];
+  if (props.showCancelButton) {
+    arr.push({ label: 'Cancel', action: () => { emit('close') } });
+  }
+  return arr;
+});
 </script>

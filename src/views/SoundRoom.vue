@@ -2,21 +2,12 @@
   <div class="h-full bg-white text-neutral-900 dark:bg-neutral-950 dark:text-white flex flex-col">
     <!-- Main Layout -->
     <div class="flex flex-1 overflow-hidden">
-      
-
-      <SoundLibrary
-        v-bind="{
-          isLibraryOpen
-        }"
-        @close="isLibraryOpen = false"
-      />
 
       <!-- Left Sidebar -->
       <SidebarLeft 
         class="min-w-[7.5rem] max-w-64 w-[20%] flex-shrink"
         :MAX_SOURCES="MAX_LIB_SOURCES"
         :handleDragStart="handleDragStart"
-        :addSourceClick="() => { isLibraryOpen = true }"
         :listener="listener"
       />
 
@@ -64,11 +55,18 @@
   <WelcomeOverlay
     v-if="showWelcomeOverlay"
   />
+  <PulsingOverlay
+    v-if="showInitOverlay"
+    :text="'Initializing Your SoundRoom...'"
+    @done="showInitOverlay = false"
+  />
 
 </template>
 
 <script setup>
 import { ref, provide, onBeforeMount, onUnmounted } from 'vue'
+import { initLLM } from '@/utils/audioTaggerNamer'
+
 // Shared constants
 const SOUND_NODE_PART_NAME = 'sound-node-part'
 
@@ -95,10 +93,10 @@ import { useSelectedSource } from '@/composables/useSelectedSource'
 import { useContextMenuLogic } from '@/composables/useContextMenuLogic'
 import { registerSoundRoomActions, unregisterSoundRoomActions, setMaxLibSources } from '@/composables/useSoundRoomActions'
 import { useSaveAndLoadRoom } from '@/composables/useSaveAndLoadRoom';
+import { useAuth } from '@/composables/useAuth'
 import { storeToRefs } from 'pinia'
 
 // State
-const isLibraryOpen = ref(false)
 const selectedIndex = ref(null)
 const draggedSource = ref(null)
 
@@ -122,6 +120,13 @@ provide('selectedIndex', selectedIndex)
 provide('selectedSource', selectedSource)
 
 // Event Handlers
+/**
+ * Deselect the currently active sound source when the user clicks
+ * on an empty area of the canvas stage.
+ *
+ * @param {import('konva/lib/Node').KonvaEventObject<MouseEvent>} e - stage click event
+ * @returns {void}
+ */
 function handleStageClick(e) {
   if (e.target.getAttr('name') !== SOUND_NODE_PART_NAME) { // if NOT part of a konva SoundSourceNode.vue group
     selectedIndex.value = null // deselect sound source node
@@ -138,26 +143,50 @@ const { showContextMenu, contextMenuActions } = useContextMenuLogic(selectedSour
 
 const { onKeyDown, onKeyUp } = useKeyboardControls({selectedIndex, selectedSource})
 
-const { saveRoom, isLoadingRoom, isSavingRoom, loadRoomLocal } = useSaveAndLoadRoom()
+const { saveRoom, isLoadingRoom, isSavingRoom, loadRoomLocal, loadMostRecentRoom } = useSaveAndLoadRoom()
 
 setMaxLibSources(MAX_LIB_SOURCES)
 
 const showWelcomeOverlay = ref(false)
-onBeforeMount(() => {
+const showInitOverlay = ref(false)
+onBeforeMount(async () => {
   registerSoundRoomActions()
   cacheStore.clearSoundLibrarySources() // Clear any previous sound library sources
+  const { isAuthenticated } = useAuth()
   if (sessionStorage.getItem('justLoggedIn') === 'true') {
     sessionStorage.removeItem('justLoggedIn')
     showWelcomeOverlay.value = true
     const tempSoundRoomData = localStorage.getItem('tempSoundRoomData')
     if (tempSoundRoomData) {
       loadRoomLocal()
-      saveRoom() // Save the room data immediately after loading from temp
+      saveRoom()
+    } else {
+      // auto-load most recent room if available
+      if (isAuthenticated.value) {
+        // leave commented out until resume lastplaying sources is implemented to combat:
+        //Uncaught (in promise) DOMException: The play method is not allowed by the user agent 
+        // or the platform in the current context, possibly because the user denied permission.
+
+        //loadMostRecentRoom()
+      }
     }
     //const router = useRouter()
     //router.push('/welcome')
+  } else {
+    // auto-load most recent room if available
+    if (isAuthenticated.value) {
+      // leave commented out until resume lastplaying sources is implemented to combat:
+      //Uncaught (in promise) DOMException: The play method is not allowed by the user agent 
+      // or the platform in the current context, possibly because the user denied permission.
+      //loadMostRecentRoom()
+    }
   }
+  
   engineStore.setupAudioContext()
+  engineStore.loadIR('cathedral', '/impulses/1st_baptist_nashville_far_wide.wav') // Load the default impulse response
+  roomStore.setExistingRoomNames() // Initialize with empty names
+  roomStore.room.name.value = 'Untitled Room' // Default room name
+  roomStore.getSaveSnapshot() // Initialize _lastSavedSnapshot with current room state for isRoomSaveable to compare against
 })
 
 onUnmounted(() => {

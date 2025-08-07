@@ -29,13 +29,21 @@
     <!-- Source Dot -->
     <v-circle
       :radius="10"
-      :fill="props.selected ? '#ff0' : '#f00'"
+      :fill="getFillColor"
       name="sound-node-part"
       @mousedown="onSourceMouseDown"
       @mouseup="onSourceMouseUp"
       @mouseover="setCursor($event, 'pointer')"
       @mouseout="setCursor($event, 'default')"
     />
+
+    <ScheduledPlayRing
+      v-if="true"
+      :playing="sourceIsPlaying"
+      :scheduled="isScheduled"
+    />
+
+
 
     <!-- Direction Diamond -->
     <v-shape
@@ -84,6 +92,8 @@ import { computed } from 'vue'
 import { useRoomStore } from '@/stores/useRoomStore'
 import { useActionManagerStore } from '@/stores/useActionManagerStore'
 import { storeToRefs } from 'pinia'
+import ScheduledPlayRing from '@/components/SoundRoom/MainCanvasStage/ScheduledPlayRing.vue'
+
 // Props and emits
 const props = defineProps({
   source: Object,
@@ -94,6 +104,17 @@ const props = defineProps({
 const { room } = storeToRefs(useRoomStore())
 const { actionManager } = storeToRefs(useActionManagerStore())
 const emit = defineEmits(['select'])
+
+const sched = computed(() => props.source.instance.state.schedule)
+const isScheduled = computed(() => sched.value?.enabled)
+const isScheduledPlaying = computed(() => sched.value?.isPlaying)
+const sourceIsPlaying = computed(() => props.source.instance.playing);
+
+const getFillColor = computed(() => {
+  if (props.selected) return '#ff0' // Yellow for selected node
+  return isScheduled.value ? '#2e90fa' : '#f44336' // Red for unscheduled/looping
+})
+
 
 
 // Cone visibility logic

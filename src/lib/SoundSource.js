@@ -1,21 +1,56 @@
 // lib/SoundSource.js
-
+import { ref, reactive } from 'vue'
 /**
  * Wrapper around a DOM `<audio>` element and the Web Audio nodes used to
  * spatialise it. The `state` object drives position and orientation of the
  * source so the canvas and audio remain in sync.
  */
 export default class SoundSource {
+  /** @type {import('./Room').default|null} */
+  _room = null
+  /**
+   * Create a new SoundSource wrapper.
+   *
+   * @param {Object} options
+   * @param {AudioContext} options.audioContext - context used for nodes
+   * @param {GainNode} options.masterGain - master gain node
+   * @param {string} options.file - URL or blob to load
+   * @param {Object} options.state - reactive state object
+   */
   constructor({
     audioContext,
     masterGain,
     file,
-    state,
-    loop = true
+    state
   }) {
     // `state` holds the spatial position/angle and is kept in sync with the
     // canvas representation.
     this.state = state;
+    this.state.schedule = reactive(state.schedule ?? {
+      id: crypto.randomUUID(),
+      enabled: false,
+      mode: "interval", // "loop", "interval", "count", or "interval+count"
+
+      // Applies to interval-based scheduling
+      gapMin: 5,
+      gapMax: 10,
+
+      // Applies to time-bound or count-based schedules
+      count: 5,           // null = unlimited
+      activeStart: 0,     // time window start (in seconds)
+      activeEnd: 300,     // time window end
+
+      // Restart behaviour
+      restart: false,     // force immediate restart when schedule changes
+
+      // Internal state
+      timesPlayed: 0,
+      isPlaying: true, // whether the sound is currently playing
+      lastPlayedAt: null,
+      paused: false, // whether scheduling is currently paused
+    });
+
+    this._disposed = false; // whether this source has been disposed
 
     this._rad = (deg) => (deg * Math.PI) / 180;
     this._scale = 0.01;
@@ -26,11 +61,30 @@ export default class SoundSource {
     // Web Audio graph so we can apply spatialisation and gain control.
     this._audioElement = new Audio(file);
     this._audioElement.preload = 'auto';
-    this._audioElement.loop = loop;
+    this._audioElement.loop = false;
     this._audioElement.volume = this.state.volume ?? 1;
 
-    this._sourceNode = audioContext.createMediaElementSource(this._audioElement);
-    this._gainNode = audioContext.createGain();
+    this._sourceNode = this._audioContext.createMediaElementSource(this._audioElement);
+    this._gainNode = this._audioContext.createGain();
+
+    this.earlyReflections = [];
+    for (let i = 0; i < 2; i++) {
+      const delay = this._audioContext.createDelay();
+      delay.delayTime.value = 0.005 + i * 0.003; // short slapback
+
+      const gain = this._audioContext.createGain();
+      gain.gain.value = 0.2;
+
+      const pan = this._audioContext.createStereoPanner();
+      pan.pan.value = 0;
+
+      // chain: dry gain -> delay -> reflection gain -> pan -> master
+      this._gainNode.connect(delay).connect(gain).connect(pan).connect(masterGain);
+
+      this.earlyReflections.push({ delay, gain, pan });
+    }
+
+
     this._pannerNode = audioContext.createPanner();
 
     // Configure the panner to simulate distance and directionality.
@@ -44,44 +98,123 @@ export default class SoundSource {
     pn.coneOuterAngle = this.state.coneOuter;
     pn.coneOuterGain = 0.2;
 
-    this._sourceNode
-      .connect(this._gainNode)
-      .connect(this._pannerNode)
-      .connect(masterGain ?? audioContext.destination);
+   this._sourceNode
+    .connect(this._gainNode)
+    .connect(this._pannerNode);
 
-    this._playing = false;
+    // Save the final node as outputNode (for reverb and dry path)
+    this.outputNode = this._pannerNode
+
+    // Optional: expose the panner node output for reverb routing
+    this.reverbSend = audioContext.createGain()
+    this.reverbSend.gain.value = 1 // or tweak per-source reverb level
+
+    // Corner muffling effect using lowpass filter
+    this.cornerFilter = this._audioContext.createBiquadFilter();
+    this.cornerFilter.type = 'lowpass';
+    this.cornerFilter.frequency.value = 18000; // high at start (no muffling)
+
+    this.cornerCompressor = this._audioContext.createDynamicsCompressor();
+    this.cornerCompressor.threshold.value = -50;
+    this.cornerCompressor.knee.value = 20;
+    this.cornerCompressor.ratio.value = 6;
+    this.cornerCompressor.attack.value = 0.005;
+    this.cornerCompressor.release.value = 0.1;
+
+    // Chain: output → filter → compressor → master
+    this.outputNode.connect(this.cornerFilter);
+    this.cornerFilter.connect(this.cornerCompressor);
+    this.cornerCompressor.connect(masterGain ?? this._audioContext.destination);
+
+
+    this.outputNode.connect(this.reverbSend) // split the signal for reverb
+
+    this._playing = ref(this.state.schedule.isPlaying ?? true);
     this._volume = this.state.volume ?? 1; // default to 1 if not set
 
-    if (this.state.isPlaying) { // if sound was playing when saved
-      this.play()
-    }
+    this._audioElement.addEventListener('play', this._onPlay);
+    this._audioElement.addEventListener('pause', this._onPause);
+    this._audioElement.addEventListener('ended', this._onEnded);
+  }
+  
+  _onPlay = () => {
+    this._playing.value = true;
+  };
 
+  _onPause = () => {
+    this._playing.value = false;
+  };
+
+  _onEnded = () => {
+        // When looping is enabled the media element will fire an `ended` event
+    // before immediately restarting playback. In that case we should keep the
+    // internal playing state set to `true` so UI play/pause controls remain
+    // accurate.
+    if (!this._audioElement.loop) {
+      this._playing.value = false;
+    }
+  };
+
+  /**
+   * Connect this source's reverb send to the provided convolver.
+   * @param {AudioNode} convolver
+   */
+  connectReverb(convolver) {
+    try {
+      this.reverbSend.connect(convolver)
+    } catch (err) {
+      console.warn('Failed to connect reverb send:', err)
+    }
   }
 
+  /** Start playback of the audio element. */
   play() {
     this._audioElement.play();
     this.updateAudio();
-    this._playing = true;
   }
 
+  /** Force playback from the start of the audio file. */
+  forcePlayFromStart() {
+    this._audioElement.currentTime = 0;
+    this._audioElement.play();
+    this.updateAudio();
+  }
+
+  /** Pause playback of the audio element. */
   stop() {
     this._audioElement.pause();
-    this._playing = false;
   }
 
+  /**
+   * Whether the sound is currently playing.
+   * @returns {boolean}
+  */
   get playing() {
-    return this._playing;
+    const sched = this.state.schedule;
+    return !sched.paused;
+    
   }
 
+  /**
+   * Set the playback volume for this source.
+   * @param {number} v
+   */
   setVolume(v) {
     this._volume = v;
     this._audioElement.volume = v;
   }
 
+  /**
+   * Retrieve the current playback volume.
+   * @returns {number}
+   */
   getVolume() {
     return this._volume;
   }
 
+  /**
+   * Sync Web Audio panner position and orientation with the state used by the canvas.
+   */
   updateAudio() {
     // Sync the Web Audio panner with the state used by the canvas. Both
     // position and orientation are updated each time the source moves.
@@ -92,37 +225,116 @@ export default class SoundSource {
     const p = this._pannerNode;
     const ctx = this._audioContext;
 
-    if (p.positionX) {
-      p.positionX.setValueAtTime(x, ctx.currentTime);
-      p.positionY.setValueAtTime(y, ctx.currentTime);
-      p.positionZ.setValueAtTime(0, ctx.currentTime);
+    p.positionX.setValueAtTime(x, ctx.currentTime);
+    p.positionY.setValueAtTime(y, ctx.currentTime);
+    p.positionZ.setValueAtTime(0, ctx.currentTime);
 
-      p.orientationX.setValueAtTime(Math.cos(angleRad), ctx.currentTime);
-      p.orientationY.setValueAtTime(Math.sin(angleRad), ctx.currentTime);
-      p.orientationZ.setValueAtTime(0, ctx.currentTime);
-    } else {
-      p.setPosition(x, y, 0);
-      p.setOrientation(Math.cos(angleRad), Math.sin(angleRad), 0);
+    p.orientationX.setValueAtTime(Math.cos(angleRad), ctx.currentTime);
+    p.orientationY.setValueAtTime(Math.sin(angleRad), ctx.currentTime);
+    p.orientationZ.setValueAtTime(0, ctx.currentTime);
+    if (this._room) {
+      this.updateRoomInteraction(this._room);
     }
+
   }
 
+
+  /**
+   * Adjust source properties based on proximity to room walls and corners.
+   * @param {import('./Room').default} room
+   */
+  updateRoomInteraction(room) {
+    if (!room) return;
+
+    const { x, y } = this.state;
+    const roomWidth = room.width;
+    const roomHeight = room.height;
+
+    const distLeft = x;
+    const distRight = roomWidth - x;
+    const distTop = y;
+    const distBottom = roomHeight - y;
+    const minWallDist = Math.min(distLeft, distRight, distTop, distBottom);
+
+    const distTopLeft = Math.hypot(x, y);
+    const distTopRight = Math.hypot(roomWidth - x, y);
+    const distBottomLeft = Math.hypot(x, roomHeight - y);
+    const distBottomRight = Math.hypot(roomWidth - x, roomHeight - y);
+    const minCornerDist = Math.min(distTopLeft, distTopRight, distBottomLeft, distBottomRight);
+
+    const normWall = Math.min(minWallDist / 100, 1);
+    const normCorner = Math.min(minCornerDist / 150, 1);
+
+    const wallGain = 1 - normWall;
+    const cornerGain = 1 - normCorner;
+
+    // dry gain scales down near boundaries but reaches 1.0 when unobstructed
+    const dryGain = 0.2 + 0.8 * normWall * normCorner;
+    this._gainNode.gain.setValueAtTime(dryGain, this._audioContext.currentTime);
+
+    // reverb send increases slightly near corners
+    this.reverbSend.gain.setValueAtTime(0.3 + 0.5 * cornerGain, this._audioContext.currentTime);
+
+    // lowpass filter transitions back to the full 18 kHz when far from corners
+    const muffledFreq = 800 + (18000 - 800) * normCorner;
+    this.cornerFilter.frequency.setTargetAtTime(muffledFreq, this._audioContext.currentTime, 0.01);
+
+    // early reflections subtle gain & pan toward nearest wall
+    const horizPan = distLeft < distRight ? -wallGain : wallGain;
+    this.earlyReflections.forEach(ref => {
+      ref.gain.gain.setValueAtTime(0.05 + 0.2 * wallGain, this._audioContext.currentTime);
+      ref.pan.pan.setValueAtTime(horizPan, this._audioContext.currentTime);
+    });
+  }
+
+
+
+  /**
+   * Provide a reference to the room this source belongs to.
+   * @param {import('./Room').default} room
+   */
+  setRoom(room) {
+    this._room = room
+  }
+
+  /**
+   * Optional hook for responding to room size changes.
+   * Currently a no-op but reserved for future use.
+   * @param {number} _width
+   * @param {number} _height
+   */
+  onRoomResize(_width, _height) {
+    // placeholder
+  }
+
+  /**
+   * Gracefully disconnect and release all Web Audio nodes and associated resources.
+   */
   dispose() {
+    this._disposed = true;
+
     // Gracefully disconnect and release all Web Audio nodes and the underlying
     // <audio> element when a source is removed from the room.
     try {
       if (this._audioElement) {
         this._audioElement.pause()
         this._audioElement.load()
+        this._audioElement?.removeEventListener('play', this._onPlay);
+        this._audioElement?.removeEventListener('pause', this._onPause);
+        this._audioElement?.removeEventListener('ended', this._onEnded);
+
         this._audioElement = null
       }
   
       this._sourceNode?.disconnect()
       this._gainNode?.disconnect()
       this._pannerNode?.disconnect()
-  
+      this.reverbSend?.disconnect()
+
       this._sourceNode = null
       this._gainNode = null
       this._pannerNode = null
+      this.reverbSend = null
   
       this._audioContext = null
       this.state = null

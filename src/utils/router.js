@@ -3,6 +3,9 @@ import SoundRoom from '@/views/SoundRoom.vue'
 import { useAuth } from '@/composables/useAuth'
 import { watch } from 'vue'
 
+/**
+ * Main application router instance.
+ */
 const router = createRouter({
   history: createWebHistory(),
   routes: [
@@ -35,6 +38,10 @@ const router = createRouter({
           props: { component: () => import('@/components/ui/modals/RoomManager/RoomManager.vue') },
           meta: { requiresAuth: true }
         },
+        { path: '/sound-library',
+          component: () => import('@/components/ui/modals/ModalWrapper.vue'),
+          props: { component: () => import('@/components/ui/modals/SoundLibrary/SoundLibrary.vue') },
+        },
       ]
     },
     { path: '/terms', component: () => import('@/views/TermsOfService.vue') },
@@ -42,14 +49,20 @@ const router = createRouter({
     { path: '/update-password', component: () => import('@/views/UpdatePasswordPage.vue')},
     { path: '/auth/callback', component: () => import('@/views/AuthCallback.vue') },
     { path: '/auth/error', component: () => import('@/views/AuthError.vue') },
-    { path: '/welcome', component: () => import('@/components/ui/modals/Welcome.vue') },
+    { path: '/welcome', component: () => import('@/components/ui/modals/Onboarding.vue') },
     { path: '/logged-out', component: () => import('@/views/LoggedOut.vue') },
-    
+    { path: '/pricing', component: () => import('@/views/Pricing/Pricing.vue') },
+
   ]
 })
 
 
 // Guard setup
+/**
+ * Resolve once the authentication state has finished loading.
+ *
+ * @returns {Promise<void>}
+ */
 function waitForSessionLoaded() {
   return new Promise(resolve => {
     const { sessionLoaded } = useAuth()
@@ -64,6 +77,10 @@ function waitForSessionLoaded() {
   })
 }
 
+/**
+ * Navigation guard that ensures authentication is ready and verifies access
+ * to protected routes.
+ */
 router.beforeEach(async (to, from, next) => {
   await waitForSessionLoaded()
 
