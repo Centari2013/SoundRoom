@@ -11,7 +11,7 @@ env.allowRemoteModels = false;
 let nameGenerator = null;
 let nameGeneratorPromise = null;
 
-/** * Initializes the audio classifier worker and loads the CLAP model.
+/** * Initializes the audio classifier worker and loads the audio classification model.
  * @returns {Promise<void>}
  */
 export function initAudioClassifier() {
@@ -22,42 +22,9 @@ export function initAudioClassifier() {
   });
 }
 
-/**
- * Initializes SmolLM2-135M-Instruct for generating human-readable names.
- */
-export async function initLLM() {
-  if (nameGenerator) return Promise.resolve();
-  if (nameGeneratorPromise) return nameGeneratorPromise;
-
-  const start = performance.now();
-  nameGeneratorPromise = pipeline('text-generation', 'Xenova/llama2.c-stories110M'
-    //'HuggingFaceTB/SmolLM2-135M-Instruct'
-, 
-    {
-    local_files_only: true,
-    max_length: 20,
-    do_sample: true,
-    temperature: 0.5,
-    top_p: 0.9,
-    top_k: 50,
-    repetition_penalty: 1.2,
-    num_return_sequences: 1,
-    use_cache: true,
-    trust_remote_code: true,
-    dtype: 'fp16'
-  }).then(pipelineInstance => {
-    nameGenerator = pipelineInstance;
-    return nameGenerator;
-  }).catch(err => {
-    throw err;
-  });
-
-  return nameGeneratorPromise;
-}
-
 
 /**
- * Classifies an audio file using the CLAP zero-shot audio classifier.
+ * Classifies an audio file using the audio classification model.
  * @param {Blob} input - Audio file as a Blob.
  * @returns {Promise<Array<string>>} - Array of top predicted tags.
  */

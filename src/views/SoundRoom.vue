@@ -65,7 +65,6 @@
 
 <script setup>
 import { ref, provide, onBeforeMount, onUnmounted } from 'vue'
-import { initLLM } from '@/utils/audioTaggerNamer'
 
 // Shared constants
 const SOUND_NODE_PART_NAME = 'sound-node-part'

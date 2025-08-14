@@ -23,7 +23,7 @@
               v-model="file.name"
               class="flex-1 p-1 text-base border border-neutral-300 dark:border-neutral-700 rounded-md bg-white dark:bg-neutral-800"
             />
-            <BaseButton class="ml-2" @click="autoTag(file)" :disabled="file.tagging">
+            <BaseButton class="ml-2" @click="autoTag(file)" :disabled="file.tagging" v-if="false">
               <template v-if="file.tagging">
                 <LoadingSpinner />
               </template>
@@ -96,7 +96,6 @@ import pLimit from 'p-limit'
 import { ref, computed } from 'vue'
 import BaseButton from '@/components/ui/input/BaseButton.vue'
 import LoadingSpinner from '@/components/ui/loading/LoadingSpinner.vue'
-import { classifyAudio, generateNameFromTags } from '@/utils/audioTaggerNamer'
 import uploadAudio from '@/utils/uploadAudio'
 import { getFileDuration, stripExtension } from '@/utils/audioFileUtils'
 import { supabase } from '@/utils/supabase'
@@ -143,7 +142,7 @@ function addTag(file) {
 async function autoTag(file) {
   file.tagging = true
   try {
-    const tags = await classifyAudio(file.raw)
+   // const tags = await classifyAudio(file.raw)
     file.tags.push(...tags.filter(tag => !file.tags.includes(tag)))
     //file.name = await generateNameFromTags(tags)
   } catch (err) {
