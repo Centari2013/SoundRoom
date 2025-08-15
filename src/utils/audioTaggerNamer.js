@@ -67,18 +67,76 @@ async function decodeAndResample(blob) {
  * @param {Blob} blob
  * @returns {Promise<string[]>}
  */
-export async function classifyAudio(blob) {
-  const audioArray = await decodeAndResample(blob)
+export async function classifyAudio(input) {
+  let monoBuffer;
+  if (input instanceof Float32Array) {
+    monoBuffer = input;
+  } else if (input instanceof Blob) {
+    monoBuffer = await decodeFileToMonoPCM(input);
+  } else {
+    throw new Error('Unsupported input type for classifyAudio');
+  }
+
   const id = crypto.randomUUID()
 
   return new Promise((resolve, reject) => {
     classifyCallbacks.set(id, { resolve, reject })
 
     classifierWorker.postMessage(
-      { id, audioArray },
-      [audioArray.buffer]
+      { id, monoBuffer },
+      [monoBuffer.buffer]
     )
   })
+}
+
+/**
+ * Decode a File/Blob to a mono Float32Array at 16kHz
+ *
+ * @param {File|Blob} file
+ * @returns {Promise<Float32Array>}
+ */
+async function decodeFileToMonoPCM(file) {
+  const baseContext = new (window.AudioContext || window.webkitAudioContext)();
+  try {
+    const arrayBuffer = await file.arrayBuffer();
+    const audioBuffer = await baseContext.decodeAudioData(arrayBuffer);
+
+    // Resample if needed using OfflineAudioContext
+    let resampled = audioBuffer;
+    if (audioBuffer.sampleRate !== 16000) {
+      const offlineCtx = new OfflineAudioContext(
+        audioBuffer.numberOfChannels,
+        Math.ceil(audioBuffer.duration * 16000),
+        16000
+      );
+      const source = offlineCtx.createBufferSource();
+      source.buffer = audioBuffer;
+      source.connect(offlineCtx.destination);
+      source.start();
+      resampled = await offlineCtx.startRendering();
+    }
+
+    const length = resampled.length;
+    const channels = resampled.numberOfChannels;
+    if (channels === 1) {
+      return resampled.getChannelData(0);
+    }
+    const output = new Float32Array(length);
+    const channelData = [];
+    for (let c = 0; c < channels; c++) {
+      channelData.push(resampled.getChannelData(c));
+    }
+    for (let i = 0; i < length; i++) {
+      let sum = 0;
+      for (let c = 0; c < channels; c++) {
+        sum += channelData[c][i];
+      }
+      output[i] = sum / channels;
+    }
+    return output;
+  } finally {
+    baseContext.close();
+  }
 }
 
 
@@ -89,29 +147,9 @@ export async function classifyAudio(blob) {
  * @returns {Promise<string>}
  */
 export async function generateNameFromTags(tags) {
-  const start = performance.now();
   await initLLM();
-  /* const prompt = `
-    You are naming an ambient sound for a curated sound library. Use the following tags as inspiration:
-
-    Tags: ${tags.join(', ')}
-
-    Generate a natural-sounding, title-cased name that feels descriptive and aesthetic - like something found in an ambient or nature sound collection.
-
-    Only output the name. Keep it short (1-3 words). Examples:
-
-    - Ocean Waves
-    - Forest Morning
-    - Metal Door Creak
-    - Deep Synth Pulse
-    - Quiet Street
-
-    Name:
-    `.trim(); */
 
   const prompt = `Tags: ${tags.join(', ')}\nShort Title:`;
-
-  const genStart = performance.now();
   const output = await nameGenerator(prompt, { max_new_tokens: 12 });
   const nameOnly = output[0].generated_text.split(prompt).pop().trim();
   return cleanGeneratedName(nameOnly);
