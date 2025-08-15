@@ -23,7 +23,7 @@
               v-model="file.name"
               class="flex-1 p-1 text-base border border-neutral-300 dark:border-neutral-700 rounded-md bg-white dark:bg-neutral-800"
             />
-            <BaseButton class="ml-2" @click="autoTag(file)" :disabled="file.tagging" v-if="false">
+            <BaseButton class="ml-2" @click="autoTag(file)" :disabled="file.tagging">
               <template v-if="file.tagging">
                 <LoadingSpinner />
               </template>
@@ -100,6 +100,7 @@ import uploadAudio from '@/utils/uploadAudio'
 import { getFileDuration, stripExtension } from '@/utils/audioFileUtils'
 import { supabase } from '@/utils/supabase'
 import { useAuth } from '@/composables/useAuth'
+import { classifyAudio, initAudioClassifier } from '@/utils/audioTaggerNamer'
 
 const emit = defineEmits(['close', 'finished'])
 
@@ -142,7 +143,8 @@ function addTag(file) {
 async function autoTag(file) {
   file.tagging = true
   try {
-   // const tags = await classifyAudio(file.raw)
+    await initAudioClassifier()
+    const tags = await classifyAudio(file.raw)
     file.tags.push(...tags.filter(tag => !file.tags.includes(tag)))
     //file.name = await generateNameFromTags(tags)
   } catch (err) {

@@ -1,59 +1,49 @@
-// This works because HF Transformers v3 is ESM-compatible
-import { pipeline, env } from '@huggingface/transformers'
+import * as tf from '@tensorflow/tfjs';
 
-env.allowLocalModels = true;
-env.allowRemoteModels = false;
-env.useBrowserCache = true;
-
-let classifier = null
-let classifierInitPromise = null;
-let labels = []
-
+let model = null;
+let labels = [];
+let loadingPromise = null;
 
 async function loadModelAndLabels() {
-  if (classifier) return Promise.resolve();
-
-  classifierInitPromise = pipeline('zero-shot-audio-classification', 'Xenova/clap-htsat-unfused', {
-    local_files_only: true,
-    trust_remote_code: true,
-    use_cache: true,
-    dtype: 'q8'
-  }).then(pipelineInstance => {
-    classifier = pipelineInstance;
-  });
-
-
-  if (!labels.length) {
-    const res = await fetch('/models/labels.json')
-    labels = await res.json()
+  if (model) return;
+  if (!loadingPromise) {
+    loadingPromise = (async () => {
+      await tf.setBackend('cpu');
+      model = await tf.loadGraphModel('/models/yamnet-tfjs/model.json');
+      const res = await fetch('/models/yamnet-tfjs/yamnet_class_map.csv');
+      const text = await res.text();
+      labels = text.trim().split('\n').slice(1).map(line => line.split(',')[2]);
+    })();
   }
-  return classifierInitPromise;
+  await loadingPromise;
 }
 
-
 self.onmessage = async (event) => {
-  const { id, audioArray, type = 'classify' } = event.data
-
+  const { id, audioArray, type = 'classify' } = event.data;
   try {
+    await loadModelAndLabels();
+
     if (type === 'init') {
-      await loadModelAndLabels();
       self.postMessage({ id, status: 'ready' });
       return;
     }
 
-    const result = await classifier(audioArray, labels)
+    const input = tf.tensor(audioArray).reshape([1, audioArray.length]);
+    const result = model.predict(input);
+    const scoresTensor = Array.isArray(result) ? result[0] : result;
+    const meanScores = tf.mean(scoresTensor, 0);
+    const data = await meanScores.data();
 
-    const topTags = result
+    const topTags = Array.from(data)
+      .map((score, i) => ({ score, label: labels[i] }))
       .filter(t => t.score > 0.07)
       .sort((a, b) => b.score - a.score)
       .slice(0, 5)
-      .map(t => t.label)
+      .map(t => t.label);
 
-    self.postMessage({ id, tags: topTags })
+    self.postMessage({ id, tags: topTags });
   } catch (err) {
-    console.error('[Worker Error]', err)
-    self.postMessage({ id, error: err.message })
+    console.error('[Worker Error]', err);
+    self.postMessage({ id, error: err.message });
   }
-}
-
-
+};
