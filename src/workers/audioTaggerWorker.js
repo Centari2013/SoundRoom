@@ -40,7 +40,7 @@ self.onmessage = async (event) => {
     const scores = scoresTensor.arraySync(); // shape [frames, 521]
     const averaged = tf.tensor(scores).mean(0).arraySync(); // shape [521]
 
-    const topTags = Array.from(data)
+    const topTags = Array.from(averaged)
       .map((score, i) => ({ score, label: labels[i] }))
       .filter(t => t.score > 0.07)
       .sort((a, b) => b.score - a.score)
