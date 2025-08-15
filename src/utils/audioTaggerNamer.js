@@ -1,12 +1,5 @@
 // audioTaggerNamer.js
-import { pipeline, read_audio, env } from '@huggingface/transformers';
 import AudioTaggerWorker from '@/workers/audioTaggerWorker.js?worker&type=module'
-
-//import { AutoProcessor, ClapAudioModelWithProjection, read_audio } from '@xenova/transformers';
-
-env.useBrowserCache = true;
-env.allowLocalModels = true; // Disable local models for now, use CDN
-env.allowRemoteModels = false;
 
 let nameGenerator = null;
 let nameGeneratorPromise = null;
@@ -43,24 +36,49 @@ classifierWorker.onmessage = (event) => {
   }
 }
 
+async function decodeAndResample(blob) {
+  const arrayBuffer = await blob.arrayBuffer()
+  const audioCtx = new AudioContext()
+  const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer)
+
+  const targetRate = 16000
+  const offlineCtx = new OfflineAudioContext(1, Math.ceil(audioBuffer.duration * targetRate), targetRate)
+
+  const buffer = offlineCtx.createBuffer(1, audioBuffer.length, audioBuffer.sampleRate)
+  const channelData = buffer.getChannelData(0)
+  for (let c = 0; c < audioBuffer.numberOfChannels; c++) {
+    const data = audioBuffer.getChannelData(c)
+    for (let i = 0; i < data.length; i++) {
+      channelData[i] += data[i] / audioBuffer.numberOfChannels
+    }
+  }
+
+  const source = offlineCtx.createBufferSource()
+  source.buffer = buffer
+  source.connect(offlineCtx.destination)
+  source.start(0)
+
+  const rendered = await offlineCtx.startRendering()
+  return rendered.getChannelData(0)
+}
+
 /**
  * Offload audio classification to background worker.
  * @param {Blob} blob
  * @returns {Promise<string[]>}
  */
 export async function classifyAudio(blob) {
-  const audioArray = await read_audio(URL.createObjectURL(blob));
-  const id = crypto.randomUUID();
+  const audioArray = await decodeAndResample(blob)
+  const id = crypto.randomUUID()
 
   return new Promise((resolve, reject) => {
     classifyCallbacks.set(id, { resolve, reject })
 
-
-      classifierWorker.postMessage(
-        { id, audioArray }, // transferable for better performance
-        [audioArray.buffer] // transfer the ArrayBuffer for performance
-      )
-    })
+    classifierWorker.postMessage(
+      { id, audioArray },
+      [audioArray.buffer]
+    )
+  })
 }
 
 
