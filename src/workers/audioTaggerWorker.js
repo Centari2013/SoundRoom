@@ -27,10 +27,22 @@ async function loadModelAndLabels() {
       // Warm up and JIT compile the model
       try {
         const warmup = tf.zeros([16000], 'float32');
-        const res = model.predict(warmup);
-        await res.data();
+        const result = model.predict(warmup);
+
+        // Ensure the prediction actually runs and dispose all tensors
+        if (Array.isArray(result)) {
+          await Promise.all(result.map(t => t.data()));
+          result.forEach(t => t.dispose());
+        } else if (result instanceof tf.Tensor) {
+          await result.data();
+          result.dispose();
+        } else if (result && typeof result === 'object') {
+          const tensors = Object.values(result);
+          await Promise.all(tensors.map(t => t.data()));
+          tensors.forEach(t => t.dispose());
+        }
+
         warmup.dispose();
-        res.dispose();
       } catch (e) {
         console.warn('Warmup failed', e);
       }
@@ -59,9 +71,17 @@ self.onmessage = async (event) => {
     }
     const inputTensor = tf.tensor(monoBuffer, [monoBuffer.length], 'float32');
 
-    const [values, indices] = tf.tidy(() => {
+    const { values, indices } = tf.tidy(() => {
       const prediction = model.predict(inputTensor);
-      const scoresTensor = Array.isArray(prediction) ? prediction[0] : prediction;
+      let scoresTensor;
+      if (Array.isArray(prediction)) {
+        scoresTensor = prediction[0];
+      } else if (prediction instanceof tf.Tensor) {
+        scoresTensor = prediction;
+      } else {
+        const first = Object.values(prediction)[0];
+        scoresTensor = first;
+      }
       const averaged = scoresTensor.mean(0);
       return tf.topk(averaged, 5);
     });
