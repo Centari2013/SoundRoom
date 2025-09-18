@@ -7,7 +7,7 @@
       </div>
       <div class="flex-1 overflow-hidden">
         <div class="h-full overflow-y-auto px-10 pt-24 pb-10 space-y-8">
-          <p class="text-sm text-neutral-600 dark:text-neutral-300 max-w-2xl">
+          <p class="text-sm text-neutral-600 dark:text-neutral-300 max-w-2xl mx-auto text-center">
             Upgrade to unlock more room slots, extra sound sources, and premium scheduling tools tailored for immersive sound design.
           </p>
           <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
