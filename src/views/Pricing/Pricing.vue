@@ -1,21 +1,41 @@
 <template>
-  <div class="w-full h-full flex flex-col">
-    <h1 class="flex text-3xl font-bold justify-center p-10">Choose Your Plan</h1>
-    <div class="grid md:grid-cols-4 gap-10 min-h-8/11 p-10 pt-5 mb-10">
-      <PricingCard
-        v-for="plan in plans"
-        :key="plan.name"
-        :title="plan.name"
-        :price="plan.price"
-        :features="plan.features"
-        :highlight="plan.highlight"
-      />
+  <div @click.self="closeModal" class="modal-backdrop">
+    <div class="modal-panel relative flex flex-col">
+      <div class="modal-header-float">
+        <h1 class="text-2xl font-bold tracking-tight">Choose Your Plan</h1>
+        <BaseButton class="text-sm" @click="closeModal">Close</BaseButton>
+      </div>
+      <div class="flex-1 overflow-hidden">
+        <div class="h-full overflow-y-auto px-10 pt-24 pb-10 space-y-8">
+          <p class="text-sm text-neutral-600 dark:text-neutral-300 max-w-2xl">
+            Upgrade to unlock more room slots, extra sound sources, and premium scheduling tools tailored for immersive sound design.
+          </p>
+          <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+            <PricingCard
+              v-for="plan in plans"
+              :key="plan.name"
+              :title="plan.name"
+              :price="plan.price"
+              :features="plan.features"
+              :highlight="plan.highlight"
+            />
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup>
+import { useRouter } from 'vue-router'
+import BaseButton from '@/components/ui/input/BaseButton.vue'
 import PricingCard from '@/views/Pricing/PricingCard.vue'
+
+const router = useRouter()
+
+const closeModal = () => {
+  router.push('/')
+}
 
 const plans = [
   {
