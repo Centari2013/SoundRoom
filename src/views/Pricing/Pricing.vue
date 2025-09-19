@@ -12,12 +12,14 @@
           </p>
           <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
             <PricingCard
-              v-for="plan in plans"
-              :key="plan.name"
+              v-for="plan in displayPlans"
+              :key="plan.id"
               :title="plan.name"
               :price="plan.price"
               :features="plan.features"
               :highlight="plan.highlight"
+              :cta-label="plan.ctaLabel"
+              :cta-disabled="plan.ctaDisabled"
             />
           </div>
         </div>
@@ -27,18 +29,22 @@
 </template>
 
 <script setup>
+import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 import BaseButton from '@/components/ui/input/BaseButton.vue'
 import PricingCard from '@/views/Pricing/PricingCard.vue'
+import { useAuth } from '@/composables/useAuth'
 
 const router = useRouter()
+const { tier } = useAuth()
 
 const closeModal = () => {
   router.push('/')
 }
 
-const plans = [
+const basePlans = [
   {
+    id: 'free',
     name: 'Free',
     price: '$0/mo',
     features: [
@@ -51,6 +57,7 @@ const plans = [
     highlight: false
   },
   {
+    id: 'plus',
     name: 'Plus',
     price: '$5/mo',
     features: [
@@ -63,6 +70,7 @@ const plans = [
     highlight: false
   },
   {
+    id: 'pro',
     name: 'Pro',
     price: '$10/mo',
     features: [
@@ -75,6 +83,7 @@ const plans = [
     highlight: true
   },
   {
+    id: 'creator',
     name: 'Creator',
     price: '$20/mo',
     features: [
@@ -87,6 +96,37 @@ const plans = [
     highlight: false
   }
 ]
+
+const PLAN_ORDER = basePlans.map(plan => plan.id)
+
+const currentTier = computed(() => {
+  const normalized = (tier?.value ?? 'free').toLowerCase()
+  return PLAN_ORDER.includes(normalized) ? normalized : 'free'
+})
+
+const displayPlans = computed(() => {
+  const userIndex = PLAN_ORDER.indexOf(currentTier.value)
+  return basePlans.map(plan => {
+    const planIndex = PLAN_ORDER.indexOf(plan.id)
+    let ctaLabel = 'Upgrade'
+    let ctaDisabled = false
+
+    if (plan.id === currentTier.value) {
+      ctaLabel = 'Current Plan'
+      ctaDisabled = true
+    } else if (userIndex !== -1 && planIndex < userIndex) {
+      ctaLabel = 'Downgrade'
+    } else if (userIndex === -1) {
+      ctaLabel = 'Select Plan'
+    }
+
+    return {
+      ...plan,
+      ctaLabel,
+      ctaDisabled
+    }
+  })
+})
 </script>
 
 <style scoped>

@@ -15,8 +15,10 @@
     </div>
     <button
       class="w-full py-2 rounded-xl font-semibold transition border border-transparent bg-[#d3d3d3e1] dark:bg-[#1a1a1a] hover:border-[#646cff] disabled:opacity-50 disabled:cursor-not-allowed disabled:dark:bg-neutral-700"
+      :disabled="ctaDisabled"
+      type="button"
     >
-      Select Plan
+      {{ ctaLabel }}
     </button>
   </div>
 </template>
@@ -26,7 +28,15 @@ defineProps({
   title: String,
   price: String,
   features: Array,
-  highlight: Boolean
+  highlight: Boolean,
+  ctaLabel: {
+    type: String,
+    default: 'Select Plan'
+  },
+  ctaDisabled: {
+    type: Boolean,
+    default: false
+  }
 })
 </script>
 
