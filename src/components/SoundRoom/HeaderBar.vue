@@ -12,15 +12,17 @@
         aria-haspopup="true"
       >
         <span class="sr-only">Open navigation menu</span>
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M4 6h16M4 12h16M4 18h16" stroke-linecap="round" stroke-linejoin="round" />
-        </svg>
+        <span class="flex flex-col items-center justify-center w-5 h-5 gap-[5px]" aria-hidden="true">
+          <span class="block w-full h-1 bg-current rounded-full"></span>
+          <span class="block w-full h-0.5 bg-current rounded-full"></span>
+          <span class="block w-full h-0.5 bg-current rounded-full"></span>
+        </span>
       </button>
       <transition name="fade">
         <div
           v-if="isMenuOpen"
           ref="menuPanel"
-          class="absolute right-0 mt-2 w-44 rounded-lg shadow-lg border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 py-2 z-50"
+          class="absolute right-0 mt-2 w-44 rounded-lg shadow-lg border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 py-2 z-50 flex flex-col divide-y divide-neutral-200 dark:divide-neutral-800 overflow-hidden"
         >
           <template v-for="button in visibleButtons" :key="button.label">
             <button
@@ -121,8 +123,8 @@ const headerButtons = computed(() => [
     shouldShow: true
   },
   {
-    label: 'Sign Up',
-    action: () => router.push('/signup'),
+    label: 'Sign In',
+    action: () => router.push('/login'),
     shouldShow: !isAuthenticated.value
   },
   {
