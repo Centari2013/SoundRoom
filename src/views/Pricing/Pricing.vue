@@ -184,7 +184,7 @@ const planDefinitions = [
     spotlightKeys: ['room-saving', 'drag-drop', 'mobile-optimized']
   },
   {
-    id: 'basic',
+    id: 'plus',
     name: 'Basic',
     price: '$5/mo',
     tagline: 'Grow into multi-room mixes with deeper timing control.',
