@@ -132,10 +132,26 @@ const headerButtons = computed(() => [
     shouldShow: isAuthenticated.value && tier.value === 'free'
   },
   {
+    label: 'Manage Plan',
+    action: () => router.push('/manage-plan'),
+    shouldShow: isAuthenticated.value && tier.value !== 'free'
+  },
+  {
+    label: 'Manage Account',
+    action: () => router.push('/account'),
+    shouldShow: isAuthenticated.value
+  },
+  {
+    label: 'Settings',
+    action: () => router.push('/settings'),
+    shouldShow: isAuthenticated.value
+  },
+  {
     label: 'Sign Out',
     action: () => handleSignOut(),
     shouldShow: isAuthenticated.value
-  }
+  },
+
 ])
 
 const visibleButtons = computed(() => headerButtons.value.filter(button => button.shouldShow))
