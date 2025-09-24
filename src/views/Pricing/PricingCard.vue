@@ -7,7 +7,7 @@
       <h2 class="text-xl font-bold mb-2">{{ title }}</h2>
       <p class="text-2xl font-semibold">{{ price }}</p>
       <p v-if="tagline" class="mt-2 text-sm text-neutral-600 dark:text-neutral-300">{{ tagline }}</p>
-      <div v-if="highlightItems.length" class="mt-5 flex flex-wrap gap-2">
+      <div v-if="highlightItems.length" class="mt-5 flex flex-wrap gap-2 justify-center pb-3">
         <span
           v-for="(feature, index) in highlightItems"
           :key="index"
@@ -20,6 +20,7 @@
         </span>
       </div>
     </div>
+    
     <button
       class="w-full py-2 rounded-xl font-semibold transition border border-transparent bg-[#d3d3d3e1] dark:bg-[#1a1a1a] hover:border-[#646cff] disabled:opacity-50 disabled:cursor-not-allowed disabled:dark:bg-neutral-700"
       :disabled="ctaDisabled"
