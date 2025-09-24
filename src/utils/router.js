@@ -42,6 +42,11 @@ const router = createRouter({
           component: () => import('@/components/ui/modals/ModalWrapper.vue'),
           props: { component: () => import('@/components/ui/modals/SoundLibrary/SoundLibrary.vue') },
         },
+        {
+          path: 'upgrade',
+          component: () => import('@/components/ui/modals/ModalWrapper.vue'),
+          props: { component: () => import('@/views/Pricing/Pricing.vue') },
+        },
       ]
     },
     { path: '/terms', component: () => import('@/views/TermsOfService.vue') },
@@ -51,8 +56,6 @@ const router = createRouter({
     { path: '/auth/error', component: () => import('@/views/AuthError.vue') },
     { path: '/welcome', component: () => import('@/components/ui/modals/Onboarding.vue') },
     { path: '/logged-out', component: () => import('@/views/LoggedOut.vue') },
-    { path: '/pricing', component: () => import('@/views/Pricing/Pricing.vue') },
-
   ]
 })
 

@@ -96,11 +96,11 @@ import pLimit from 'p-limit'
 import { ref, computed } from 'vue'
 import BaseButton from '@/components/ui/input/BaseButton.vue'
 import LoadingSpinner from '@/components/ui/loading/LoadingSpinner.vue'
-import { classifyAudio, generateNameFromTags } from '@/utils/audioTaggerNamer'
 import uploadAudio from '@/utils/uploadAudio'
 import { getFileDuration, stripExtension } from '@/utils/audioFileUtils'
 import { supabase } from '@/utils/supabase'
 import { useAuth } from '@/composables/useAuth'
+import { classifyAudio, initAudioClassifier } from '@/utils/audioTaggerNamer'
 
 const emit = defineEmits(['close', 'finished'])
 
@@ -143,6 +143,7 @@ function addTag(file) {
 async function autoTag(file) {
   file.tagging = true
   try {
+    await initAudioClassifier()
     const tags = await classifyAudio(file.raw)
     file.tags.push(...tags.filter(tag => !file.tags.includes(tag)))
     //file.name = await generateNameFromTags(tags)

@@ -12,9 +12,10 @@
     "test:e2e": "playwright test"
   },
   "dependencies": {
-    "@huggingface/transformers": "^3.7.0",
     "@supabase/supabase-js": "^2.49.7",
     "@tailwindcss/vite": "^4.1.7",
+    "@tensorflow/tfjs": "^4.22.0",
+    "@tensorflow/tfjs-backend-wasm": "^4.22.0",
     "@tensorflow/tfjs-converter": "^4.22.0",
     "@vercel/functions": "^2.2.2",
     "@vercel/speed-insights": "^1.2.0",
