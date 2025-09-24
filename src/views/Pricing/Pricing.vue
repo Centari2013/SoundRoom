@@ -8,20 +8,27 @@
       <div class="flex-1 overflow-hidden">
         <div class="h-full overflow-y-auto px-10 pt-24 pb-10 space-y-8">
           <p class="text-sm text-neutral-600 dark:text-neutral-300 max-w-2xl mx-auto text-center">
-            Upgrade to unlock more room slots, extra sound sources, and premium scheduling tools tailored for immersive sound design.
+            Pick the tier that matches how you build, perform, or collaborate inside SoundRoom.
           </p>
-          <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+          <div class="grid gap-6 xl:grid-cols-3">
             <PricingCard
               v-for="plan in displayPlans"
+              class="max-w-75"
               :key="plan.id"
               :title="plan.name"
               :price="plan.price"
               :features="plan.features"
+              :tagline="plan.tagline"
+              :spotlight-features="plan.spotlightFeatures"
               :highlight="plan.highlight"
               :cta-label="plan.ctaLabel"
               :cta-disabled="plan.ctaDisabled"
             />
           </div>
+          <details class="max-w-5xl mx-auto rounded-md border border-neutral-200 bg-white p-4 text-left shadow-sm dark:border-neutral-800 dark:bg-neutral-950" data-testid="pricing-feature-comparison">
+            <summary class="text-sm font-semibold cursor-pointer select-none text-neutral-800 dark:text-neutral-200">Full feature comparison</summary>
+            <PlanComparisonTable class="mt-4" :plans="basePlans" :features="FEATURE_DEFINITIONS" />
+          </details>
         </div>
       </div>
     </div>
@@ -33,6 +40,7 @@ import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 import BaseButton from '@/components/ui/input/BaseButton.vue'
 import PricingCard from '@/views/Pricing/PricingCard.vue'
+import PlanComparisonTable from '@/views/Pricing/PlanComparisonTable.vue'
 import { useAuth } from '@/composables/useAuth'
 
 const router = useRouter()
@@ -54,7 +62,6 @@ const FEATURE_DEFINITIONS = [
     label: 'Drag & Drop Sound Sources',
     tiers: {
       free: { status: 'included' },
-      basic: { status: 'included' },
       plus: { status: 'included' },
       pro: { status: 'included' }
     }
@@ -64,7 +71,6 @@ const FEATURE_DEFINITIONS = [
     label: 'Directional Listener Cone',
     tiers: {
       free: { status: 'included' },
-      basic: { status: 'included' },
       plus: { status: 'included' },
       pro: { status: 'included' }
     }
@@ -73,8 +79,7 @@ const FEATURE_DEFINITIONS = [
     key: 'room-saving',
     label: 'Room Saving',
     tiers: {
-      free: { status: 'unavailable', detail: 'Upgrade for persistent rooms' },
-      basic: { status: 'limited', detail: 'Save 1 room' },
+      free: { status: 'limited', detail: 'Save 1 room' },
       plus: { status: 'included', detail: 'Unlimited saved rooms' },
       pro: { status: 'included', detail: 'Unlimited saved rooms' }
     }
@@ -84,7 +89,6 @@ const FEATURE_DEFINITIONS = [
     label: 'Multi-Room Support',
     tiers: {
       free: { status: 'unavailable', detail: 'Single room workspace' },
-      basic: { status: 'unavailable', detail: 'Single room workspace' },
       plus: { status: 'included', detail: 'Create and manage multiple rooms' },
       pro: { status: 'included', detail: 'Create and manage multiple rooms' }
     }
@@ -94,7 +98,6 @@ const FEATURE_DEFINITIONS = [
     label: 'Upload Custom Sounds',
     tiers: {
       free: { status: 'unavailable', detail: 'Pro unlocks uploads' },
-      basic: { status: 'unavailable', detail: 'Pro unlocks uploads' },
       plus: { status: 'unavailable', detail: 'Pro unlocks uploads' },
       pro: { status: 'included', detail: 'Upload your own audio library' }
     }
@@ -104,7 +107,6 @@ const FEATURE_DEFINITIONS = [
     label: 'AI Tag Suggestions',
     tiers: {
       free: { status: 'unavailable', detail: 'Pro unlocks AI tags' },
-      basic: { status: 'unavailable', detail: 'Pro unlocks AI tags' },
       plus: { status: 'unavailable', detail: 'Pro unlocks AI tags' },
       pro: { status: 'included', detail: 'Automatic sound labeling' }
     }
@@ -113,8 +115,7 @@ const FEATURE_DEFINITIONS = [
     key: 'timed-loops',
     label: 'Timed Loop Controls',
     tiers: {
-      free: { status: 'unavailable', detail: 'Plus unlocks timed loops' },
-      basic: { status: 'unavailable', detail: 'Plus unlocks timed loops' },
+      free: { status: 'unavailable', detail: 'Basic unlocks timed loops' },
       plus: { status: 'included', detail: 'Per-source loop timing' },
       pro: { status: 'included', detail: 'Per-source loop timing & chaining' }
     }
@@ -123,8 +124,7 @@ const FEATURE_DEFINITIONS = [
     key: 'room-presets',
     label: 'Room Presets (Reverb)',
     tiers: {
-      free: { status: 'limited', detail: 'Preview a few presets' },
-      basic: { status: 'included', detail: 'Core preset collection' },
+      free: { status: 'included', detail: 'Core preset collection' },
       plus: { status: 'included', detail: 'Full preset library' },
       pro: { status: 'included', detail: 'Full preset library' }
     }
@@ -133,8 +133,7 @@ const FEATURE_DEFINITIONS = [
     key: 'sound-packs',
     label: 'Sound Packs (Premium Bundles)',
     tiers: {
-      free: { status: 'unavailable', detail: 'Plus unlocks curated packs' },
-      basic: { status: 'unavailable', detail: 'Plus unlocks curated packs' },
+      free: { status: 'unavailable', detail: 'Basic unlocks curated packs' },
       plus: { status: 'included', detail: 'Curated monthly packs' },
       pro: { status: 'included', detail: 'All packs + early drops' }
     }
@@ -144,7 +143,6 @@ const FEATURE_DEFINITIONS = [
     label: 'Schedule Playback (Future)',
     tiers: {
       free: { status: 'unavailable', detail: 'Coming soon with Pro' },
-      basic: { status: 'unavailable', detail: 'Coming soon with Pro' },
       plus: { status: 'unavailable', detail: 'Coming soon with Pro' },
       pro: { status: 'included', detail: 'Early access when it launches' }
     }
@@ -154,7 +152,6 @@ const FEATURE_DEFINITIONS = [
     label: 'Mobile Touch Optimization',
     tiers: {
       free: { status: 'included', detail: 'Dialed in for phones and tablets' },
-      basic: { status: 'included', detail: 'Dialed in for phones and tablets' },
       plus: { status: 'included', detail: 'Dialed in for phones and tablets' },
       pro: { status: 'included', detail: 'Dialed in for phones and tablets' }
     }
@@ -164,7 +161,6 @@ const FEATURE_DEFINITIONS = [
     label: 'Access to SoundUploader Tool',
     tiers: {
       free: { status: 'unavailable', detail: 'Pro unlocks bulk uploader' },
-      basic: { status: 'unavailable', detail: 'Pro unlocks bulk uploader' },
       plus: { status: 'unavailable', detail: 'Pro unlocks bulk uploader' },
       pro: { status: 'included', detail: 'Desktop bulk upload companion' }
     }
@@ -173,8 +169,7 @@ const FEATURE_DEFINITIONS = [
     key: 'save-presets',
     label: 'Save Room Preset (e.g. “Forest”)',
     tiers: {
-      free: { status: 'unavailable', detail: 'Plus unlocks preset saving' },
-      basic: { status: 'unavailable', detail: 'Plus unlocks preset saving' },
+      free: { status: 'unavailable', detail: 'Basic unlocks preset saving' },
       plus: { status: 'included', detail: 'Save custom preset snapshots' },
       pro: { status: 'included', detail: 'Save and share presets' }
     }
@@ -186,41 +181,56 @@ const planDefinitions = [
     id: 'free',
     name: 'Free',
     price: '$0/mo',
-    highlight: false
-  },
-  {
-    id: 'basic',
-    name: 'Basic (Login)',
-    price: 'Free w/ login',
+    tagline: 'Save your go-to room layout and sync across devices.',
+    spotlightKeys: ['room-saving', 'drag-drop', 'mobile-optimized'],
     highlight: false
   },
   {
     id: 'plus',
-    name: 'Plus',
+    name: 'Basic',
     price: '$5/mo',
+    tagline: 'Grow into multi-room mixes with deeper timing control.',
+    spotlightKeys: ['multi-room', 'timed-loops', 'save-presets'],
     highlight: false
   },
   {
     id: 'pro',
     name: 'Pro',
     price: '$10/mo',
+    tagline: 'Unlock uploads, AI tools, and pro scheduling workflows.',
+    spotlightKeys: ['custom-uploads', 'ai-tags', 'sound-uploader'],
     highlight: true
   }
 ]
 
 const PLAN_ORDER = planDefinitions.map(plan => plan.id)
 
-const basePlans = planDefinitions.map(plan => ({
-  ...plan,
-  features: FEATURE_DEFINITIONS.map(feature => {
+const basePlans = planDefinitions.map(plan => {
+  const features = FEATURE_DEFINITIONS.map(feature => {
     const tierConfig = feature.tiers[plan.id] ?? { status: 'unavailable' }
     return {
+      key: feature.key,
       label: feature.label,
       status: tierConfig.status,
       detail: tierConfig.detail ?? STATUS_DETAIL_FALLBACK[tierConfig.status] ?? ''
     }
   })
-}))
+
+  const featuresByKey = features.reduce((acc, feature) => {
+    acc[feature.key] = feature
+    return acc
+  }, {})
+
+  const spotlightFeatures = (plan.spotlightKeys ?? [])
+    .map(key => featuresByKey[key])
+    .filter(feature => feature && feature.status !== 'unavailable')
+
+  return {
+    ...plan,
+    features,
+    spotlightFeatures
+  }
+})
 
 const currentTier = computed(() => {
   const normalized = (tier?.value ?? 'free').toLowerCase()

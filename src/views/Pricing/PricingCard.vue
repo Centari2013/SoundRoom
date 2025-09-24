@@ -5,23 +5,20 @@
   >
     <div>
       <h2 class="text-xl font-bold mb-2">{{ title }}</h2>
-      <p class="text-2xl font-semibold mb-4">{{ price }}</p>
-      <ul class="space-y-3 mb-6">
-        <li v-for="(feature, index) in normalizedFeatures" :key="index" class="flex items-start text-sm gap-3">
-          <span
-            class="text-lg leading-6"
-            :class="STATUS_STYLES[feature.status]?.class"
-          >
-            {{ STATUS_STYLES[feature.status]?.icon ?? '•' }}
-          </span>
-          <div class="flex-1">
-            <span class="font-medium">{{ feature.label }}</span>
-            <p v-if="feature.detail" class="mt-0.5 text-xs text-neutral-500 dark:text-neutral-400">
-              {{ feature.detail }}
-            </p>
-          </div>
-        </li>
-      </ul>
+      <p class="text-2xl font-semibold">{{ price }}</p>
+      <p v-if="tagline" class="mt-2 text-sm text-neutral-600 dark:text-neutral-300">{{ tagline }}</p>
+      <div v-if="highlightItems.length" class="mt-5 flex flex-wrap gap-2">
+        <span
+          v-for="(feature, index) in highlightItems"
+          :key="index"
+          class="inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-semibold"
+          :class="STATUS_STYLES[feature.status]?.chip"
+        >
+          <span class="h-2 w-2 rounded-full" :class="STATUS_STYLES[feature.status]?.dot"></span>
+          <span>{{ feature.label }}</span>
+          <span v-if="feature.status === 'limited'" class="uppercase tracking-wider text-[0.6rem]">Limited</span>
+        </span>
+      </div>
     </div>
     <button
       class="w-full py-2 rounded-xl font-semibold transition border border-transparent bg-[#d3d3d3e1] dark:bg-[#1a1a1a] hover:border-[#646cff] disabled:opacity-50 disabled:cursor-not-allowed disabled:dark:bg-neutral-700"
@@ -38,16 +35,16 @@ import { computed } from 'vue'
 
 const STATUS_STYLES = {
   included: {
-    icon: '+',
-    class: 'text-green-600 dark:text-green-400'
+    chip: 'border-green-200 bg-green-50 text-green-700 dark:border-green-900 dark:bg-green-950/60 dark:text-green-300',
+    dot: 'bg-green-500 dark:bg-green-300'
   },
   limited: {
-    icon: '!',
-    class: 'text-amber-500 dark:text-amber-400'
+    chip: 'border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-900 dark:bg-amber-950/60 dark:text-amber-300',
+    dot: 'bg-amber-500 dark:bg-amber-300'
   },
   unavailable: {
-    icon: '-',
-    class: 'text-neutral-400 dark:text-neutral-600'
+    chip: 'border-neutral-200 bg-neutral-100 text-neutral-500 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-400',
+    dot: 'bg-neutral-400 dark:bg-neutral-500'
   }
 }
 
@@ -55,6 +52,14 @@ const props = defineProps({
   title: String,
   price: String,
   features: {
+    type: Array,
+    default: () => []
+  },
+  tagline: {
+    type: String,
+    default: ''
+  },
+  spotlightFeatures: {
     type: Array,
     default: () => []
   },
@@ -69,23 +74,30 @@ const props = defineProps({
   }
 })
 
-const normalizedFeatures = computed(() =>
-  props.features.map(feature => {
-    if (typeof feature === 'string') {
-      return {
-        label: feature,
-        detail: '',
-        status: 'included'
-      }
-    }
-
+const normalizeFeature = feature => {
+  if (typeof feature === 'string') {
     return {
-      label: feature.label,
-      detail: feature.detail ?? '',
-      status: feature.status ?? 'included'
+      label: feature,
+      status: 'included',
+      detail: ''
     }
-  })
-)
+  }
+
+  return {
+    label: feature.label,
+    status: feature.status ?? 'included',
+    detail: feature.detail ?? ''
+  }
+}
+
+const highlightItems = computed(() => {
+  const source = props.spotlightFeatures.length ? props.spotlightFeatures : props.features
+
+  return source
+    .map(normalizeFeature)
+    .filter(feature => feature.status !== 'unavailable')
+    .slice(0, 4)
+})
 </script>
 
 <style scoped>
