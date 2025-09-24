@@ -10,17 +10,16 @@
           <p class="text-sm text-neutral-600 dark:text-neutral-300 max-w-2xl mx-auto text-center pt-4">
             Pick the tier that matches how you build, perform, or collaborate inside SoundRoom.
           </p>
-          <div class="grid mx-auto max-w-6xl justify-items-center md:grid-cols-2 xl:grid-cols-3">
+          <div class="grid gap-6 mx-auto max-w-6xl justify-items-center md:grid-cols-2 xl:grid-cols-3">
             <PricingCard
               v-for="plan in displayPlans"
-              class="max-w-75"
+              class="w-full max-w-sm"
               :key="plan.id"
               :title="plan.name"
               :price="plan.price"
               :features="plan.features"
               :tagline="plan.tagline"
               :spotlight-features="plan.spotlightFeatures"
-              :highlight="plan.highlight"
               :cta-label="plan.ctaLabel"
               :cta-disabled="plan.ctaDisabled"
             />
@@ -182,24 +181,21 @@ const planDefinitions = [
     name: 'Free',
     price: '$0/mo',
     tagline: 'Save your go-to room layout and sync across devices.',
-    spotlightKeys: ['room-saving', 'drag-drop', 'mobile-optimized'],
-    highlight: false
+    spotlightKeys: ['room-saving', 'drag-drop', 'mobile-optimized']
   },
   {
-    id: 'basic',
+    id: 'plus',
     name: 'Basic',
     price: '$5/mo',
     tagline: 'Grow into multi-room mixes with deeper timing control.',
-    spotlightKeys: ['multi-room', 'timed-loops', 'save-presets'],
-    highlight: false
+    spotlightKeys: ['multi-room', 'timed-loops', 'save-presets']
   },
   {
     id: 'pro',
     name: 'Pro',
     price: '$10/mo',
     tagline: 'Unlock uploads, AI tools, and pro scheduling workflows.',
-    spotlightKeys: ['custom-uploads', 'ai-tags', 'sound-uploader'],
-    highlight: true
+    spotlightKeys: ['custom-uploads', 'ai-tags', 'sound-uploader']
   }
 ]
 

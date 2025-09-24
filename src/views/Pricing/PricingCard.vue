@@ -1,7 +1,6 @@
 <template>
   <div
-    class="rounded-sm p-6 shadow-md border hover:shadow-lg transition-all flex flex-col justify-between bg-white dark:bg-neutral-950 text-neutral-900 dark:text-white"
-    :class="highlight ? 'border-black dark:border-white' : 'border-neutral-300 dark:border-neutral-800'"
+    class="group rounded-sm p-6 shadow-md border border-neutral-300 dark:border-neutral-800 transition-all duration-200 ease-out transform flex flex-col justify-between bg-white dark:bg-neutral-950 text-neutral-900 dark:text-white hover:border-black dark:hover:border-white hover:shadow-xl hover:-translate-y-1 hover:scale-[1.03]"
   >
     <div>
       <h2 class="text-xl font-bold mb-2">{{ title }}</h2>
@@ -64,7 +63,6 @@ const props = defineProps({
     type: Array,
     default: () => []
   },
-  highlight: Boolean,
   ctaLabel: {
     type: String,
     default: 'Select Plan'
