@@ -6,10 +6,20 @@
     <div>
       <h2 class="text-xl font-bold mb-2">{{ title }}</h2>
       <p class="text-2xl font-semibold mb-4">{{ price }}</p>
-      <ul class="space-y-2 mb-6">
-        <li v-for="(feature, index) in features" :key="index" class="flex items-start text-sm">
-          <span class="mr-2">✔️</span>
-          <span>{{ feature }}</span>
+      <ul class="space-y-3 mb-6">
+        <li v-for="(feature, index) in normalizedFeatures" :key="index" class="flex items-start text-sm gap-3">
+          <span
+            class="text-lg leading-6"
+            :class="STATUS_STYLES[feature.status]?.class"
+          >
+            {{ STATUS_STYLES[feature.status]?.icon ?? '•' }}
+          </span>
+          <div class="flex-1">
+            <span class="font-medium">{{ feature.label }}</span>
+            <p v-if="feature.detail" class="mt-0.5 text-xs text-neutral-500 dark:text-neutral-400">
+              {{ feature.detail }}
+            </p>
+          </div>
         </li>
       </ul>
     </div>
@@ -24,10 +34,30 @@
 </template>
 
 <script setup>
-defineProps({
+import { computed } from 'vue'
+
+const STATUS_STYLES = {
+  included: {
+    icon: '+',
+    class: 'text-green-600 dark:text-green-400'
+  },
+  limited: {
+    icon: '!',
+    class: 'text-amber-500 dark:text-amber-400'
+  },
+  unavailable: {
+    icon: '-',
+    class: 'text-neutral-400 dark:text-neutral-600'
+  }
+}
+
+const props = defineProps({
   title: String,
   price: String,
-  features: Array,
+  features: {
+    type: Array,
+    default: () => []
+  },
   highlight: Boolean,
   ctaLabel: {
     type: String,
@@ -38,6 +68,24 @@ defineProps({
     default: false
   }
 })
+
+const normalizedFeatures = computed(() =>
+  props.features.map(feature => {
+    if (typeof feature === 'string') {
+      return {
+        label: feature,
+        detail: '',
+        status: 'included'
+      }
+    }
+
+    return {
+      label: feature.label,
+      detail: feature.detail ?? '',
+      status: feature.status ?? 'included'
+    }
+  })
+)
 </script>
 
 <style scoped>
