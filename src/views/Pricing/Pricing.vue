@@ -24,10 +24,10 @@
               :cta-disabled="plan.ctaDisabled"
             />
           </div>
-          <details class="max-w-5xl mx-auto rounded-md border border-neutral-200 bg-white p-4 text-left shadow-sm dark:border-neutral-800 dark:bg-neutral-950" data-testid="pricing-feature-comparison">
-            <summary class="text-sm font-semibold cursor-pointer select-none text-neutral-800 dark:text-neutral-200">Full feature comparison</summary>
+          <div class="max-w-5xl mx-auto rounded-md border border-neutral-200 bg-white p-4 text-left shadow-sm dark:border-neutral-800 dark:bg-neutral-950" data-testid="pricing-feature-comparison">
+            <div class="text-sm font-semibold text-neutral-800 dark:text-neutral-200">Full feature comparison</div>
             <PlanComparisonTable class="mt-4" :plans="basePlans" :features="FEATURE_DEFINITIONS" />
-          </details>
+          </div>
         </div>
       </div>
     </div>
