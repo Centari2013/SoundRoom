@@ -15,6 +15,7 @@ import { supabase } from "@/utils/supabase";
 import { downloadMultipleAudio } from "@/utils/downloadAudio";
 import { useAuth } from "@/composables/useAuth";
 import { ref } from "vue";
+import { useEntitlements } from '@/composables/useEntitlements'
 
 /**
  * Manage saving and loading of rooms from Supabase or local storage.
@@ -45,6 +46,7 @@ export function useSaveAndLoadRoom() {
   const { listener } = storeToRefs(listenerStore);
   const { audioEngine } = storeToRefs(audioEngineStore);
   const { soundLibrarySources } = storeToRefs(cacheStore);
+  const { requireWithinLimit } = useEntitlements()
 
   /**
    * Persist the current room to Supabase. Handles insert or update logic
@@ -52,21 +54,32 @@ export function useSaveAndLoadRoom() {
    *
    * @returns {boolean} true when the save operation is initiated
    */
-  function saveRoom() {
-    isSavingRoom.value = true;
-    const roomData = roomStore.getSaveSnapshot();
-    // if room.id in room table, update it
-    //otherwise, insert a new room
-    if (room.value.id) {
-      updateRoom(roomData);
-    } else {
-      insertRoom(roomData);
+  async function saveRoom() {
+    if (!user.value?.id) {
+      console.warn('Attempted to save a room without an authenticated user.')
+      return false
     }
-    setTimeout(() => {
-      isSavingRoom.value = false;
-    }, 2000);
 
-    return true; // Indicate that the save operation was initiated
+    const isExistingRoom = Boolean(room.value.id)
+
+    if (!isExistingRoom) {
+      const withinLimit = await ensureSaveLimit()
+      if (!withinLimit) return false
+    }
+
+    isSavingRoom.value = true
+    const roomData = roomStore.getSaveSnapshot()
+
+    try {
+      if (isExistingRoom) {
+        return await updateRoom(roomData)
+      }
+      return await insertRoom(roomData)
+    } finally {
+      setTimeout(() => {
+        isSavingRoom.value = false
+      }, 2000)
+    }
   }
 
   /**
@@ -74,24 +87,27 @@ export function useSaveAndLoadRoom() {
    *
    * @param {Object} roomData - serialized room data
    */
-  function updateRoom(roomData) {
-    supabase
-      .from("rooms")
+  async function updateRoom(roomData) {
+    const { data, error } = await supabase
+      .from('rooms')
       .update({
         name: room.value.name.value,
         room_config: roomData,
-        thumbnail: canvasStore.getThumbnailURI() // Get the thumbnail URI from the canvas store
+        thumbnail: canvasStore.getThumbnailURI()
       })
-      .eq("id", room.value.id)
-      .select("id") // Ensure we get the updated ID back
-      .then(({ data, error }) => {
-        if (error) {
-          console.error("Error updating room:", error);
-        } else {
-          room.value.id = data[0].id; // Update the room ID with the returned ID
-          roomStore.commitRoomName(room.value.id, room.value.name)
-        }
-      });
+      .eq('id', room.value.id)
+      .select('id')
+      .single()
+
+    if (error) {
+      console.error('Error updating room:', error)
+      return false
+    }
+
+    room.value.id = data.id
+    roomStore.commitRoomName(room.value.id, room.value.name)
+
+    return true
   }
 
   /**
@@ -123,25 +139,48 @@ export function useSaveAndLoadRoom() {
    *
    * @param {Object} roomData - serialized room data
    */
-  function insertRoom(roomData) {
-    supabase
-      .from("rooms")
+  async function insertRoom(roomData) {
+    const { data, error } = await supabase
+      .from('rooms')
       .insert({
         owner_id: user.value.id,
         name: room.value.name.value,
         room_config: roomData,
-        thumbnail: canvasStore.getThumbnailURI() // Get the thumbnail URI from the canvas store
+        thumbnail: canvasStore.getThumbnailURI()
       })
-      .select("id") // Ensure we get the inserted ID back
-      .single() // We expect a single row back
-      .then(({ data: id, error }) => {
-        if (error) {
-          console.error("Error inserting room:", error);
-        } else {
-          room.value.id = id; // Update the room ID with the returned ID
-          roomStore.commitRoomName(room.value.id, room.value.name)
-        }
-      });
+      .select('id')
+      .single()
+
+    if (error) {
+      console.error('Error inserting room:', error)
+      return false
+    }
+
+    room.value.id = data.id
+    roomStore.commitRoomName(room.value.id, room.value.name)
+
+    return true
+  }
+  
+  async function ensureSaveLimit() {
+    const count = await fetchSavedRoomCount()
+    return requireWithinLimit('maxSavedRooms', count, {
+      title: 'Saved room limit reached'
+    })
+  }
+
+  async function fetchSavedRoomCount() {
+    const { count, error } = await supabase
+      .from('rooms')
+      .select('id', { count: 'exact', head: true })
+      .eq('owner_id', user.value.id)
+
+    if (error) {
+      console.error('Error counting rooms:', error)
+      return 0
+    }
+
+    return count ?? 0
   }
 
   /**

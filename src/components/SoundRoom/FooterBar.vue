@@ -35,7 +35,7 @@
 
       <BaseButton
         @click="showNewRoomConfirm = true"
-        :disabled="isSaving || !isRoomSaveable"
+        :disabled="isSaving"
         class="px-3 py-2 rounded bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400"
         type="button"
         aria-label="Open new room confirmation"
