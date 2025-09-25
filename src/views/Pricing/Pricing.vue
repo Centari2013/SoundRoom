@@ -56,42 +56,17 @@ const STATUS_DETAIL_FALLBACK = {
 }
 
 const FEATURE_DEFINITIONS = [
+
   {
-    key: 'drag-drop',
-    label: 'Drag & Drop Sound Sources',
+    key: 'multi-room-saving',
+    label: 'Multi-Room Saving',
     tiers: {
-      free: { status: 'included' },
-      basic: { status: 'included' },
-      pro: { status: 'included' }
-    }
-  },
-  {
-    key: 'listener-cone',
-    label: 'Directional Listener Cone',
-    tiers: {
-      free: { status: 'included' },
-      basic: { status: 'included' },
-      pro: { status: 'included' }
-    }
-  },
-  {
-    key: 'room-saving',
-    label: 'Room Saving',
-    tiers: {
-      free: { status: 'limited', detail: 'Save 1 room' },
-      basic: { status: 'included', detail: 'Unlimited saved rooms' },
+      free: { status: 'unavailable', detail: 'Save 1 room' },
+      basic: { status: 'included', detail: 'Save up to 10 rooms' },
       pro: { status: 'included', detail: 'Unlimited saved rooms' }
     }
   },
-  {
-    key: 'multi-room',
-    label: 'Multi-Room Support',
-    tiers: {
-      free: { status: 'unavailable', detail: 'Single room workspace' },
-      basic: { status: 'included', detail: 'Create and manage multiple rooms' },
-      pro: { status: 'included', detail: 'Create and manage multiple rooms' }
-    }
-  },
+
   {
     key: 'custom-uploads',
     label: 'Upload Custom Sounds',
@@ -101,15 +76,7 @@ const FEATURE_DEFINITIONS = [
       pro: { status: 'included', detail: 'Upload your own audio library' }
     }
   },
-  {
-    key: 'ai-tags',
-    label: 'AI Tag Suggestions',
-    tiers: {
-      free: { status: 'unavailable', detail: 'Pro unlocks AI tags' },
-      basic: { status: 'unavailable', detail: 'Pro unlocks AI tags' },
-      pro: { status: 'included', detail: 'Automatic sound labeling' }
-    }
-  },
+
   {
     key: 'timed-loops',
     label: 'Timed Loop Controls',
@@ -121,25 +88,25 @@ const FEATURE_DEFINITIONS = [
   },
   {
     key: 'room-presets',
-    label: 'Room Presets (Reverb)',
+    label: 'Room Presets (Reverb, etc.)',
     tiers: {
-      free: { status: 'included', detail: 'Core preset collection' },
+      free: { status: 'limited', detail: 'Core preset collection' },
       basic: { status: 'included', detail: 'Full preset library' },
       pro: { status: 'included', detail: 'Full preset library' }
     }
   },
   {
     key: 'sound-packs',
-    label: 'Sound Packs (Premium Bundles)',
+    label: 'Sound Packs',
     tiers: {
-      free: { status: 'unavailable', detail: 'Basic unlocks curated packs' },
+      free: { status: 'limited', detail: 'Access to basic library' },
       basic: { status: 'included', detail: 'Curated monthly packs' },
       pro: { status: 'included', detail: 'All packs + early drops' }
     }
   },
   {
     key: 'schedule-playback',
-    label: 'Schedule Playback (Future)',
+    label: 'Schedule Playback (Coming Soon)',
     tiers: {
       free: { status: 'unavailable', detail: 'Coming soon with Pro' },
       basic: { status: 'unavailable', detail: 'Coming soon with Pro' },
@@ -147,30 +114,21 @@ const FEATURE_DEFINITIONS = [
     }
   },
   {
-    key: 'mobile-optimized',
-    label: 'Mobile Touch Optimization',
+    key: 'prebuilt-rooms',
+    label: 'Prebuilt Rooms',
     tiers: {
-      free: { status: 'included', detail: 'Dialed in for phones and tablets' },
-      basic: { status: 'included', detail: 'Dialed in for phones and tablets' },
-      pro: { status: 'included', detail: 'Dialed in for phones and tablets' }
+      free: { status: 'unavailable', detail: 'Coming soon with Pro' },
+      basic: { status: 'included', detail: 'Coming soon with Pro' },
+      pro: { status: 'included', detail: 'Early access when it launches' }
     }
   },
   {
-    key: 'sound-uploader',
-    label: 'Access to SoundUploader Tool',
+    key: 'theme-options',
+    label: 'Theme Options (Coming Soon)',
     tiers: {
-      free: { status: 'unavailable', detail: 'Pro unlocks bulk uploader' },
-      basic: { status: 'unavailable', detail: 'Pro unlocks bulk uploader' },
-      pro: { status: 'included', detail: 'Desktop bulk upload companion' }
-    }
-  },
-  {
-    key: 'save-presets',
-    label: 'Save Room Preset (e.g. “Forest”)',
-    tiers: {
-      free: { status: 'unavailable', detail: 'Basic unlocks preset saving' },
-      basic: { status: 'included', detail: 'Save custom preset snapshots' },
-      pro: { status: 'included', detail: 'Save and share presets' }
+      free: { status: 'unavailable', detail: 'System Light & Dark modes only' },
+      basic: { status: 'included', detail: 'Multiple Light & Dark mode options' },
+      pro: { status: 'included', detail: 'Multiple custom theme options' }
     }
   }
 ]
@@ -181,21 +139,21 @@ const planDefinitions = [
     name: 'Free',
     price: '$0/mo',
     tagline: 'Save your go-to room layout and sync across devices.',
-    spotlightKeys: ['room-saving', 'drag-drop', 'mobile-optimized']
+    spotlightKeys: ['multi-room-saving']
   },
   {
-    id: 'plus',
+    id: 'basic',
     name: 'Basic',
     price: '$5/mo',
     tagline: 'Grow into multi-room mixes with deeper timing control.',
-    spotlightKeys: ['multi-room', 'timed-loops', 'save-presets']
+    spotlightKeys: ['multi-room-saving', 'timed-loops', 'sound-packs']
   },
   {
     id: 'pro',
     name: 'Pro',
     price: '$10/mo',
-    tagline: 'Unlock uploads, AI tools, and pro scheduling workflows.',
-    spotlightKeys: ['custom-uploads', 'ai-tags', 'sound-uploader']
+    tagline: 'Unlock everything in Basic + uploads, AI tools, and pro scheduling workflows.',
+    spotlightKeys: ['custom-uploads', 'schedule-playback', 'theme-options']
   }
 ]
 

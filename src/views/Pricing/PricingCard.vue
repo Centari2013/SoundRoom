@@ -6,7 +6,7 @@
       <h2 class="text-xl font-bold mb-2">{{ title }}</h2>
       <p class="text-2xl font-semibold">{{ price }}</p>
       <p v-if="tagline" class="mt-2 text-sm text-neutral-600 dark:text-neutral-300">{{ tagline }}</p>
-      <div v-if="highlightItems.length" class="mt-5 flex flex-wrap gap-2 justify-center pb-3">
+      <div v-if="highlightItems.length" class="mt-5 flex flex-col gap-2 justify-center items-center pb-3">
         <span
           v-for="(feature, index) in highlightItems"
           :key="index"
