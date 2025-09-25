@@ -8,6 +8,7 @@
   </div>
   
   <portal-target name="modal" />
+  <EntitlementUpsellModal />
 </template>
 
 
@@ -16,7 +17,7 @@ import { SpeedInsights } from '@vercel/speed-insights/vue'
 import HeaderBar from '@/components/SoundRoom/HeaderBar.vue';
 import MobileComingSoon from '@/views/MobileComingSoon.vue';
 import { isMobileBrowser } from "@/utils/device";
+import EntitlementUpsellModal from '@/components/ui/modals/EntitlementUpsellModal.vue';
 
 const isMobile = isMobileBrowser();
 </script>
-
