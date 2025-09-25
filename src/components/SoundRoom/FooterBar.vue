@@ -35,7 +35,7 @@
 
       <BaseButton
         @click="showNewRoomConfirm = true"
-        :disabled="isSaving"
+        :disabled="isSaving || isRoomEmpty"
         class="px-3 py-2 rounded bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400"
         type="button"
         aria-label="Open new room confirmation"
@@ -79,7 +79,7 @@ const props = defineProps({
 
 const router = useRouter();
 const { isAuthenticated } = useAuth();
-const { isRoomSaveable } = storeToRefs(useRoomStore());
+const { isRoomSaveable, isRoomEmpty } = storeToRefs(useRoomStore());
 
 const showSaveConfirm = ref(false);
 const showNewRoomConfirm = ref(false);

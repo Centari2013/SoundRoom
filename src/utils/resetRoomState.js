@@ -37,6 +37,7 @@ export function resetRoomState() {
   // Dispose of audio engine and start from scratch
   engineStore.resetAudioEngine()
 
-  roomStore.getSaveSnapshot()
+  roomStore.markCurrentStateAsEmpty()
+  roomStore.getSaveSnapshot({ markAsInitial: true })
   registerSoundRoomActions()
 }
