@@ -132,18 +132,6 @@
 
           <div class="flex items-start justify-between gap-6">
             <div>
-              <h3 class="text-base font-medium">Confirm before deleting sources</h3>
-              <p class="text-sm text-neutral-600 dark:text-neutral-400">Show a confirmation modal before permanently removing a sound source.</p>
-            </div>
-            <label class="relative inline-flex items-center cursor-pointer select-none">
-              <input type="checkbox" class="sr-only peer" v-model="preferences.confirmBeforeDeleting">
-              <span class="block w-12 h-6 rounded-full bg-neutral-300 dark:bg-neutral-700 transition-colors peer-focus:outline peer-focus:outline-2 peer-focus:outline-blue-500 peer-checked:bg-blue-600"></span>
-              <span class="absolute left-1 top-1 block w-4 h-4 rounded-full bg-white shadow transition-transform peer-checked:translate-x-6"></span>
-            </label>
-          </div>
-
-          <div class="flex items-start justify-between gap-6">
-            <div>
               <h3 class="text-base font-medium">Show interface tips</h3>
               <p class="text-sm text-neutral-600 dark:text-neutral-400">Keep lightweight reminders visible for keyboard shortcuts and best practices.</p>
             </div>
@@ -241,13 +229,11 @@ const avatarFailed = ref(false)
 
 const preferenceDefaults = Object.freeze({
   autoResumePlayback: false,
-  confirmBeforeDeleting: true,
   showInterfaceTips: true
 })
 
 const preferences = reactive({
   autoResumePlayback: preferenceDefaults.autoResumePlayback,
-  confirmBeforeDeleting: preferenceDefaults.confirmBeforeDeleting,
   showInterfaceTips: preferenceDefaults.showInterfaceTips
 })
 
