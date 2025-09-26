@@ -346,7 +346,6 @@ export function useSaveAndLoadRoom() {
       console.info(`Skipped ${skipped} sound(s) due to plan entitlements.`)
     }
 
-    console.log("Fetched sounds from DB:", accessible);
     return accessible;
   }
   /**

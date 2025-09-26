@@ -170,7 +170,6 @@ function registerDraggableActions() {
    */
   const addDraggableSoundSource = async (payload) => {
     if (maxLibSourcesReached(soundLibrarySources)) return;
-    console.log('Adding draggable sound source:', payload.src);
     // download blob and re-instate draggable source
     const { blobUrl } = await downloadAudio(
       payload.src.bucket,
