@@ -258,11 +258,21 @@ export default class AudioEngine {
 
   async loadImpulseResponse(irName, url) {
     // Ensure audio context and convolver are ready
-    this.getAudioContext()
+    const audioContext = this.getAudioContext()
 
     const response = await fetch(url)
     const arrayBuffer = await response.arrayBuffer()
-    const audioBuffer = await this.#audioContext.decodeAudioData(arrayBuffer)
+
+    // The engine might have been disposed while the fetch was in-flight.
+    if (
+      !this.#audioContext ||
+      this.#audioContext.state === 'closed' ||
+      this.#audioContext !== audioContext
+    ) {
+      return
+    }
+
+    const audioBuffer = await audioContext.decodeAudioData(arrayBuffer)
 
     this.#convolver.buffer = audioBuffer
     this.#currentIRName = irName

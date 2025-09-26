@@ -149,7 +149,6 @@ const showWelcomeOverlay = ref(false)
 const showInitOverlay = ref(false)
 onBeforeMount(async () => {
   registerSoundRoomActions()
-  cacheStore.clearSoundLibrarySources() // Clear any previous sound library sources
   const { isAuthenticated } = useAuth()
   if (sessionStorage.getItem('justLoggedIn') === 'true') {
     sessionStorage.removeItem('justLoggedIn')

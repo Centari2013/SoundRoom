@@ -6,16 +6,23 @@ import { useAudioCacheStore } from '@/stores/useAudioCacheStore'
 import { storeToRefs } from 'pinia'
 
 let actionsRegistered = false
+let registeredActionManager = null
 
 /**
  * Register all SoundRoom related undoable actions.
  */
 export function registerSoundRoomActions() {
-  if (actionsRegistered) return
+  const { actionManager } = storeToRefs(useActionManagerStore())
+
+  if (actionsRegistered && registeredActionManager === actionManager.value) {
+    return
+  }
+
   registerCanvasActions()
   registerDraggableActions()
   registerSchedulingActions()
   actionsRegistered = true
+  registeredActionManager = actionManager.value
 }
 
 /**
@@ -24,7 +31,9 @@ export function registerSoundRoomActions() {
 export function unregisterSoundRoomActions() {
   if (!actionsRegistered) return
   const { actionManager } = storeToRefs(useActionManagerStore())
-  actionManager.value.unregisterActionHandlers([
+  const manager = registeredActionManager ?? actionManager.value
+
+  manager.unregisterActionHandlers([
     'add_canvas_sound_source',
     'delete_canvas_sound_source',
     'move_canvas_sound_source',
@@ -32,6 +41,7 @@ export function unregisterSoundRoomActions() {
     'add_draggable_sound_source'
   ])
   actionsRegistered = false
+  registeredActionManager = null
 }
 
 /**
