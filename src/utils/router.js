@@ -192,6 +192,17 @@ const router = createRouter({
         },
       },
     },
+    {
+      path: '/:pathMatch(.*)*',
+      name: 'not-found',
+      component: () => import('@/views/NotFound.vue'),
+      meta: {
+        seo: {
+          title: 'Page Not Found | SoundRoom',
+          description: 'We couldn\'t find the page you requested. Return to SoundRoom to continue creating spatial audio scenes.',
+        },
+      },
+    },
   ],
 })
 
