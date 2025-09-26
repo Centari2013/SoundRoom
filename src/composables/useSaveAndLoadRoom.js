@@ -16,6 +16,7 @@ import { downloadMultipleAudio } from "@/utils/downloadAudio";
 import { useAuth } from "@/composables/useAuth";
 import { ref } from "vue";
 import { useEntitlements } from '@/composables/useEntitlements'
+import { annotateSoundAccess } from '@/utils/soundEntitlements'
 
 /**
  * Manage saving and loading of rooms from Supabase or local storage.
@@ -35,7 +36,7 @@ import { useEntitlements } from '@/composables/useEntitlements'
 export function useSaveAndLoadRoom() {
   const isLoadingRoom = ref(false);
   const isSavingRoom = ref(false);
-  const { user } = useAuth();
+  const { user, tier } = useAuth();
   const roomStore = useRoomStore();
   const listenerStore = useListenerStore();
   const audioEngineStore = useAudioEngineStore();
@@ -320,19 +321,33 @@ export function useSaveAndLoadRoom() {
    * @returns {Promise<Array>} list of sound records
    */
   async function getSoundsFromDB(ids) {
+    if (!ids?.length) return []
+
     const { data, error } = await supabase
       .from("sound_files")
       .select()
       .in("id", ids);
 
-    if (error) console.warn("Failed to list files:", error);
-    if (data) {
-      data.forEach(sound => {
-        sound.base = sound.plan_tier;
-      });
+    if (error) {
+      console.warn("Failed to list files:", error);
+      return []
     }
-    console.log("Fetched sounds from DB:", data);
-    return data;
+
+    const context = {
+      userTier: tier.value,
+      userId: user.value?.id
+    }
+
+    const annotated = (data ?? []).map(sound => annotateSoundAccess(sound, context))
+    const accessible = annotated.filter(sound => !sound.locked)
+
+    const skipped = annotated.length - accessible.length
+    if (skipped > 0) {
+      console.info(`Skipped ${skipped} sound(s) due to plan entitlements.`)
+    }
+
+    console.log("Fetched sounds from DB:", accessible);
+    return accessible;
   }
   /**
    * Persist the current room to browser localStorage for offline usage.

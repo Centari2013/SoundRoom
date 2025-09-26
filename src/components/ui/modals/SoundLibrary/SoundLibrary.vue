@@ -22,6 +22,7 @@
         @updateCurrent="currentlyPlayingId = $event"
         @upload="showUploadPanel = true"
         @delete="promptDeleteSound"
+        @locked="handleLockedSound"
       />
      
     </div>
@@ -40,7 +41,7 @@
 </template>
 
 <script setup>
-import { ref, watch, nextTick } from 'vue'
+import { computed, ref, watch, nextTick } from 'vue'
 
 import { supabase } from '@/utils/supabase'
 
@@ -53,11 +54,14 @@ import { useRouter } from 'vue-router'
 import { useAudioCacheStore } from '@/stores/useAudioCacheStore'
 import { useActionManagerStore } from '@/stores/useActionManagerStore'
 import { useAuth } from '@/composables/useAuth'
+import { useEntitlements } from '@/composables/useEntitlements'
 import { storeToRefs } from 'pinia'
 import deleteAudio from '@/utils/deleteAudio'
+import { annotateSoundAccess } from '@/utils/soundEntitlements'
 
 
-const { user, isAuthenticated } = useAuth()
+const { user, isAuthenticated, tier } = useAuth()
+const { requireEntitlement } = useEntitlements()
 
 const router = useRouter()
 const cacheStore = useAudioCacheStore()
@@ -85,8 +89,13 @@ const categories = [
  * @returns {Promise<void>}
  */
 async function toggleAddSource(s) {
+  const existing = soundLibrarySources.value.find((sound) => s.libraryId == sound.libraryId)
+  if (!existing && s.locked) {
+    handleLockedSound(s)
+    return
+  }
   // if source in soundlibrarysources (draggable sources), delete, otherwise add
-  if (soundLibrarySources.value.find((sound) => s.libraryId == sound.libraryId)) {
+  if (existing) {
     s.send = true
     await actionStore.deleteLibrarySoundSource(s)
     s.send = false
@@ -99,9 +108,29 @@ async function toggleAddSource(s) {
 
 const currentlyPlayingId = ref(null) // id of current sound playing to stop multiple previews playing at once
 
+function handleLockedSound(sound) {
+  if (sound.accessReason === 'ownership') {
+    console.info('This sound belongs to another user.')
+    return
+  }
+
+  const feature = sound.entitlementFeature
+  if (!feature) return
+
+  requireEntitlement(feature, {
+    requiredPlan: sound.requiredPlan ?? sound.plan_tier,
+    title: `Unlock ${sound.name}`
+  })
+}
+
 const activeCategory = ref(categories?.[0]?.id || '')
 const gridRef = ref(null) // ref to SoundGrid component
-const filteredSounds = ref([])
+const rawSounds = ref([])
+const filteredSounds = computed(() => {
+  const userTier = tier.value
+  const userId = user.value?.id
+  return rawSounds.value.map(sound => annotateSoundAccess(sound, { userTier, userId }))
+})
 watch(
   activeCategory,
   async (newCategory) => {
@@ -110,15 +139,15 @@ watch(
     gridRef.value?.scrollTop() // scroll up when new category is selected
     let sounds = []
     if (newCategory === 'your-sounds') {
-      filteredSounds.value = [] // reset filtered sounds for immediate visual feedback
+      rawSounds.value = []
       sounds = await listUserSounds()
     } else {
       sounds = await listCategoryFiles(newCategory)
     }
 
-    filteredSounds.value = sounds.map(({ id, ...rest }) => ({
+    rawSounds.value = sounds.map(({ id, ...rest }) => ({
       libraryId: id,
-      ...rest,
+      ...rest
     }))
 
   },
@@ -128,9 +157,9 @@ watch(
 const refreshUserSounds = async () => {
   if (activeCategory.value === 'your-sounds') {
     const sounds = await listUserSounds()
-    filteredSounds.value = sounds.map(({ id, ...rest }) => ({
+    rawSounds.value = sounds.map(({ id, ...rest }) => ({
       libraryId: id,
-      ...rest,
+      ...rest
     }))
   }
 }

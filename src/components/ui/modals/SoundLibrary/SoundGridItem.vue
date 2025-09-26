@@ -1,20 +1,29 @@
 <template>
   <div class="relative aspect-square flex flex-col items-center justify-between p-4 rounded-xl bg-neutral-100 dark:bg-neutral-800 shadow border border-neutral-300 dark:border-neutral-700">
 
+    <div
+      v-if="sound.locked"
+      class="absolute top-3 right-3 px-2 py-1 text-[10px] font-semibold uppercase rounded bg-amber-500/90 text-white tracking-wide"
+    >
+      {{ requiredPlanLabel }}
+    </div>
+
     <MarqueeTitle :text="getSourceName(sound.name)" />
 
     <SoundPreviewCircle
       :soundData="sound"
       :currentlyPlayingId="currentlyPlayingId"
+      :locked="sound.locked && !isLoaded"
       @updateCurrent="$emit('updateCurrent', $event)"
+      @locked="$emit('locked', sound)"
     />
 
     <BaseButton
       class="load-BaseButton text-xs px-3 py-1 rounded hover:bg-blue-700 transition-colors mt-2"
-      @click="$emit('toggle', sound)"
+      @click="handleToggle"
       :disabled="waiting || sound.send"
     >
-      {{ soundLibrarySources.find((s) => s.libraryId == sound.libraryId) ? 'Remove' : 'Load' }}
+      {{ buttonLabel }}
     </BaseButton>
     <BaseButton
       v-if="userSound"
@@ -26,12 +35,13 @@
   </div>
 </template>
 
-
 <script setup>
+import { computed } from 'vue'
 import BaseButton from '@/components/ui/input/BaseButton.vue'
 import SoundPreviewCircle from '@/components/ui/modals/SoundLibrary/SoundPreviewCircle.vue'
 import MarqueeTitle from '@/components/ui/text/MarqueeTitle.vue'
 import { getSourceName } from '@/composables/useSelectedSource'
+import { PLAN_LABELS } from '@/constants/entitlementCopy'
 
 const props = defineProps({
   sound: Object,
@@ -41,7 +51,29 @@ const props = defineProps({
   userSound: Boolean
 })
 
-defineEmits(['toggle', 'updateCurrent', 'delete'])
+const emit = defineEmits(['toggle', 'updateCurrent', 'delete', 'locked'])
+
+const isLoaded = computed(() => props.soundLibrarySources.find((s) => s.libraryId === props.sound.libraryId))
+
+const buttonLabel = computed(() => {
+  if (isLoaded.value) return 'Remove'
+  return props.sound.locked ? 'Unlock' : 'Load'
+})
+
+const requiredPlanLabel = computed(() => {
+  if (!props.sound.locked) return ''
+  if (props.sound.accessReason === 'ownership') return 'Private'
+  const label = PLAN_LABELS[props.sound.requiredPlan]
+  return label ?? 'Premium'
+})
+
+function handleToggle() {
+  if (!isLoaded.value && props.sound.locked) {
+    emit('locked', props.sound)
+    return
+  }
+  emit('toggle', props.sound)
+}
 </script>
 <style>
 .close-button {

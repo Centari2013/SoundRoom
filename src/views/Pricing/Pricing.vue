@@ -115,7 +115,7 @@ const FEATURE_DEFINITIONS = [
   },
   {
     key: 'prebuilt-rooms',
-    label: 'Prebuilt Rooms',
+    label: 'Prebuilt Rooms (Coming Soon)',
     tiers: {
       free: { status: 'unavailable', detail: 'Coming soon with Pro' },
       basic: { status: 'included', detail: 'Coming soon with Pro' },

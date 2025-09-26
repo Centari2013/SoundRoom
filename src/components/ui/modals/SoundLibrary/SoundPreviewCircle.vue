@@ -47,10 +47,11 @@ import downloadAudio from '@/utils/downloadAudio'
 
 const props = defineProps({
   soundData: Object,
-  currentlyPlayingId: String
+  currentlyPlayingId: String,
+  locked: Boolean
 })
 
-const emit = defineEmits(['updateCurrent'])
+const emit = defineEmits(['updateCurrent', 'locked'])
 
 const audioDuration = ref(null)
 const duration = ref(15)
@@ -102,6 +103,10 @@ onMounted(async () => {
 
 
 async function togglePlay() {
+  if (props.locked) {
+    emit('locked')
+    return
+  }
   if (isLoading.value) return
   if (isPlaying.value) {
     stopPlayback()

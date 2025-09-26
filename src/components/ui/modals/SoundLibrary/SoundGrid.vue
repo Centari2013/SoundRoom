@@ -14,6 +14,7 @@
         @toggle="$emit('toggleSound', $event)"
         @updateCurrent="$emit('updateCurrent', $event)"
         @delete="$emit('delete', $event)"
+        @locked="$emit('locked', $event)"
         />
       <template v-if="canUpload && activeCategory === 'your-sounds' && sounds.length === 0">
           <div class="col-span-full text-center text-neutral-400 mt-32">
@@ -58,7 +59,7 @@ const props = defineProps({
 
 const { isAuthenticated } = useAuth()
 const { canAccess, requireEntitlement } = useEntitlements()
-const emit = defineEmits(['close', 'toggleSound', 'updateCurrent', 'upload', 'delete'])
+const emit = defineEmits(['close', 'toggleSound', 'updateCurrent', 'upload', 'delete', 'locked'])
 
 const gridScroll = ref(null)
 function scrollTop() {
