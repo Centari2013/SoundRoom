@@ -32,3 +32,6 @@ MUSIC
 /playwright/.cache/
 .vercel
 .env*.local
+
+# Sentry Config File
+.env.sentry-build-plugin
