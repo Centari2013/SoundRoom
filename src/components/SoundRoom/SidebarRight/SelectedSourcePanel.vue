@@ -49,33 +49,38 @@
 
       <!-- Scheduling Toggle -->
       <div class="w-full flex items-center space-x-2 text-left px-1">
-        <input type="checkbox"
-        :checked="schedulingEnabled" 
-        @change="e => {
-          scheduleCopy = getScheduleCopy();
-          scheduleCopy.enabled = e.target.checked;
-          commitScheduleEdit();
-        }"
-        class="accent-blue-500"/>
+        <input
+          type="checkbox"
+          :checked="schedulingEnabled"
+          :disabled="!canUseTimedLoops"
+          @change="handleSchedulingToggle"
+          class="accent-blue-500 disabled:cursor-not-allowed disabled:opacity-60"
+        />
         <label class="text-sm">Enable Scheduling</label>
       </div>
+      <p
+        v-if="!canUseTimedLoops"
+        class="w-full px-1 text-left text-xs text-amber-500"
+      >
+        Upgrade to unlock timed loops for automated playback.
+      </p>
 
       <!-- Scheduling Settings -->
-      <div v-if="schedulingEnabled" class="space-y-4 w-full text-xs text-neutral-600 dark:text-neutral-300 px-1">
+      <div
+        v-if="schedulingEnabled && canUseTimedLoops"
+        class="space-y-4 w-full text-xs text-neutral-600 dark:text-neutral-300 px-1"
+      >
         <!-- Mode -->
         <div class="flex flex-col space-y-1">
           <label class="text-sm text-left">Schedule Mode</label>
-          <select :value="schedule.mode"
-            @change="e => {
-              scheduleCopy = getScheduleCopy();
-              scheduleCopy.mode = e.target.value;
-            }"
+          <select
+            :value="schedule.mode"
+            @change="handleScheduleModeChange"
             @blur="commitScheduleEdit"
             class="px-2 py-1 rounded border dark:bg-neutral-800 dark:border-neutral-700">
-            <option v-if="false" value="loop">Loop</option>
             <option value="interval">Interval</option>
-            <option v-if="false" value="count">Count</option>
-            <option v-if="false" value="interval+count">Interval + Count</option>
+            <option v-if="canUseAdvancedScheduling" value="count">Count</option>
+            <option v-if="canUseAdvancedScheduling" value="interval+count">Interval + Count</option>
           </select>
         </div>
 
@@ -120,7 +125,7 @@
         </div>
 
         <!-- Count + Time Window -->
-        <div v-if="false && ['count', 'interval+count'].includes(schedule.mode)" class="space-y-2 text-left">
+        <div v-if="canUseAdvancedScheduling && ['count', 'interval+count'].includes(schedule.mode)" class="space-y-2 text-left">
           <div class="flex flex-col space-y-1">
             <label class="text-sm">Play Count</label>
             <!-- Count -->
@@ -180,12 +185,13 @@
 </template>
 
 <script setup>
-import { computed, inject, ref, watch, onMounted, unref, isRef, toRaw } from 'vue';
+import { computed, inject, ref, watch, onMounted } from 'vue';
 import VueSlider from 'vue-3-slider-component';
 import { useVolumeSlider } from '@/composables/useVolumeSlider';
 import { useActionManagerStore } from '@/stores/useActionManagerStore';
 import { useAudioEngineStore } from '@/stores/useAudioEngineStore';
 import { storeToRefs } from 'pinia';
+import { useEntitlements } from '@/composables/useEntitlements';
 
 const props = defineProps({
   selectedSource: Object
@@ -194,6 +200,7 @@ const props = defineProps({
 const selectedSource = inject('selectedSource');
 const { actionManager } = storeToRefs(useActionManagerStore());
 const audioEngineStore = useAudioEngineStore();
+const { canAccess, requireEntitlement } = useEntitlements();
 
 const state = computed(() => selectedSource.value?.instance?.state ?? {});
 const schedule = computed(() => state.value?.schedule ?? {});
@@ -204,6 +211,9 @@ const schedulingEnabled = computed({
   set: (val) => schedule.value.enabled = val
 });
 
+
+const canUseTimedLoops = computed(() => canAccess('timedLoops'));
+const canUseAdvancedScheduling = computed(() => canAccess('schedulePlayback'));
 
 let scheduleCopy = ref(null)
 
@@ -270,6 +280,33 @@ function validateTimeWindow() {
   }
 }
 
+function commitSchedulePatch(patch) {
+  if (!selectedSource.value?.instance?.state?.schedule) return;
+  scheduleCopy.value = {
+    ...getScheduleCopy(),
+    ...patch
+  };
+  commitScheduleEdit();
+}
+
+function handleSchedulingToggle(event) {
+  const nextEnabled = !!event.target.checked;
+  if (nextEnabled && !requireEntitlement('timedLoops')) {
+    event.target.checked = !!schedule.value.enabled;
+    return;
+  }
+  commitSchedulePatch({ enabled: nextEnabled });
+}
+
+function handleScheduleModeChange(event) {
+  const nextMode = event.target.value;
+  if (!canUseAdvancedScheduling.value && nextMode !== 'interval') {
+    event.target.value = schedule.value.mode ?? 'interval';
+    return;
+  }
+  commitSchedulePatch({ mode: nextMode });
+}
+
 function commitScheduleEdit() {
   const changedKeys = Object.keys(scheduleCopy.value).filter(key => {
   const scheduleVal = schedule.value[key]
@@ -298,7 +335,23 @@ function commitScheduleEdit() {
     })
   }
 }
- watch(
+
+watch(canUseTimedLoops, (allowed) => {
+  if (allowed) return;
+  if (!schedule.value.enabled) return;
+  commitSchedulePatch({ enabled: false });
+}, { immediate: true });
+
+watch([
+  () => canUseAdvancedScheduling.value,
+  () => schedule.value.mode
+], ([allowed, mode]) => {
+  if (allowed) return;
+  if (!['count', 'interval+count'].includes(mode)) return;
+  commitSchedulePatch({ mode: 'interval' });
+}, { immediate: true });
+
+watch(
   () => [
     schedule.value.mode,
     schedule.value.gapMin,
@@ -315,4 +368,3 @@ function commitScheduleEdit() {
 
 
 </script>
-
