@@ -1,9 +1,15 @@
 <template>
-  <div class="relative aspect-square flex flex-col items-center justify-between p-4 rounded-xl bg-neutral-100 dark:bg-neutral-800 shadow border border-neutral-300 dark:border-neutral-700">
+  <div
+    :class="[
+      'relative aspect-square flex flex-col items-center justify-between p-4 rounded-xl bg-neutral-100 dark:bg-neutral-800 shadow border transition-shadow duration-200',
+      highlightClass,
+      { 'border-neutral-300 dark:border-neutral-700': !highlightClass }
+    ]"
+  >
 
     <div
       v-if="sound.locked"
-      class="absolute top-3 right-3 px-2 py-1 text-[10px] font-semibold uppercase rounded bg-amber-500/90 text-white tracking-wide"
+      :class="['absolute top-3 right-3 px-2 py-1 text-[10px] font-semibold uppercase rounded tracking-wide', badgeClass]"
     >
       {{ requiredPlanLabel }}
     </div>
@@ -42,6 +48,7 @@ import SoundPreviewCircle from '@/components/ui/modals/SoundLibrary/SoundPreview
 import MarqueeTitle from '@/components/ui/text/MarqueeTitle.vue'
 import { getSourceName } from '@/composables/useSelectedSource'
 import { PLAN_LABELS } from '@/constants/entitlementCopy'
+import { getSoundHighlightClass, getPlanBadgeClass } from '@/constants/planThemes'
 
 const props = defineProps({
   sound: Object,
@@ -55,6 +62,20 @@ const emit = defineEmits(['toggle', 'updateCurrent', 'delete', 'locked'])
 
 const isLoaded = computed(() => props.soundLibrarySources.find((s) => s.libraryId === props.sound.libraryId))
 
+const normalizedTier = computed(() => {
+  const tier = props.sound?.plan_tier ?? props.sound?.base ?? ''
+  return typeof tier === 'string' ? tier.toLowerCase() : ''
+})
+
+const highlightClass = computed(() => getSoundHighlightClass(normalizedTier.value))
+
+const badgeClass = computed(() => {
+  if (props.sound.accessReason === 'ownership') {
+    return getPlanBadgeClass('free')
+  }
+  return getPlanBadgeClass(normalizedTier.value)
+})
+
 const buttonLabel = computed(() => {
   if (isLoaded.value) return 'Remove'
   return props.sound.locked ? 'Unlock' : 'Load'
@@ -62,9 +83,11 @@ const buttonLabel = computed(() => {
 
 const requiredPlanLabel = computed(() => {
   if (!props.sound.locked) return ''
-  if (props.sound.accessReason === 'ownership') return 'Private'
+  if (props.sound.accessReason === 'ownership') {
+    return 'Private'
+  }
   const label = PLAN_LABELS[props.sound.requiredPlan]
-  return label ?? 'Premium'
+  return label ?? PLAN_LABELS.pro
 })
 
 function handleToggle() {

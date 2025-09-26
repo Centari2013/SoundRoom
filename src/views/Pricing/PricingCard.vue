@@ -1,6 +1,6 @@
 <template>
   <div
-    class="group rounded-sm p-6 shadow-md border border-neutral-300 dark:border-neutral-800 transition-all duration-200 ease-out transform flex flex-col justify-between bg-white dark:bg-neutral-950 text-neutral-900 dark:text-white hover:border-black dark:hover:border-white hover:shadow-xl hover:-translate-y-1 hover:scale-[1.03] focus-within:border-black focus-within:shadow-xl focus-within:-translate-y-1 focus-within:scale-[1.03] dark:focus-within:border-white"
+    :class="cardClasses"
   >
     <div>
       <h2 class="text-xl font-bold mb-2">{{ title }}</h2>
@@ -21,7 +21,7 @@
     </div>
     
     <button
-      class="w-full py-2 rounded-xl font-semibold transition border border-transparent bg-[#d3d3d3e1] dark:bg-[#1a1a1a] hover:border-[#646cff] disabled:opacity-50 disabled:cursor-not-allowed disabled:dark:bg-neutral-700"
+      :class="ctaClasses"
       :disabled="ctaDisabled"
       type="button"
     >
@@ -32,6 +32,7 @@
 
 <script setup>
 import { computed } from 'vue'
+import { getPlanTheme } from '@/constants/planThemes'
 
 const STATUS_STYLES = {
   included: {
@@ -70,8 +71,28 @@ const props = defineProps({
   ctaDisabled: {
     type: Boolean,
     default: false
+  },
+  planId: {
+    type: String,
+    default: 'free'
   }
 })
+
+const BASE_CARD_CLASS = 'group rounded-sm p-6 shadow-md transition-all duration-200 ease-out transform flex flex-col justify-between bg-white dark:bg-neutral-950 text-neutral-900 dark:text-white hover:shadow-xl hover:-translate-y-1 hover:scale-[1.03] focus-within:shadow-xl focus-within:-translate-y-1 focus-within:scale-[1.03]'
+
+const BASE_CTA_CLASS = 'w-full py-2 rounded-xl font-semibold transition border border-transparent disabled:opacity-50 disabled:cursor-not-allowed disabled:dark:bg-neutral-700'
+
+const planTheme = computed(() => getPlanTheme(props.planId))
+
+const cardClasses = computed(() => [
+  BASE_CARD_CLASS,
+  planTheme.value.card
+])
+
+const ctaClasses = computed(() => [
+  BASE_CTA_CLASS,
+  planTheme.value.cta
+])
 
 const normalizeFeature = feature => {
   if (typeof feature === 'string') {

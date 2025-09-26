@@ -35,7 +35,7 @@
           >
             {{ uploadCtaLabel }}
           </button>
-          <span v-if="!canUpload" class="text-xs uppercase tracking-wide text-amber-500">Pro feature</span>
+        <span v-if="!canUpload" class="text-xs uppercase tracking-wide text-violet-500 dark:text-violet-300">Pro feature</span>
         </div>
       </div>
   </div>

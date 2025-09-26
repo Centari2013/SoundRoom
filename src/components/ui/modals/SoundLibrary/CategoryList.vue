@@ -88,12 +88,12 @@ function handleSelectYourSounds() {
   font-size: 0.625rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #f97316;
+  color: #7c3aed;
 }
 
 @media (prefers-color-scheme: dark) {
   .badge {
-    color: #f59e0b;
+    color: #a855f7;
   }
 }
 </style>
