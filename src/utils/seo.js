@@ -4,7 +4,7 @@ const DEFAULT_IMAGE_PATH = '/SoundRoom.png'
  * Default SEO metadata applied across the application.
  */
 export const DEFAULT_SEO = {
-  title: 'SoundRoom | Spatial Audio Scene Designer',
+  title: 'SoundRoom',
   description: 'Build immersive 3D ambient soundscapes in your browser. SoundRoom pairs Vue, Konva, and the Web Audio API to give you a visual soundboard for focus, relaxation, and creative play.',
   keywords: 'SoundRoom, spatial audio, 3D soundboard, ambient audio app, Web Audio API, Konva, Vue sound design',
 }

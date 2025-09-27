@@ -15,7 +15,7 @@ const router = createRouter({
       component: SoundRoom,
       meta: {
         seo: {
-          title: 'SoundRoom | Spatial Audio Scene Designer',
+          title: 'SoundRoom',
           description: 'Design and layer immersive spatial audio scenes in your browser. Drag directional sources, sculpt ambient mixes, and save custom rooms with SoundRoom.',
         },
       },
