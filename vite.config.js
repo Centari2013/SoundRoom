@@ -1,3 +1,4 @@
+import { sentryVitePlugin } from "@sentry/vite-plugin";
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import tailwindcss from '@tailwindcss/vite'
@@ -6,7 +7,10 @@ import svgLoader from 'vite-svg-loader'
 const isGitHubPages = process.env.DEPLOY_TARGET === 'GH_PAGES';
 
 export default defineConfig({
-  plugins: [vue(), tailwindcss(), svgLoader()],
+  plugins: [vue(), tailwindcss(), svgLoader(), sentryVitePlugin({
+    org: "soundroom",
+    project: "javascript-vue"
+  })],
 
   resolve: {
     alias: [
