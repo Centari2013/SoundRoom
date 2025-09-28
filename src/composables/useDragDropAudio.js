@@ -1,6 +1,7 @@
 import { reactive } from "vue"
 import { useActionManagerStore } from "@/stores/useActionManagerStore";
 import { useCanvasStore } from "@/stores/useCanvasStore";
+import { registerSoundRoomActions } from "@/composables/useSoundRoomActions";
 import { storeToRefs } from "pinia";  
 
 // useDragDropAudio.js
@@ -13,6 +14,9 @@ import { storeToRefs } from "pinia";
 export function useDragDropAudio({ draggedSource }) {
   const actionStore = useActionManagerStore()
   const { actionManager } = storeToRefs(actionStore)
+
+  // Ensure the SoundRoom action set is registered on the active ActionManager instance.
+  registerSoundRoomActions()
   /**
    * Store the source that is being dragged.
    * @param {DragEvent} e - drag event
@@ -48,6 +52,9 @@ export function useDragDropAudio({ draggedSource }) {
       libraryId: draggedSource.value.libraryId
     }
   
+    // Re-register handlers in case the ActionManager was reset while the view remained active.
+    registerSoundRoomActions()
+
     actionManager.value.doAction("add_canvas_sound_source", { src: src })
   }
   
