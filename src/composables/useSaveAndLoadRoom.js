@@ -12,7 +12,7 @@ import AudioEngine from '@/lib/AudioEngine'
 
 import { resetRoomState } from "@/utils/resetRoomState";
 import { supabase } from "@/utils/supabase";
-import { downloadMultipleAudio } from "@/utils/downloadAudio";
+import { downloadMultipleAudio, buildStorageKey } from "@/utils/downloadAudio";
 import { useAuth } from "@/composables/useAuth";
 import { ref } from "vue";
 import { useEntitlements } from '@/composables/useEntitlements'
@@ -256,6 +256,12 @@ export function useSaveAndLoadRoom() {
         return null; // or skip it entirely if you'd prefer
       }
 
+      const planTier = soundMatch?.plan_tier
+      const base = soundMatch?.base ?? planTier ?? 'users'
+      const storageKey = soundMatch?.bucket && soundMatch?.path
+        ? buildStorageKey(base, soundMatch.bucket, soundMatch.path)
+        : null
+
       return {
         libraryId: id,
         audioPath,
@@ -263,7 +269,11 @@ export function useSaveAndLoadRoom() {
         coneOuter,
         name: soundMatch.name,
         bucket: soundMatch.bucket,
-        path: soundMatch.path
+        path: soundMatch.path,
+        plan_tier: planTier,
+        base,
+        storageKey,
+        fileId: id ?? storageKey
       };
     }).filter(Boolean); // remove nulls if any
 
@@ -275,6 +285,12 @@ export function useSaveAndLoadRoom() {
       if (match) {
         src.audioPath = match.audioPath;
         src.name = match.name;
+        src.bucket = match.bucket;
+        src.path = match.path;
+        src.plan_tier = match.plan_tier;
+        src.base = match.base;
+        src.storageKey = match.storageKey;
+        src.fileId = match.fileId;
       }
     });
     
@@ -383,20 +399,29 @@ export function useSaveAndLoadRoom() {
         const name = soundMatch.name;
         const bucket = soundMatch.bucket;
         const path = soundMatch.path;
+        const planTier = soundMatch?.plan_tier;
+        const base = soundMatch?.base ?? planTier ?? 'users';
+        const storageKey = bucket && path ? buildStorageKey(base, bucket, path) : null;
         const coneInner = roomData.audioEngine.soundSources.find(src => src.libraryId === id)?.state?.coneInner ?? soundMatch?.coneInner ?? 60;
         const coneOuter = roomData.audioEngine.soundSources.find(src => src.libraryId === id)?.state?.coneOuter ?? soundMatch?.coneOuter ?? 180;
         if (!audioPath) console.warn(`Missing audioPath for libraryId ${id}`);
-        return { libraryId: id, audioPath, name, path, bucket, coneInner, coneOuter };
+        return { libraryId: id, audioPath, name, path, bucket, coneInner, coneOuter, plan_tier: planTier, base, storageKey, fileId: id ?? storageKey };
       });
 
       soundLibrarySources.value = finalSources;
 
       roomData.audioEngine.soundSources.forEach(src => {
         const match = finalSources.find(a => a.libraryId === src.libraryId);
-        if (match) {
-          src.audioPath = match.audioPath;
-          src.name = match.name;
-        }
+      if (match) {
+        src.audioPath = match.audioPath;
+        src.name = match.name;
+        src.bucket = match.bucket;
+        src.path = match.path;
+        src.plan_tier = match.plan_tier;
+        src.base = match.base;
+        src.storageKey = match.storageKey;
+        src.fileId = match.fileId;
+      }
       });
 
       resetRoomState();

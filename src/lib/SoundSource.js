@@ -69,6 +69,7 @@ export default class SoundSource {
     this._activeSource = null
     this._playbackListeners = new Set()
     this._bufferPromise = null
+    this._looping = false
 
     this._gainNode = this._audioContext.createGain()
 
@@ -200,7 +201,9 @@ export default class SoundSource {
       if (this._activeSource === source) {
         this._activeSource = null
       }
-      this._setPlaying(false)
+      if (!this._looping) {
+        this._setPlaying(false)
+      }
       this._notifyPlaybackListeners()
     }
 
@@ -211,7 +214,9 @@ export default class SoundSource {
 
   _stopActiveSource({ notify = true } = {}) {
     if (!this._activeSource) {
-      this._setPlaying(false)
+      if (notify) {
+        this._setPlaying(false)
+      }
       return
     }
 
@@ -230,8 +235,8 @@ export default class SoundSource {
       console.warn('Problem disconnecting buffer source:', err)
     }
 
-    this._setPlaying(false)
     if (notify) {
+      this._setPlaying(false)
       this._notifyPlaybackListeners()
     }
   }
@@ -265,6 +270,19 @@ export default class SoundSource {
     }
   }
 
+  _setLoopingActive(flag) {
+    this._looping = Boolean(flag)
+    if (this._looping) {
+      this._setPlaying(true)
+    } else if (!this._activeSource) {
+      this._setPlaying(false)
+    }
+  }
+
+  setLoopingActive(flag) {
+    this._setLoopingActive(flag)
+  }
+
   /**
    * Connect this source's reverb send to the provided convolver.
    * @param {AudioNode} convolver
@@ -292,6 +310,7 @@ export default class SoundSource {
   /** Pause/stop playback of the audio buffer. */
   stop() {
     this._stopActiveSource()
+    this._setLoopingActive(false)
   }
 
   async playAndWait() {
@@ -316,10 +335,14 @@ export default class SoundSource {
    * @returns {boolean}
   */
   get playing() {
-    if (this._playing && typeof this._playing === 'object' && 'value' in this._playing) {
-      return Boolean(this._playing.value)
-    }
-    return Boolean(this._playing)
+    const active = (() => {
+      if (this._playing && typeof this._playing === 'object' && 'value' in this._playing) {
+        return Boolean(this._playing.value)
+      }
+      return Boolean(this._playing)
+    })()
+
+    return active || this._looping
   }
 
   /**
@@ -445,6 +468,7 @@ export default class SoundSource {
    */
   dispose() {
     this._disposed = true;
+    this._setLoopingActive(false)
 
     // Gracefully disconnect and release all Web Audio nodes when a source is
     // removed from the room.

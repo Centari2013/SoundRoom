@@ -57,37 +57,24 @@ export default class SoundScheduler {
       queuedLoop: null,
     });
 
+    if (typeof source.setLoopingActive === 'function') {
+      source.setLoopingActive(true)
+    }
+
     const playAndWait = async () => {
-      return new Promise((resolve) => {
-        const el = source._audioElement;
-
-        const cleanup = () => {
-          el.removeEventListener('ended', onEnded);
-          el.removeEventListener('pause', onPause);
-        };
-
-        const onEnded = () => {
-          cleanup();
-          resolve();
-        };
-
-        const onPause = () => {
-          cleanup();
-          resolve();
-        };
-
-        el.addEventListener('ended', onEnded);
-        el.addEventListener('pause', onPause);
-
-        sched.isPlaying = true;
-        source.forcePlayFromStart();
-      });
-    };
+      sched.isPlaying = true
+      try {
+        await source.playAndWait()
+      } catch (err) {
+        console.warn('Sound playback failed during scheduling loop:', err)
+      } finally {
+        sched.isPlaying = false
+      }
+    }
 
       const loop = async () => {
 
         await playAndWait();
-        sched.isPlaying = false;
 
         if (sched.stopCurrentLoop) {
           sched.stopCurrentLoop = false;
@@ -138,9 +125,11 @@ export default class SoundScheduler {
 
       // Pause audio if it's currently playing
       if (sched.isPlaying) {
-        source.instance._audioElement.pause();
-        sched.isPlaying = false;
+        source.instance.stop()
+        sched.isPlaying = false
       }
+
+      source.instance.setLoopingActive?.(false)
 
       // Cancel upcoming loop timeout
       const timeoutId = this.intervals.get(id);
@@ -166,6 +155,7 @@ export default class SoundScheduler {
 
       info.isPaused = false;
       sched.paused = false;
+      source.instance.setLoopingActive?.(true)
 
       // Resume loop after the remaining delay
       const resumeTimer = setTimeout(() => {
@@ -195,9 +185,11 @@ export default class SoundScheduler {
     sched.paused = true;
 
     if (sched.isPlaying) {
-      source._audioElement.pause();
-      sched.isPlaying = false;
+      source.stop()
+      sched.isPlaying = false
     }
+
+    source.setLoopingActive?.(false)
 
     const timeoutId = this.intervals.get(id);
     if (timeoutId) {
@@ -231,6 +223,7 @@ export default class SoundScheduler {
     info.isPaused = false;
     sched.paused = false;
     sched.stopCurrentLoop = false;
+    source.setLoopingActive?.(true)
 
     const resumeTimer = setTimeout(() => {
       if (info.queuedLoop) {
@@ -255,6 +248,7 @@ export default class SoundScheduler {
       clearTimeout(id);
     }
     this.intervals.clear();
+    this.audioEngine.soundSources.value.forEach(s => s.instance?.setLoopingActive?.(false))
   }
 
   /**
@@ -271,20 +265,16 @@ export default class SoundScheduler {
     if (!forceRestart && sched.isPlaying) {
       // Defer restart until current audio finishes
       if (!sched.pendingUpdate) {
-        sched.stopCurrentLoop = true;
-        sched.pendingUpdate = true;
+        sched.stopCurrentLoop = true
+        sched.pendingUpdate = true
 
-        const el = source._audioElement;
-        const onEnded = () => {
-          el.removeEventListener('ended', onEnded);
-          sched.pendingUpdate = false;
-          this._schedule(source);
-        };
-
-        el.addEventListener('ended', onEnded);
+        source.oncePlaybackFinished(() => {
+          sched.pendingUpdate = false
+          this._schedule(source)
+        })
       }
     } else {
-      this._schedule(source); // restart or start with new config
+      this._schedule(source) // restart or start with new config
     }
   }
 
@@ -312,6 +302,7 @@ export default class SoundScheduler {
 
     sched.stopCurrentLoop = true;
     sched.paused = true;
+    source.setLoopingActive?.(false)
   }
 }
 

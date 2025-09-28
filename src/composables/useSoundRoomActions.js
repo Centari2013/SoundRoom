@@ -1,4 +1,4 @@
-import downloadAudio from '@/utils/downloadAudio'
+import downloadAudio, { buildStorageKey } from '@/utils/downloadAudio'
 import { useActionManagerStore } from '@/stores/useActionManagerStore'
 import { useAudioEngineStore } from '@/stores/useAudioEngineStore'
 import { useListenerStore } from '@/stores/useListenerStore'
@@ -70,7 +70,19 @@ function registerCanvasActions() {
    * @param {Object} payload - action payload
    */
   const addSoundSource = (payload) => {
-    payload.src.audioPath = soundLibrarySources.value.find(s => s.libraryId === payload.src.libraryId).audioPath
+    const libraryEntry = soundLibrarySources.value.find(s => s.libraryId === payload.src.libraryId)
+    if (libraryEntry) {
+      payload.src.audioPath = libraryEntry.audioPath
+      payload.src.bucket = payload.src.bucket ?? libraryEntry.bucket
+      payload.src.path = payload.src.path ?? libraryEntry.path
+      payload.src.plan_tier = payload.src.plan_tier ?? libraryEntry.plan_tier
+      payload.src.base = payload.src.base ?? libraryEntry.base ?? libraryEntry.plan_tier ?? 'users'
+    }
+    const storageKey = payload.src.storageKey ?? (payload.src.bucket && payload.src.path
+      ? buildStorageKey(payload.src.base ?? 'users', payload.src.bucket, payload.src.path)
+      : null)
+    payload.src.storageKey = storageKey
+    payload.src.fileId = payload.src.fileId ?? payload.src.libraryId ?? storageKey ?? payload.src.audioPath ?? null
     audioEngine.value.addSoundSource(payload)
     listener.value.updateAudio()
   }
@@ -190,6 +202,11 @@ function registerDraggableActions() {
       payload.src.libraryId
     )
     payload.src.audioPath = blobUrl
+    const base = payload.src.base ?? payload.src.plan_tier ?? 'users'
+    const storageKey = payload.src.storageKey ?? buildStorageKey(base, payload.src.bucket, payload.src.path)
+    payload.src.base = base
+    payload.src.storageKey = storageKey
+    payload.src.fileId = payload.src.libraryId ?? storageKey
     const exists = soundLibrarySources.value.find(s => s.libraryId === payload.src.libraryId)
     if (!exists) {
       if (payload.index != null && payload.index !== -1) {
@@ -202,6 +219,15 @@ function registerDraggableActions() {
     // recreate old sound nodes with new blob
     payload.soundNodes?.forEach(s => {
       s.src.audioPath = blobUrl
+      s.src.base = s.src.base ?? payload.src.base
+      s.src.plan_tier = s.src.plan_tier ?? payload.src.plan_tier
+      s.src.bucket = s.src.bucket ?? payload.src.bucket
+      s.src.path = s.src.path ?? payload.src.path
+      const derivedStorage = s.src.storageKey ?? (s.src.bucket && s.src.path
+        ? buildStorageKey(s.src.base ?? payload.src.base ?? 'users', s.src.bucket, s.src.path)
+        : null)
+      s.src.storageKey = derivedStorage
+      s.src.fileId = s.src.fileId ?? s.src.libraryId ?? derivedStorage ?? s.src.audioPath ?? null
       audioEngine.value.addSoundSource(s)
     });
   }

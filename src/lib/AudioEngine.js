@@ -1,8 +1,11 @@
 // lib/AudioEngine.js
-import SoundSource from '@/lib/SoundSource';
-import SoundScheduler from '@/lib/SoundScheduler';
-import Room from './Room';
+import SoundSource from '@/lib/SoundSource'
+import SoundScheduler from '@/lib/SoundScheduler'
+import Room from './Room'
 import { computed, ref, watch, reactive } from 'vue'
+import { storeToRefs } from 'pinia'
+import { useAudioCacheStore } from '@/stores/useAudioCacheStore'
+import { buildStorageKey } from '@/utils/downloadAudio'
 
 /**
  * Central manager for all Web Audio operations.
@@ -28,6 +31,7 @@ export default class AudioEngine {
   #currentIRName = null
 
   #room = null
+  #audioCacheManagerRef = null
 
 
   /**
@@ -42,6 +46,16 @@ export default class AudioEngine {
     this.masterVolume.value = volume
     this.#scheduler = new SoundScheduler(this)
     this.#scheduleWatchers = new Map()
+
+    try {
+      const cacheStore = useAudioCacheStore()
+      if (cacheStore) {
+        const { audioCacheManager } = storeToRefs(cacheStore)
+        this.#audioCacheManagerRef = audioCacheManager
+      }
+    } catch (err) {
+      console.warn('Audio cache store unavailable during AudioEngine initialisation:', err)
+    }
 
     watch(this.masterVolume, (v) => {
       if (this.#masterGain && this.#audioContext) {
@@ -83,10 +97,41 @@ export default class AudioEngine {
       this.#masterGain.connect(this.#audioContext.destination)
     }
     // Inside getAudioContext()
-    if (!this.#convolver) {
+    const reverbChainContext = this.#convolver?.context
+    const gainContext = this.#reverbGain?.context
+    const needsReverbChainReset =
+      !this.#convolver ||
+      !this.#reverbGain ||
+      reverbChainContext !== this.#audioContext ||
+      gainContext !== this.#audioContext
+
+    if (needsReverbChainReset) {
+      const previousBuffer = this.#convolver?.buffer ?? null
+      const previousWetValue = this.#reverbGain?.gain?.value ?? 0.6
+
+      try {
+        this.#convolver?.disconnect()
+      } catch (err) {
+        console.warn('Problem disconnecting old convolver during context reset:', err)
+      }
+      try {
+        this.#reverbGain?.disconnect()
+      } catch (err) {
+        console.warn('Problem disconnecting old reverb gain during context reset:', err)
+      }
+
       this.#convolver = this.#audioContext.createConvolver()
       this.#reverbGain = this.#audioContext.createGain()
-      this.#reverbGain.gain.value = 0.6 // default wetness, adjust or expose as setting
+      this.#reverbGain.gain.value = previousWetValue
+
+      if (previousBuffer) {
+        try {
+          // Reapply the previously loaded impulse response when possible.
+          this.#convolver.buffer = previousBuffer
+        } catch (err) {
+          console.warn('Unable to reapply existing impulse response after context reset:', err)
+        }
+      }
 
       this.#convolver.connect(this.#reverbGain)
       this.#reverbGain.connect(this.#masterGain)
@@ -94,7 +139,11 @@ export default class AudioEngine {
       // Ensure any already-created sources are routed through the new convolver
       this.soundSources.value.forEach(s => {
         if (s.instance?.reverbSend) {
-          s.instance.reverbSend.connect(this.#convolver)
+          try {
+            s.instance.reverbSend.connect(this.#convolver)
+          } catch (err) {
+            console.warn('Failed to reconnect reverb send after context reset:', err)
+          }
         }
       })
     }
@@ -155,11 +204,24 @@ export default class AudioEngine {
     const src = payload.src
     
     src.index = payload.index ?? this.soundSources.value.length // for proper undo and redo
+    const base = src.base ?? src.plan_tier ?? 'users'
+    const storageKey = src.storageKey ?? (src.bucket && src.path ? buildStorageKey(base, src.bucket, src.path) : null)
+    const fileId = src.fileId ?? src.libraryId ?? storageKey ?? src.audioPath ?? null
+
     const instance = new SoundSource({
       audioContext: this.getAudioContext(),
       masterGain: this.#masterGain,
-      file: src.audioPath,
-      state: src.state
+      file: {
+        audioPath: src.audioPath,
+        libraryId: src.libraryId,
+        bucket: src.bucket,
+        path: src.path,
+        base,
+        storageKey,
+        fileId
+      },
+      state: src.state,
+      audioCacheManager: this.#audioCacheManagerRef?.value ?? null
     })
     // Route the new source through the reverb chain
     this.connectToReverb(instance)
@@ -234,6 +296,12 @@ export default class AudioEngine {
       audioPath: src.audioPath,
       name: src.name,
       libraryId: src.libraryId,
+      bucket: src.bucket,
+      path: src.path,
+      plan_tier: src.plan_tier,
+      base: src.base,
+      storageKey: src.storageKey,
+      fileId: src.fileId,
       volume: finalVolume
     }
   }
@@ -293,13 +361,12 @@ export default class AudioEngine {
       return
     }
 
-    const schedId = src.instance.state.schedule.id;
+    const schedId = src.instance.state.schedule.id
     if (this.#scheduler.pauseInfo.has(schedId) && this.#scheduler.pauseInfo.get(schedId).isPaused) {
-      this.#scheduler.resumeSource(src.instance);
+      this.#scheduler.resumeSource(src.instance)
     } else {
-      this.#scheduler.updateSchedule(src.instance);
+      this.#scheduler.updateSchedule(src.instance)
     }
-    src.instance._audioElement.loop = false
   }
 
   pauseSoundSource(src) {
@@ -374,16 +441,38 @@ export default class AudioEngine {
     this.pauseAll()
     this.soundSources.value.forEach(s => s.instance.dispose())
     this.soundSources.value.length = 0
-  
+ 
+    if (this.#convolver) {
+      try {
+        this.#convolver.disconnect()
+      } catch (err) {
+        console.warn('Problem disconnecting convolver during dispose:', err)
+      }
+      // Clearing the buffer releases the underlying audio data reference.
+      this.#convolver.buffer = null
+      this.#convolver = null
+    }
+
+    if (this.#reverbGain) {
+      try {
+        this.#reverbGain.disconnect()
+      } catch (err) {
+        console.warn('Problem disconnecting reverb gain during dispose:', err)
+      }
+      this.#reverbGain = null
+    }
+
     if (this.#masterGain) {
       this.#masterGain.disconnect()
       this.#masterGain = null
     }
-  
+ 
     if (this.#audioContext) {
       this.#audioContext.close()
       this.#audioContext = null
     }
+
+    this.#currentIRName = null
   }
 
   /**
@@ -420,6 +509,14 @@ export default class AudioEngine {
       soundSources: this.soundSources.value.map(src => ({
         
         libraryId: src.libraryId,
+        bucket: src.bucket,
+        path: src.path,
+        plan_tier: src.plan_tier,
+        base: src.base,
+        storageKey: src.storageKey,
+        fileId: src.fileId,
+        name: src.name,
+        audioPath: src.audioPath,
         instance: {
           state:{
             x: src.instance.state.x,
@@ -457,15 +554,27 @@ export default class AudioEngine {
     let engine = null;
 
     if (Array.isArray(json.soundSources)) {
-     const uninitializedSoundSources = json.soundSources.map(src => ({
-          index: src.index,
-          src: {
-            libraryId: src.libraryId,
-            name: src.name,  
-            state: src.instance.state,
-            audioPath: src.audioPath, 
+     const uninitializedSoundSources = json.soundSources.map(src => {
+          const base = src.base ?? src.plan_tier ?? 'users'
+          const storageKey = src.storageKey ?? (src.bucket && src.path ? buildStorageKey(base, src.bucket, src.path) : null)
+          const fileId = src.fileId ?? src.libraryId ?? storageKey
+
+          return {
+            index: src.index,
+            src: {
+              libraryId: src.libraryId,
+              name: src.name,
+              state: src.instance.state,
+              audioPath: src.audioPath,
+              bucket: src.bucket,
+              path: src.path,
+              plan_tier: src.plan_tier,
+              base,
+              storageKey,
+              fileId,
+            }
           }
-        }))
+        })
       engine = new AudioEngine(uninitializedSoundSources, json.masterVolume ?? 1)
       if (json.reverb?.preset) {
         const IR_PRESETS = {

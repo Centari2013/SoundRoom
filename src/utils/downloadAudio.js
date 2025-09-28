@@ -1,34 +1,47 @@
 import { useAudioCacheStore } from '@/stores/useAudioCacheStore'
 
 /**
+ * Normalise and join storage segments into a canonical R2 object key.
+ *
+ * @param {string} base
+ * @param {string} bucket
+ * @param {string} path
+ * @returns {string}
+ */
+export function buildStorageKey(base, bucket, path) {
+  const segments = [base, bucket, path]
+    .map(segment => (segment ?? '').toString().replace(/^\/+|\/+$/g, ''))
+    .filter(Boolean)
+
+  return segments.join('/')
+}
+
+/**
  * Fetch an audio file from the R2 bucket and return it as a Blob.
  *
  * @param {string} key - path key used to generate the signed URL
  * @returns {Promise<Blob>} resolved audio Blob
  */
-async function fetchAudioBlob(key) {
-  const res = await fetch(`/api/get-signed-url?key=${encodeURIComponent(key)}`);
+export async function fetchAudioBlob(key) {
+  const res = await fetch(`/api/get-signed-url?key=${encodeURIComponent(key)}`)
   if (!res.ok) {
-    const errorData = await res.json().catch(() => ({ error: 'Invalid JSON response' }));
-    throw new Error(errorData.error || "Failed to get signed URL");
+    const errorData = await res.json().catch(() => ({ error: 'Invalid JSON response' }))
+    throw new Error(errorData.error || 'Failed to get signed URL')
   }
-  const { signedUrl } = await res.json();
+  const { signedUrl } = await res.json()
 
-  const audioResponse = await fetch(signedUrl);
-  if (!audioResponse.ok) throw new Error("Failed to fetch audio from R2");
+  const audioResponse = await fetch(signedUrl)
+  if (!audioResponse.ok) throw new Error('Failed to fetch audio from R2')
 
-  return await audioResponse.blob();
+  return await audioResponse.blob()
 }
-
-
-
 
 /**
  * Download an audio file and optionally populate an HTMLAudioElement.
  *
  * @param {string} bucket - storage bucket name
  * @param {string} path - path of the file within the bucket
- * @param {string} base - base URL for the R2 bucket
+ * @param {string} base - base directory for the R2 bucket (tier/namespace)
  * @param {boolean} [populateAudio=true] - create an `Audio` element when true
  * @param {?Function} [stopPlayback=null] - callback fired when preview ends
  * @param {?string} [libraryId=null] - unique ID used for caching
@@ -45,10 +58,11 @@ export default async function downloadAudio(
   const cacheStore = useAudioCacheStore()
   const cacheManager = cacheStore.audioCacheManager
 
-  const fileId = libraryId ?? `${bucket}/${path}`
+  const storageKey = buildStorageKey(base, bucket, path)
+  const fileId = libraryId ?? storageKey
 
   const blobUrl = await cacheManager.getAudioURL(fileId, async () => {
-    const audioBlob = await fetchAudioBlob(`${base}/${bucket}/${path}`)
+    const audioBlob = await fetchAudioBlob(storageKey)
     return audioBlob
   })
 
@@ -95,5 +109,5 @@ export async function downloadMultipleAudio(
     })
   )
 
-  return results.filter(Boolean); // filter out any failed downloads
+  return results.filter(Boolean) // filter out any failed downloads
 }

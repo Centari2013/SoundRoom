@@ -3,6 +3,7 @@ import { useActionManagerStore } from "@/stores/useActionManagerStore";
 import { useCanvasStore } from "@/stores/useCanvasStore";
 import { registerSoundRoomActions } from "@/composables/useSoundRoomActions";
 import { storeToRefs } from "pinia";  
+import { buildStorageKey } from "@/utils/downloadAudio";
 
 // useDragDropAudio.js
 /**
@@ -39,6 +40,11 @@ export function useDragDropAudio({ draggedSource }) {
     const dropX = e.clientX - stageBounds.left
     const dropY = e.clientY - stageBounds.top
   
+    const base = draggedSource.value?.base ?? draggedSource.value?.plan_tier ?? 'users'
+    const storageKey = draggedSource.value?.bucket && draggedSource.value?.path
+      ? buildStorageKey(base, draggedSource.value.bucket, draggedSource.value.path)
+      : null
+
     const src = {
       state: reactive({
         x: dropX,
@@ -49,7 +55,13 @@ export function useDragDropAudio({ draggedSource }) {
       }),
       audioPath: draggedSource.value.audioPath,
       name: draggedSource.value.name,
-      libraryId: draggedSource.value.libraryId
+      libraryId: draggedSource.value.libraryId,
+      bucket: draggedSource.value.bucket,
+      path: draggedSource.value.path,
+      base,
+      plan_tier: draggedSource.value.plan_tier,
+      storageKey,
+      fileId: draggedSource.value.libraryId ?? storageKey ?? draggedSource.value.audioPath ?? null
     }
   
     // Re-register handlers in case the ActionManager was reset while the view remained active.
