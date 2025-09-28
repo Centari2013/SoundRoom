@@ -12,7 +12,7 @@ export const useActionManagerStore = defineStore('actionManager', () => {
 
   const actionStackEmpty = computed(() => actionManager.value.actionStackEmpty)
   const redoStackEmpty = computed(() => actionManager.value.redoStackEmpty)
-  const waiting = computed(() => actionManager.value.waiting) // Indicates if an action is currently being processed
+  const waiting = computed(() => actionManager.value.waiting.value) // True while an undoable action is running
 
   /**
    * Add a sound source to the library via the {@link ActionManager}.
