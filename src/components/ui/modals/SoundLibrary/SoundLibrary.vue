@@ -55,6 +55,7 @@ import { useAudioCacheStore } from '@/stores/useAudioCacheStore'
 import { useActionManagerStore } from '@/stores/useActionManagerStore'
 import { useAuth } from '@/composables/useAuth'
 import { useEntitlements } from '@/composables/useEntitlements'
+import { registerSoundRoomActions } from '@/composables/useSoundRoomActions'
 import { storeToRefs } from 'pinia'
 import deleteAudio from '@/utils/deleteAudio'
 import { annotateSoundAccess } from '@/utils/soundEntitlements'
@@ -66,6 +67,7 @@ const { requireEntitlement } = useEntitlements()
 const router = useRouter()
 const cacheStore = useAudioCacheStore()
 const actionStore = useActionManagerStore()
+registerSoundRoomActions()
 const { waiting } = storeToRefs(actionStore)
 const { soundLibrarySources } = storeToRefs(cacheStore)
 const showUploadPanel = ref(false)

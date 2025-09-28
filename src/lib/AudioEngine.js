@@ -229,6 +229,10 @@ export default class AudioEngine {
 
     src.instance = instance
     this.soundSources.value.splice(src.index, 0, src)
+    // keep the stored indices aligned with the reactive array order
+    for (let i = src.index; i < this.soundSources.value.length; i++) {
+      this.soundSources.value[i].index = i
+    }
     if (this.#audioContext?.state === 'suspended') {
       this.#audioContext.resume()
     }
@@ -270,14 +274,52 @@ export default class AudioEngine {
     // Remove a `SoundSource` from the canvas and clean up its audio nodes.
     // The index logic is defensive to handle stale state from undo/redo.
 
-    const index = this.soundSources.value[payload.index] ? payload.index : payload.src.index
-    const src = this.soundSources.value[index]
-    const instance = src?.instance
+    const expectedInstance = payload.src?.instance ?? null
 
-    const currentlyPaused = instance.state.schedule.paused
-    const finalVolume = instance?.getVolume()
-    instance?.dispose()
+    let index = Number.isInteger(payload.index) ? payload.index : -1
+    const hasCandidateAtIndex = index >= 0 && index < this.soundSources.value.length
+    if (hasCandidateAtIndex) {
+      const candidate = this.soundSources.value[index]
+      if (candidate !== payload.src && candidate?.instance !== expectedInstance) {
+        index = -1
+      }
+    } else {
+      index = -1
+    }
+
+    if (index === -1 && expectedInstance) {
+      index = this.soundSources.value.findIndex(s => s.instance === expectedInstance)
+    }
+
+    if (index === -1 && payload.src?.state) {
+      index = this.soundSources.value.findIndex(s => s.state === payload.src.state)
+    }
+
+    if (index === -1 && Number.isInteger(payload.src?.index)) {
+      const fallbackIndex = payload.src.index
+      if (fallbackIndex >= 0 && fallbackIndex < this.soundSources.value.length) {
+        index = fallbackIndex
+      }
+    }
+
+    const src = this.soundSources.value[index]
+    if (!src) {
+      console.warn("Tried to delete sound source but index", payload.index, "was invalid.")
+      return {}
+    }
+
+    const instance = src.instance ?? expectedInstance ?? null
+
+    const currentlyPaused = src?.state?.schedule?.paused ?? instance?.state?.schedule?.paused ?? false
+    const finalVolume = instance?.getVolume?.()
+    instance?.dispose?.()
     this.soundSources.value.splice(index, 1)
+    // reassign indices so downstream consumers always see the current order
+    for (let i = index; i < this.soundSources.value.length; i++) {
+      this.soundSources.value[i].index = i
+    }
+    src.index = index
+    payload.index = index
 
     // clean up scheduler watchers and any scheduled loops
     const schedId = src.state.schedule?.id
@@ -286,12 +328,9 @@ export default class AudioEngine {
     this.#scheduleWatchers.delete(schedId)
     this.#scheduler.cancelSchedule(src)
 
-    if (!src) {
-      console.warn("Tried to delete sound source but index", index, "was invalid.")
-      return {}
-    }
     src.state.schedule.paused = currentlyPaused // preserve pause state for undo
     return {
+      index,
       state: reactive(Object.assign({}, src.state)),
       audioPath: src.audioPath,
       name: src.name,
