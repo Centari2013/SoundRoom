@@ -1,9 +1,10 @@
 // lib/SoundSource.js
 import { ref, reactive } from 'vue'
+import { fetchAudioBlob } from '@/utils/downloadAudio'
 /**
- * Wrapper around a DOM `<audio>` element and the Web Audio nodes used to
- * spatialise it. The `state` object drives position and orientation of the
- * source so the canvas and audio remain in sync.
+ * Wrapper around the Web Audio nodes used to spatialise a decoded audio buffer.
+ * The `state` object drives position and orientation of the source so the
+ * canvas and audio remain in sync.
  */
 export default class SoundSource {
   /** @type {import('./Room').default|null} */
@@ -21,86 +22,87 @@ export default class SoundSource {
     audioContext,
     masterGain,
     file,
-    state
+    state,
+    audioCacheManager = null
   }) {
     // `state` holds the spatial position/angle and is kept in sync with the
     // canvas representation.
-    this.state = state;
+    this.state = state
     this.state.schedule = reactive(state.schedule ?? {
       id: crypto.randomUUID(),
       enabled: false,
-      mode: "interval", // "loop", "interval", "count", or "interval+count"
+      mode: 'interval', // "loop", "interval", "count", or "interval+count"
 
       // Applies to interval-based scheduling
       gapMin: 5,
       gapMax: 10,
 
       // Applies to time-bound or count-based schedules
-      count: 5,           // null = unlimited
-      activeStart: 0,     // time window start (in seconds)
-      activeEnd: 300,     // time window end
+      count: 5, // null = unlimited
+      activeStart: 0, // time window start (in seconds)
+      activeEnd: 300, // time window end
 
       // Restart behaviour
-      restart: false,     // force immediate restart when schedule changes
+      restart: false, // force immediate restart when schedule changes
 
       // Internal state
       timesPlayed: 0,
       isPlaying: true, // whether the sound is currently playing
       lastPlayedAt: null,
       paused: false, // whether scheduling is currently paused
-    });
+    })
 
-    this._disposed = false; // whether this source has been disposed
+    this._disposed = false // whether this source has been disposed
 
-    this._rad = (deg) => (deg * Math.PI) / 180;
-    this._scale = 0.01;
+    this._rad = (deg) => (deg * Math.PI) / 180
+    this._scale = 0.01
 
-    this._audioContext = audioContext;
-    
-    // A simple <audio> element is used as the source. It's connected into the
-    // Web Audio graph so we can apply spatialisation and gain control.
-    this._audioElement = new Audio(file);
-    this._audioElement.preload = 'auto';
-    this._audioElement.loop = false;
-    this._audioElement.volume = this.state.volume ?? 1;
+    this._audioContext = audioContext
+    this._audioCacheManager = audioCacheManager
 
-    this._sourceNode = this._audioContext.createMediaElementSource(this._audioElement);
-    this._gainNode = this._audioContext.createGain();
+    this._audioDescriptor = typeof file === 'string' ? { audioPath: file } : (file ?? {})
+    this._audioPath = this._audioDescriptor.audioPath ?? null
+    this._storageKey = this._audioDescriptor.storageKey ?? null
+    this._fileId = this._audioDescriptor.fileId ?? this._audioDescriptor.libraryId ?? this._audioPath
 
-    this.earlyReflections = [];
+    this._audioBuffer = null
+    this._activeSource = null
+    this._playbackListeners = new Set()
+    this._bufferPromise = null
+
+    this._gainNode = this._audioContext.createGain()
+
+    this.earlyReflections = []
     for (let i = 0; i < 2; i++) {
-      const delay = this._audioContext.createDelay();
-      delay.delayTime.value = 0.005 + i * 0.003; // short slapback
+      const delay = this._audioContext.createDelay()
+      delay.delayTime.value = 0.005 + i * 0.003 // short slapback
 
-      const gain = this._audioContext.createGain();
-      gain.gain.value = 0.2;
+      const gain = this._audioContext.createGain()
+      gain.gain.value = 0.2
 
-      const pan = this._audioContext.createStereoPanner();
-      pan.pan.value = 0;
+      const pan = this._audioContext.createStereoPanner()
+      pan.pan.value = 0
 
       // chain: dry gain -> delay -> reflection gain -> pan -> master
-      this._gainNode.connect(delay).connect(gain).connect(pan).connect(masterGain);
+      this._gainNode.connect(delay).connect(gain).connect(pan).connect(masterGain)
 
-      this.earlyReflections.push({ delay, gain, pan });
+      this.earlyReflections.push({ delay, gain, pan })
     }
 
-
-    this._pannerNode = audioContext.createPanner();
+    this._pannerNode = audioContext.createPanner()
 
     // Configure the panner to simulate distance and directionality.
-    const pn = this._pannerNode;
-    pn.panningModel = 'HRTF';
-    pn.distanceModel = 'inverse';
-    pn.refDistance = 1;
-    pn.maxDistance = 10000;
-    pn.rolloffFactor = 1;
-    pn.coneInnerAngle = this.state.coneInner;
-    pn.coneOuterAngle = this.state.coneOuter;
-    pn.coneOuterGain = 0.2;
+    const pn = this._pannerNode
+    pn.panningModel = 'HRTF'
+    pn.distanceModel = 'inverse'
+    pn.refDistance = 1
+    pn.maxDistance = 10000
+    pn.rolloffFactor = 1
+    pn.coneInnerAngle = this.state.coneInner
+    pn.coneOuterAngle = this.state.coneOuter
+    pn.coneOuterGain = 0.2
 
-   this._sourceNode
-    .connect(this._gainNode)
-    .connect(this._pannerNode);
+    this._gainNode.connect(this._pannerNode)
 
     // Save the final node as outputNode (for reverb and dry path)
     this.outputNode = this._pannerNode
@@ -110,50 +112,158 @@ export default class SoundSource {
     this.reverbSend.gain.value = 1 // or tweak per-source reverb level
 
     // Corner muffling effect using lowpass filter
-    this.cornerFilter = this._audioContext.createBiquadFilter();
-    this.cornerFilter.type = 'lowpass';
-    this.cornerFilter.frequency.value = 18000; // high at start (no muffling)
+    this.cornerFilter = this._audioContext.createBiquadFilter()
+    this.cornerFilter.type = 'lowpass'
+    this.cornerFilter.frequency.value = 18000 // high at start (no muffling)
 
-    this.cornerCompressor = this._audioContext.createDynamicsCompressor();
-    this.cornerCompressor.threshold.value = -50;
-    this.cornerCompressor.knee.value = 20;
-    this.cornerCompressor.ratio.value = 6;
-    this.cornerCompressor.attack.value = 0.005;
-    this.cornerCompressor.release.value = 0.1;
+    this.cornerCompressor = this._audioContext.createDynamicsCompressor()
+    this.cornerCompressor.threshold.value = -50
+    this.cornerCompressor.knee.value = 20
+    this.cornerCompressor.ratio.value = 6
+    this.cornerCompressor.attack.value = 0.005
+    this.cornerCompressor.release.value = 0.1
 
     // Chain: output → filter → compressor → master
-    this.outputNode.connect(this.cornerFilter);
-    this.cornerFilter.connect(this.cornerCompressor);
-    this.cornerCompressor.connect(masterGain ?? this._audioContext.destination);
-
+    this.outputNode.connect(this.cornerFilter)
+    this.cornerFilter.connect(this.cornerCompressor)
+    this.cornerCompressor.connect(masterGain ?? this._audioContext.destination)
 
     this.outputNode.connect(this.reverbSend) // split the signal for reverb
 
-    this._playing = ref(this.state.schedule.isPlaying ?? true);
-    this._volume = this.state.volume ?? 1; // default to 1 if not set
-
-    this._audioElement.addEventListener('play', this._onPlay);
-    this._audioElement.addEventListener('pause', this._onPause);
-    this._audioElement.addEventListener('ended', this._onEnded);
+    this._playing = ref(false)
+    this._volume = this.state.volume ?? 1 // default to 1 if not set
+    this._gainNode.gain.value = this._volume
   }
-  
-  _onPlay = () => {
-    this._playing.value = true;
-  };
+  async _ensureAudioBuffer() {
+    if (this._audioBuffer) return this._audioBuffer
 
-  _onPause = () => {
-    this._playing.value = false;
-  };
-
-  _onEnded = () => {
-        // When looping is enabled the media element will fire an `ended` event
-    // before immediately restarting playback. In that case we should keep the
-    // internal playing state set to `true` so UI play/pause controls remain
-    // accurate.
-    if (!this._audioElement.loop) {
-      this._playing.value = false;
+    if (this._bufferPromise) {
+      return this._bufferPromise
     }
-  };
+
+    this._bufferPromise = (async () => {
+      let blob = null
+
+      if (this._audioCacheManager && this._fileId) {
+        blob = await this._audioCacheManager.getOrFetchBlob(this._fileId, async () => {
+          if (this._storageKey) {
+            return await fetchAudioBlob(this._storageKey)
+          }
+          if (this._audioPath) {
+            const res = await fetch(this._audioPath)
+            if (!res.ok) {
+              throw new Error(`Failed to fetch audio blob for source (status ${res.status})`)
+            }
+            return await res.blob()
+          }
+          throw new Error('No audio source available for sound.')
+        })
+      } else if (this._audioPath) {
+        const res = await fetch(this._audioPath)
+        if (!res.ok) {
+          throw new Error(`Failed to fetch audio blob for source (status ${res.status})`)
+        }
+        blob = await res.blob()
+      } else if (this._storageKey) {
+        blob = await fetchAudioBlob(this._storageKey)
+      }
+
+      if (!blob) {
+        throw new Error('Unable to resolve audio data for sound source.')
+      }
+
+      const arrayBuffer = await blob.arrayBuffer()
+      const decoded = await this._audioContext.decodeAudioData(arrayBuffer.slice(0))
+      this._audioBuffer = decoded
+      this._bufferPromise = null
+      return decoded
+    })()
+
+    return this._bufferPromise.catch(err => {
+      this._bufferPromise = null
+      throw err
+    })
+  }
+
+  _startPlayback(offset = 0, { notify = true } = {}) {
+    if (!this._audioBuffer) {
+      throw new Error('Audio buffer not loaded')
+    }
+
+    this._stopActiveSource({ notify })
+
+    const source = this._audioContext.createBufferSource()
+    source.buffer = this._audioBuffer
+    source.connect(this._gainNode)
+
+    source.onended = () => {
+      if (this._activeSource === source) {
+        this._activeSource = null
+      }
+      this._setPlaying(false)
+      this._notifyPlaybackListeners()
+    }
+
+    this._activeSource = source
+    this._setPlaying(true)
+    source.start(0, offset)
+  }
+
+  _stopActiveSource({ notify = true } = {}) {
+    if (!this._activeSource) {
+      this._setPlaying(false)
+      return
+    }
+
+    const source = this._activeSource
+    this._activeSource = null
+
+    source.onended = null
+    try {
+      source.stop()
+    } catch (err) {
+      // Safari throws if stop called after natural end; ignore.
+    }
+    try {
+      source.disconnect()
+    } catch (err) {
+      console.warn('Problem disconnecting buffer source:', err)
+    }
+
+    this._setPlaying(false)
+    if (notify) {
+      this._notifyPlaybackListeners()
+    }
+  }
+
+  _notifyPlaybackListeners() {
+    if (this._playbackListeners.size === 0) return
+    const listeners = Array.from(this._playbackListeners)
+    this._playbackListeners.clear()
+    listeners.forEach(listener => {
+      try {
+        listener()
+      } catch (err) {
+        console.warn('Playback listener threw:', err)
+      }
+    })
+  }
+
+  oncePlaybackFinished(callback) {
+    if (!this._activeSource && !this.playing) {
+      callback()
+      return
+    }
+    this._playbackListeners.add(callback)
+  }
+
+  _setPlaying(value) {
+    if (!this._playing || typeof this._playing !== 'object' || !('value' in this._playing)) {
+      this._playing = ref(Boolean(value))
+    } else {
+      this._playing.value = Boolean(value)
+    }
+  }
 
   /**
    * Connect this source's reverb send to the provided convolver.
@@ -167,22 +277,38 @@ export default class SoundSource {
     }
   }
 
-  /** Start playback of the audio element. */
-  play() {
-    this._audioElement.play();
-    this.updateAudio();
+  /** Start playback of the audio buffer. */
+  async play() {
+    await this._ensureAudioBuffer()
+    this._startPlayback(0)
+    this.updateAudio()
   }
 
   /** Force playback from the start of the audio file. */
-  forcePlayFromStart() {
-    this._audioElement.currentTime = 0;
-    this._audioElement.play();
-    this.updateAudio();
+  async forcePlayFromStart() {
+    await this.play()
   }
 
-  /** Pause playback of the audio element. */
+  /** Pause/stop playback of the audio buffer. */
   stop() {
-    this._audioElement.pause();
+    this._stopActiveSource()
+  }
+
+  async playAndWait() {
+    await this._ensureAudioBuffer()
+    // Ensure any existing playback is stopped and listeners are flushed before starting a new wait.
+    this._stopActiveSource({ notify: true })
+    return new Promise((resolve, reject) => {
+      const listener = () => resolve()
+      this._playbackListeners.add(listener)
+      try {
+        this._startPlayback(0, { notify: false })
+        this.updateAudio()
+      } catch (err) {
+        this._playbackListeners.delete(listener)
+        reject(err)
+      }
+    })
   }
 
   /**
@@ -190,9 +316,10 @@ export default class SoundSource {
    * @returns {boolean}
   */
   get playing() {
-    const sched = this.state.schedule;
-    return !sched.paused;
-    
+    if (this._playing && typeof this._playing === 'object' && 'value' in this._playing) {
+      return Boolean(this._playing.value)
+    }
+    return Boolean(this._playing)
   }
 
   /**
@@ -201,7 +328,12 @@ export default class SoundSource {
    */
   setVolume(v) {
     this._volume = v;
-    this._audioElement.volume = v;
+    if (this.state) {
+      this.state.volume = v
+    }
+    if (this._gainNode && this._audioContext) {
+      this._gainNode.gain.setValueAtTime(v, this._audioContext.currentTime)
+    }
   }
 
   /**
@@ -216,6 +348,7 @@ export default class SoundSource {
    * Sync Web Audio panner position and orientation with the state used by the canvas.
    */
   updateAudio() {
+    if (!this._audioContext) return
     // Sync the Web Audio panner with the state used by the canvas. Both
     // position and orientation are updated each time the source moves.
     const angleRad = this._rad(this.state.angle);
@@ -244,7 +377,7 @@ export default class SoundSource {
    * @param {import('./Room').default} room
    */
   updateRoomInteraction(room) {
-    if (!room) return;
+    if (!room || !this._audioContext) return;
 
     const { x, y } = this.state;
     const roomWidth = room.width;
@@ -313,29 +446,38 @@ export default class SoundSource {
   dispose() {
     this._disposed = true;
 
-    // Gracefully disconnect and release all Web Audio nodes and the underlying
-    // <audio> element when a source is removed from the room.
+    // Gracefully disconnect and release all Web Audio nodes when a source is
+    // removed from the room.
     try {
-      if (this._audioElement) {
-        this._audioElement.pause()
-        this._audioElement.load()
-        this._audioElement?.removeEventListener('play', this._onPlay);
-        this._audioElement?.removeEventListener('pause', this._onPause);
-        this._audioElement?.removeEventListener('ended', this._onEnded);
+      this._stopActiveSource({ notify: true })
 
-        this._audioElement = null
-      }
-  
-      this._sourceNode?.disconnect()
-      this._gainNode?.disconnect()
-      this._pannerNode?.disconnect()
-      this.reverbSend?.disconnect()
+      this.earlyReflections.forEach(ref => {
+        try { ref.delay.disconnect() } catch (_) {}
+        try { ref.gain.disconnect() } catch (_) {}
+        try { ref.pan.disconnect() } catch (_) {}
+      })
+      this.earlyReflections = []
 
-      this._sourceNode = null
+      try { this._gainNode?.disconnect() } catch (_) {}
+      try { this._pannerNode?.disconnect() } catch (_) {}
+      try { this.cornerFilter?.disconnect() } catch (_) {}
+      try { this.cornerCompressor?.disconnect() } catch (_) {}
+      try { this.reverbSend?.disconnect() } catch (_) {}
+
       this._gainNode = null
       this._pannerNode = null
+      this.cornerFilter = null
+      this.cornerCompressor = null
       this.reverbSend = null
-  
+      this.outputNode = null
+
+      this._audioBuffer = null
+      this._audioDescriptor = null
+      this._audioCacheManager = null
+      this._playbackListeners = new Set()
+      this._playing = ref(false)
+      this._bufferPromise = null
+
       this._audioContext = null
       this.state = null
     } catch (err) {
