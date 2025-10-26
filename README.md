@@ -73,12 +73,22 @@ Planned next-phase upgrades:
    npm install
    ```
 
-3. **Create `.env` for Supabase**
+3. **Create `.env` for Supabase & Stripe**
    ```env
    # .env.example
    VITE_SUPABASE_URL=https://your-project-id.supabase.co
    VITE_SUPABASE_KEY=your-anon-key
 
+   # Stripe publishable key (browser)
+   VITE_STRIPE_PUBLISHABLE_KEY=pk_test_...
+
+   # Stripe server-side secrets (set in Vercel/hosting environment)
+   STRIPE_SECRET_KEY=sk_test_...
+   STRIPE_BASIC_PRICE_ID=price_basic_...
+   STRIPE_PRO_PRICE_ID=price_pro_...
+
+   # Base URL used for checkout success/cancel fallbacks
+   PUBLIC_APP_URL=http://localhost:5173
    ```
 
 4. **Run locally**

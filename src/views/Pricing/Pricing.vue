@@ -12,7 +12,7 @@
           </p>
           <div class="grid gap-6 mx-auto max-w-6xl justify-items-center md:grid-cols-2 xl:grid-cols-3">
             <PricingCard
-              v-for="plan in displayPlans"
+              v-for="plan in plansWithCheckoutState"
               class="w-full max-w-sm"
               :key="plan.id"
               :title="plan.name"
@@ -23,8 +23,16 @@
               :cta-label="plan.ctaLabel"
               :cta-disabled="plan.ctaDisabled"
               :plan-id="plan.id"
+              :cta-busy="plan.ctaBusy"
+              @select-plan="() => handlePlanSelect(plan)"
             />
           </div>
+          <p
+            v-if="checkoutError"
+            class="text-sm text-red-600 dark:text-red-400 text-center"
+          >
+            {{ checkoutError }}
+          </p>
           <div class="max-w-5xl mx-auto rounded-md border border-neutral-200 bg-white p-4 text-left shadow-sm dark:border-neutral-800 dark:bg-neutral-950" data-testid="pricing-feature-comparison">
             <div class="text-sm font-semibold text-neutral-800 dark:text-neutral-200">Full feature comparison</div>
             <PlanComparisonTable class="mt-4" :plans="basePlans" :features="FEATURE_DEFINITIONS" />
@@ -36,15 +44,16 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import BaseButton from '@/components/ui/input/BaseButton.vue'
 import PricingCard from '@/views/Pricing/PricingCard.vue'
 import PlanComparisonTable from '@/views/Pricing/PlanComparisonTable.vue'
 import { useAuth } from '@/composables/useAuth'
+import { redirectToCheckout } from '@/utils/stripe'
 
 const router = useRouter()
-const { tier } = useAuth()
+const { tier, isAuthenticated, user } = useAuth()
 
 const closeModal = () => {
   router.push('/')
@@ -215,6 +224,54 @@ const displayPlans = computed(() => {
     }
   })
 })
+
+const activeCheckoutPlan = ref(null)
+const checkoutError = ref('')
+
+const plansWithCheckoutState = computed(() =>
+  displayPlans.value.map(plan => ({
+    ...plan,
+    ctaBusy: activeCheckoutPlan.value === plan.id,
+  }))
+)
+
+const isDowngrade = (planId) => {
+  const userIndex = PLAN_ORDER.indexOf(currentTier.value)
+  const planIndex = PLAN_ORDER.indexOf(planId)
+  return userIndex !== -1 && planIndex !== -1 && planIndex < userIndex
+}
+
+const handlePlanSelect = async (plan) => {
+  checkoutError.value = ''
+
+  if (isDowngrade(plan.id)) {
+    router.push('/manage-plan')
+    return
+  }
+
+  if (!isAuthenticated.value) {
+    router.push({ path: '/signup', query: { redirect: '/upgrade', plan: plan.id } })
+    return
+  }
+
+  const origin = typeof window !== 'undefined' ? window.location.origin : undefined
+
+  try {
+    activeCheckoutPlan.value = plan.id
+    await redirectToCheckout({
+      planId: plan.id,
+      customerEmail: user.value?.email ?? undefined,
+      clientReferenceId: user.value?.id ?? undefined,
+      successUrl: origin ? `${origin}/manage-plan?checkout=success` : undefined,
+      cancelUrl: origin ? `${origin}/upgrade?checkout=cancel` : undefined,
+    })
+  } catch (error) {
+    console.error('Stripe checkout failed', error)
+    checkoutError.value = error?.message || 'Unable to start checkout. Please try again.'
+  } finally {
+    activeCheckoutPlan.value = null
+  }
+}
 </script>
 
 <style scoped>

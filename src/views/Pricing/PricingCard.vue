@@ -22,10 +22,11 @@
     
     <button
       :class="ctaClasses"
-      :disabled="ctaDisabled"
+      :disabled="ctaDisabled || ctaBusy"
       type="button"
+      @click="$emit('select-plan')"
     >
-      {{ ctaLabel }}
+      {{ ctaText }}
     </button>
   </div>
 </template>
@@ -48,6 +49,8 @@ const STATUS_STYLES = {
     dot: 'bg-neutral-400 dark:bg-neutral-500'
   }
 }
+
+defineEmits(['select-plan'])
 
 const props = defineProps({
   title: String,
@@ -72,6 +75,10 @@ const props = defineProps({
     type: Boolean,
     default: false
   },
+  ctaBusy: {
+    type: Boolean,
+    default: false
+  },
   planId: {
     type: String,
     default: 'free'
@@ -93,6 +100,8 @@ const ctaClasses = computed(() => [
   BASE_CTA_CLASS,
   planTheme.value.cta
 ])
+
+const ctaText = computed(() => (props.ctaBusy ? 'Redirecting…' : props.ctaLabel))
 
 const normalizeFeature = feature => {
   if (typeof feature === 'string') {
