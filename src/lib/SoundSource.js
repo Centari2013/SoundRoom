@@ -350,13 +350,31 @@ export default class SoundSource {
    * @param {number} v
    */
   setVolume(v) {
-    this._volume = v;
+    const fallbackVolume = Number.isFinite(this._volume) ? Math.max(0, this._volume) : 1
+    const volume = Number.isFinite(v) ? Math.max(0, v) : fallbackVolume
+
+    this._volume = volume
     if (this.state) {
-      this.state.volume = v
+      this.state.volume = volume
     }
-    if (this._gainNode && this._audioContext) {
-      this._gainNode.gain.setValueAtTime(v, this._audioContext.currentTime)
+
+    if (!this._audioContext) return
+
+    if (this._room) {
+      this.updateRoomInteraction(this._room)
+      return
     }
+
+    const currentTime = this._audioContext.currentTime
+    if (this._gainNode) {
+      this._gainNode.gain.setValueAtTime(volume, currentTime)
+    }
+    if (this.reverbSend) {
+      this.reverbSend.gain.setValueAtTime(volume, currentTime)
+    }
+    this.earlyReflections?.forEach(ref => {
+      ref.gain?.gain?.setValueAtTime(volume, currentTime)
+    })
   }
 
   /**
@@ -423,23 +441,28 @@ export default class SoundSource {
 
     const wallGain = 1 - normWall;
     const cornerGain = 1 - normCorner;
+    const userVolume = Number.isFinite(this._volume) ? Math.max(0, this._volume) : 1;
+    const currentTime = this._audioContext.currentTime;
 
     // dry gain scales down near boundaries but reaches 1.0 when unobstructed
-    const dryGain = 0.2 + 0.8 * normWall * normCorner;
-    this._gainNode.gain.setValueAtTime(dryGain, this._audioContext.currentTime);
+    const dryGainBase = 0.2 + 0.8 * normWall * normCorner;
+    const dryGain = dryGainBase * userVolume;
+    this._gainNode?.gain.setValueAtTime(dryGain, currentTime);
 
     // reverb send increases slightly near corners
-    this.reverbSend.gain.setValueAtTime(0.3 + 0.5 * cornerGain, this._audioContext.currentTime);
+    const reverbSendBase = 0.3 + 0.5 * cornerGain;
+    this.reverbSend?.gain.setValueAtTime(reverbSendBase * userVolume, currentTime);
 
     // lowpass filter transitions back to the full 18 kHz when far from corners
     const muffledFreq = 800 + (18000 - 800) * normCorner;
-    this.cornerFilter.frequency.setTargetAtTime(muffledFreq, this._audioContext.currentTime, 0.01);
+    this.cornerFilter?.frequency.setTargetAtTime(muffledFreq, currentTime, 0.01);
 
     // early reflections subtle gain & pan toward nearest wall
     const horizPan = distLeft < distRight ? -wallGain : wallGain;
     this.earlyReflections.forEach(ref => {
-      ref.gain.gain.setValueAtTime(0.05 + 0.2 * wallGain, this._audioContext.currentTime);
-      ref.pan.pan.setValueAtTime(horizPan, this._audioContext.currentTime);
+      const reflectionGainBase = 0.05 + 0.2 * wallGain;
+      ref.gain?.gain?.setValueAtTime(reflectionGainBase * userVolume, currentTime);
+      ref.pan?.pan?.setValueAtTime(horizPan, currentTime);
     });
   }
 
