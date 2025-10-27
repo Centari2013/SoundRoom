@@ -4,7 +4,8 @@ import { stripe } from './_utils/serverClients.js'
 import { getPlanFromPriceId, normalizePlanId } from './_utils/stripePlans.js'
 import { resolveUserForStripe, updateUserPlanTier } from './_utils/userPlan.js'
 
-const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET
+const rawWebhookSecret = process.env.STRIPE_WEBHOOK_SECRET
+const webhookSecret = typeof rawWebhookSecret === 'string' ? rawWebhookSecret.trim() : ''
 
 export function OPTIONS() {
   return new Response(null, {
@@ -19,7 +20,10 @@ export async function POST(request) {
     return jsonResponse({ error: 'Stripe webhook is not configured' }, { status: 500 })
   }
 
-  const signature = request.headers.get('stripe-signature')
+  const signature =
+    request.headers.get('stripe-signature') ||
+    request.headers.get('Stripe-Signature') ||
+    request.headers.get('Stripe-signature')
   if (!signature) {
     return jsonResponse({ error: 'Missing Stripe signature' }, { status: 400 })
   }
@@ -27,7 +31,7 @@ export async function POST(request) {
   let event
 
   try {
-    const payload = Buffer.from(await request.arrayBuffer())
+    const payload = await request.text()
     event = stripe.webhooks.constructEvent(payload, signature, webhookSecret)
   } catch (error) {
     console.error('Invalid Stripe webhook signature', error)
