@@ -16,8 +16,6 @@ export function OPTIONS() {
 }
 
 export async function POST(request) {
-  console.log('Webhook Secret:', webhookSecret);
-  console.log('Request:', request);
   if (!stripe || !webhookSecret) {
     console.error('Stripe webhook invoked without required configuration')
     return jsonResponse({ error: 'Stripe webhook is not configured' }, { status: 500 })
