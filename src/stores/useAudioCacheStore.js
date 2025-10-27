@@ -11,14 +11,19 @@ export const useAudioCacheStore = defineStore('audioCache', () => {
   const audioCacheManager = shallowRef(new AudioCacheManager())
 
   /**
-   * Remove all cached library sources and revoke their object URLs.
+   * Reset the sound library source list and optionally remove cached blobs.
    *
+   * @param {Object} [options]
+   * @param {boolean} [options.removeFromCache=true] - whether to evict cached blobs
+   *   associated with each source
    * @returns {void}
    */
-  function clearSoundLibrarySources() {
-    soundLibrarySources.value.forEach(src => {
-      audioCacheManager.value.remove(src.libraryId)
-    })
+  function clearSoundLibrarySources({ removeFromCache = true } = {}) {
+    if (removeFromCache) {
+      soundLibrarySources.value.forEach(src => {
+        audioCacheManager.value.remove(src.libraryId)
+      })
+    }
     soundLibrarySources.value = []
   }
 

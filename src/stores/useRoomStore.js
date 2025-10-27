@@ -124,23 +124,54 @@ export const useRoomStore = defineStore('room', () => {
     return room.value.toJSON()
   }
 
+  const _initialSnapshot = ref(null)
+
   /**
-   * Capture a snapshot of all core stores for persistence.
+   * Build a snapshot payload capturing the core room-related stores.
    *
-   * @returns {Object} serialized snapshot
+   * @returns {Object}
    */
-  function getSaveSnapshot() {
+  function buildSnapshotPayload() {
     const listenerStore = useListenerStore()
     const audioEngineStore = useAudioEngineStore()
     const cacheStore = useAudioCacheStore()
-    const savedState = {
+    void room.value && void listenerStore.listener && void audioEngineStore.audioEngine && void cacheStore.soundLibrarySources
+
+    return {
       room: roomToJSON(),
       listener: listenerStore.listenerToJSON(),
       audioEngine: audioEngineStore.audioEngineToJSON(),
       soundLibrarySources: cacheStore.soundLibrarySourcesToJSON()
     }
-    _lastSavedSnapshot.value = JSON.stringify(savedState)
+  }
+
+  /**
+   * Capture a snapshot of all core stores for persistence.
+   *
+   * @param {Object} [options]
+   * @param {boolean} [options.markAsInitial=false] — whether to also treat this state as the pristine baseline
+   * @returns {Object} serialized snapshot
+   */
+  function getSaveSnapshot({ markAsInitial = false } = {}) {
+    const savedState = buildSnapshotPayload()
+    const serialized = JSON.stringify(savedState)
+    _lastSavedSnapshot.value = serialized
+    if (markAsInitial || _initialSnapshot.value === null) {
+      _initialSnapshot.value = serialized
+    }
     return savedState
+  }
+
+  /**
+   * Replace the stored pristine baseline with the current state.
+   */
+  function markCurrentStateAsEmpty() {
+    try {
+      const serialized = JSON.stringify(buildSnapshotPayload())
+      _initialSnapshot.value = serialized
+    } catch (e) {
+      console.warn('Error marking room as empty baseline:', e)
+    }
   }
 
   /** Reset the room state to its initial values. */
@@ -151,21 +182,27 @@ export const useRoomStore = defineStore('room', () => {
   }
 
   const isRoomSaveable = computed(() => {
-    const listenerStore = useListenerStore()
-    const audioEngineStore = useAudioEngineStore()
-    const cacheStore = useAudioCacheStore()
-    void room.value && void listenerStore.listener && void audioEngineStore.audioEngine && void cacheStore.soundLibrarySources
-
     try {
-      const currentSnapshot = JSON.stringify({
-        room: roomToJSON(),
-        listener: listenerStore.listenerToJSON(),
-        audioEngine: audioEngineStore.audioEngineToJSON(),
-        soundLibrarySources: cacheStore.soundLibrarySourcesToJSON()
-      })
+      const currentSnapshot = JSON.stringify(buildSnapshotPayload())
+      if (_initialSnapshot.value === null) {
+        _initialSnapshot.value = currentSnapshot
+      }
       return currentSnapshot !== _lastSavedSnapshot.value
     } catch (e) {
       console.warn('Error computing isRoomSaveable:', e)
+      return false
+    }
+  })
+
+  const isRoomEmpty = computed(() => {
+    try {
+      const currentSnapshot = JSON.stringify(buildSnapshotPayload())
+      if (_initialSnapshot.value === null) {
+        _initialSnapshot.value = currentSnapshot
+      }
+      return currentSnapshot === _initialSnapshot.value
+    } catch (e) {
+      console.warn('Error computing isRoomEmpty:', e)
       return false
     }
   })
@@ -176,7 +213,9 @@ export const useRoomStore = defineStore('room', () => {
     resetRoom,
     roomToJSON,
     getSaveSnapshot,
+    markCurrentStateAsEmpty,
     isRoomSaveable,
+    isRoomEmpty,
     setExistingRoomNames,
     generateUniqueRoomName,
     commitRoomName,

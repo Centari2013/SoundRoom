@@ -2,14 +2,17 @@
   <aside class="w-60 bg-neutral-200 dark:bg-neutral-900 border-r border-neutral-300 dark:border-neutral-800 p-4 space-y-3 overflow-y-auto">
     <h2 class="font-bold text-sm mb-2">Categories</h2>
     <BaseButton
-      v-if="isAuthenticated && userTier === 'pro'"
+      v-if="isAuthenticated"
       :key="'your-sounds'"
-      @click="$emit('update:active', 'your-sounds')"
-      :class="['sound-lib-button', { active: active === 'your-sounds' }]"
+      @click="handleSelectYourSounds"
+      :class="['sound-lib-button', { active: active === 'your-sounds', locked: !canUpload }]"
     >
-    Your Sounds
+      <span class="button-inner">
+        <span>Your Sounds</span>
+        <span v-if="!canUpload" class="badge">Pro</span>
+      </span>
     </BaseButton>
-    <hr v-if="isAuthenticated && userTier === 'pro'" class="text-neutral-300 dark:text-neutral-800"/>
+    <hr v-if="isAuthenticated" class="text-neutral-300 dark:text-neutral-800"/>
     <BaseButton
       v-for="cat in categories"
       :key="cat.id"
@@ -23,16 +26,28 @@
 
 <script setup>
 import BaseButton from '@/components/ui/input/BaseButton.vue'
+import { computed } from 'vue'
 import { useAuth } from '@/composables/useAuth'
+import { useEntitlements } from '@/composables/useEntitlements'
 
 const props = defineProps({
   categories: Array,
   active: String
 })
 
-defineEmits(['update:active'])
+const emit = defineEmits(['update:active'])
 
-const { isAuthenticated, tier: userTier } = useAuth()
+const { isAuthenticated } = useAuth()
+const { canAccess, requireEntitlement } = useEntitlements()
+
+const canUpload = computed(() => canAccess('canUpload'))
+
+function handleSelectYourSounds() {
+  if (!requireEntitlement('canUpload')) return
+  // Only emit when the user can actually reach their sounds
+  // to avoid switching the grid without access.
+  emit('update:active', 'your-sounds')
+}
 
 </script>
 
@@ -56,5 +71,29 @@ const { isAuthenticated, tier: userTier } = useAuth()
 }
 @media (prefers-color-scheme: dark) {
   .sound-lib-button.active { background-color: #1f2937; }
+}
+
+.sound-lib-button.locked {
+  opacity: 0.75;
+}
+
+.button-inner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.badge {
+  font-size: 0.625rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #7c3aed;
+}
+
+@media (prefers-color-scheme: dark) {
+  .badge {
+    color: #a855f7;
+  }
 }
 </style>

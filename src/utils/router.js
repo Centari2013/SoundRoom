@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import SoundRoom from '@/views/SoundRoom.vue'
 import { useAuth } from '@/composables/useAuth'
 import { watch } from 'vue'
+import { applySeo } from '@/utils/seo'
 
 /**
  * Main application router instance.
@@ -12,53 +13,198 @@ const router = createRouter({
     {
       path: '/',
       component: SoundRoom,
+      meta: {
+        seo: {
+          title: 'SoundRoom',
+          description: 'Design and layer immersive spatial audio scenes in your browser. Drag directional sources, sculpt ambient mixes, and save custom rooms with SoundRoom.',
+        },
+      },
       children: [
         {
           path: 'login',
           component: () => import('@/components/ui/modals/ModalWrapper.vue'),
           props: { component: () => import('@/components/ui/modals/LoginSignup/AuthModal.vue') },
+          meta: {
+            seo: {
+              title: 'Log In | SoundRoom',
+              description: 'Log in to SoundRoom to resume building personalized spatial soundscapes and manage your saved rooms.',
+            },
+          },
         },
         {
           path: 'signup',
           component: () => import('@/components/ui/modals/ModalWrapper.vue'),
           props: { component: () => import('@/components/ui/modals/LoginSignup/AuthModal.vue') },
+          meta: {
+            seo: {
+              title: 'Create an Account | SoundRoom',
+              description: 'Create a free SoundRoom account and start sculpting immersive 3D sound environments in minutes.',
+            },
+          },
         },
         {
           path: 'reset',
           component: () => import('@/components/ui/modals/ModalWrapper.vue'),
           props: { component: () => import('@/components/ui/modals/LoginSignup/AuthModal.vue') },
+          meta: {
+            seo: {
+              title: 'Reset Password | SoundRoom',
+              description: 'Reset your SoundRoom password and regain access to your saved ambient rooms and preferences.',
+            },
+          },
         },
         {
           path: 'help',
           component: () => import('@/components/ui/modals/ModalWrapper.vue'),
           props: { component: () => import('@/components/ui/modals/Help.vue') },
+          meta: {
+            seo: {
+              title: 'Help & Shortcuts | SoundRoom',
+              description: 'Browse keyboard shortcuts, tips, and FAQs for getting the most out of the SoundRoom spatial audio designer.',
+            },
+          },
         },
-        { path: '/room-manager',
+        {
+          path: '/room-manager',
           component: () => import('@/components/ui/modals/ModalWrapper.vue'),
           props: { component: () => import('@/components/ui/modals/RoomManager/RoomManager.vue') },
-          meta: { requiresAuth: true }
+          meta: {
+            requiresAuth: true,
+            seo: {
+              title: 'Room Manager | SoundRoom',
+              description: 'Load, duplicate, and organize your saved SoundRoom scenes to keep creative sessions flowing.',
+            },
+          },
         },
-        { path: '/sound-library',
+        {
+          path: '/sound-library',
           component: () => import('@/components/ui/modals/ModalWrapper.vue'),
           props: { component: () => import('@/components/ui/modals/SoundLibrary/SoundLibrary.vue') },
+          meta: {
+            seo: {
+              title: 'Sound Library | SoundRoom',
+              description: 'Explore curated ambient samples and drop spatial audio sources into your SoundRoom scene in seconds.',
+            },
+          },
         },
         {
           path: 'upgrade',
           component: () => import('@/components/ui/modals/ModalWrapper.vue'),
           props: { component: () => import('@/views/Pricing/Pricing.vue') },
+          meta: {
+            seo: {
+              title: 'Pricing & Plans | SoundRoom',
+              description: 'Compare SoundRoom plans to unlock expanded sound libraries, room saves, and upcoming collaboration features.',
+            },
+          },
         },
-      ]
+      ],
     },
-    { path: '/terms', component: () => import('@/views/TermsOfService.vue') },
-    { path: '/privacy', component: () => import('@/views/PrivacyPolicy.vue') },
-    { path: '/update-password', component: () => import('@/views/UpdatePasswordPage.vue')},
-    { path: '/auth/callback', component: () => import('@/views/AuthCallback.vue') },
-    { path: '/auth/error', component: () => import('@/views/AuthError.vue') },
-    { path: '/welcome', component: () => import('@/components/ui/modals/Onboarding.vue') },
-    { path: '/logged-out', component: () => import('@/views/LoggedOut.vue') },
-  ]
+    {
+      path: '/terms',
+      component: () => import('@/views/TermsOfService.vue'),
+      meta: {
+        seo: {
+          title: 'Terms of Service | SoundRoom',
+          description: 'Review the SoundRoom Terms of Service covering usage guidelines, licensing, and account responsibilities.',
+        },
+      },
+    },
+    {
+      path: '/privacy',
+      component: () => import('@/views/PrivacyPolicy.vue'),
+      meta: {
+        seo: {
+          title: 'Privacy Policy | SoundRoom',
+          description: 'Understand how SoundRoom handles your account data, audio uploads, and privacy preferences.',
+        },
+      },
+    },
+    {
+      path: '/settings',
+      component: () => import('@/views/Settings.vue'),
+      meta: {
+        requiresAuth: true,
+        seo: {
+          title: 'Account Settings | SoundRoom',
+          description: 'Adjust SoundRoom preferences, audio defaults, and account details to tailor your workspace.',
+        },
+      },
+    },
+    {
+      path: '/manage-plan',
+      component: () => import('@/views/ManagePlan.vue'),
+      meta: {
+        requiresAuth: true,
+        seo: {
+          title: 'Manage Plan | SoundRoom',
+          description: 'Review your SoundRoom subscription, update billing, and manage plan upgrades or downgrades.',
+        },
+      },
+    },
+    {
+      path: '/update-password',
+      component: () => import('@/views/UpdatePasswordPage.vue'),
+      meta: {
+        seo: {
+          title: 'Update Password | SoundRoom',
+          description: 'Secure your SoundRoom account with a new password to keep your ambient rooms protected.',
+        },
+      },
+    },
+    {
+      path: '/auth/callback',
+      component: () => import('@/views/AuthCallback.vue'),
+      meta: {
+        seo: {
+          title: 'Authenticating… | SoundRoom',
+          description: 'Completing your SoundRoom sign-in. You will be redirected momentarily.',
+        },
+      },
+    },
+    {
+      path: '/auth/error',
+      component: () => import('@/views/AuthError.vue'),
+      meta: {
+        seo: {
+          title: 'Authentication Error | SoundRoom',
+          description: 'We could not complete your SoundRoom login. Review the error details and try again.',
+        },
+      },
+    },
+    {
+      path: '/welcome',
+      component: () => import('@/components/ui/modals/Onboarding.vue'),
+      meta: {
+        seo: {
+          title: 'Welcome to SoundRoom',
+          description: 'Follow an interactive onboarding tour to learn the core controls of SoundRoom and start sculpting audio.',
+        },
+      },
+    },
+    {
+      path: '/logged-out',
+      component: () => import('@/views/LoggedOut.vue'),
+      meta: {
+        seo: {
+          title: 'Logged Out | SoundRoom',
+          description: 'You have safely signed out of SoundRoom. Come back anytime to keep crafting immersive soundscapes.',
+        },
+      },
+    },
+    {
+      path: '/:pathMatch(.*)*',
+      name: 'not-found',
+      component: () => import('@/views/NotFound.vue'),
+      meta: {
+        seo: {
+          title: 'Page Not Found | SoundRoom',
+          description: 'We couldn\'t find the page you requested. Return to SoundRoom to continue creating spatial audio scenes.',
+        },
+      },
+    },
+  ],
 })
-
 
 // Guard setup
 /**
@@ -96,6 +242,8 @@ router.beforeEach(async (to, from, next) => {
   }
 })
 
+router.afterEach((to) => {
+  applySeo(to)
+})
 
-
-export default router;
+export default router

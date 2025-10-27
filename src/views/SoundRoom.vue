@@ -149,7 +149,6 @@ const showWelcomeOverlay = ref(false)
 const showInitOverlay = ref(false)
 onBeforeMount(async () => {
   registerSoundRoomActions()
-  cacheStore.clearSoundLibrarySources() // Clear any previous sound library sources
   const { isAuthenticated } = useAuth()
   if (sessionStorage.getItem('justLoggedIn') === 'true') {
     sessionStorage.removeItem('justLoggedIn')
@@ -184,7 +183,7 @@ onBeforeMount(async () => {
   engineStore.loadIR('cathedral', '/impulses/1st_baptist_nashville_far_wide.wav') // Load the default impulse response
   roomStore.setExistingRoomNames() // Initialize with empty names
   roomStore.room.name.value = 'Untitled Room' // Default room name
-  roomStore.getSaveSnapshot() // Initialize _lastSavedSnapshot with current room state for isRoomSaveable to compare against
+  roomStore.getSaveSnapshot({ markAsInitial: true }) // Initialize stored snapshots for save/empty comparisons
 })
 
 onUnmounted(() => {

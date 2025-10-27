@@ -3,6 +3,7 @@ import { useListenerStore } from '@/stores/useListenerStore'
 import { useAudioEngineStore } from '@/stores/useAudioEngineStore'
 import { useRoomStore } from '@/stores/useRoomStore'
 import { registerSoundRoomActions, unregisterSoundRoomActions } from '@/composables/useSoundRoomActions'
+import { useAudioCacheStore } from '@/stores/useAudioCacheStore'
 
 
 /**
@@ -17,6 +18,7 @@ export function resetRoomState() {
   const listenerStore = useListenerStore()
   const engineStore = useAudioEngineStore()
   const roomStore = useRoomStore()
+  const cacheStore = useAudioCacheStore()
 
  
 
@@ -29,9 +31,13 @@ export function resetRoomState() {
   // Reset room metadata
   roomStore.resetRoom()
 
+  // Clear draggable library sources but keep cached blobs available
+  cacheStore.clearSoundLibrarySources({ removeFromCache: false })
+
   // Dispose of audio engine and start from scratch
   engineStore.resetAudioEngine()
 
-  roomStore.getSaveSnapshot()
+  roomStore.markCurrentStateAsEmpty()
+  roomStore.getSaveSnapshot({ markAsInitial: true })
   registerSoundRoomActions()
 }
