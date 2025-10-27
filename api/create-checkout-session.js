@@ -1,39 +1,6 @@
-import Stripe from 'stripe'
-
-const stripeSecretKey = process.env.STRIPE_SECRET_KEY
-
-if (!stripeSecretKey) {
-  console.warn('Missing STRIPE_SECRET_KEY environment variable. Stripe checkout API will not function.')
-}
-
-const stripe = stripeSecretKey
-  ? new Stripe(stripeSecretKey)
-  : null
-
-const ALLOWED_ORIGIN = process.env.NODE_ENV === 'production' ? 'https://soundroom.live' : '*'
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': ALLOWED_ORIGIN,
-  'Access-Control-Allow-Methods': 'POST, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type',
-  'Access-Control-Allow-Credentials': 'true',
-}
-
-const PLAN_PRICE_MAPPING = {
-  basic: process.env.STRIPE_BASIC_PRICE_ID,
-  pro: process.env.STRIPE_PRO_PRICE_ID,
-}
-
-function jsonResponse(body, init = {}) {
-  return new Response(JSON.stringify(body), {
-    ...init,
-    headers: {
-      'Content-Type': 'application/json',
-      ...corsHeaders,
-      ...(init.headers || {}),
-    },
-  })
-}
+import { corsHeaders, jsonResponse } from './_utils/http.js'
+import { stripe } from './_utils/serverClients.js'
+import { PLAN_PRICE_MAPPING } from './_utils/stripePlans.js'
 
 export function OPTIONS() {
   return new Response(null, {
@@ -64,7 +31,21 @@ export async function POST(request) {
       return jsonResponse({ error: 'Unsupported plan selected' }, { status: 400 });
     }
 
+    if (!clientReferenceId) {
+      return jsonResponse({ error: 'Missing user reference for checkout' }, { status: 400 });
+    }
+
     const baseUrl = process.env.PUBLIC_APP_URL || 'https://soundroom.live';
+
+    const metadata = { planId };
+    if (clientReferenceId) metadata.userId = clientReferenceId;
+
+    const subscriptionMetadata = { planId };
+    if (clientReferenceId) subscriptionMetadata.userId = clientReferenceId;
+
+    const successUrlWithSession = successUrl
+      || `${baseUrl}/manage-plan?checkout=success&session_id={CHECKOUT_SESSION_ID}`;
+    const cancelUrlWithSession = cancelUrl || `${baseUrl}/upgrade?checkout=cancel`;
 
     const session = await stripe.checkout.sessions.create({
       mode: 'subscription',
@@ -78,9 +59,12 @@ export async function POST(request) {
       billing_address_collection: 'auto',
       customer_email: customerEmail,
       client_reference_id: clientReferenceId,
-      success_url: successUrl || `${baseUrl}/manage-plan?checkout=success`,
-      cancel_url: cancelUrl || `${baseUrl}/upgrade?checkout=cancel`,
-      metadata: { planId },
+      success_url: successUrlWithSession,
+      cancel_url: cancelUrlWithSession,
+      metadata,
+      subscription_data: {
+        metadata: subscriptionMetadata,
+      },
     });
 
     return jsonResponse({ sessionUrl: session.url });

@@ -262,7 +262,7 @@ const handlePlanSelect = async (plan) => {
       planId: plan.id,
       customerEmail: user.value?.email ?? undefined,
       clientReferenceId: user.value?.id ?? undefined,
-      successUrl: origin ? `${origin}/manage-plan?checkout=success` : undefined,
+      successUrl: origin ? `${origin}/manage-plan?checkout=success&session_id={CHECKOUT_SESSION_ID}` : undefined,
       cancelUrl: origin ? `${origin}/upgrade?checkout=cancel` : undefined,
     })
   } catch (error) {

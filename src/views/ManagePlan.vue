@@ -2,6 +2,19 @@
   <main class="flex-1 overflow-y-auto bg-neutral-100 dark:bg-neutral-950 text-neutral-900 dark:text-neutral-100">
     <div class="max-w-4xl mx-auto px-6 py-10 space-y-10">
       <section class="space-y-4">
+        <div
+          v-if="checkoutStatusMessage || checkoutErrorMessage || isProcessingCheckout"
+          class="rounded-xl border p-4"
+          :class="[
+            isProcessingCheckout ? 'border-blue-200 bg-blue-50 text-blue-700 dark:border-blue-900/60 dark:bg-blue-950/40 dark:text-blue-300' : '',
+            checkoutStatusMessage && !isProcessingCheckout ? 'border-green-200 bg-green-50 text-green-700 dark:border-green-900/60 dark:bg-green-950/40 dark:text-green-300' : '',
+            checkoutErrorMessage ? 'border-red-200 bg-red-50 text-red-700 dark:border-red-900/60 dark:bg-red-950/40 dark:text-red-300' : '',
+          ]"
+        >
+          <p v-if="isProcessingCheckout" class="text-sm font-medium">Processing your plan change…</p>
+          <p v-else-if="checkoutStatusMessage" class="text-sm font-medium">{{ checkoutStatusMessage }}</p>
+          <p v-else-if="checkoutErrorMessage" class="text-sm font-medium">{{ checkoutErrorMessage }}</p>
+        </div>
         <div class="flex items-center justify-between gap-6 flex-wrap">
           <div class="space-y-2">
             <h1 class="text-3xl font-semibold tracking-tight">Manage Plan</h1>
@@ -50,6 +63,7 @@
               v-if="currentPlan.manageAction"
               variant="naked"
               class="text-sm text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300"
+              :disabled="isDowngradeBusy"
               @click="currentPlan.manageAction.handler"
             >
               {{ currentPlan.manageAction.label }}
@@ -100,19 +114,142 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import BaseButton from '@/components/ui/input/BaseButton.vue'
 import { useAuth } from '@/composables/useAuth'
 import { getPlanTheme, getPlanBadgeClass } from '@/constants/planThemes'
+import { supabase } from '@/utils/supabase'
 
 const SUPPORT_EMAIL = 'support@soundroom.app'
 
-const { tier } = useAuth()
+const { tier, refreshTier } = useAuth()
 const router = useRouter()
 const route = useRoute()
 
 const normalizedTier = computed(() => (tier.value || 'free').toLowerCase())
+
+const checkoutStatusMessage = ref('')
+const checkoutErrorMessage = ref('')
+const isProcessingCheckout = ref(false)
+
+const PLAN_DISPLAY_NAME = {
+  free: 'Free',
+  basic: 'Basic',
+  pro: 'Pro',
+}
+
+const isDowngradeBusy = ref(false)
+
+async function downgradeToFree() {
+  if (isDowngradeBusy.value) return
+
+  if (normalizedTier.value === 'free') {
+    checkoutStatusMessage.value = 'You are already on the Free plan.'
+    checkoutErrorMessage.value = ''
+    return
+  }
+
+  checkoutStatusMessage.value = ''
+  checkoutErrorMessage.value = ''
+  isDowngradeBusy.value = true
+  isProcessingCheckout.value = true
+
+  try {
+    const { data: sessionData, error: sessionError } = await supabase.auth.getSession()
+    if (sessionError) {
+      throw new Error(sessionError.message)
+    }
+
+    const accessToken = sessionData?.session?.access_token
+
+    if (!accessToken) {
+      throw new Error('You must be signed in to manage your plan.')
+    }
+
+    const response = await fetch('/api/manage-plan', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${accessToken}`,
+      },
+      body: JSON.stringify({ action: 'downgrade' }),
+    })
+
+    if (!response.ok) {
+      const errorPayload = await response.json().catch(() => ({ error: 'Unable to update plan' }))
+      throw new Error(errorPayload.error || 'Unable to update plan')
+    }
+
+    const payload = await response.json()
+    const planName = PLAN_DISPLAY_NAME[payload.plan] || 'Free'
+    checkoutStatusMessage.value = `Your ${planName} plan is now active.`
+    await refreshTier(true)
+  } catch (error) {
+    console.error('Failed to downgrade plan', error)
+    checkoutErrorMessage.value = error?.message || 'Unable to update your plan. Please try again.'
+  } finally {
+    isDowngradeBusy.value = false
+    isProcessingCheckout.value = false
+  }
+}
+
+async function syncCheckoutIfNeeded() {
+  if (route.query.checkout !== 'success') {
+    return
+  }
+
+  const sessionIdParam = route.query.session_id
+  const sessionId = Array.isArray(sessionIdParam) ? sessionIdParam[0] : sessionIdParam
+
+  checkoutStatusMessage.value = ''
+  checkoutErrorMessage.value = ''
+  isProcessingCheckout.value = true
+
+  try {
+    if (sessionId) {
+      const response = await fetch('/api/sync-checkout-session', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ sessionId }),
+      })
+
+      if (!response.ok) {
+        const errorPayload = await response.json().catch(() => ({ error: 'Unable to verify checkout' }))
+        throw new Error(errorPayload.error || 'Unable to verify checkout')
+      }
+
+      const payload = await response.json()
+      const planName = PLAN_DISPLAY_NAME[payload.plan] || 'Free'
+      checkoutStatusMessage.value = `Your ${planName} plan is now active.`
+    } else {
+      await refreshTier(true)
+      const planName = PLAN_DISPLAY_NAME[normalizedTier.value] || 'Free'
+      checkoutStatusMessage.value = `Your ${planName} plan is now active.`
+    }
+
+    await refreshTier(true)
+  } catch (error) {
+    console.error('Failed to process checkout sync', error)
+    checkoutErrorMessage.value = error?.message || 'Unable to confirm your plan. Please contact support if this persists.'
+  } finally {
+    isProcessingCheckout.value = false
+
+    const newQuery = { ...route.query }
+    delete newQuery.checkout
+    delete newQuery.session_id
+
+    router.replace({ query: newQuery })
+  }
+}
+
+onMounted(() => {
+  if (route.query.checkout === 'success') {
+    syncCheckoutIfNeeded()
+  }
+})
 
 const PLAN_MAP = {
   free: {
@@ -146,11 +283,8 @@ const PLAN_MAP = {
       to: '/upgrade'
     },
     manageAction: {
-      label: 'Request downgrade to Free',
-      handler: () => sendEmail({
-        subject: 'SoundRoom – Downgrade request',
-        body: `Hi SoundRoom team,%0D%0A%0D%0AI would like to move my plan to Free. My account email is ${route.query.email || '[your account email]'}.` 
-      })
+      label: 'Downgrade to Free',
+      handler: downgradeToFree
     }
   },
   pro: {
@@ -165,11 +299,8 @@ const PLAN_MAP = {
     ],
     nextCta: null,
     manageAction: {
-      label: 'Manage or cancel subscription',
-      handler: () => sendEmail({
-        subject: 'SoundRoom – Manage Pro subscription',
-        body: `Hi SoundRoom team,%0D%0A%0D%0AI need help managing my subscription. My account email is ${route.query.email || '[your account email]'}.`
-      })
+      label: 'Cancel subscription & downgrade to Free',
+      handler: downgradeToFree
     }
   }
 }

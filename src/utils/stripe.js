@@ -53,8 +53,6 @@ export async function redirectToCheckout(options) {
     }),
   })
 
-  console.log(response)
-
   if (!response.ok) {
     const errorPayload = await response.json().catch(() => ({ error: 'Unknown error' }))
     throw new Error(errorPayload.error || 'Unable to start checkout')
