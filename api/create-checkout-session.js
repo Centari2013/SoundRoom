@@ -7,9 +7,7 @@ if (!stripeSecretKey) {
 }
 
 const stripe = stripeSecretKey
-  ? new Stripe(stripeSecretKey, {
-      apiVersion: '2024-09-30.acacia',
-    })
+  ? new Stripe(stripeSecretKey)
   : null
 
 const ALLOWED_ORIGIN = process.env.NODE_ENV === 'production' ? 'https://soundroom.live' : '*'
@@ -46,28 +44,27 @@ export function OPTIONS() {
 
 export async function POST(request) {
   if (!stripe) {
-    return jsonResponse({ error: 'Stripe is not configured' }, { status: 500 })
+    return jsonResponse({ error: 'Stripe is not configured' }, { status: 500 });
   }
 
   try {
-    const payload = await request.json()
-    const planId = String(payload.planId || '').toLowerCase()
-    const successUrl = payload.successUrl
-    const cancelUrl = payload.cancelUrl
-    const customerEmail = payload.customerEmail ? String(payload.customerEmail) : undefined
-    const clientReferenceId = payload.clientReferenceId ? String(payload.clientReferenceId) : undefined
+    const payload = await request.json();
+    const planId = String(payload.planId || '').toLowerCase();
+    const successUrl = payload.successUrl;
+    const cancelUrl = payload.cancelUrl;
+    const customerEmail = payload.customerEmail ? String(payload.customerEmail) : undefined;
+    const clientReferenceId = payload.clientReferenceId ? String(payload.clientReferenceId) : undefined;
 
     if (!planId) {
-      return jsonResponse({ error: 'Missing planId' }, { status: 400 })
+      return jsonResponse({ error: 'Missing planId' }, { status: 400 });
     }
 
-    const priceId = PLAN_PRICE_MAPPING[planId]
-
+    const priceId = PLAN_PRICE_MAPPING[planId];
     if (!priceId) {
-      return jsonResponse({ error: 'Unsupported plan selected' }, { status: 400 })
+      return jsonResponse({ error: 'Unsupported plan selected' }, { status: 400 });
     }
 
-    const baseUrl = process.env.PUBLIC_APP_URL || 'https://soundroom.live'
+    const baseUrl = process.env.PUBLIC_APP_URL || 'https://soundroom.live';
 
     const session = await stripe.checkout.sessions.create({
       mode: 'subscription',
@@ -78,20 +75,18 @@ export async function POST(request) {
         },
       ],
       allow_promotion_codes: true,
-      automatic_tax: { enabled: true },
       billing_address_collection: 'auto',
       customer_email: customerEmail,
       client_reference_id: clientReferenceId,
       success_url: successUrl || `${baseUrl}/manage-plan?checkout=success`,
       cancel_url: cancelUrl || `${baseUrl}/upgrade?checkout=cancel`,
-      metadata: {
-        planId,
-      },
-    })
+      metadata: { planId },
+    });
 
-    return jsonResponse({ sessionId: session.id })
+    return jsonResponse({ sessionUrl: session.url });
   } catch (error) {
-    console.error('Error creating Stripe checkout session', error)
-    return jsonResponse({ error: 'Unable to start checkout' }, { status: 500 })
+    console.error('Error creating Stripe checkout session', error);
+    return jsonResponse({ error: 'Unable to start checkout' }, { status: 500 });
   }
 }
+

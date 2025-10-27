@@ -53,20 +53,19 @@ export async function redirectToCheckout(options) {
     }),
   })
 
+  console.log(response)
+
   if (!response.ok) {
     const errorPayload = await response.json().catch(() => ({ error: 'Unknown error' }))
     throw new Error(errorPayload.error || 'Unable to start checkout')
   }
 
-  const { sessionId } = await response.json()
+  const { sessionUrl } = await response.json()
 
-  if (!sessionId) {
-    throw new Error('Stripe session was not returned')
+  if (!sessionUrl) {
+    throw new Error('Stripe session URL was not returned')
   }
 
-  const { error } = await stripe.redirectToCheckout({ sessionId })
-
-  if (error) {
-    throw error
-  }
+  window.location.href = sessionUrl; // navigate to Stripe directly
+  
 }
