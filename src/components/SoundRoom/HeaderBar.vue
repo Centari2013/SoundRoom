@@ -132,11 +132,6 @@ const headerButtons = computed(() => [
     shouldShow: isAuthenticated.value && tier.value === 'free'
   },
   {
-    label: 'Manage Account',
-    action: () => router.push('/settings'),
-    shouldShow: isAuthenticated.value
-  },
-  {
     label: 'Settings',
     action: () => router.push('/settings'),
     shouldShow: isAuthenticated.value

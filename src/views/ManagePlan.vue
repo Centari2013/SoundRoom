@@ -16,9 +16,9 @@
           <p v-else-if="checkoutErrorMessage" class="text-sm font-medium">{{ checkoutErrorMessage }}</p>
         </div>
         <div class="flex items-center justify-between gap-6 flex-wrap">
-          <div class="space-y-2">
+          <div class="space-y-2 w-full">
             <h1 class="text-3xl font-semibold tracking-tight">Manage Plan</h1>
-            <p class="text-sm text-neutral-600 dark:text-neutral-400 max-w-2xl">
+            <p class="text-sm text-neutral-600 dark:text-neutral-400 w-full">
               Review what is included in your subscription, explore upgrade options, or reach out for billing support.
             </p>
           </div>
