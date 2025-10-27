@@ -1,3 +1,5 @@
+export const config = { runtime: 'nodejs' };
+
 import { Buffer } from 'node:buffer'
 import { corsHeaders, jsonResponse } from './_utils/http.js'
 import { stripe } from './_utils/serverClients.js'
@@ -14,6 +16,8 @@ export function OPTIONS() {
 }
 
 export async function POST(request) {
+  console.log('Webhook Secret:', webhookSecret);
+  console.log('Request:', request);
   if (!stripe || !webhookSecret) {
     console.error('Stripe webhook invoked without required configuration')
     return jsonResponse({ error: 'Stripe webhook is not configured' }, { status: 500 })
