@@ -26,6 +26,7 @@ export function getStripe() {
  *
  * @param {{
  *   planId: string,
+ *   userId: string,
  *   customerEmail?: string,
  *   successUrl?: string,
  *   cancelUrl?: string,
@@ -46,6 +47,7 @@ export async function redirectToCheckout(options) {
     },
     body: JSON.stringify({
       planId: options.planId,
+      userId: options.userId,
       customerEmail: options.customerEmail,
       successUrl: options.successUrl,
       cancelUrl: options.cancelUrl,
