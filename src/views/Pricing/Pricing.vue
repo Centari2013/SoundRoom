@@ -260,6 +260,7 @@ const handlePlanSelect = async (plan) => {
     activeCheckoutPlan.value = plan.id
     await redirectToCheckout({
       planId: plan.id,
+      userId: user.value?.id ?? '',
       customerEmail: user.value?.email ?? undefined,
       clientReferenceId: user.value?.id ?? undefined,
       successUrl: origin ? `${origin}/manage-plan?checkout=success&session_id={CHECKOUT_SESSION_ID}` : undefined,

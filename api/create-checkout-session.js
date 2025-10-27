@@ -17,6 +17,7 @@ export async function POST(request) {
   try {
     const payload = await request.json();
     const planId = String(payload.planId || '').toLowerCase();
+    const userId = payload.userId ? String(payload.userId) : undefined;
     const successUrl = payload.successUrl;
     const cancelUrl = payload.cancelUrl;
     const customerEmail = payload.customerEmail ? String(payload.customerEmail) : undefined;
@@ -37,7 +38,7 @@ export async function POST(request) {
 
     const baseUrl = process.env.PUBLIC_APP_URL || 'https://soundroom.live';
 
-    const metadata = { planId };
+    const metadata = { planId, userId };
     if (clientReferenceId) metadata.userId = clientReferenceId;
 
     const subscriptionMetadata = { planId };
