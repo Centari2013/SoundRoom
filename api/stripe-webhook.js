@@ -1,6 +1,8 @@
 import { Buffer } from 'node:buffer'
 import { corsHeaders, jsonResponse } from './_utils/http.js'
-import { stripe, supabaseAdmin } from './_utils/serverClients.js'
+import { stripe } from './_utils/serverClients.js'
+import { getPlanFromPriceId, normalizePlanId } from './_utils/stripePlans.js'
+import { resolveUserForStripe, updateUserPlanTier } from './_utils/userPlan.js'
 
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET
 
@@ -12,7 +14,7 @@ export function OPTIONS() {
 }
 
 export async function POST(request) {
-  if (!stripe || !supabaseAdmin || !webhookSecret) {
+  if (!stripe || !webhookSecret) {
     console.error('Stripe webhook invoked without required configuration')
     return jsonResponse({ error: 'Stripe webhook is not configured' }, { status: 500 })
   }
@@ -69,18 +71,34 @@ async function handleCheckoutSessionCompleted(session) {
     return
   }
 
-  const user = await findUserByStripeCustomerId(customerId)
-  if (!user) {
-    console.warn('No Supabase user found for Stripe customer', customerId)
+  const customerEmail = session.customer_details?.email ?? session.customer_email ?? null
+  const referencedUserId = session.metadata?.userId ?? session.client_reference_id ?? null
+
+  const userId = await resolveUserForStripe({
+    userId: referencedUserId,
+    customerId,
+    customerEmail,
+  })
+
+  if (!userId) {
+    console.warn('Unable to resolve user for checkout session', session.id)
     return
   }
 
-  const tier = normalizeTier(session.metadata?.tier) ?? 'basic'
-  const subscriptionId = typeof session.subscription === 'string' ? session.subscription : session.subscription?.id
+  let plan = normalizePlanFromSession(session)
 
-  await updateUser(user.id, {
-    stripe_subscription_id: subscriptionId ?? null,
-    tier,
+  if (!plan) {
+    const subscription = await resolveSubscription(session.subscription)
+    plan = normalizePlanFromSubscription(subscription)
+  }
+
+  const subscriptionId = extractSubscriptionId(session.subscription)
+
+  await updateUserPlanTier({
+    userId,
+    plan,
+    customerId,
+    subscriptionId: plan === 'free' ? null : subscriptionId,
   })
 }
 
@@ -93,20 +111,27 @@ async function handleSubscriptionUpdated(subscription) {
     return
   }
 
-  const user = await findUserByStripeCustomerId(customerId)
-  if (!user) {
-    console.warn('No Supabase user found for Stripe customer', customerId)
+  const customerEmail = subscription.customer_email ?? null
+  const referencedUserId = subscription.metadata?.userId ?? null
+
+  const userId = await resolveUserForStripe({
+    userId: referencedUserId,
+    customerId,
+    customerEmail,
+  })
+
+  if (!userId) {
+    console.warn('Unable to resolve user for subscription update', subscription.id)
     return
   }
 
-  const tier =
-    normalizeTier(subscription.metadata?.tier) ??
-    normalizeTier(subscription.items?.data?.[0]?.price?.metadata?.tier) ??
-    'basic'
+  const plan = normalizePlanFromSubscription(subscription)
 
-  await updateUser(user.id, {
-    stripe_subscription_id: subscription.id,
-    tier,
+  await updateUserPlanTier({
+    userId,
+    plan,
+    customerId,
+    subscriptionId: plan === 'free' ? null : subscription.id,
   })
 }
 
@@ -119,15 +144,25 @@ async function handleSubscriptionDeleted(subscription) {
     return
   }
 
-  const user = await findUserByStripeCustomerId(customerId)
-  if (!user) {
-    console.warn('No Supabase user found for Stripe customer', customerId)
+  const customerEmail = subscription.customer_email ?? null
+  const referencedUserId = subscription.metadata?.userId ?? null
+
+  const userId = await resolveUserForStripe({
+    userId: referencedUserId,
+    customerId,
+    customerEmail,
+  })
+
+  if (!userId) {
+    console.warn('Unable to resolve user for subscription deletion', subscription.id)
     return
   }
 
-  await updateUser(user.id, {
-    stripe_subscription_id: null,
-    tier: 'free',
+  await updateUserPlanTier({
+    userId,
+    plan: 'free',
+    customerId,
+    subscriptionId: null,
   })
 }
 
@@ -137,37 +172,72 @@ function extractCustomerId(customer) {
   return customer.id ?? null
 }
 
-async function findUserByStripeCustomerId(customerId) {
-  const { data, error } = await supabaseAdmin
-    .from('users')
-    .select('id')
-    .eq('stripe_customer_id', customerId)
-    .maybeSingle()
-
-  if (error) {
-    throw error
-  }
-
-  return data
+function extractSubscriptionId(subscription) {
+  if (!subscription) return null
+  if (typeof subscription === 'string') return subscription
+  return subscription.id ?? null
 }
 
-async function updateUser(userId, updates) {
-  const { error } = await supabaseAdmin.from('users').update(updates).eq('id', userId)
+async function resolveSubscription(subscription) {
+  if (!subscription) {
+    return null
+  }
 
-  if (error) {
-    throw error
+  if (typeof subscription !== 'string') {
+    return subscription
+  }
+
+  if (!stripe) {
+    return null
+  }
+
+  try {
+    return await stripe.subscriptions.retrieve(subscription, {
+      expand: ['items'],
+    })
+  } catch (error) {
+    console.warn('Failed to retrieve subscription for checkout session', error)
+    return null
   }
 }
 
-function normalizeTier(tier) {
-  if (typeof tier !== 'string') return null
+function normalizePlanFromSession(session) {
+  if (!session) return null
 
-  switch (tier.toLowerCase()) {
-    case 'pro':
-    case 'premium':
-    case 'basic':
-      return tier.toLowerCase()
-    default:
-      return null
+  const fromMetadata = normalizePlanId(session.metadata?.planId) ?? normalizePlanId(session.metadata?.tier)
+  if (fromMetadata) {
+    return fromMetadata
   }
+
+  const planFromPrice = getPlanFromPriceId(session.metadata?.priceId)
+  if (planFromPrice) {
+    return planFromPrice
+  }
+
+  return null
+}
+
+function normalizePlanFromSubscription(subscription) {
+  if (!subscription) {
+    return 'free'
+  }
+
+  const fromMetadata = normalizePlanId(subscription.metadata?.planId) ?? normalizePlanId(subscription.metadata?.tier)
+  if (fromMetadata) {
+    return fromMetadata
+  }
+
+  const priceMetadataTier = normalizePlanId(subscription.items?.data?.[0]?.price?.metadata?.planId) ??
+    normalizePlanId(subscription.items?.data?.[0]?.price?.metadata?.tier)
+  if (priceMetadataTier) {
+    return priceMetadataTier
+  }
+
+  const priceId = subscription.items?.data?.[0]?.price?.id
+  const planFromPrice = getPlanFromPriceId(priceId)
+  if (planFromPrice) {
+    return planFromPrice
+  }
+
+  return 'free'
 }

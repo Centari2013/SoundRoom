@@ -1,7 +1,6 @@
 import { corsHeaders, jsonResponse } from './_utils/http.js'
 import { stripe } from './_utils/serverClients.js'
 import { getPlanFromPriceId, normalizePlanId } from './_utils/stripePlans.js'
-import { updateUserPlanTier } from './_utils/userPlan.js'
 
 export function OPTIONS() {
   return new Response(null, {
@@ -62,20 +61,7 @@ export async function POST(request) {
       plan = planFromPrice ?? 'free'
     }
 
-    const customerId = typeof session.customer === 'string'
-      ? session.customer
-      : session.customer?.id
-
-    const subscriptionId = typeof session.subscription === 'string'
-      ? session.subscription
-      : session.subscription?.id
-
-    const normalizedPlan = await updateUserPlanTier({
-      userId,
-      plan,
-      customerId,
-      subscriptionId: plan === 'free' ? null : subscriptionId,
-    })
+    const normalizedPlan = normalizePlanId(plan) ?? 'free'
 
     return jsonResponse({ status: 'ok', plan: normalizedPlan })
   } catch (error) {
