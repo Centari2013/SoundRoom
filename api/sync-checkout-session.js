@@ -1,6 +1,6 @@
 import { corsHeaders, jsonResponse } from './_utils/http.js'
 import { stripe } from './_utils/serverClients.js'
-import { getPlanFromPriceId, normalizePlanId } from './_utils/stripePlans.js'
+import { extractCustomerId, resolvePlanFromCheckoutSession } from './_utils/stripePlans.js'
 import { updateUserPlanTier } from './_utils/userPlan.js'
 
 export function OPTIONS() {
@@ -44,56 +44,32 @@ export async function POST(request) {
       return jsonResponse({ error: 'Checkout session is missing user reference' }, { status: 400 })
     }
 
-    let plan = normalizePlanId(session.metadata?.planId)
-
-    let subscription = null
-
-    if (typeof session.subscription === 'string') {
-      subscription = await stripe.subscriptions.retrieve(session.subscription, {
-        expand: ['items'],
-      })
-    } else if (session.subscription) {
-      subscription = session.subscription
-    }
-
-    if (!plan) {
-      const priceId = subscription?.items?.data?.[0]?.price?.id
-      const planFromPrice = getPlanFromPriceId(priceId)
-      plan = planFromPrice ?? 'free'
-    }
-
-    const normalizedPlan = normalizePlanId(plan) ?? 'free'
+    const { plan: resolvedPlan, subscriptionId: resolvedSubscriptionId } =
+      await resolvePlanFromCheckoutSession(session, stripe)
 
     const customerId = extractCustomerId(session.customer)
-    const subscriptionId = normalizedPlan === 'free' ? null : extractSubscriptionId(subscription)
+    const planToPersist = resolvedPlan ?? (resolvedSubscriptionId ? undefined : 'free')
+    const subscriptionId = planToPersist === 'free' ? null : resolvedSubscriptionId ?? null
 
     try {
-      await updateUserPlanTier({
+      const persistedPlan = await updateUserPlanTier({
         userId,
-        plan: normalizedPlan,
+        plan: planToPersist,
         customerId,
         subscriptionId,
       })
+
+      if (planToPersist === undefined) {
+        return jsonResponse({ status: 'pending' }, { status: 202 })
+      }
+
+      return jsonResponse({ status: 'ok', plan: persistedPlan ?? planToPersist ?? 'free' })
     } catch (error) {
       console.error('Failed to persist user plan tier after checkout session sync', error)
       return jsonResponse({ error: 'Failed to finalize plan' }, { status: 500 })
     }
-
-    return jsonResponse({ status: 'ok', plan: normalizedPlan })
   } catch (error) {
     console.error('Failed to sync checkout session', error)
     return jsonResponse({ error: 'Failed to sync checkout session' }, { status: 500 })
   }
-}
-
-function extractCustomerId(customer) {
-  if (!customer) return null
-  if (typeof customer === 'string') return customer
-  return customer.id ?? null
-}
-
-function extractSubscriptionId(subscription) {
-  if (!subscription) return null
-  if (typeof subscription === 'string') return subscription
-  return subscription.id ?? null
 }
