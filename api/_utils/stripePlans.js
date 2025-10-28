@@ -57,38 +57,48 @@ export function normalizePlanFromSubscription(subscription) {
     return null
   }
 
-  const fromMetadata =
-    normalizePlanId(subscription.metadata?.planId) ?? normalizePlanId(subscription.metadata?.tier)
-  if (fromMetadata) {
-    return fromMetadata
-  }
-
   const item = subscription.items?.data?.[0]
+
+  const metadataPlan =
+    normalizePlanId(subscription.metadata?.planId) ?? normalizePlanId(subscription.metadata?.tier)
   const itemMetadataPlan =
     normalizePlanId(item?.metadata?.planId) ?? normalizePlanId(item?.metadata?.tier)
-  if (itemMetadataPlan) {
-    return itemMetadataPlan
-  }
-
   const priceMetadataPlan =
-    normalizePlanId(item?.price?.metadata?.planId) ?? normalizePlanId(item?.price?.metadata?.tier)
-  if (priceMetadataPlan) {
-    return priceMetadataPlan
-  }
+    normalizePlanId(item?.price?.metadata?.planId) ??
+    normalizePlanId(item?.price?.metadata?.tier)
+
+  const metadataCandidates = [metadataPlan, itemMetadataPlan, priceMetadataPlan].filter(
+    Boolean,
+  )
 
   const priceId = item?.price?.id ?? subscription.plan?.id
   const planFromPrice = getPlanFromPriceId(priceId)
+
+  const productId = item?.price?.product ?? subscription.plan?.product
+  const planFromProduct = getPlanFromProductId(productId)
+
+  for (const candidate of metadataCandidates) {
+    if (
+      !planFromPrice &&
+      !planFromProduct
+    ) {
+      return candidate
+    }
+
+    if (candidate === planFromPrice || candidate === planFromProduct) {
+      return candidate
+    }
+  }
+
   if (planFromPrice) {
     return planFromPrice
   }
 
-  const productId = item?.price?.product ?? subscription.plan?.product
-  const planFromProduct = getPlanFromProductId(productId)
   if (planFromProduct) {
     return planFromProduct
   }
 
-  return null
+  return metadataCandidates[0] ?? null
 }
 
 function normalizePlanFromSessionMetadata(session) {

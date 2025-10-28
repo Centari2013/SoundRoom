@@ -53,10 +53,25 @@ export async function updateUserPlanTier({ userId, plan, customerId, subscriptio
   return normalizedPlan
 }
 
-export async function resolveUserForStripe({ userId }) {
-  if (!userId) {
+export async function resolveUserForStripe({ userId, customerId }) {
+  if (userId) {
+    return userId
+  }
+
+  if (!customerId || !supabaseAdmin) {
     return null
   }
 
-  return userId
+  const { data, error } = await supabaseAdmin
+    .from('users')
+    .select('id')
+    .eq('stripe_customer_id', customerId)
+    .maybeSingle()
+
+  if (error) {
+    console.error('Unable to resolve user from Stripe customer id', error)
+    return null
+  }
+
+  return data?.id ?? null
 }

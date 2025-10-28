@@ -80,6 +80,7 @@ async function handleCheckoutSessionCompleted(session) {
 
   const userId = await resolveUserForStripe({
     userId: session.metadata?.userId ?? null,
+    customerId,
   })
 
   if (!userId) {
@@ -108,6 +109,7 @@ async function handleSubscriptionUpdated(subscription) {
 
   const userId = await resolveUserForStripe({
     userId: subscription.metadata?.userId ?? null,
+    customerId,
   })
 
   if (!userId) {
@@ -140,6 +142,7 @@ async function handleSubscriptionDeleted(subscription) {
 
   const userId = await resolveUserForStripe({
     userId: subscription.metadata?.userId ?? null,
+    customerId,
   })
 
   if (!userId) {
