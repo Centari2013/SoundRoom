@@ -39,22 +39,24 @@ export function normalizePlanFromSubscription(subscription) {
     return null
   }
 
-  const fromMetadata = normalizePlanId(subscription.metadata?.planId) ?? normalizePlanId(subscription.metadata?.tier)
-  if (fromMetadata) {
-    return fromMetadata
+  const priceItem = subscription.items?.data?.[0] ?? null
+  const price = priceItem?.price ?? null
+
+  const planFromPriceMetadata =
+    normalizePlanId(price?.metadata?.planId) ?? normalizePlanId(price?.metadata?.tier)
+  if (planFromPriceMetadata) {
+    return planFromPriceMetadata
   }
 
-  const priceMetadataTier =
-    normalizePlanId(subscription.items?.data?.[0]?.price?.metadata?.planId) ??
-    normalizePlanId(subscription.items?.data?.[0]?.price?.metadata?.tier)
-  if (priceMetadataTier) {
-    return priceMetadataTier
+  const planFromPriceId = getPlanFromPriceId(price?.id)
+  if (planFromPriceId) {
+    return planFromPriceId
   }
 
-  const priceId = subscription.items?.data?.[0]?.price?.id
-  const planFromPrice = getPlanFromPriceId(priceId)
-  if (planFromPrice) {
-    return planFromPrice
+  const planFromSubscriptionMetadata =
+    normalizePlanId(subscription.metadata?.planId) ?? normalizePlanId(subscription.metadata?.tier)
+  if (planFromSubscriptionMetadata) {
+    return planFromSubscriptionMetadata
   }
 
   return null
