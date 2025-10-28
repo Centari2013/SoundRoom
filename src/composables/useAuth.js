@@ -24,6 +24,17 @@ const tier = ref('free')
 const TIER_CACHE_KEY = 'userTier'
 const CACHE_DURATION_MS = 1000 * 60 * 30 // 30 minutes
 
+function writeTierToCache(newTier) {
+  const normalized = (newTier || 'free').toLowerCase()
+
+  localStorage.setItem(TIER_CACHE_KEY, JSON.stringify({
+    value: normalized,
+    updatedAt: Date.now()
+  }))
+
+  return normalized
+}
+
 /**
  * Get the user's current tier from cache or database.
  *
@@ -54,12 +65,7 @@ export async function getUserTier(userId, forceRefresh = false) {
 
   const newTier = data?.plan_tier ?? 'free'
 
-  localStorage.setItem(TIER_CACHE_KEY, JSON.stringify({
-    value: newTier,
-    updatedAt: Date.now()
-  }))
-
-  return newTier
+  return writeTierToCache(newTier)
 }
 
 /**
@@ -75,6 +81,15 @@ export async function refreshTier(force = false) {
   }
 
   tier.value = await getUserTier(user.value.id, force)
+}
+
+/**
+ * Immediately updates the reactive tier state and cache.
+ *
+ * @param {string} value
+ */
+function primeTier(value) {
+  tier.value = writeTierToCache(value)
 }
 
 // Initial session check
@@ -115,6 +130,7 @@ export function useAuth() {
     tier: readonly(tier),
     getTier: getUserTier,
     refreshTier,
+    primeTier,
     clearUser: () => {
       user.value = null
       tier.value = 'free'

@@ -12,7 +12,7 @@
           <div class="flex items-center gap-3 rounded-full border border-neutral-200 dark:border-neutral-800 px-4 py-2 bg-white/70 dark:bg-neutral-900/70">
             <span class="text-xs uppercase tracking-wide text-neutral-500 dark:text-neutral-400">Plan</span>
             <span class="text-sm font-medium">{{ planLabel }}</span>
-            <RouterLink :to="tier.value === 'free' ? '/upgrade' : 'https://billing.stripe.com/p/login/7sY9AScjvcjKayEfItbsc00'" class="ml-2">
+            <RouterLink :to="planButtonTarget" class="ml-2">
               <BaseButton type="button">
                 {{ tier.value === 'free' ? 'Upgrade Plan' : 'Manage Plan' }}
               </BaseButton>
@@ -206,6 +206,7 @@ import { supabase } from '@/utils/supabase'
 
 const router = useRouter()
 const { user, sessionLoaded, tier } = useAuth()
+const planButtonTarget = computed(() => (tier.value === 'free' ? '/upgrade' : '/manage-plan'))
 
 const profileForm = reactive({
   displayName: '',
