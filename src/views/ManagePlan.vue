@@ -60,13 +60,21 @@
               </BaseButton>
             </RouterLink>
             <BaseButton
-              v-if="currentPlan.manageAction"
+              v-if="currentPlan.portalAction"
+              :loading="isCreatingPortalSession"
+              :disabled="isCreatingPortalSession || isProcessingCheckout"
+              @click="currentPlan.portalAction.handler"
+            >
+              {{ currentPlan.portalAction.label }}
+            </BaseButton>
+            <BaseButton
+              v-if="currentPlan.cancelAction"
               variant="naked"
               class="text-sm text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300"
-              :disabled="isDowngradeBusy"
-              @click="currentPlan.manageAction.handler"
+              :disabled="isDowngradeBusy || isCreatingPortalSession"
+              @click="currentPlan.cancelAction.handler"
             >
-              {{ currentPlan.manageAction.label }}
+              {{ currentPlan.cancelAction.label }}
             </BaseButton>
           </div>
         </div>
@@ -76,7 +84,7 @@
         <header class="space-y-1">
           <h2 class="text-xl font-semibold">Billing & Receipts</h2>
           <p class="text-sm text-neutral-600 dark:text-neutral-400">
-            SoundRoom uses Stripe under the hood. A full self-service billing portal is coming soon — in the meantime, reach out and we will take care of any changes for you.
+            SoundRoom uses Stripe under the hood. Use the billing portal to view invoices, update payment details, or make changes to your plan anytime.
           </p>
         </header>
 
@@ -120,6 +128,7 @@ import BaseButton from '@/components/ui/input/BaseButton.vue'
 import { useAuth } from '@/composables/useAuth'
 import { getPlanTheme, getPlanBadgeClass } from '@/constants/planThemes'
 import { supabase } from '@/utils/supabase'
+import { createBillingPortalSession } from '@/utils/billingPortal'
 
 const SUPPORT_EMAIL = 'support@soundroom.app'
 
@@ -140,6 +149,7 @@ const PLAN_DISPLAY_NAME = {
 }
 
 const isDowngradeBusy = ref(false)
+const isCreatingPortalSession = ref(false)
 
 async function downgradeToFree() {
   if (isDowngradeBusy.value) return
@@ -192,6 +202,28 @@ async function downgradeToFree() {
   } finally {
     isDowngradeBusy.value = false
     isProcessingCheckout.value = false
+  }
+}
+
+async function openBillingPortal() {
+  if (isCreatingPortalSession.value) return
+
+  checkoutStatusMessage.value = ''
+  checkoutErrorMessage.value = ''
+  isCreatingPortalSession.value = true
+
+  try {
+    const returnUrl = typeof window !== 'undefined' ? `${window.location.origin}/manage-plan` : undefined
+    const portalUrl = await createBillingPortalSession(returnUrl)
+
+    if (typeof window !== 'undefined') {
+      window.location.href = portalUrl
+    }
+  } catch (error) {
+    console.error('Failed to open billing portal', error)
+    checkoutErrorMessage.value = error?.message || 'Unable to open billing portal. Please try again later.'
+  } finally {
+    isCreatingPortalSession.value = false
   }
 }
 
@@ -268,7 +300,8 @@ const PLAN_MAP = {
       label: 'Upgrade to Pro',
       to: '/upgrade'
     },
-    manageAction: null
+    portalAction: null,
+    cancelAction: null
   },
   basic: {
     id: 'basic',
@@ -284,8 +317,12 @@ const PLAN_MAP = {
       label: 'Upgrade to Pro',
       to: '/upgrade'
     },
-    manageAction: {
-      label: 'Downgrade to Free',
+    portalAction: {
+      label: 'Manage billing in Stripe portal',
+      handler: openBillingPortal
+    },
+    cancelAction: {
+      label: 'Cancel subscription & downgrade to Free',
       handler: downgradeToFree
     }
   },
@@ -300,7 +337,11 @@ const PLAN_MAP = {
       'Unlimited saved rooms with snapshot history'
     ],
     nextCta: null,
-    manageAction: {
+    portalAction: {
+      label: 'Manage billing in Stripe portal',
+      handler: openBillingPortal
+    },
+    cancelAction: {
       label: 'Cancel subscription & downgrade to Free',
       handler: downgradeToFree
     }

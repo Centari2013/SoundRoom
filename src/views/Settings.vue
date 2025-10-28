@@ -17,14 +17,23 @@
                 Upgrade Plan
               </BaseButton>
             </RouterLink>
-            <a v-else href="https://billing.stripe.com/p/login/7sY9AScjvcjKayEfItbsc00" target="_blank" rel="noopener" class="ml-2">
-              <BaseButton type="button">
-                Manage Plan
-              </BaseButton>
-            </a>
+            <BaseButton
+              v-else
+              type="button"
+              class="ml-2"
+              :loading="isOpeningBillingPortal"
+              :disabled="isOpeningBillingPortal"
+              @click="handleManagePlan"
+            >
+              Manage Plan
+            </BaseButton>
 
           </div>
         </div>
+
+        <p v-if="billingPortalError" class="text-sm text-red-500">
+          {{ billingPortalError }}
+        </p>
 
         <div class="rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white/70 dark:bg-neutral-900/70 p-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
           <div>
@@ -209,6 +218,7 @@ import BaseButton from '@/components/ui/input/BaseButton.vue'
 import BaseInput from '@/components/ui/input/BaseInput.vue'
 import { useAuth } from '@/composables/useAuth'
 import { supabase } from '@/utils/supabase'
+import { createBillingPortalSession } from '@/utils/billingPortal'
 
 const router = useRouter()
 const { user, sessionLoaded, tier } = useAuth()
@@ -249,6 +259,9 @@ const preferenceMessage = ref('')
 const securityMessage = ref('')
 const securityError = ref('')
 
+const isOpeningBillingPortal = ref(false)
+const billingPortalError = ref('')
+
 const LOCAL_PREF_KEY = 'soundroom.userPreferences'
 
 const userEmail = computed(() => user.value?.email ?? 'Unknown user')
@@ -260,6 +273,27 @@ const planLabel = computed(() => {
     ? 'Free'
     : value.charAt(0).toUpperCase() + value.slice(1)
 })
+
+async function handleManagePlan() {
+  if (isOpeningBillingPortal.value) return
+
+  billingPortalError.value = ''
+  isOpeningBillingPortal.value = true
+
+  try {
+    const returnUrl = typeof window !== 'undefined' ? `${window.location.origin}/manage-plan` : undefined
+    const portalUrl = await createBillingPortalSession(returnUrl)
+
+    if (typeof window !== 'undefined') {
+      window.location.href = portalUrl
+    }
+  } catch (error) {
+    console.error('Failed to open billing portal', error)
+    billingPortalError.value = error?.message || 'Unable to open billing portal. Please try again later.'
+  } finally {
+    isOpeningBillingPortal.value = false
+  }
+}
 
 const hasProfileChanges = computed(() => {
   const trimmedName = profileForm.displayName.trim()

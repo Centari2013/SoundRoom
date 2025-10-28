@@ -8,7 +8,6 @@ import {
   extractSubscriptionId,
   normalizePlanFromSubscription,
   resolvePlanFromCheckoutSession,
-  resolveSubscription,
 } from './_utils/stripePlans.js'
 import { resolveUserForStripe, updateUserPlanTier } from './_utils/userPlan.js'
 
@@ -79,13 +78,8 @@ async function handleCheckoutSessionCompleted(session) {
     return
   }
 
-  const customerEmail = session.customer_details?.email ?? session.customer_email ?? null
-  const referencedUserId = session.metadata?.userId ?? session.client_reference_id ?? null
-
   const userId = await resolveUserForStripe({
-    userId: referencedUserId,
-    customerId,
-    customerEmail,
+    userId: session.metadata?.userId ?? null,
   })
 
   if (!userId) {
@@ -93,7 +87,7 @@ async function handleCheckoutSessionCompleted(session) {
     return
   }
 
-  const { plan, subscriptionId } = await resolvePlanFromCheckoutSession(session, stripe)
+  const { plan, subscriptionId } = resolvePlanFromCheckoutSession(session)
 
   await updateUserPlanTier({
     userId,
@@ -112,13 +106,8 @@ async function handleSubscriptionUpdated(subscription) {
     return
   }
 
-  const customerEmail = subscription.customer_email ?? null
-  const referencedUserId = subscription.metadata?.userId ?? null
-
   const userId = await resolveUserForStripe({
-    userId: referencedUserId,
-    customerId,
-    customerEmail,
+    userId: subscription.metadata?.userId ?? null,
   })
 
   if (!userId) {
@@ -126,15 +115,17 @@ async function handleSubscriptionUpdated(subscription) {
     return
   }
 
-  const resolvedSubscription = (await resolveSubscription(subscription, stripe)) ?? subscription
-  const plan = normalizePlanFromSubscription(resolvedSubscription)
-  const subscriptionId = extractSubscriptionId(resolvedSubscription)
+  const subscriptionId = extractSubscriptionId(subscription)
+  const status = subscription.status
+  const isActiveStatus = ['trialing', 'active', 'past_due', 'unpaid'].includes(status)
+  const derivedPlan = isActiveStatus ? normalizePlanFromSubscription(subscription) : 'free'
+  const plan = derivedPlan ?? (isActiveStatus ? undefined : 'free')
 
   await updateUserPlanTier({
     userId,
     plan,
     customerId,
-    subscriptionId: plan === 'free' ? null : subscriptionId,
+    subscriptionId: !plan || plan === 'free' ? null : subscriptionId,
   })
 }
 
@@ -147,13 +138,8 @@ async function handleSubscriptionDeleted(subscription) {
     return
   }
 
-  const customerEmail = subscription.customer_email ?? null
-  const referencedUserId = subscription.metadata?.userId ?? null
-
   const userId = await resolveUserForStripe({
-    userId: referencedUserId,
-    customerId,
-    customerEmail,
+    userId: subscription.metadata?.userId ?? null,
   })
 
   if (!userId) {
