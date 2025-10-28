@@ -53,47 +53,10 @@ export async function updateUserPlanTier({ userId, plan, customerId, subscriptio
   return normalizedPlan
 }
 
-export async function resolveUserForStripe({ userId, customerId, customerEmail }) {
-  if (!supabaseAdmin) {
-    throw new Error('Supabase admin client is not configured')
+export async function resolveUserForStripe({ userId }) {
+  if (!userId) {
+    return null
   }
 
-  if (userId) {
-    return userId
-  }
-
-  if (customerId) {
-    const { data, error } = await supabaseAdmin
-      .from('users')
-      .select('id')
-      .eq('stripe_customer_id', customerId)
-      .maybeSingle()
-
-    if (!error && data?.id) {
-      return data.id
-    }
-  }
-
-  if (customerEmail) {
-    try {
-      const { data } = await supabaseAdmin.auth.admin.getUserByEmail(customerEmail)
-      if (data?.user?.id) {
-        return data.user.id
-      }
-    } catch (error) {
-      console.warn('Failed to resolve user via Supabase auth email lookup', error)
-    }
-
-    const { data, error } = await supabaseAdmin
-      .from('users')
-      .select('id')
-      .eq('email', customerEmail)
-      .maybeSingle()
-
-    if (!error && data?.id) {
-      return data.id
-    }
-  }
-
-  return null
+  return userId
 }
