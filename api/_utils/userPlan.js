@@ -12,9 +12,14 @@ export async function updateUserPlanTier({ userId, plan, customerId, subscriptio
     throw new Error('Missing user reference for plan update')
   }
 
-  const normalizedPlan = normalizePlanId(plan) ?? DEFAULT_PLAN
+  const updatePayload = {}
 
-  const updatePayload = { plan_tier: normalizedPlan }
+  let normalizedPlan
+
+  if (plan !== undefined) {
+    normalizedPlan = normalizePlanId(plan) ?? DEFAULT_PLAN
+    updatePayload.plan_tier = normalizedPlan
+  }
 
   if (customerId !== undefined) {
     updatePayload.stripe_customer_id = customerId
@@ -24,10 +29,14 @@ export async function updateUserPlanTier({ userId, plan, customerId, subscriptio
     updatePayload.stripe_subscription_id = subscriptionId
   }
 
+  if (Object.keys(updatePayload).length === 0) {
+    return normalizedPlan
+  }
+
   const { error } = await supabaseAdmin.from('users').update(updatePayload).eq('id', userId)
 
   if (error) {
-    if (error.code === '42703') {
+    if (error.code === '42703' && normalizedPlan) {
       const { error: fallbackError } = await supabaseAdmin
         .from('users')
         .update({ plan_tier: normalizedPlan })
