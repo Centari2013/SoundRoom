@@ -1,6 +1,7 @@
 import { corsHeaders, jsonResponse } from './_utils/http.js'
 import { stripe } from './_utils/serverClients.js'
 import { getPlanFromPriceId, normalizePlanId } from './_utils/stripePlans.js'
+import { updateUserPlanTier } from './_utils/userPlan.js'
 
 export function OPTIONS() {
   return new Response(null, {
@@ -45,17 +46,17 @@ export async function POST(request) {
 
     let plan = normalizePlanId(session.metadata?.planId)
 
+    let subscription = null
+
+    if (typeof session.subscription === 'string') {
+      subscription = await stripe.subscriptions.retrieve(session.subscription, {
+        expand: ['items'],
+      })
+    } else if (session.subscription) {
+      subscription = session.subscription
+    }
+
     if (!plan) {
-      let subscription = null
-
-      if (typeof session.subscription === 'string') {
-        subscription = await stripe.subscriptions.retrieve(session.subscription, {
-          expand: ['items'],
-        })
-      } else if (session.subscription) {
-        subscription = session.subscription
-      }
-
       const priceId = subscription?.items?.data?.[0]?.price?.id
       const planFromPrice = getPlanFromPriceId(priceId)
       plan = planFromPrice ?? 'free'
@@ -63,9 +64,36 @@ export async function POST(request) {
 
     const normalizedPlan = normalizePlanId(plan) ?? 'free'
 
+    const customerId = extractCustomerId(session.customer)
+    const subscriptionId = normalizedPlan === 'free' ? null : extractSubscriptionId(subscription)
+
+    try {
+      await updateUserPlanTier({
+        userId,
+        plan: normalizedPlan,
+        customerId,
+        subscriptionId,
+      })
+    } catch (error) {
+      console.error('Failed to persist user plan tier after checkout session sync', error)
+      return jsonResponse({ error: 'Failed to finalize plan' }, { status: 500 })
+    }
+
     return jsonResponse({ status: 'ok', plan: normalizedPlan })
   } catch (error) {
     console.error('Failed to sync checkout session', error)
     return jsonResponse({ error: 'Failed to sync checkout session' }, { status: 500 })
   }
+}
+
+function extractCustomerId(customer) {
+  if (!customer) return null
+  if (typeof customer === 'string') return customer
+  return customer.id ?? null
+}
+
+function extractSubscriptionId(subscription) {
+  if (!subscription) return null
+  if (typeof subscription === 'string') return subscription
+  return subscription.id ?? null
 }
