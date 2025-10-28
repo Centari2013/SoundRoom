@@ -3,7 +3,13 @@ export const config = { runtime: 'nodejs' };
 import { Buffer } from 'node:buffer'
 import { corsHeaders, jsonResponse } from './_utils/http.js'
 import { stripe } from './_utils/serverClients.js'
-import { getPlanFromPriceId, normalizePlanId } from './_utils/stripePlans.js'
+import {
+  extractCustomerId,
+  extractSubscriptionId,
+  normalizePlanFromSubscription,
+  resolvePlanFromCheckoutSession,
+  resolveSubscription,
+} from './_utils/stripePlans.js'
 import { resolveUserForStripe, updateUserPlanTier } from './_utils/userPlan.js'
 
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET
@@ -87,20 +93,13 @@ async function handleCheckoutSessionCompleted(session) {
     return
   }
 
-  let plan = normalizePlanFromSession(session)
-
-  if (!plan) {
-    const subscription = await resolveSubscription(session.subscription)
-    plan = normalizePlanFromSubscription(subscription)
-  }
-
-  const subscriptionId = extractSubscriptionId(session.subscription)
+  const { plan, subscriptionId } = await resolvePlanFromCheckoutSession(session, stripe)
 
   await updateUserPlanTier({
     userId,
-    plan,
+    plan: plan ?? (subscriptionId ? undefined : 'free'),
     customerId,
-    subscriptionId: plan === 'free' ? null : subscriptionId,
+    subscriptionId: plan === 'free' ? null : subscriptionId ?? null,
   })
 }
 
@@ -127,13 +126,15 @@ async function handleSubscriptionUpdated(subscription) {
     return
   }
 
-  const plan = normalizePlanFromSubscription(subscription)
+  const resolvedSubscription = (await resolveSubscription(subscription, stripe)) ?? subscription
+  const plan = normalizePlanFromSubscription(resolvedSubscription)
+  const subscriptionId = extractSubscriptionId(resolvedSubscription)
 
   await updateUserPlanTier({
     userId,
     plan,
     customerId,
-    subscriptionId: plan === 'free' ? null : subscription.id,
+    subscriptionId: plan === 'free' ? null : subscriptionId,
   })
 }
 
@@ -166,80 +167,4 @@ async function handleSubscriptionDeleted(subscription) {
     customerId,
     subscriptionId: null,
   })
-}
-
-function extractCustomerId(customer) {
-  if (!customer) return null
-  if (typeof customer === 'string') return customer
-  return customer.id ?? null
-}
-
-function extractSubscriptionId(subscription) {
-  if (!subscription) return null
-  if (typeof subscription === 'string') return subscription
-  return subscription.id ?? null
-}
-
-async function resolveSubscription(subscription) {
-  if (!subscription) {
-    return null
-  }
-
-  if (typeof subscription !== 'string') {
-    return subscription
-  }
-
-  if (!stripe) {
-    return null
-  }
-
-  try {
-    return await stripe.subscriptions.retrieve(subscription, {
-      expand: ['items'],
-    })
-  } catch (error) {
-    console.warn('Failed to retrieve subscription for checkout session', error)
-    return null
-  }
-}
-
-function normalizePlanFromSession(session) {
-  if (!session) return null
-
-  const fromMetadata = normalizePlanId(session.metadata?.planId) ?? normalizePlanId(session.metadata?.tier)
-  if (fromMetadata) {
-    return fromMetadata
-  }
-
-  const planFromPrice = getPlanFromPriceId(session.metadata?.priceId)
-  if (planFromPrice) {
-    return planFromPrice
-  }
-
-  return null
-}
-
-function normalizePlanFromSubscription(subscription) {
-  if (!subscription) {
-    return 'free'
-  }
-
-  const fromMetadata = normalizePlanId(subscription.metadata?.planId) ?? normalizePlanId(subscription.metadata?.tier)
-  if (fromMetadata) {
-    return fromMetadata
-  }
-
-  const priceMetadataTier = normalizePlanId(subscription.items?.data?.[0]?.price?.metadata?.planId) ??
-    normalizePlanId(subscription.items?.data?.[0]?.price?.metadata?.tier)
-  if (priceMetadataTier) {
-    return priceMetadataTier
-  }
-
-  const priceId = subscription.items?.data?.[0]?.price?.id
-  const planFromPrice = getPlanFromPriceId(priceId)
-  if (planFromPrice) {
-    return planFromPrice
-  }
-
-  return 'free'
 }

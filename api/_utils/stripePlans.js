@@ -22,4 +22,126 @@ export function getPlanFromPriceId(priceId) {
   return PRICE_PLAN_MAPPING[priceId] ?? null
 }
 
+export function extractCustomerId(customer) {
+  if (!customer) return null
+  if (typeof customer === 'string') return customer
+  return customer.id ?? null
+}
+
+export function extractSubscriptionId(subscription) {
+  if (!subscription) return null
+  if (typeof subscription === 'string') return subscription
+  return subscription.id ?? null
+}
+
+export function normalizePlanFromSubscription(subscription) {
+  if (!subscription) {
+    return null
+  }
+
+  const fromMetadata = normalizePlanId(subscription.metadata?.planId) ?? normalizePlanId(subscription.metadata?.tier)
+  if (fromMetadata) {
+    return fromMetadata
+  }
+
+  const priceMetadataTier =
+    normalizePlanId(subscription.items?.data?.[0]?.price?.metadata?.planId) ??
+    normalizePlanId(subscription.items?.data?.[0]?.price?.metadata?.tier)
+  if (priceMetadataTier) {
+    return priceMetadataTier
+  }
+
+  const priceId = subscription.items?.data?.[0]?.price?.id
+  const planFromPrice = getPlanFromPriceId(priceId)
+  if (planFromPrice) {
+    return planFromPrice
+  }
+
+  return null
+}
+
+export async function resolveSubscription(subscription, stripeClient) {
+  if (!subscription) {
+    return null
+  }
+
+  if (typeof subscription !== 'string') {
+    if (subscription.items?.data?.length) {
+      return subscription
+    }
+
+    if (!stripeClient) {
+      return subscription
+    }
+
+    try {
+      return await stripeClient.subscriptions.retrieve(subscription.id, { expand: ['items'] })
+    } catch (error) {
+      console.warn('Failed to refresh subscription with items', error)
+      return subscription
+    }
+  }
+
+  if (!stripeClient) {
+    return null
+  }
+
+  try {
+    return await stripeClient.subscriptions.retrieve(subscription, { expand: ['items'] })
+  } catch (error) {
+    console.warn('Failed to retrieve subscription', error)
+    return null
+  }
+}
+
+function normalizePlanFromSessionMetadata(session) {
+  if (!session) {
+    return null
+  }
+
+  const fromMetadata = normalizePlanId(session.metadata?.planId) ?? normalizePlanId(session.metadata?.tier)
+  if (fromMetadata) {
+    return fromMetadata
+  }
+
+  const priceMetadataTier = normalizePlanId(session.metadata?.priceTier)
+  if (priceMetadataTier) {
+    return priceMetadataTier
+  }
+
+  const planFromPrice = getPlanFromPriceId(session.metadata?.priceId)
+  if (planFromPrice) {
+    return planFromPrice
+  }
+
+  return null
+}
+
+export async function resolvePlanFromCheckoutSession(session, stripeClient) {
+  if (!session) {
+    return { plan: 'free', subscriptionId: null }
+  }
+
+  const subscriptionIdFromSession = extractSubscriptionId(session.subscription)
+  const planFromSession = normalizePlanFromSessionMetadata(session)
+
+  if (planFromSession) {
+    return { plan: planFromSession, subscriptionId: subscriptionIdFromSession }
+  }
+
+  const subscription = await resolveSubscription(session.subscription, stripeClient)
+  const subscriptionPlan = normalizePlanFromSubscription(subscription)
+  const subscriptionId = extractSubscriptionId(subscription) ?? subscriptionIdFromSession
+
+  if (subscriptionPlan) {
+    return { plan: subscriptionPlan, subscriptionId }
+  }
+
+  if (!subscriptionId) {
+    return { plan: 'free', subscriptionId: null }
+  }
+
+  return { plan: undefined, subscriptionId }
+}
+
 export { PLAN_PRICE_MAPPING }
