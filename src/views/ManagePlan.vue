@@ -123,7 +123,7 @@ import { supabase } from '@/utils/supabase'
 
 const SUPPORT_EMAIL = 'support@soundroom.app'
 
-const { tier, refreshTier } = useAuth()
+const { tier, refreshTier, primeTier } = useAuth()
 const router = useRouter()
 const route = useRoute()
 
@@ -182,6 +182,7 @@ async function downgradeToFree() {
     }
 
     const payload = await response.json()
+    primeTier(payload.plan)
     const planName = PLAN_DISPLAY_NAME[payload.plan] || 'Free'
     checkoutStatusMessage.value = `Your ${planName} plan is now active.`
     await refreshTier(true)
@@ -222,6 +223,7 @@ async function syncCheckoutIfNeeded() {
       }
 
       const payload = await response.json()
+      primeTier(payload.plan)
       const planName = PLAN_DISPLAY_NAME[payload.plan] || 'Free'
       checkoutStatusMessage.value = `Your ${planName} plan is now active.`
     } else {
