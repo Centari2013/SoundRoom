@@ -132,6 +132,17 @@ const router = createRouter({
       },
     },
     {
+      path: '/manage-plan',
+      component: () => import('@/views/ManagePlan.vue'),
+      meta: {
+        requiresAuth: true,
+        seo: {
+          title: 'Manage Plan | SoundRoom',
+          description: 'View and manage your SoundRoom subscription plan and billing details.',
+        },
+      },
+    },
+    {
       path: '/update-password',
       component: () => import('@/views/UpdatePasswordPage.vue'),
       meta: {

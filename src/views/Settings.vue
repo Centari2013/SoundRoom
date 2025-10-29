@@ -284,7 +284,8 @@ const planLabel = computed(() => {
 })
 
 function handleManagePlan() {
-  router.push({ path: '/upgrade', query: { manage: '1' } })
+  //router.push({ path: '/upgrade', query: { manage: '1' } })
+  router.push('/manage-plan')
 }
 
 const PLAN_DISPLAY_NAME = {
