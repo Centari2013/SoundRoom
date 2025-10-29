@@ -7,6 +7,15 @@ export const THEME_AVAILABILITY = {
 export const DEFAULT_THEME_ID = 'classic'
 export const DEFAULT_COLOR_SCHEME = 'light'
 export const SUPPORTED_COLOR_SCHEMES = ['light', 'dark']
+const CSS_VAR_PREFIX = '--sr-'
+
+function resolveSystemColorScheme() {
+  if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') {
+    return DEFAULT_COLOR_SCHEME
+  }
+
+  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+}
 
 export const THEMES = [
   {
@@ -171,4 +180,50 @@ export function getThemeVariant(themeId, colorScheme = DEFAULT_COLOR_SCHEME) {
 
 export function getThemeAvailabilityRank(level) {
   return THEME_AVAILABILITY[level] ?? THEME_AVAILABILITY.none
+}
+
+export function applyThemeVariant(themeId, colorScheme) {
+  if (typeof document === 'undefined') {
+    return null
+  }
+
+  const resolvedScheme =
+    colorScheme === 'system' || !colorScheme
+      ? resolveSystemColorScheme()
+      : colorScheme
+  const variant = getThemeVariant(themeId, resolvedScheme)
+  const root = document.documentElement
+  const body = document.body
+
+  if (!root || !variant) {
+    return null
+  }
+
+  Object.entries(variant.cssVars ?? {}).forEach(([token, value]) => {
+    root.style.setProperty(`${CSS_VAR_PREFIX}${token}`, value)
+  })
+
+  root.dataset.themeId = themeId
+  root.dataset.themePreference = colorScheme ?? 'system'
+  root.dataset.themeScheme = resolvedScheme
+  root.style.colorScheme = variant.isDark ? 'dark' : 'light'
+  root.classList.toggle('dark', Boolean(variant.isDark))
+  root.classList.toggle('sr-dark', Boolean(variant.isDark))
+
+  if (variant.cssVars?.surface) {
+    root.style.backgroundColor = variant.cssVars.surface
+    if (body) {
+      body.style.backgroundColor = variant.cssVars.surface
+    }
+  }
+
+  if (variant.cssVars?.textPrimary && body) {
+    body.style.color = variant.cssVars.textPrimary
+  }
+
+  return {
+    themeId,
+    colorScheme: resolvedScheme,
+    variant
+  }
 }

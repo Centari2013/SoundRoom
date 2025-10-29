@@ -22,10 +22,17 @@ Sentry.init({
   ],
 });
 
+function mountApp() {
+  app
+    .use(VueKonva)
+    .use(PortalVue)
+    .use(router)
+    .use(createPinia())
+    .mount('#app')
+}
 
-app
-.use(VueKonva)
-.use(PortalVue)
-.use(router)
-.use(createPinia())
-.mount('#app')
+if (import.meta.env.DEV && typeof window !== 'undefined') {
+  import('@/dev/setupThemePreview.js').finally(mountApp)
+} else {
+  mountApp()
+}
