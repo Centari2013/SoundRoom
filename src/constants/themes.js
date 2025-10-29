@@ -172,7 +172,7 @@ export const THEMES = [
           panelMuted: '#f0f9ff',
           border: '#c7d2fe',
           accent: '#0ea5e9',
-          accentForeground: '#ffffff',
+          accentForeground: '#082f49',
           textPrimary: '#0f172a',
           textMuted: '#1e3a8a'
         },
