@@ -297,7 +297,7 @@ const PLAN_MAP = {
       'Invite-only access to upcoming live mix showcases'
     ],
     nextCta: {
-      label: 'Upgrade to Pro',
+      label: 'Upgrade to Basic',
       to: '/upgrade'
     },
     portalAction: null,
