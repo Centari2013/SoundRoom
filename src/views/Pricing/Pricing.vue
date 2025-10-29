@@ -51,6 +51,7 @@ import PricingCard from '@/views/Pricing/PricingCard.vue'
 import PlanComparisonTable from '@/views/Pricing/PlanComparisonTable.vue'
 import { useAuth } from '@/composables/useAuth'
 import { redirectToCheckout } from '@/utils/stripe'
+import { createBillingPortalSession } from '@/utils/billingPortal'
 
 const router = useRouter()
 const { tier, isAuthenticated, user } = useAuth()
@@ -235,22 +236,30 @@ const plansWithCheckoutState = computed(() =>
   }))
 )
 
-const isDowngrade = (planId) => {
-  const userIndex = PLAN_ORDER.indexOf(currentTier.value)
-  const planIndex = PLAN_ORDER.indexOf(planId)
-  return userIndex !== -1 && planIndex !== -1 && planIndex < userIndex
-}
-
 const handlePlanSelect = async (plan) => {
   checkoutError.value = ''
 
-  if (isDowngrade(plan.id)) {
-    router.push('/manage-plan')
+  if (!isAuthenticated.value) {
+    router.push({ path: '/signup', query: { redirect: '/upgrade', plan: plan.id } })
     return
   }
 
-  if (!isAuthenticated.value) {
-    router.push({ path: '/signup', query: { redirect: '/upgrade', plan: plan.id } })
+  if (currentTier.value !== 'free') {
+    try {
+      activeCheckoutPlan.value = plan.id
+      const origin = typeof window !== 'undefined' ? window.location.origin : undefined
+      const returnUrl = origin ? `${origin}/settings` : undefined
+      const portalUrl = await createBillingPortalSession(returnUrl)
+
+      if (typeof window !== 'undefined') {
+        window.location.href = portalUrl
+      }
+    } catch (error) {
+      console.error('Failed to open billing portal for plan change', error)
+      checkoutError.value = error?.message || 'Unable to open billing portal. Please try again later.'
+    } finally {
+      activeCheckoutPlan.value = null
+    }
     return
   }
 
@@ -263,7 +272,7 @@ const handlePlanSelect = async (plan) => {
       userId: user.value?.id ?? '',
       customerEmail: user.value?.email ?? undefined,
       clientReferenceId: user.value?.id ?? undefined,
-      successUrl: origin ? `${origin}/manage-plan?checkout=success&session_id={CHECKOUT_SESSION_ID}` : undefined,
+      successUrl: origin ? `${origin}/settings?checkout=success&session_id={CHECKOUT_SESSION_ID}` : undefined,
       cancelUrl: origin ? `${origin}/upgrade?checkout=cancel` : undefined,
     })
   } catch (error) {

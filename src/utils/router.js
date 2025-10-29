@@ -138,7 +138,7 @@ const router = createRouter({
         requiresAuth: true,
         seo: {
           title: 'Manage Plan | SoundRoom',
-          description: 'Review your SoundRoom subscription, update billing, and manage plan upgrades or downgrades.',
+          description: 'View and manage your SoundRoom subscription plan and billing details.',
         },
       },
     },

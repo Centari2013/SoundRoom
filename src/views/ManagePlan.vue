@@ -60,7 +60,7 @@
               </BaseButton>
             </RouterLink>
             <BaseButton
-              v-if="currentPlan.portalAction"
+              v-if="currentPlan.portalAction && hasBillingHistory"
               :loading="isCreatingPortalSession"
               :disabled="isCreatingPortalSession || isProcessingCheckout"
               @click="currentPlan.portalAction.handler"
@@ -94,6 +94,14 @@
         </div>
 
         <div class="flex flex-wrap items-center gap-3">
+          <BaseButton
+            v-if="hasBillingHistory"
+            :loading="isCreatingPortalSession"
+            :disabled="isCreatingPortalSession || isProcessingCheckout"
+            @click="openBillingPortal"
+          >
+            Open Stripe billing portal
+          </BaseButton>
           <BaseButton @click="contactBilling">
             Contact billing support
           </BaseButton>
@@ -132,7 +140,7 @@ import { createBillingPortalSession } from '@/utils/billingPortal'
 
 const SUPPORT_EMAIL = 'support@soundroom.app'
 
-const { tier, refreshTier, primeTier } = useAuth()
+const { tier, refreshTier, primeTier, hasBillingHistory, primeBillingHistory } = useAuth()
 const router = useRouter()
 const route = useRoute()
 
@@ -193,6 +201,7 @@ async function downgradeToFree() {
 
     const payload = await response.json()
     primeTier(payload.plan)
+    primeBillingHistory(true)
     const planName = PLAN_DISPLAY_NAME[payload.plan] || 'Free'
     checkoutStatusMessage.value = `Your ${planName} plan is now active.`
     await refreshTier(true)
@@ -256,10 +265,12 @@ async function syncCheckoutIfNeeded() {
 
       const payload = await response.json()
       primeTier(payload.plan)
+      primeBillingHistory(true)
       const planName = PLAN_DISPLAY_NAME[payload.plan] || 'Free'
       checkoutStatusMessage.value = `Your ${planName} plan is now active.`
     } else {
       await refreshTier(true)
+      primeBillingHistory(true)
       const planName = PLAN_DISPLAY_NAME[normalizedTier.value] || 'Free'
       checkoutStatusMessage.value = `Your ${planName} plan is now active.`
     }
@@ -297,7 +308,7 @@ const PLAN_MAP = {
       'Invite-only access to upcoming live mix showcases'
     ],
     nextCta: {
-      label: 'Upgrade to Pro',
+      label: 'Upgrade to Basic',
       to: '/upgrade'
     },
     portalAction: null,

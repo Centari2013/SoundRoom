@@ -1,5 +1,5 @@
 import { corsHeaders, jsonResponse } from './_utils/http.js'
-import { stripe } from './_utils/serverClients.js'
+import { stripe, supabaseAdmin } from './_utils/serverClients.js'
 import { PLAN_PRICE_MAPPING } from './_utils/stripePlans.js'
 
 export function OPTIONS() {
@@ -44,11 +44,32 @@ export async function POST(request) {
     const subscriptionMetadata = { planId };
     if (clientReferenceId) subscriptionMetadata.userId = clientReferenceId;
 
+    const sanitizedBaseUrl = baseUrl.replace(/\/$/, '');
     const successUrlWithSession = successUrl
-      || `${baseUrl}/manage-plan?checkout=success&session_id={CHECKOUT_SESSION_ID}`;
-    const cancelUrlWithSession = cancelUrl || `${baseUrl}/upgrade?checkout=cancel`;
+      || `${sanitizedBaseUrl}/settings?checkout=success&session_id={CHECKOUT_SESSION_ID}`;
+    const cancelUrlWithSession = cancelUrl || `${sanitizedBaseUrl}/upgrade?checkout=cancel`;
 
-    const session = await stripe.checkout.sessions.create({
+    let existingCustomerId
+
+    if (supabaseAdmin && userId) {
+      try {
+        const { data: profile, error: profileError } = await supabaseAdmin
+          .from('users')
+          .select('stripe_customer_id')
+          .eq('id', userId)
+          .single()
+
+        if (profileError) {
+          console.warn('Unable to load Stripe customer for checkout', profileError)
+        } else {
+          existingCustomerId = profile?.stripe_customer_id || undefined
+        }
+      } catch (fetchError) {
+        console.warn('Unexpected error fetching Stripe customer', fetchError)
+      }
+    }
+
+    const checkoutSessionParams = {
       mode: 'subscription',
       line_items: [
         {
@@ -58,7 +79,6 @@ export async function POST(request) {
       ],
       allow_promotion_codes: true,
       billing_address_collection: 'auto',
-      customer_email: customerEmail,
       client_reference_id: clientReferenceId,
       success_url: successUrlWithSession,
       cancel_url: cancelUrlWithSession,
@@ -66,7 +86,15 @@ export async function POST(request) {
       subscription_data: {
         metadata: subscriptionMetadata,
       },
-    });
+    }
+
+    if (existingCustomerId) {
+      checkoutSessionParams.customer = existingCustomerId
+    } else if (customerEmail) {
+      checkoutSessionParams.customer_email = customerEmail
+    }
+
+    const session = await stripe.checkout.sessions.create(checkoutSessionParams)
 
     return jsonResponse({ sessionUrl: session.url });
   } catch (error) {
