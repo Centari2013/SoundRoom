@@ -21,8 +21,6 @@
               v-else
               type="button"
               class="ml-2"
-              :loading="isOpeningBillingPortal"
-              :disabled="isOpeningBillingPortal"
               @click="handleManagePlan"
             >
               Manage Plan
@@ -31,9 +29,19 @@
           </div>
         </div>
 
-        <p v-if="billingPortalError" class="text-sm text-red-500">
-          {{ billingPortalError }}
-        </p>
+        <div
+          v-if="planStatusMessage || planErrorMessage || isProcessingCheckout"
+          class="rounded-xl border p-4"
+          :class="[
+            isProcessingCheckout ? 'border-blue-200 bg-blue-50 text-blue-700 dark:border-blue-900/60 dark:bg-blue-950/40 dark:text-blue-300' : '',
+            planStatusMessage && !isProcessingCheckout ? 'border-green-200 bg-green-50 text-green-700 dark:border-green-900/60 dark:bg-green-950/40 dark:text-green-300' : '',
+            planErrorMessage ? 'border-red-200 bg-red-50 text-red-700 dark:border-red-900/60 dark:bg-red-950/40 dark:text-red-300' : '',
+          ]"
+        >
+          <p v-if="isProcessingCheckout" class="text-sm font-medium">Processing your plan change…</p>
+          <p v-else-if="planStatusMessage" class="text-sm font-medium">{{ planStatusMessage }}</p>
+          <p v-else-if="planErrorMessage" class="text-sm font-medium">{{ planErrorMessage }}</p>
+        </div>
 
         <div class="rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white/70 dark:bg-neutral-900/70 p-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
           <div>
@@ -213,15 +221,15 @@
 
 <script setup>
 import { computed, reactive, ref, watch, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import BaseButton from '@/components/ui/input/BaseButton.vue'
 import BaseInput from '@/components/ui/input/BaseInput.vue'
 import { useAuth } from '@/composables/useAuth'
 import { supabase } from '@/utils/supabase'
-import { createBillingPortalSession } from '@/utils/billingPortal'
 
 const router = useRouter()
-const { user, sessionLoaded, tier } = useAuth()
+const route = useRoute()
+const { user, sessionLoaded, tier, refreshTier, primeTier } = useAuth()
 
 const profileForm = reactive({
   displayName: '',
@@ -259,8 +267,9 @@ const preferenceMessage = ref('')
 const securityMessage = ref('')
 const securityError = ref('')
 
-const isOpeningBillingPortal = ref(false)
-const billingPortalError = ref('')
+const planStatusMessage = ref('')
+const planErrorMessage = ref('')
+const isProcessingCheckout = ref(false)
 
 const LOCAL_PREF_KEY = 'soundroom.userPreferences'
 
@@ -274,24 +283,65 @@ const planLabel = computed(() => {
     : value.charAt(0).toUpperCase() + value.slice(1)
 })
 
-async function handleManagePlan() {
-  if (isOpeningBillingPortal.value) return
+function handleManagePlan() {
+  router.push({ path: '/upgrade', query: { manage: '1' } })
+}
 
-  billingPortalError.value = ''
-  isOpeningBillingPortal.value = true
+const PLAN_DISPLAY_NAME = {
+  free: 'Free',
+  basic: 'Basic',
+  pro: 'Pro',
+}
+
+async function syncCheckoutIfNeeded() {
+  if (route.query.checkout !== 'success') {
+    return
+  }
+
+  const sessionIdParam = route.query.session_id
+  const sessionId = Array.isArray(sessionIdParam) ? sessionIdParam[0] : sessionIdParam
+
+  planStatusMessage.value = ''
+  planErrorMessage.value = ''
+  isProcessingCheckout.value = true
 
   try {
-    const returnUrl = typeof window !== 'undefined' ? `${window.location.origin}/manage-plan` : undefined
-    const portalUrl = await createBillingPortalSession(returnUrl)
+    if (sessionId) {
+      const response = await fetch('/api/sync-checkout-session', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ sessionId }),
+      })
 
-    if (typeof window !== 'undefined') {
-      window.location.href = portalUrl
+      if (!response.ok) {
+        const errorPayload = await response.json().catch(() => ({ error: 'Unable to verify checkout' }))
+        throw new Error(errorPayload.error || 'Unable to verify checkout')
+      }
+
+      const payload = await response.json()
+      primeTier(payload.plan)
+      const planName = PLAN_DISPLAY_NAME[payload.plan] || 'Free'
+      planStatusMessage.value = `Your ${planName} plan is now active.`
+    } else {
+      await refreshTier(true)
+      const planName = PLAN_DISPLAY_NAME[(tier.value || 'free').toLowerCase()] || 'Free'
+      planStatusMessage.value = `Your ${planName} plan is now active.`
     }
+
+    await refreshTier(true)
   } catch (error) {
-    console.error('Failed to open billing portal', error)
-    billingPortalError.value = error?.message || 'Unable to open billing portal. Please try again later.'
+    console.error('Failed to process checkout sync', error)
+    planErrorMessage.value = error?.message || 'Unable to confirm your plan. Please contact support if this persists.'
   } finally {
-    isOpeningBillingPortal.value = false
+    isProcessingCheckout.value = false
+
+    const newQuery = { ...route.query }
+    delete newQuery.checkout
+    delete newQuery.session_id
+
+    router.replace({ query: newQuery })
   }
 }
 
@@ -532,5 +582,6 @@ watch(hasPreferenceChanges, (dirty) => {
 
 onMounted(() => {
   loadPreferences()
+  syncCheckoutIfNeeded()
 })
 </script>
