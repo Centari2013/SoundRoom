@@ -8,12 +8,12 @@
   >
     <div
       ref="modalContent"
-      class="bg-white dark:bg-neutral-950 rounded-2xl w-[90vw] max-w-md h-auto max-h-[85vh] shadow-xl border border-neutral-300 dark:border-neutral-800 relative overflow-hidden"
+      class="rounded-2xl w-[90vw] max-w-md h-auto max-h-[85vh] border border-border bg-panel shadow-xl relative overflow-hidden"
       tabindex="-1"
     >
       <!-- Header -->
       <div
-        class="top-0 left-0 right-0 z-10 flex justify-between items-center px-4 py-3 bg-white/70 dark:bg-neutral-950/70 backdrop-blur-md border-b border-neutral-300 dark:border-neutral-800"
+        class="top-0 left-0 right-0 z-10 flex justify-between items-center px-4 py-3 bg-panel/70 backdrop-blur-md border-b border-border"
       >
         <h2 id="modal-title" class="text-lg font-semibold tracking-tight">
           {{ title }}
@@ -21,7 +21,7 @@
         <BaseButton
           v-if="showCloseButton"
           @click="emit('close')"
-          class="text-sm hover:text-neutral-600 dark:hover:text-neutral-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+          class="text-sm text-muted hover:text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/40"
           aria-label="Close modal"
         >
           Close

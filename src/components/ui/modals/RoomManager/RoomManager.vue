@@ -26,7 +26,7 @@
         <!-- Floating Top Bar -->
         <div
           ref="headerBar"
-          class="absolute top-0 left-0 right-0 z-10 flex justify-between items-center px-6 py-4 bg-white/50 dark:bg-neutral-950/50 backdrop-blur-md border-b border-neutral-300 dark:border-neutral-800"
+          class="absolute top-0 left-0 right-0 z-10 flex justify-between items-center px-6 py-4 bg-panel/70 backdrop-blur-md border-b border-border"
         >
           <h2 class="text-2xl font-bold">RoomManager</h2>
           <BaseButton class="text-sm" @click="router.push('/')">Close</BaseButton>

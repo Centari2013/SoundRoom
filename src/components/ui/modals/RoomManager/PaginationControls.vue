@@ -1,5 +1,5 @@
 <template>
-  <div class="absolute flex bottom-0 left-0 right-0 p-4 bg-white dark:bg-neutral-950 border-t border-neutral-300 dark:border-neutral-800">
+  <div class="absolute flex bottom-0 left-0 right-0 p-4 bg-panel border-t border-border">
     <span class="w-1/4"></span>
     <div class="flex items-center justify-center w-1/2 space-x-3" :class="{ invisible: loading }">
       <BaseButton class="px-3 py-1" :disabled="currentPage === 0" @click="emit('prev')">← Prev</BaseButton>

@@ -33,8 +33,8 @@
           >
             {{ checkoutError }}
           </p>
-          <div class="max-w-5xl mx-auto rounded-md border border-neutral-200 bg-white p-4 text-left shadow-sm dark:border-neutral-800 dark:bg-neutral-950" data-testid="pricing-feature-comparison">
-            <div class="text-sm font-semibold text-neutral-800 dark:text-neutral-200">Full feature comparison</div>
+          <div class="max-w-5xl mx-auto rounded-md border border-border bg-panel p-4 text-left shadow-sm" data-testid="pricing-feature-comparison">
+            <div class="text-sm font-semibold text-neutral-800">Full feature comparison</div>
             <PlanComparisonTable class="mt-4" :plans="basePlans" :features="FEATURE_DEFINITIONS" />
           </div>
         </div>

@@ -85,7 +85,7 @@ const props = defineProps({
   }
 })
 
-const BASE_CARD_CLASS = 'group rounded-sm p-6 shadow-md transition-all duration-200 ease-out transform flex flex-col justify-between bg-white dark:bg-neutral-950 text-neutral-900 dark:text-white hover:shadow-xl hover:-translate-y-1 hover:scale-[1.03] focus-within:shadow-xl focus-within:-translate-y-1 focus-within:scale-[1.03]'
+const BASE_CARD_CLASS = 'group rounded-sm p-6 shadow-md transition-all duration-200 ease-out transform flex flex-col justify-between bg-panel text-primary hover:shadow-xl hover:-translate-y-1 hover:scale-[1.03] focus-within:shadow-xl focus-within:-translate-y-1 focus-within:scale-[1.03]'
 
 const BASE_CTA_CLASS = 'w-full py-2 rounded-xl font-semibold transition border border-transparent disabled:opacity-50 disabled:cursor-not-allowed disabled:dark:bg-neutral-700'
 

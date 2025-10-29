@@ -20,11 +20,11 @@
           v-if="isMenuOpen"
           @mouseleave="closeMenu"
           ref="menuPanel"
-          class="absolute right-0 mt-2 w-44 rounded-lg shadow-lg border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 py-2 z-50 flex flex-col divide-y divide-neutral-200 dark:divide-neutral-800 overflow-hidden"
+          class="absolute right-0 mt-2 w-44 rounded-lg shadow-lg border border-border bg-panel py-2 z-50 flex flex-col divide-y divide-neutral-200 overflow-hidden"
         >
           <template v-for="button in visibleButtons" :key="button.label">
             <button
-              class="w-full px-4 py-2 text-left text-sm text-neutral-800 dark:text-neutral-100 hover:bg-neutral-100 dark:hover:bg-neutral-800 focus:outline-none !bg-transparent"
+              class="w-full px-4 py-2 text-left text-sm text-neutral-800 hover:bg-panel-muted focus:outline-none !bg-transparent"
               type="button"
               @click="runAction(button.action)"
             >

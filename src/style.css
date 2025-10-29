@@ -1,123 +1,111 @@
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 :root {
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Helvetica Neue", sans-serif;
   line-height: 1.5;
   font-weight: 400;
-
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
-
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  color-scheme: light;
+
+  --sr-surface: #f9fafb;
+  --sr-surface-rgb: 249 250 251;
+  --sr-surface-muted: #e2e8f0;
+  --sr-surface-muted-rgb: 226 232 240;
+  --sr-panel: #ffffff;
+  --sr-panel-rgb: 255 255 255;
+  --sr-panel-muted: #f3f4f6;
+  --sr-panel-muted-rgb: 243 244 246;
+  --sr-border: #e5e7eb;
+  --sr-border-rgb: 229 231 235;
+  --sr-accent: #2563eb;
+  --sr-accent-rgb: 37 99 235;
+  --sr-accentForeground: #ffffff;
+  --sr-accentForeground-rgb: 255 255 255;
+  --sr-textPrimary: #0f172a;
+  --sr-textPrimary-rgb: 15 23 42;
+  --sr-textMuted: #475569;
+  --sr-textMuted-rgb: 71 85 105;
+
+  --sr-neutral-50: #f9fafb;
+  --sr-neutral-50-rgb: 249 250 251;
+  --sr-neutral-100: #f3f4f6;
+  --sr-neutral-100-rgb: 243 244 246;
+  --sr-neutral-200: #e5e7eb;
+  --sr-neutral-200-rgb: 229 231 235;
+  --sr-neutral-300: #d1d5db;
+  --sr-neutral-300-rgb: 209 213 219;
+  --sr-neutral-400: #94a3b8;
+  --sr-neutral-400-rgb: 148 163 184;
+  --sr-neutral-500: #64748b;
+  --sr-neutral-500-rgb: 100 116 139;
+  --sr-neutral-600: #475569;
+  --sr-neutral-600-rgb: 71 85 105;
+  --sr-neutral-700: #334155;
+  --sr-neutral-700-rgb: 51 65 85;
+  --sr-neutral-800: #1e293b;
+  --sr-neutral-800-rgb: 30 41 59;
+  --sr-neutral-900: #0f172a;
+  --sr-neutral-900-rgb: 15 23 42;
+  --sr-neutral-950: #020617;
+  --sr-neutral-950-rgb: 2 6 23;
 }
 
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-a:hover {
-  color: #535bf2;
-}
-
-body {
-  margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
-}
-
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
-}
-
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  
-  cursor: pointer;
-  transition: border-color 0.25s;
-
-  @apply bg-[#d3d3d3e1] dark:bg-[#1a1a1a];
-}
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
-}
-
-.card {
-  padding: 2em;
-}
-
-#app {
-  margin: 0 auto;
-  
-  text-align: center;
-}
-
-button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-  pointer-events: none;
-  background-color: #444; /* fallback for dark mode */
-  color: #ccc;
-}
-
-input[type="text"],
-input[type="email"],
-input[type="password"] {
-  @apply w-full p-3 border-none rounded-lg dark:bg-[#333] bg-neutral-200 dark:text-white;
-}
-
-input:disabled {
-  @apply dark:bg-neutral-700 dark:text-neutral-400 opacity-50 cursor-not-allowed bg-neutral-200 text-neutral-800;
-}
-
-
-.modal-backdrop {
-  @apply fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center;
-}
-
-.modal-panel {
-  @apply bg-white dark:bg-neutral-950 rounded-2xl w-[80vw] h-[80vh] shadow-2xl border border-neutral-300 dark:border-neutral-800 overflow-hidden;
-}
-
-.modal-header-float {
-  @apply absolute top-0 left-0 right-0 z-10 flex justify-between items-center px-6 py-4
-         bg-white/50 dark:bg-neutral-950/50 backdrop-blur-md border-b border-neutral-300 dark:border-neutral-800;
-}
-
-.modal-header {
-  @apply top-0 left-0 right-0 z-10 flex justify-between items-center px-6 py-4
-         bg-white/50 dark:bg-neutral-950/50 backdrop-blur-md border-b border-neutral-300 dark:border-neutral-800;
-}
-
-
-
-
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
+@layer base {
+  body {
+    @apply bg-surface text-primary antialiased;
+    margin: 0;
+    min-height: 100vh;
   }
-  a:hover {
-    color: #747bff;
+
+  a {
+    color: inherit;
+    text-decoration: inherit;
   }
- 
-  button:disabled {
-    background-color: #b9b9b9;
-    color: #505050;
+
+  button {
+    font-family: inherit;
+  }
+
+  #app {
+    min-height: 100vh;
+  }
+}
+
+@layer components {
+  input[type='text'],
+  input[type='email'],
+  input[type='password'],
+  input[type='search'],
+  textarea,
+  select {
+    @apply w-full rounded-xl border border-border bg-panel px-3 py-2 text-primary shadow-sm transition focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/30;
+  }
+
+  input:disabled,
+  textarea:disabled,
+  select:disabled {
+    @apply cursor-not-allowed bg-surface-muted text-muted opacity-60;
+  }
+
+  .modal-backdrop {
+    @apply fixed inset-0 z-50 flex items-center justify-center bg-neutral-950/60 backdrop-blur-sm;
+  }
+
+  .modal-panel {
+    @apply relative h-[80vh] w-[80vw] overflow-hidden rounded-2xl border border-border bg-panel shadow-2xl;
+  }
+
+  .modal-header-float {
+    @apply absolute left-0 right-0 top-0 z-10 flex items-center justify-between border-b border-border bg-panel/70 px-6 py-4 backdrop-blur;
+  }
+
+  .modal-header {
+    @apply left-0 right-0 top-0 z-10 flex items-center justify-between border-b border-border bg-panel/70 px-6 py-4 backdrop-blur;
   }
 }

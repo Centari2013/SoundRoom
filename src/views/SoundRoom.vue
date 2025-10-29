@@ -1,5 +1,5 @@
 <template>
-  <div class="h-full bg-white text-neutral-900 dark:bg-neutral-950 dark:text-white flex flex-col">
+  <div class="h-full flex flex-col bg-surface text-primary">
     <!-- Main Layout -->
     <div class="flex flex-1 overflow-hidden">
 
@@ -17,7 +17,7 @@
         <Toolbar/>
 
         <!-- Canvas Area -->
-        <div class="flex-1 bg-neutral-200 dark:bg-black flex items-center justify-center">
+        <div class="flex-1 bg-surface-muted flex items-center justify-center">
           <MainCanvasStage
             v-bind="{
               handleDrop,

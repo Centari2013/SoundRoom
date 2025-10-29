@@ -1,9 +1,9 @@
 <template>
   <div @click.self="emit('close')" class="modal-backdrop">
-    <div class="bg-white dark:bg-neutral-950 rounded-2xl w-[80vw] max-w-xl h-auto relative flex flex-col overflow-hidden shadow-2xl border border-neutral-300 dark:border-neutral-800">
+    <div class="rounded-2xl w-[80vw] max-w-xl h-auto relative flex flex-col overflow-hidden border border-border bg-panel shadow-2xl">
       
       <!-- Floating Header -->
-      <div class="modal-header p-6 border-b border-neutral-300 dark:border-neutral-800">
+      <div class="modal-header p-6 border-b border-border">
         <h1 class="text-2xl font-bold tracking-tight">Welcome to SoundRoom</h1>
       </div>
 
@@ -27,8 +27,8 @@
       </div>
 
       <!-- Footer -->
-      <div class="flex justify-end p-4 border-t border-neutral-300 dark:border-neutral-800">
-        <BaseButton @click="router.push('/')" class="text-sm px-4 py-2 font-medium rounded hover:text-neutral-600 dark:hover:text-neutral-300">
+      <div class="flex justify-end p-4 border-t border-border">
+        <BaseButton @click="router.push('/')" class="text-sm px-4 py-2 font-medium rounded">
           Let's Go
         </BaseButton>
       </div>

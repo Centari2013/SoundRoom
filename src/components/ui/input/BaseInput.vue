@@ -3,7 +3,7 @@
     <label
       v-if="label"
       :for="id"
-      class="text-sm font-medium text-neutral-700 dark:text-neutral-200"
+      class="text-sm font-medium text-primary"
     >
       {{ label }}
     </label>
@@ -16,12 +16,12 @@
       :autocomplete="autocomplete"
       :disabled="disabled"
       :class="[
-        'px-3 py-2 rounded border w-full text-sm focus:outline-none',
-        'focus-visible:ring-2 focus-visible:ring-blue-500',
+        'w-full rounded-lg border px-3 py-2 text-sm focus:outline-none',
+        'focus-visible:ring-2 focus-visible:ring-accent/40 transition shadow-sm',
         props.class,
         error
           ? 'border-red-500 text-red-700 bg-red-50'
-          : 'border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white',
+          : 'border-border bg-panel text-primary',
       ]"
       v-model="internalValue"
       :aria-describedby="error ? errorId : undefined"

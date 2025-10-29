@@ -7,8 +7,10 @@ import { createPinia } from 'pinia';
 import router from '@/utils/router.js'
 import '@/composables/useAuth.js' // Ensure auth is initialized before app mounts
 import * as Sentry from "@sentry/vue";
+import { useThemeStore } from '@/stores/useThemeStore.js'
 
 const app = createApp(App);
+const pinia = createPinia()
 
 Sentry.init({
   app,
@@ -22,10 +24,30 @@ Sentry.init({
   ],
 });
 
+function mountApp() {
+  app
+    .use(VueKonva)
+    .use(PortalVue)
+    .use(router)
+    .use(pinia)
 
-app
-.use(VueKonva)
-.use(PortalVue)
-.use(router)
-.use(createPinia())
-.mount('#app')
+  if (typeof window !== 'undefined') {
+    const themeStore = useThemeStore(pinia)
+    themeStore.initialize()
+
+    if (import.meta.env.DEV) {
+      window.__SOUNDROOM_THEME__ = {
+        ...(window.__SOUNDROOM_THEME__ ?? {}),
+        store: themeStore
+      }
+    }
+  }
+
+  app.mount('#app')
+}
+
+if (import.meta.env.DEV && typeof window !== 'undefined') {
+  import('@/dev/setupThemePreview.js').finally(mountApp)
+} else {
+  mountApp()
+}

@@ -13,7 +13,7 @@
           </th>
         </tr>
       </thead>
-      <tbody class="divide-y divide-neutral-200 bg-white dark:divide-neutral-800 dark:bg-neutral-950">
+      <tbody class="divide-y divide-neutral-200 bg-panel">
         <tr v-for="feature in features" :key="feature.key" class="align-top">
           <th class="py-4 pl-4 pr-3 text-left font-medium text-neutral-800 dark:text-neutral-100">{{ feature.label }}</th>
           <td

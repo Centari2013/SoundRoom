@@ -1,5 +1,5 @@
 <template>
-  <main class="flex-1 overflow-y-auto bg-neutral-100 dark:bg-neutral-950 text-neutral-900 dark:text-neutral-100">
+  <main class="flex-1 overflow-y-auto bg-surface text-primary">
     <div class="max-w-4xl mx-auto px-6 py-10 space-y-10">
       <section class="space-y-4">
         <div
@@ -32,7 +32,7 @@
         </div>
 
         <div
-          class="rounded-2xl bg-white/80 dark:bg-neutral-900/80 p-6 shadow-sm border"
+          class="rounded-2xl bg-panel/80 p-6 shadow-sm border border-border"
           :class="planTheme.card"
         >
           <header class="flex flex-wrap items-center justify-between gap-4">
@@ -42,13 +42,13 @@
             </div>
             <div class="text-right">
               <span class="text-lg font-semibold">{{ currentPlan.price }}</span>
-              <p class="text-xs text-neutral-500 dark:text-neutral-400">Billed monthly — cancel anytime.</p>
+              <p class="text-xs text-neutral-500">Billed monthly — cancel anytime.</p>
             </div>
           </header>
 
           <div class="mt-6 grid gap-4 sm:grid-cols-2">
             <div v-for="feature in currentPlan.highlights" :key="feature" class="flex items-start gap-3">
-              <span class="mt-1 h-2 w-2 rounded-full bg-blue-500 dark:bg-blue-400"></span>
+              <span class="mt-1 h-2 w-2 rounded-full bg-accent"></span>
               <p class="text-sm text-neutral-700 dark:text-neutral-300">{{ feature }}</p>
             </div>
           </div>
@@ -70,7 +70,7 @@
             <BaseButton
               v-if="currentPlan.cancelAction"
               variant="naked"
-              class="text-sm text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300"
+              class="text-sm text-accent hover:text-accent/80"
               :disabled="isDowngradeBusy || isCreatingPortalSession"
               @click="currentPlan.cancelAction.handler"
             >
@@ -80,7 +80,7 @@
         </div>
       </section>
 
-      <section class="rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white/80 dark:bg-neutral-900/80 p-6 shadow-sm space-y-6">
+      <section class="rounded-2xl border border-border bg-panel/80 p-6 shadow-sm space-y-6">
         <header class="space-y-1">
           <h2 class="text-xl font-semibold">Billing & Receipts</h2>
           <p class="text-sm text-neutral-600 dark:text-neutral-400">
@@ -88,7 +88,7 @@
           </p>
         </header>
 
-        <div class="rounded-xl border border-dashed border-neutral-300 dark:border-neutral-700 bg-neutral-100/80 dark:bg-neutral-950/50 px-5 py-6 text-sm text-neutral-600 dark:text-neutral-300">
+        <div class="rounded-xl border border-dashed border-border bg-surface-muted/80 px-5 py-6 text-sm text-neutral-600">
           <p>Need an invoice, tax receipt, or want to change your payment method?</p>
           <p class="mt-3">Email <a class="underline" :href="supportEmailHref">{{ SUPPORT_EMAIL }}</a> and include the email tied to your SoundRoom account.</p>
         </div>
@@ -105,21 +105,21 @@
           <BaseButton @click="contactBilling">
             Contact billing support
           </BaseButton>
-          <BaseButton variant="naked" class="text-sm text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-200" @click="openFAQ">
+          <BaseButton variant="naked" class="text-sm text-muted hover:text-primary" @click="openFAQ">
             View plan FAQ
           </BaseButton>
         </div>
       </section>
 
-      <section class="rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white/80 dark:bg-neutral-900/80 p-6 shadow-sm space-y-6">
+      <section class="rounded-2xl border border-border bg-panel/80 p-6 shadow-sm space-y-6">
         <header class="space-y-1">
           <h2 class="text-xl font-semibold">Upcoming Features</h2>
           <p class="text-sm text-neutral-600 dark:text-neutral-400">We are actively building deeper collaboration and scheduling tools. Here is what is landing next for paying members.</p>
         </header>
 
         <ul class="grid gap-4 md:grid-cols-2">
-          <li v-for="item in roadmapHighlights" :key="item.title" class="rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-950 p-5 space-y-2">
-            <p class="text-sm uppercase tracking-wide text-neutral-500 dark:text-neutral-400">{{ item.badge }}</p>
+          <li v-for="item in roadmapHighlights" :key="item.title" class="rounded-xl border border-border bg-panel p-5 space-y-2">
+            <p class="text-sm uppercase tracking-wide text-neutral-500">{{ item.badge }}</p>
             <h3 class="text-lg font-medium">{{ item.title }}</h3>
             <p class="text-sm text-neutral-600 dark:text-neutral-400">{{ item.copy }}</p>
           </li>

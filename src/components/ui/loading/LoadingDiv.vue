@@ -2,11 +2,11 @@
   <transition name="fade" @after-leave="emit('done')">
     <div
       v-if="visible"
-      class="absolute top-0 left-0 right-0 bottom-0 flex items-center justify-center backdrop-blur-sm bg-white/30 dark:bg-black/40 z-20"
+      class="absolute top-0 left-0 right-0 bottom-0 flex items-center justify-center backdrop-blur-sm bg-panel/60 z-20"
       :class="[props.class]"
     >
       <div
-        class="text-xl font-medium tracking-wide text-neutral-800 dark:text-white animate-pulse"
+        class="text-xl font-medium tracking-wide text-primary animate-pulse"
       >
         {{ text }}
       </div>

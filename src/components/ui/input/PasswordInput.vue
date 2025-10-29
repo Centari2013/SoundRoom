@@ -8,11 +8,12 @@
       placeholder="Enter your password"
     />
     <BaseButton
-      class="absolute right-1 top-1/2 -translate-y-1/2 eye-button"
+      variant="naked"
+      class="absolute right-1 top-1/2 -translate-y-1/2 !px-2 !py-2 text-muted hover:text-primary"
       @click.prevent="show = !show"
       :aria-label="show ? 'Hide password' : 'Show password'"
     >
-      <component :is="show ? EyeOpen : EyeClosed" class="w-5 h-5 text-gray-500 dark:text-neutral-900" />
+      <component :is="show ? EyeOpen : EyeClosed" class="h-5 w-5" />
     </BaseButton>
   </div>
 </template>
@@ -54,12 +55,3 @@ const inputProps = computed(() => ({
   type: undefined // override actual `type` via `:type="show ? 'text' : 'password'"`
 }))
 </script>
-<style scoped>
-.eye-button {
-  background: none;
-  
-}
-.eye-button:focus {
-  outline: 2px solid #4a90e2; /* Focus ring color */
-}
-</style> 

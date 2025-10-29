@@ -3,7 +3,7 @@
     <template v-if="isEditing">
       <input
         v-model="localName"
-        class="w-full bg-neutral-700 text-white px-2 py-1 rounded"
+        class="w-full rounded border border-border bg-panel px-2 py-1 text-primary focus:outline-none focus:ring-2 focus:ring-accent/30"
         @blur="handleBlur"
         @keyup.enter="handleBlur"
         @keyup.esc="cancelEdit"

@@ -1,9 +1,9 @@
 <template>
   <div class="modal-backdrop z-50" @click.self="$emit('close')">
-    <div class="modal-panel max-w-3xl mx-auto p-6 bg-white dark:bg-neutral-950 rounded-xl shadow-lg overflow-y-auto max-h-[90vh]">
+    <div class="modal-panel max-w-3xl mx-auto p-6 rounded-xl shadow-lg overflow-y-auto max-h-[90vh]">
       <h2 class="text-xl font-bold mb-4">Upload Your Sounds</h2>
 
-      <div class="border border-dashed border-neutral-400 dark:border-neutral-700 rounded-lg p-6 text-center mb-6">
+      <div class="border border-dashed border-border rounded-lg p-6 text-center mb-6">
         <input
           type="file"
           accept="audio/*"
@@ -17,11 +17,11 @@
       </div>
 
       <div v-if="files.length > 0" class="space-y-4">
-        <div v-for="file in files" :key="file.id" class="bg-neutral-100 dark:bg-neutral-900 rounded-md p-4 flex flex-col gap-2">
+        <div v-for="file in files" :key="file.id" class="bg-panel rounded-md p-4 flex flex-col gap-2">
           <div class="flex justify-between items-center">
             <input
               v-model="file.name"
-              class="flex-1 p-1 text-base border border-neutral-300 dark:border-neutral-700 rounded-md bg-white dark:bg-neutral-800"
+              class="flex-1 rounded-md border border-border bg-panel px-2 py-1 text-base focus:outline-none focus:ring-2 focus:ring-accent/30"
             />
             <BaseButton class="ml-2" @click="autoTag(file)" :disabled="file.tagging">
               <template v-if="file.tagging">
@@ -37,7 +37,7 @@
           <div class="flex items-center gap-2">
             <audio :src="file.previewUrl" controls class="w-full" />
           </div>
-          <div class="h-2 bg-neutral-300 dark:bg-neutral-700 rounded overflow-hidden" v-if="uploading">
+          <div class="h-2 bg-surface-muted rounded overflow-hidden" v-if="uploading">
             <div
               class="h-full bg-green-500 transition-all duration-300"
               :style="{ width: `${file.progress}%` }"
@@ -48,7 +48,7 @@
           <span
             v-for="(tag, index) in file.tags"
             :key="tag"
-            class="flex items-center bg-neutral-200 dark:bg-neutral-800 text-xs px-2 rounded"
+            class="flex items-center bg-panel-muted text-xs px-2 rounded"
           >
             {{ tag }}
             <label
@@ -69,7 +69,7 @@
             @keydown="','"
             @blur="addTag(file)"
             placeholder="Add tag..."
-            class="text-sm p-1 rounded border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 w-25"
+            class="text-sm px-2 py-1 rounded border border-border bg-panel w-25 focus:outline-none focus:ring-2 focus:ring-accent/30"
           />
         </div>
 
