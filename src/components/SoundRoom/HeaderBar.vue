@@ -1,6 +1,8 @@
 <template>
   <PulsingOverlay v-if="isLoggingOut" :duration="2000" :text="'Logging out...'" @done="isLoggingOut = false" />
-  <header class="px-6 py-4 border-b border-neutral-300 dark:border-neutral-800 dark:bg-black flex items-center justify-between relative">
+  <header
+    class="relative flex items-center justify-between border-b border-border/80 bg-panel/80 px-6 py-4 backdrop-blur supports-[backdrop-filter]:bg-panel/60"
+  >
     <h1 class="text-xl font-bold tracking-wide dark:text-gray-300"><RouterLink to="/" style="text-decoration: none; color: inherit;">SoundRoom</RouterLink></h1>
     
     <div v-if="shouldShowNavButtons" class="relative">
@@ -8,7 +10,7 @@
         ref="menuButton"
         type="button"
         @click="toggleMenu"
-        class="flex items-center justify-center w-12 h-12 !p-1 !bg-transparent"
+        class="flex h-12 w-12 items-center justify-center rounded-full border border-border/70 bg-panel/90 text-primary shadow-sm transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40 hover:bg-panel"
         :aria-expanded="isMenuOpen"
         aria-haspopup="true"
       >
@@ -20,11 +22,11 @@
           v-if="isMenuOpen"
           @mouseleave="closeMenu"
           ref="menuPanel"
-          class="absolute right-0 mt-2 w-44 rounded-lg shadow-lg border border-border bg-panel py-2 z-50 flex flex-col divide-y divide-neutral-200 overflow-hidden"
+          class="absolute right-0 z-50 mt-2 flex w-44 flex-col overflow-hidden rounded-xl border border-border/80 bg-panel/95 py-2 shadow-xl backdrop-blur supports-[backdrop-filter]:bg-panel/70 divide-y divide-border/60"
         >
           <template v-for="button in visibleButtons" :key="button.label">
             <button
-              class="w-full px-4 py-2 text-left text-sm text-neutral-800 hover:bg-panel-muted focus:outline-none !bg-transparent"
+              class="w-full px-4 py-2 text-left text-sm text-primary transition hover:bg-panel-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/30"
               type="button"
               @click="runAction(button.action)"
             >
