@@ -1,5 +1,6 @@
 {
   "rewrites": [
-    { "source": "/(.*)", "destination": "/" }
+    { "source": "/@vite/(.*)", "destination": "/@vite/$1" },
+    { "source": "/src/(.*)", "destination": "/src/$1" }
   ]
 }
