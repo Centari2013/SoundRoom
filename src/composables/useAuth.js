@@ -24,13 +24,19 @@ const tier = ref('free')
 const TIER_CACHE_KEY = 'userTier'
 const CACHE_DURATION_MS = 1000 * 60 * 30 // 30 minutes
 
-function writeTierToCache(newTier) {
+const hasBillingHistory = ref(false)
+
+function writeTierToCache(newTier, billingHistory = hasBillingHistory.value) {
   const normalized = (newTier || 'free').toLowerCase()
+  const normalizedBillingHistory = !!billingHistory
 
   localStorage.setItem(TIER_CACHE_KEY, JSON.stringify({
     value: normalized,
+    hasBillingHistory: normalizedBillingHistory,
     updatedAt: Date.now()
   }))
+
+  hasBillingHistory.value = normalizedBillingHistory
 
   return normalized
 }
@@ -49,9 +55,12 @@ export async function getUserTier(userId, forceRefresh = false) {
 
   if (cached && !forceRefresh) {
     try {
-      const { value, updatedAt } = JSON.parse(cached)
+      const { value, updatedAt, hasBillingHistory: cachedBillingHistory } = JSON.parse(cached)
       const isFresh = Date.now() - updatedAt < CACHE_DURATION_MS
-      if (isFresh) return value
+      if (isFresh) {
+        hasBillingHistory.value = !!cachedBillingHistory
+        return value
+      }
     } catch {
       console.warn('Invalid cached tier, ignoring')
     }
@@ -59,13 +68,14 @@ export async function getUserTier(userId, forceRefresh = false) {
 
   const { data } = await supabase
     .from('users')
-    .select('plan_tier')
+    .select('plan_tier, stripe_customer_id')
     .eq('id', userId)
     .single()
 
   const newTier = data?.plan_tier ?? 'free'
+  const billingHistory = Boolean(data?.stripe_customer_id)
 
-  return writeTierToCache(newTier)
+  return writeTierToCache(newTier, billingHistory)
 }
 
 /**
@@ -77,6 +87,7 @@ export async function getUserTier(userId, forceRefresh = false) {
 export async function refreshTier(force = false) {
   if (!user.value?.id) {
     tier.value = 'free'
+    hasBillingHistory.value = false
     return
   }
 
@@ -90,6 +101,10 @@ export async function refreshTier(force = false) {
  */
 function primeTier(value) {
   tier.value = writeTierToCache(value)
+}
+
+function primeBillingHistory(value) {
+  writeTierToCache(tier.value, value)
 }
 
 // Initial session check
@@ -117,8 +132,11 @@ refreshTier(true) // Initial tier load
  *   sessionLoaded: Readonly<import('vue').Ref<boolean>>,
  *   isAuthenticated: import('vue').ComputedRef<boolean>,
  *   tier: Readonly<import('vue').Ref<string>>,
+ *   hasBillingHistory: Readonly<import('vue').Ref<boolean>>,
  *   getTier: (userId: string, forceRefresh?: boolean) => Promise<string>,
  *   refreshTier: (force?: boolean) => Promise<void>,
+ *   primeTier: (value: string) => void,
+ *   primeBillingHistory: (value: boolean) => void,
  *   clearUser: () => void
  * }}
  */
@@ -128,12 +146,15 @@ export function useAuth() {
     sessionLoaded: readonly(sessionLoaded),
     isAuthenticated: computed(() => !!user.value),
     tier: readonly(tier),
+    hasBillingHistory: readonly(hasBillingHistory),
     getTier: getUserTier,
     refreshTier,
     primeTier,
+    primeBillingHistory,
     clearUser: () => {
       user.value = null
       tier.value = 'free'
+      hasBillingHistory.value = false
       localStorage.removeItem(TIER_CACHE_KEY)
     }
   }
