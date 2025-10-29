@@ -44,9 +44,10 @@ export async function POST(request) {
     const subscriptionMetadata = { planId };
     if (clientReferenceId) subscriptionMetadata.userId = clientReferenceId;
 
+    const sanitizedBaseUrl = baseUrl.replace(/\/$/, '');
     const successUrlWithSession = successUrl
-      || `${baseUrl}/manage-plan?checkout=success&session_id={CHECKOUT_SESSION_ID}`;
-    const cancelUrlWithSession = cancelUrl || `${baseUrl}/upgrade?checkout=cancel`;
+      || `${sanitizedBaseUrl}/settings?checkout=success&session_id={CHECKOUT_SESSION_ID}`;
+    const cancelUrlWithSession = cancelUrl || `${sanitizedBaseUrl}/upgrade?checkout=cancel`;
 
     const session = await stripe.checkout.sessions.create({
       mode: 'subscription',

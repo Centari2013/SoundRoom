@@ -88,7 +88,7 @@ export async function POST(request) {
     }
 
     const baseUrl = process.env.PUBLIC_APP_URL || 'https://soundroom.live'
-    const fallbackReturnUrl = `${baseUrl.replace(/\/$/, '')}/manage-plan`
+    const fallbackReturnUrl = `${baseUrl.replace(/\/$/, '')}/settings`
 
     const sessionParams = {
       customer: customerId,
