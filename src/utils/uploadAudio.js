@@ -1,3 +1,10 @@
+import { supabase } from '@/utils/supabase';
+
+async function getAccessToken() {
+  const { data } = await supabase.auth.getSession();
+  return data.session?.access_token ?? null;
+}
+
 /**
  * Fetch a signed URL for uploading a file to the R2 bucket.
  *
@@ -6,11 +13,27 @@
  * @returns {Promise<{signedUrl: string, key: string}>}
  */
 async function getSignedUploadUrl(userId, filename) {
+  const token = await getAccessToken();
+
+  if (!token) {
+    throw new Error('You must be signed in to upload audio');
+  }
+
   const params = new URLSearchParams({ userId, filename });
-  const res = await fetch(`/api/get-upload-url?${params.toString()}`);
+  const res = await fetch(`/api/get-upload-url?${params.toString()}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
   if (!res.ok) {
     const errorData = await res.json().catch(() => ({ error: 'Invalid JSON response' }));
-    throw new Error(errorData.error || 'Failed to get signed upload URL');
+    const message = errorData.error || 'Failed to get signed upload URL';
+
+    if (res.status === 401 || res.status === 403) {
+      throw new Error(message || 'You are not authorized to upload audio');
+    }
+
+    throw new Error(message);
   }
   return await res.json();
 }
