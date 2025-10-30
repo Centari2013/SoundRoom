@@ -74,7 +74,7 @@ export async function GET(request) {
 
     const { data: soundFile, error: soundFileError } = await supabaseAdmin
       .from('sound_files')
-      .select('id, owner_id, plan_tier, base, bucket, path')
+      .select('id, owner_id, plan_tier, bucket, path')
       .eq('bucket', bucket)
       .eq('path', objectPath)
       .maybeSingle()
@@ -94,6 +94,12 @@ export async function GET(request) {
       throw new HttpError(403, 'You do not have access to this file')
     }
 
+    const recordBase = soundFile.base ?? soundFile.plan_tier ?? (soundFile.owner_id ? 'users' : null)
+
+    if (recordBase && recordBase !== base) {
+      throw new HttpError(403, 'Storage base mismatch')
+    }
+
     if (!isOwner) {
       const requiredPlan = resolveRequiredPlan(soundFile, base)
 
@@ -106,14 +112,11 @@ export async function GET(request) {
       throw new HttpError(403, 'Storage bucket mismatch')
     }
 
-    if (soundFile.base && soundFile.base !== base) {
-      throw new HttpError(403, 'Storage base mismatch')
-    }
-
     const client = new AwsClient({
       accessKeyId: R2_ACCESS_KEY_ID,
       secretAccessKey: R2_SECRET_ACCESS_KEY,
     })
+
 
     const url = new URL(`https://${R2_BUCKET_NAME}.${R2_ACCOUNT_ID}.r2.cloudflarestorage.com/${key}`)
     url.searchParams.set('X-Amz-Expires', '120')

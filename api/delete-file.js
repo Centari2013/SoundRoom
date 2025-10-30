@@ -44,7 +44,7 @@ export async function DELETE(request) {
 
     const { data: soundFile, error: soundFileError } = await supabaseAdmin
       .from('sound_files')
-      .select('id, owner_id, base, bucket, path')
+      .select('id, owner_id, bucket, path')
       .eq('owner_id', user.id)
       .eq('path', pathParam)
       .eq('bucket', user.id)
