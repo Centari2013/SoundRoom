@@ -2,7 +2,7 @@
   <transition name="fade">
     <div
       v-if="visible"
-      class="absolute inset-0 z-50 flex items-center justify-center backdrop-blur-md bg-white/30 dark:bg-black/50"
+      class="absolute inset-0 z-50 flex items-center justify-center backdrop-blur-md bg-panel-overlay text-panel-overlay"
     >
       <div class="text-center space-y-4">
         <h1
@@ -12,7 +12,7 @@
         </h1>
         <p
           v-if="subtext"
-          class="text-lg text-neutral-700 dark:text-neutral-300 opacity-80"
+          class="text-lg opacity-80"
         >
           {{ subtext }}
         </p>

@@ -3,7 +3,7 @@
     <label
       v-if="label"
       :for="id"
-      class="text-sm font-medium text-neutral-700 dark:text-neutral-200"
+      class="text-sm font-medium text-primary"
     >
       {{ label }}
     </label>
@@ -17,11 +17,11 @@
       :disabled="disabled"
       :class="[
         'px-3 py-2 rounded border w-full text-sm focus:outline-none',
-        'focus-visible:ring-2 focus-visible:ring-blue-500',
+        'focus-visible:ring-2 focus-visible:ring-accent',
         props.class,
         error
           ? 'border-red-500 text-red-700 bg-red-50'
-          : 'border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white',
+          : 'border-base bg-panel-raised text-panel-raised',
       ]"
       v-model="internalValue"
       :aria-describedby="error ? errorId : undefined"

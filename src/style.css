@@ -10,6 +10,12 @@
 
   --sr-surface: #f9fafb;
   --sr-panel: #ffffff;
+  --sr-panelRaised: #ffffff;
+  --sr-textOnPanelRaised: #0f172a;
+  --sr-panelOverlay: rgba(248, 250, 252, 0.85);
+  --sr-textOnPanelOverlay: #0f172a;
+  --sr-menuBackground: #ffffff;
+  --sr-textOnMenu: #0f172a;
   --sr-border: #e5e7eb;
   --sr-accent: #2563eb;
   --sr-accentForeground: #ffffff;
@@ -104,17 +110,17 @@ input:disabled {
 }
 
 .modal-panel {
-  @apply bg-white dark:bg-neutral-950 rounded-2xl w-[80vw] h-[80vh] shadow-2xl border border-neutral-300 dark:border-neutral-800 overflow-hidden;
+  @apply bg-panel-raised text-panel-raised rounded-2xl w-[80vw] h-[80vh] shadow-2xl border border-base overflow-hidden;
 }
 
 .modal-header-float {
   @apply absolute top-0 left-0 right-0 z-10 flex justify-between items-center px-6 py-4
-         bg-white/50 dark:bg-neutral-950/50 backdrop-blur-md border-b border-neutral-300 dark:border-neutral-800;
+         bg-panel-overlay text-panel-overlay backdrop-blur-md border-b border-base;
 }
 
 .modal-header {
   @apply top-0 left-0 right-0 z-10 flex justify-between items-center px-6 py-4
-         bg-white/50 dark:bg-neutral-950/50 backdrop-blur-md border-b border-neutral-300 dark:border-neutral-800;
+         bg-panel-overlay text-panel-overlay backdrop-blur-md border-b border-base;
 }
 
 

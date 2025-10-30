@@ -35,6 +35,12 @@ export const THEMES = [
         cssVars: {
           surface: '#f9fafb',
           panel: '#ffffff',
+          panelRaised: '#ffffff',
+          textOnPanelRaised: '#0f172a',
+          panelOverlay: 'rgba(248, 250, 252, 0.85)',
+          textOnPanelOverlay: '#0f172a',
+          menuBackground: '#ffffff',
+          textOnMenu: '#0f172a',
           border: '#e5e7eb',
           accent: '#2563eb',
           accentForeground: '#ffffff',
@@ -52,6 +58,12 @@ export const THEMES = [
         cssVars: {
           surface: '#0b1120',
           panel: '#111827',
+          panelRaised: '#1f2937',
+          textOnPanelRaised: '#f8fafc',
+          panelOverlay: 'rgba(15, 23, 42, 0.75)',
+          textOnPanelOverlay: '#f8fafc',
+          menuBackground: '#1f2937',
+          textOnMenu: '#f8fafc',
           border: '#1e293b',
           accent: '#38bdf8',
           accentForeground: '#0f172a',
@@ -82,6 +94,12 @@ export const THEMES = [
         cssVars: {
           surface: '#f3f4ff',
           panel: '#ffffff',
+          panelRaised: '#ffffff',
+          textOnPanelRaised: '#0f172a',
+          panelOverlay: 'rgba(240, 249, 255, 0.85)',
+          textOnPanelOverlay: '#0f172a',
+          menuBackground: '#ffffff',
+          textOnMenu: '#0f172a',
           border: '#c7d2fe',
           accent: '#0ea5e9',
           accentForeground: '#082f49',
@@ -99,6 +117,12 @@ export const THEMES = [
         cssVars: {
           surface: '#0d1b2a',
           panel: '#112240',
+          panelRaised: '#1d3557',
+          textOnPanelRaised: '#e0f2fe',
+          panelOverlay: 'rgba(13, 27, 42, 0.78)',
+          textOnPanelOverlay: '#f8fafc',
+          menuBackground: '#112240',
+          textOnMenu: '#f8fafc',
           border: '#1d3557',
           accent: '#38bdf8',
           accentForeground: '#081226',
@@ -129,6 +153,12 @@ export const THEMES = [
         cssVars: {
           surface: '#f5f3ff',
           panel: '#ede9fe',
+          panelRaised: '#ffffff',
+          textOnPanelRaised: '#1e1b4b',
+          panelOverlay: 'rgba(237, 233, 254, 0.88)',
+          textOnPanelOverlay: '#1e1b4b',
+          menuBackground: '#ede9fe',
+          textOnMenu: '#1e1b4b',
           border: '#ddd6fe',
           accent: '#7c3aed',
           accentForeground: '#f8fafc',
@@ -146,6 +176,12 @@ export const THEMES = [
         cssVars: {
           surface: '#0f172a',
           panel: '#111827',
+          panelRaised: '#1e1b4b',
+          textOnPanelRaised: '#f4f1ff',
+          panelOverlay: 'rgba(17, 24, 39, 0.78)',
+          textOnPanelOverlay: '#f8fafc',
+          menuBackground: '#161b33',
+          textOnMenu: '#f4f1ff',
           border: '#1f2937',
           accent: '#7c3aed',
           accentForeground: '#f8fafc',
@@ -233,6 +269,33 @@ export function applyThemeVariant(themeId, colorScheme) {
 
   if (!resolvedCssVars.textOnPanel && resolvedCssVars.textOnSurface) {
     resolvedCssVars.textOnPanel = resolvedCssVars.textOnSurface
+  }
+
+  if (!resolvedCssVars.panelRaised && resolvedCssVars.panel) {
+    resolvedCssVars.panelRaised = resolvedCssVars.panel
+  }
+
+  if (!resolvedCssVars.textOnPanelRaised && resolvedCssVars.textOnPanel) {
+    resolvedCssVars.textOnPanelRaised = resolvedCssVars.textOnPanel
+  }
+
+  if (!resolvedCssVars.panelOverlay) {
+    resolvedCssVars.panelOverlay =
+      resolvedCssVars.overlayBackground ?? resolvedCssVars.panelRaised ?? resolvedCssVars.panel
+  }
+
+  if (!resolvedCssVars.textOnPanelOverlay) {
+    resolvedCssVars.textOnPanelOverlay =
+      resolvedCssVars.onOverlayText ?? resolvedCssVars.textOnPanelRaised ?? resolvedCssVars.textOnPanel
+  }
+
+  if (!resolvedCssVars.menuBackground) {
+    resolvedCssVars.menuBackground = resolvedCssVars.panelRaised ?? resolvedCssVars.panel
+  }
+
+  if (!resolvedCssVars.textOnMenu) {
+    resolvedCssVars.textOnMenu =
+      resolvedCssVars.textOnPanelRaised ?? resolvedCssVars.textOnPanel ?? resolvedCssVars.textOnSurface
   }
 
   if (!resolvedCssVars.overlayBackground && resolvedCssVars.panel) {

@@ -1,6 +1,6 @@
 <template>
   <PulsingOverlay v-if="isLoggingOut" :duration="2000" :text="'Logging out...'" @done="isLoggingOut = false" />
-  <header class="px-6 py-4 border-b border-neutral-300 dark:border-neutral-800 dark:bg-black flex items-center justify-between relative">
+  <header class="px-6 py-4 border-b border-base bg-panel-raised text-panel-raised flex items-center justify-between relative">
     <h1 class="text-xl font-bold tracking-wide dark:text-gray-300"><RouterLink to="/" style="text-decoration: none; color: inherit;">SoundRoom</RouterLink></h1>
     
     <div v-if="shouldShowNavButtons" class="relative">
@@ -20,11 +20,11 @@
           v-if="isMenuOpen"
           @mouseleave="closeMenu"
           ref="menuPanel"
-          class="absolute right-0 mt-2 w-44 rounded-lg shadow-lg border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 py-2 z-50 flex flex-col divide-y divide-neutral-200 dark:divide-neutral-800 overflow-hidden"
+          class="absolute right-0 mt-2 w-44 rounded-lg shadow-lg border border-base bg-menu text-menu py-2 z-50 flex flex-col divide-y divide-base overflow-hidden"
         >
           <template v-for="button in visibleButtons" :key="button.label">
             <button
-              class="w-full px-4 py-2 text-left text-sm text-neutral-800 dark:text-neutral-100 hover:bg-neutral-100 dark:hover:bg-neutral-800 focus:outline-none !bg-transparent"
+              class="w-full px-4 py-2 text-left text-sm text-menu hover:bg-panel-overlay focus:outline-none !bg-transparent"
               type="button"
               @click="runAction(button.action)"
             >

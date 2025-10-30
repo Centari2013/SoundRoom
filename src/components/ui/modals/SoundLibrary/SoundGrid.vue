@@ -1,6 +1,6 @@
 <template>
   <div class="flex-1 relative overflow-hidden">
-    <div class="absolute top-0 left-0 right-0 z-10 flex justify-between items-center px-6 py-4 bg-white/50 dark:bg-neutral-950/50 backdrop-blur-md border-b border-neutral-300 dark:border-neutral-800">
+    <div class="absolute top-0 left-0 right-0 z-10 flex justify-between items-center px-6 py-4 bg-panel-overlay text-panel-overlay backdrop-blur-md border-b border-base">
       <h2 class="text-2xl font-bold">SoundLibrary</h2>
       <BaseButton class="text-sm" @click="$emit('close')">Close</BaseButton>
     </div>
@@ -17,7 +17,7 @@
         @locked="$emit('locked', $event)"
         />
       <template v-if="canUpload && activeCategory === 'your-sounds' && sounds.length === 0">
-          <div class="col-span-full text-center text-neutral-400 mt-32">
+          <div class="col-span-full text-center text-muted mt-32">
             <div class="text-xl font-semibold mb-2">Nothing to hear!</div>
             <div class="mb-4">Upload your first sound below and it'll show up here.</div>
           </div>
@@ -25,17 +25,17 @@
     </div>
      <div
         v-if="isAuthenticated && activeCategory === 'your-sounds'"
-        class="absolute bottom-0 left-0 right-0 p-4 bg-white dark:bg-neutral-950 border-t border-neutral-300 dark:border-neutral-800"
+        class="absolute bottom-0 left-0 right-0 p-4 bg-panel-raised text-panel-raised border-t border-base"
       >
         <div class="flex items-center justify-between gap-3">
           <button
             type="button"
-            class="text-sm font-medium text-neutral-800 dark:text-neutral-100 hover:underline"
+            class="text-sm font-medium hover:underline"
             @click="handleUploadClick"
           >
             {{ uploadCtaLabel }}
           </button>
-        <span v-if="!canUpload" class="text-xs uppercase tracking-wide text-violet-500 dark:text-violet-300">Pro feature</span>
+        <span v-if="!canUpload" class="text-xs uppercase tracking-wide text-accent">Pro feature</span>
         </div>
       </div>
   </div>

@@ -1,5 +1,5 @@
 <template>
-  <aside class="w-60 bg-neutral-200 dark:bg-neutral-900 border-r border-neutral-300 dark:border-neutral-800 p-4 space-y-3 overflow-y-auto">
+  <aside class="w-60 bg-panel-raised text-panel-raised border-r border-base p-4 space-y-3 overflow-y-auto">
     <h2 class="font-bold text-sm mb-2">Categories</h2>
     <BaseButton
       v-if="isAuthenticated"
@@ -12,7 +12,7 @@
         <span v-if="!canUpload" class="badge">Pro</span>
       </span>
     </BaseButton>
-    <hr v-if="isAuthenticated" class="text-neutral-300 dark:text-neutral-800"/>
+    <hr v-if="isAuthenticated" class="border-t border-base opacity-60"/>
     <BaseButton
       v-for="cat in categories"
       :key="cat.id"
@@ -61,16 +61,11 @@ function handleSelectYourSounds() {
   border-radius: 0.375rem;
   transition: background-color 0.2s;
 }
-.sound-lib-button:hover { background-color: #e5e5e5; }
-@media (prefers-color-scheme: dark) {
-  .sound-lib-button:hover { background-color: #1f2937; }
-}
+.sound-lib-button:hover { background-color: var(--sr-panelOverlay); }
 .sound-lib-button.active {
   font-weight: 600;
-  background-color: #d4d4d4;
-}
-@media (prefers-color-scheme: dark) {
-  .sound-lib-button.active { background-color: #1f2937; }
+  background-color: var(--sr-panelOverlay);
+  color: var(--sr-textOnPanelOverlay);
 }
 
 .sound-lib-button.locked {
@@ -88,12 +83,6 @@ function handleSelectYourSounds() {
   font-size: 0.625rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #7c3aed;
-}
-
-@media (prefers-color-scheme: dark) {
-  .badge {
-    color: #a855f7;
-  }
+  color: var(--sr-accent);
 }
 </style>

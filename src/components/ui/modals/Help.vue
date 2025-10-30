@@ -1,11 +1,11 @@
 <template>
   <div @click.self="handleClose" class="modal-backdrop">
-    <div class="bg-white dark:bg-neutral-950 rounded-2xl w-[80vw] h-[80vh] relative flex flex-col overflow-hidden shadow-2xl border border-neutral-300 dark:border-neutral-800">
+    <div class="bg-panel-raised text-panel-raised rounded-2xl w-[80vw] h-[80vh] relative flex flex-col overflow-hidden shadow-2xl border border-base">
       
       <!-- Absolute Floating Header -->
       <div class="modal-header-float">
         <h1 class="text-2xl font-bold tracking-tight">Welcome to SoundRoom</h1>
-        <BaseButton @click="handleClose" class="text-sm hover:text-neutral-600 dark:hover:text-neutral-400">Close</BaseButton>
+        <BaseButton @click="handleClose" class="text-sm text-muted hover:text-primary">Close</BaseButton>
       </div>
 
       <!-- Scrollable Content -->
@@ -85,8 +85,8 @@
           </section>
 
           <section>
-            <h2 class="text-lg font-semibold mb-4 border-b border-neutral-300 dark:border-neutral-800 pb-1">FAQ</h2>
-            <ul class=" dark:divide-neutral-800">
+            <h2 class="text-lg font-semibold mb-4 border-b border-base pb-1">FAQ</h2>
+            <ul class="divide-y divide-base">
               <li
                 v-for="(faq, i) in faqs"
                 :key="i"
@@ -94,13 +94,13 @@
               >
                 <BaseButton
                   @click="faq.open = !faq.open"
-                  class="w-full text-left font-medium text-neutral-800 dark:text-neutral-200 focus:outline-none transition-colors"
+                  class="w-full text-left font-medium text-panel-raised focus:outline-none transition-colors"
                 >
                   {{ faq.question }}
                 </BaseButton>
                 <p
                   v-if="faq.open"
-                  class="mt-2 text-sm text-neutral-600 dark:text-neutral-400 leading-snug italic indent-3"
+                  class="mt-2 text-sm text-muted leading-snug italic indent-3"
                 >
                   <span
                     v-if="faq.isHtml"
@@ -133,7 +133,7 @@
                     v-model="form.name"
                     required
                     autocomplete="name"
-                    class="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-700 rounded bg-white dark:bg-neutral-900 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                    class="w-full px-3 py-2 border border-base rounded bg-panel-raised text-panel-raised focus:outline-none focus:ring-2 focus:ring-accent text-sm"
                   />
                 </div>
 
@@ -145,7 +145,7 @@
                     v-model="form.email"
                     required
                     autocomplete="email"
-                    class="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-700 rounded bg-white dark:bg-neutral-900 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                    class="w-full px-3 py-2 border border-base rounded bg-panel-raised text-panel-raised focus:outline-none focus:ring-2 focus:ring-accent text-sm"
                   />
                 </div>
               </div>
@@ -157,7 +157,7 @@
                     id="topic"
                     v-model="form.topic"
                     required
-                    class="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-700 rounded bg-white dark:bg-neutral-900 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                    class="w-full px-3 py-2 border border-base rounded bg-panel-raised text-panel-raised focus:outline-none focus:ring-2 focus:ring-accent text-sm"
                   >
                     <option v-for="item in topicOptions" :key="item.value" :value="item.value">{{ item.label }}</option>
                   </select>
@@ -168,7 +168,7 @@
                   <select
                     id="plan"
                     v-model="form.plan"
-                    class="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-700 rounded bg-white dark:bg-neutral-900 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                    class="w-full px-3 py-2 border border-base rounded bg-panel-raised text-panel-raised focus:outline-none focus:ring-2 focus:ring-accent text-sm"
                   >
                     <option value="">Select your plan</option>
                     <option v-for="option in planOptions" :key="option" :value="option">{{ PLAN_LABELS[option] }}</option>
@@ -178,13 +178,13 @@
               </div>
 
               <div>
-                <label for="roomLink" class="block text-sm font-medium mb-1">Room link or ID <span class="text-xs text-neutral-400">(optional)</span></label>
+                <label for="roomLink" class="block text-sm font-medium mb-1">Room link or ID <span class="text-xs text-muted">(optional)</span></label>
                 <input
                   type="text"
                   id="roomLink"
                   v-model="form.roomLink"
                   placeholder="Paste a RoomManager link or card ID"
-                  class="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-700 rounded bg-white dark:bg-neutral-900 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                  class="w-full px-3 py-2 border border-base rounded bg-panel-raised text-panel-raised focus:outline-none focus:ring-2 focus:ring-accent text-sm"
                 />
               </div>
 
@@ -196,18 +196,18 @@
                   rows="4"
                   required
                   placeholder="Tell us what you were working on and what you expected to happen."
-                  class="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-700 rounded bg-white dark:bg-neutral-900 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                  class="w-full px-3 py-2 border border-base rounded bg-panel-raised text-panel-raised focus:outline-none focus:ring-2 focus:ring-accent text-sm"
                 ></textarea>
               </div>
 
               <div>
-                <label for="reproSteps" class="block text-sm font-medium mb-1">Steps to reproduce <span class="text-xs text-neutral-400">(optional)</span></label>
+                <label for="reproSteps" class="block text-sm font-medium mb-1">Steps to reproduce <span class="text-xs text-muted">(optional)</span></label>
                 <textarea
                   id="reproSteps"
                   v-model="form.reproSteps"
                   rows="3"
                   placeholder="Step-by-step details help us debug much faster."
-                  class="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-700 rounded bg-white dark:bg-neutral-900 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                  class="w-full px-3 py-2 border border-base rounded bg-panel-raised text-panel-raised focus:outline-none focus:ring-2 focus:ring-accent text-sm"
                 ></textarea>
               </div>
 

@@ -1,17 +1,17 @@
 <template>
-  <div class="room-row p-4 border border-neutral-700 rounded-lg shadow-sm hover:bg-neutral-800 transition">
+  <div class="room-row p-4 border border-base rounded-lg shadow-sm hover:bg-panel-overlay transition bg-panel-raised text-panel-raised">
     <img
       v-if="room.thumbnail"
       :src="room.thumbnail"
       alt="Room preview"
-      class="rounded mb-3 w-full aspect-video object-cover border border-neutral-800"
+      class="rounded mb-3 w-full aspect-video object-cover border border-base"
     />
     <EditableRoomName
       :roomId="room.id"
       :name="room.name"
       @updated="name => emit('update-name', name)"
     />
-    <div class="room-meta text-xs text-neutral-400">{{ formatDate(room.updated_at) }}</div>
+    <div class="room-meta text-xs text-muted">{{ formatDate(room.updated_at) }}</div>
     <div class="room-actions mt-3 flex gap-2">
       <BaseButton @click="emit('load', room.id)">Load</BaseButton>
       <BaseButton @click="emit('delete', room.id)">Delete</BaseButton>

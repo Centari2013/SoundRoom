@@ -1,9 +1,9 @@
 <template>
   <div
     :class="[
-      'relative aspect-square flex flex-col items-center justify-between p-4 rounded-xl bg-neutral-100 dark:bg-neutral-800 shadow border transition-shadow duration-200',
+      'relative aspect-square flex flex-col items-center justify-between p-4 rounded-xl bg-panel-raised text-panel-raised shadow border transition-shadow duration-200',
       highlightClass,
-      { 'border-neutral-300 dark:border-neutral-700': !highlightClass }
+      { 'border-base': !highlightClass }
     ]"
   >
 
