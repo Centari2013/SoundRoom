@@ -39,7 +39,11 @@ export const THEMES = [
           accent: '#2563eb',
           accentForeground: '#ffffff',
           textPrimary: '#0f172a',
-          textMuted: '#475569'
+          textMuted: '#475569',
+          textOnSurface: '#0f172a',
+          textOnPanel: '#0f172a',
+          overlayBackground: '#1f2937',
+          onOverlayText: '#f8fafc'
         }
       },
       dark: {
@@ -52,7 +56,11 @@ export const THEMES = [
           accent: '#38bdf8',
           accentForeground: '#0f172a',
           textPrimary: '#e2e8f0',
-          textMuted: '#94a3b8'
+          textMuted: '#94a3b8',
+          textOnSurface: '#e2e8f0',
+          textOnPanel: '#f8fafc',
+          overlayBackground: '#111827',
+          onOverlayText: '#f8fafc'
         }
       }
     }
@@ -76,9 +84,13 @@ export const THEMES = [
           panel: '#ffffff',
           border: '#c7d2fe',
           accent: '#0ea5e9',
-          accentForeground: '#ffffff',
+          accentForeground: '#082f49',
           textPrimary: '#0f172a',
-          textMuted: '#1e3a8a'
+          textMuted: '#1e3a8a',
+          textOnSurface: '#0f172a',
+          textOnPanel: '#0f172a',
+          overlayBackground: '#1e3a8a',
+          onOverlayText: '#f8fafc'
         }
       },
       dark: {
@@ -91,7 +103,11 @@ export const THEMES = [
           accent: '#38bdf8',
           accentForeground: '#081226',
           textPrimary: '#e0f2fe',
-          textMuted: '#93c5fd'
+          textMuted: '#93c5fd',
+          textOnSurface: '#e0f2fe',
+          textOnPanel: '#f8fafc',
+          overlayBackground: '#112240',
+          onOverlayText: '#f8fafc'
         }
       }
     }
@@ -117,7 +133,11 @@ export const THEMES = [
           accent: '#7c3aed',
           accentForeground: '#f8fafc',
           textPrimary: '#312e81',
-          textMuted: '#5b21b6'
+          textMuted: '#5b21b6',
+          textOnSurface: '#1e1b4b',
+          textOnPanel: '#1e1b4b',
+          overlayBackground: '#312e81',
+          onOverlayText: '#f8fafc'
         }
       },
       dark: {
@@ -130,7 +150,11 @@ export const THEMES = [
           accent: '#7c3aed',
           accentForeground: '#f8fafc',
           textPrimary: '#f8fafc',
-          textMuted: '#cbd5f5'
+          textMuted: '#cbd5f5',
+          textOnSurface: '#f8fafc',
+          textOnPanel: '#f4f1ff',
+          overlayBackground: '#111827',
+          onOverlayText: '#f8fafc'
         }
       }
     }
@@ -199,7 +223,27 @@ export function applyThemeVariant(themeId, colorScheme) {
     return null
   }
 
-  Object.entries(variant.cssVars ?? {}).forEach(([token, value]) => {
+  const resolvedCssVars = {
+    ...(variant.cssVars ?? {})
+  }
+
+  if (!resolvedCssVars.textOnSurface && resolvedCssVars.textPrimary) {
+    resolvedCssVars.textOnSurface = resolvedCssVars.textPrimary
+  }
+
+  if (!resolvedCssVars.textOnPanel && resolvedCssVars.textOnSurface) {
+    resolvedCssVars.textOnPanel = resolvedCssVars.textOnSurface
+  }
+
+  if (!resolvedCssVars.overlayBackground && resolvedCssVars.panel) {
+    resolvedCssVars.overlayBackground = resolvedCssVars.panel
+  }
+
+  if (!resolvedCssVars.onOverlayText && resolvedCssVars.textOnPanel) {
+    resolvedCssVars.onOverlayText = resolvedCssVars.textOnPanel
+  }
+
+  Object.entries(resolvedCssVars).forEach(([token, value]) => {
     root.style.setProperty(`${CSS_VAR_PREFIX}${token}`, value)
   })
 
@@ -210,15 +254,19 @@ export function applyThemeVariant(themeId, colorScheme) {
   root.classList.toggle('dark', Boolean(variant.isDark))
   root.classList.toggle('sr-dark', Boolean(variant.isDark))
 
-  if (variant.cssVars?.surface) {
-    root.style.backgroundColor = variant.cssVars.surface
+  if (resolvedCssVars.surface) {
+    root.style.backgroundColor = resolvedCssVars.surface
     if (body) {
-      body.style.backgroundColor = variant.cssVars.surface
+      body.style.backgroundColor = resolvedCssVars.surface
     }
   }
 
-  if (variant.cssVars?.textPrimary && body) {
-    body.style.color = variant.cssVars.textPrimary
+  if (body) {
+    const bodyTextColor =
+      resolvedCssVars.textOnSurface ?? resolvedCssVars.textPrimary ?? body.style.color
+    if (bodyTextColor) {
+      body.style.color = bodyTextColor
+    }
   }
 
   return {
