@@ -1,3 +1,10 @@
+import { supabase } from '@/utils/supabase';
+
+async function getAccessToken() {
+  const { data } = await supabase.auth.getSession();
+  return data.session?.access_token ?? null;
+}
+
 /**
  * Fetch a signed URL for uploading a file to the R2 bucket.
  *
