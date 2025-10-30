@@ -3,15 +3,26 @@
   font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
   line-height: 1.5;
   font-weight: 400;
-
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
-
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+
+  --sr-surface: #f9fafb;
+  --sr-panel: #ffffff;
+  --sr-border: #e5e7eb;
+  --sr-accent: #2563eb;
+  --sr-accentForeground: #ffffff;
+  --sr-textPrimary: #0f172a;
+  --sr-textMuted: #475569;
+  --sr-textOnSurface: #0f172a;
+  --sr-textOnPanel: #0f172a;
+  --sr-overlayBackground: #1f2937;
+  --sr-onOverlayText: #f8fafc;
+
+  color-scheme: light;
+  color: var(--sr-textOnSurface);
+  background-color: var(--sr-surface);
 }
 
 a {
@@ -25,6 +36,8 @@ a:hover {
 
 body {
   margin: 0;
+  background-color: var(--sr-surface);
+  color: var(--sr-textOnSurface);
   display: flex;
   place-items: center;
   min-width: 320px;
@@ -109,13 +122,13 @@ input:disabled {
 
 @media (prefers-color-scheme: light) {
   :root {
-    color: #213547;
-    background-color: #ffffff;
+    color: var(--sr-textOnSurface);
+    background-color: var(--sr-surface);
   }
   a:hover {
     color: #747bff;
   }
- 
+
   button:disabled {
     background-color: #b9b9b9;
     color: #505050;
