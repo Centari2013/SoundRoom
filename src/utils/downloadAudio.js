@@ -1,4 +1,10 @@
 import { useAudioCacheStore } from '@/stores/useAudioCacheStore'
+import { supabase } from '@/utils/supabase'
+
+async function getAccessToken() {
+  const { data } = await supabase.auth.getSession()
+  return data.session?.access_token ?? null
+}
 
 /**
  * Normalise and join storage segments into a canonical R2 object key.
@@ -23,10 +29,27 @@ export function buildStorageKey(base, bucket, path) {
  * @returns {Promise<Blob>} resolved audio Blob
  */
 export async function fetchAudioBlob(key) {
-  const res = await fetch(`/api/get-signed-url?key=${encodeURIComponent(key)}`)
+  const token = await getAccessToken()
+
+  if (!token) {
+    throw new Error('You must be signed in to access audio files')
+  }
+
+  const res = await fetch(`/api/get-signed-url?key=${encodeURIComponent(key)}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  })
+
   if (!res.ok) {
     const errorData = await res.json().catch(() => ({ error: 'Invalid JSON response' }))
-    throw new Error(errorData.error || 'Failed to get signed URL')
+    const message = errorData.error || 'Failed to get signed URL'
+
+    if (res.status === 401 || res.status === 403) {
+      throw new Error(message || 'You are not authorized to access this audio file')
+    }
+
+    throw new Error(message)
   }
   const { signedUrl } = await res.json()
 
