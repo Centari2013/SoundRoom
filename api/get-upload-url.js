@@ -60,26 +60,31 @@ export async function GET(request) {
       secretAccessKey: R2_SECRET_ACCESS_KEY,
     })
 
-    const url = new URL(
-      `https://${R2_BUCKET_NAME}.${R2_ACCOUNT_ID}.r2.cloudflarestorage.com/users/${user.id}/${filename}`,
-    )
-    url.searchParams.set('X-Amz-Expires', '120')
+    const uniqueSuffix = `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+    const generatedKey = `${uniqueSuffix}-${filename}`;
+    const url = new URL(`https://${R2_BUCKET_NAME}.${R2_ACCOUNT_ID}.r2.cloudflarestorage.com/users/${userId}/${generatedKey}`);
+    url.searchParams.set('X-Amz-Expires', '120');
 
     const signed = await client.sign(new Request(url, { method: 'PUT' }), {
       aws: { signQuery: true },
     })
 
-    return new Response(JSON.stringify({ signedUrl: signed.url, key: filename }), {
-      status: 200,
-      headers: {
-        ...corsHeaders,
-        'Content-Type': 'application/json',
-      },
-    })
-  } catch (error) {
-    if (error instanceof HttpError) {
-      return new Response(JSON.stringify({ error: error.message }), {
-        status: error.status,
+    return new Response(
+      JSON.stringify({ signedUrl: signed.url, key: generatedKey, displayName: filename }),
+      {
+        status: 200,
+        headers: {
+          ...corsHeaders,
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+  } catch (err) {
+    console.error('💥 SIGNING ERROR:', err);
+    return new Response(
+      JSON.stringify({ error: 'Internal Server Error', message: err.message }),
+      {
+        status: 500,
         headers: {
           ...corsHeaders,
           'Content-Type': 'application/json',

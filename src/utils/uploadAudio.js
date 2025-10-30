@@ -12,19 +12,9 @@ async function getAccessToken() {
  * @param {string} filename - original file name
  * @returns {Promise<{signedUrl: string, key: string}>}
  */
-async function getSignedUploadUrl(userId, filename) {
-  const token = await getAccessToken();
-
-  if (!token) {
-    throw new Error('You must be signed in to upload audio');
-  }
-
-  const params = new URLSearchParams({ userId, filename });
-  const res = await fetch(`/api/get-upload-url?${params.toString()}`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
+async function getSignedUploadUrl(userId, displayName) {
+  const params = new URLSearchParams({ userId, filename: displayName });
+  const res = await fetch(`/api/get-upload-url?${params.toString()}`);
   if (!res.ok) {
     const errorData = await res.json().catch(() => ({ error: 'Invalid JSON response' }));
     const message = errorData.error || 'Failed to get signed upload URL';
@@ -35,7 +25,11 @@ async function getSignedUploadUrl(userId, filename) {
 
     throw new Error(message);
   }
-  return await res.json();
+  const payload = await res.json();
+  if (!payload?.key || !payload?.signedUrl) {
+    throw new Error('Signed upload URL response is missing required fields');
+  }
+  return payload;
 }
 
 /**
