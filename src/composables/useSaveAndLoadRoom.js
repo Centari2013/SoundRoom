@@ -193,13 +193,13 @@ export function useSaveAndLoadRoom() {
     if (roomId){
       return await supabase
       .from("rooms")
-      .select("room_config, name")
+      .select("id, room_config, name")
       .eq("id", roomId)
       .single();
     } else {
       return await supabase
       .from("rooms")
-      .select("room_config, name")
+      .select("id, room_config, name")
       .eq("owner_id", user.value.id)
       .order("created_at", { ascending: false })
       .limit(1)
@@ -238,7 +238,8 @@ export function useSaveAndLoadRoom() {
     }
     
     const roomData = data.room_config;
-    roomData.room.id = roomId; // Set the room ID from the database
+    const resolvedRoomId = data?.id ?? (roomId ?? roomData?.room?.id ?? null);
+    roomData.room.id = resolvedRoomId; // Set the room ID from the database
     roomData.room.name = data.name; // Set the room name from the database
     const ids = roomData.soundLibrarySources.map(s => s.libraryId);
     const dbSounds = await getSoundsFromDB(ids);
@@ -297,6 +298,9 @@ export function useSaveAndLoadRoom() {
     resetRoomState();
 
     roomStore.loadRoom(roomData.room);
+    if (!room.value.id) {
+      room.value.id = resolvedRoomId;
+    }
     listenerStore.loadListener(roomData.listener);
     audioEngineStore.loadAudioEngine(roomData.audioEngine);
 
