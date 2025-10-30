@@ -22,9 +22,7 @@ function sanitizeFilename(filename = FALLBACK_FILENAME) {
 
   let normalizedBase = base;
   try {
-    normalizedBase = normalizedBase
-      .normalize("NFKD")
-      .replace(/[\u0300-\u036f]/g, "");
+    normalizedBase = normalizedBase.normalize("NFKD").replace(/[\u0300-\u036f]/g, "");
   } catch {
     // If the runtime does not support Intl normalization we simply fall back
     // to the raw base name.
@@ -90,8 +88,7 @@ function getR2Config() {
       if (vercelEnv) {
         env = {
           accessKeyId: env.accessKeyId || vercelEnv.R2_ACCESS_KEY_ID,
-          secretAccessKey:
-            env.secretAccessKey || vercelEnv.R2_SECRET_ACCESS_KEY,
+          secretAccessKey: env.secretAccessKey || vercelEnv.R2_SECRET_ACCESS_KEY,
           bucketName: env.bucketName || vercelEnv.R2_BUCKET_NAME,
           accountId: env.accountId || vercelEnv.R2_ACCOUNT_ID,
         };
@@ -104,55 +101,27 @@ function getR2Config() {
   return env;
 }
 
-/**
- * API endpoint that signs a temporary upload URL for the R2 bucket.
- *
- * @param {Request} request - incoming HTTP request
- * @returns {Promise<Response>} signed upload URL response
- */
-export async function GET(request) {
-  const ALLOWED_ORIGIN =
-    process.env.NODE_ENV === "production"
-      ? "https://soundroom.live"
-      : "*";
-
-  const {
-    accessKeyId,
-    secretAccessKey,
-    bucketName,
-    accountId,
-  } = getR2Config();
-
-  const corsHeaders = {
-    "Access-Control-Allow-Origin": ALLOWED_ORIGIN,
-    "Access-Control-Allow-Methods": "GET, OPTIONS",
-    "Access-Control-Allow-Headers": "Content-Type",
-    "Access-Control-Allow-Credentials": "true",
-  };
-
-  if (request.method === "OPTIONS") {
-    return new Response(null, {
-      status: 204,
-      headers: corsHeaders,
-    });
-  }
+const ALLOWED_ORIGIN =
+  process.env.NODE_ENV === "production" ? "https://soundroom.live" : "*";
 
 const corsHeaders = {
-  'Access-Control-Allow-Origin': ALLOWED_ORIGIN,
-  'Access-Control-Allow-Methods': 'GET, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-  'Access-Control-Allow-Credentials': 'true',
-}
+  "Access-Control-Allow-Origin": ALLOWED_ORIGIN,
+  "Access-Control-Allow-Methods": "GET, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization",
+  "Access-Control-Allow-Credentials": "true",
+};
 
 export function OPTIONS() {
   return new Response(null, {
     status: 204,
     headers: corsHeaders,
-  })
+  });
 }
 
 export async function GET(request) {
   try {
+    const { accessKeyId, secretAccessKey, bucketName, accountId } = getR2Config();
+
     if (!accessKeyId || !secretAccessKey || !bucketName || !accountId) {
       return new Response(
         JSON.stringify({
@@ -198,10 +167,9 @@ export async function GET(request) {
     );
     url.searchParams.set("X-Amz-Expires", "120");
 
-    const signed = await client.sign(
-      new Request(url, { method: "PUT" }),
-      { aws: { signQuery: true } }
-    );
+    const signed = await client.sign(new Request(url, { method: "PUT" }), {
+      aws: { signQuery: true },
+    });
 
     return new Response(
       JSON.stringify({
@@ -217,26 +185,17 @@ export async function GET(request) {
         },
       }
     );
-  } catch (err) {
-    console.error("💥 SIGNING ERROR:", err);
+  } catch (error) {
+    console.error("💥 SIGNING ERROR:", error);
     return new Response(
-      JSON.stringify({ error: "Internal Server Error", message: err.message }),
+      JSON.stringify({ error: "Internal Server Error", message: error.message }),
       {
         status: 500,
         headers: {
           ...corsHeaders,
           "Content-Type": "application/json",
         },
-      })
-    }
-
-    console.error('💥 SIGNING ERROR:', error)
-    return new Response(JSON.stringify({ error: 'Internal Server Error' }), {
-      status: 500,
-      headers: {
-        ...corsHeaders,
-        'Content-Type': 'application/json',
-      },
-    })
+      }
+    );
   }
 }
