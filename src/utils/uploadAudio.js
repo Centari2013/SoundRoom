@@ -16,15 +16,21 @@ async function getSignedUploadUrl(userId, displayName) {
   const params = new URLSearchParams({ userId, filename: displayName });
   const res = await fetch(`/api/get-upload-url?${params.toString()}`);
   if (!res.ok) {
-    const errorData = await res.json().catch(() => ({ error: 'Invalid JSON response' }));
-    const message = errorData.error || 'Failed to get signed upload URL';
+    let message = 'Failed to get signed upload URL';
+    const rawBody = await res.text().catch(() => '');
 
-    if (res.status === 401 || res.status === 403) {
-      throw new Error(message || 'You are not authorized to upload audio');
+    if (rawBody) {
+      try {
+        const errorData = JSON.parse(rawBody);
+        message = errorData?.error || errorData?.message || message;
+      } catch (parseError) {
+        message = rawBody;
+      }
     }
 
     throw new Error(message);
   }
+
   const payload = await res.json();
   if (!payload?.key || !payload?.signedUrl) {
     throw new Error('Signed upload URL response is missing required fields');
