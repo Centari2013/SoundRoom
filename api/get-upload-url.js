@@ -137,6 +137,21 @@ export async function GET(request) {
     });
   }
 
+const corsHeaders = {
+  'Access-Control-Allow-Origin': ALLOWED_ORIGIN,
+  'Access-Control-Allow-Methods': 'GET, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+  'Access-Control-Allow-Credentials': 'true',
+}
+
+export function OPTIONS() {
+  return new Response(null, {
+    status: 204,
+    headers: corsHeaders,
+  })
+}
+
+export async function GET(request) {
   try {
     if (!accessKeyId || !secretAccessKey || !bucketName || !accountId) {
       return new Response(
@@ -212,7 +227,16 @@ export async function GET(request) {
           ...corsHeaders,
           "Content-Type": "application/json",
         },
-      }
-    );
+      })
+    }
+
+    console.error('💥 SIGNING ERROR:', error)
+    return new Response(JSON.stringify({ error: 'Internal Server Error' }), {
+      status: 500,
+      headers: {
+        ...corsHeaders,
+        'Content-Type': 'application/json',
+      },
+    })
   }
 }
