@@ -56,8 +56,9 @@ export async function GET(request) {
       );
     }
 
-    const key = `${filename}`;
-    const url = new URL(`https://${R2_BUCKET_NAME}.${R2_ACCOUNT_ID}.r2.cloudflarestorage.com/users/${userId}/${key}`);
+    const uniqueSuffix = `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+    const generatedKey = `${uniqueSuffix}-${filename}`;
+    const url = new URL(`https://${R2_BUCKET_NAME}.${R2_ACCOUNT_ID}.r2.cloudflarestorage.com/users/${userId}/${generatedKey}`);
     url.searchParams.set('X-Amz-Expires', '120');
 
     const signed = await client.sign(
@@ -65,13 +66,16 @@ export async function GET(request) {
       { aws: { signQuery: true } }
     );
 
-    return new Response(JSON.stringify({ signedUrl: signed.url, key: filename }), {
-      status: 200,
-      headers: {
-        ...corsHeaders,
-        'Content-Type': 'application/json',
-      },
-    });
+    return new Response(
+      JSON.stringify({ signedUrl: signed.url, key: generatedKey, displayName: filename }),
+      {
+        status: 200,
+        headers: {
+          ...corsHeaders,
+          'Content-Type': 'application/json',
+        },
+      }
+    );
   } catch (err) {
     console.error('💥 SIGNING ERROR:', err);
     return new Response(

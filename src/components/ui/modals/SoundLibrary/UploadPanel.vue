@@ -161,13 +161,13 @@ async function uploadAll() {
 
   const uploadPromises = files.value.map(file =>
     limit(async () => {
-      const key = await uploadAudio(file.raw, user.value.id, (percent) => {
-      file.progress = percent
-    })
+      const storageKey = await uploadAudio(file.raw, user.value.id, (percent) => {
+        file.progress = percent
+      })
       const duration = await getFileDuration(file.raw)
 
       await supabase.from('sound_files').insert({
-        path: key,
+        path: storageKey,
         name: file.name,
         bucket: user.value.id,
         duration_seconds: duration,

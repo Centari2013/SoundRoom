@@ -5,14 +5,18 @@
  * @param {string} filename - original file name
  * @returns {Promise<{signedUrl: string, key: string}>}
  */
-async function getSignedUploadUrl(userId, filename) {
-  const params = new URLSearchParams({ userId, filename });
+async function getSignedUploadUrl(userId, displayName) {
+  const params = new URLSearchParams({ userId, filename: displayName });
   const res = await fetch(`/api/get-upload-url?${params.toString()}`);
   if (!res.ok) {
     const errorData = await res.json().catch(() => ({ error: 'Invalid JSON response' }));
     throw new Error(errorData.error || 'Failed to get signed upload URL');
   }
-  return await res.json();
+  const payload = await res.json();
+  if (!payload?.key || !payload?.signedUrl) {
+    throw new Error('Signed upload URL response is missing required fields');
+  }
+  return payload;
 }
 
 /**
