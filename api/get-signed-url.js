@@ -117,6 +117,7 @@ export async function GET(request) {
       secretAccessKey: R2_SECRET_ACCESS_KEY,
     })
 
+
     const url = new URL(`https://${R2_BUCKET_NAME}.${R2_ACCOUNT_ID}.r2.cloudflarestorage.com/${key}`)
     url.searchParams.set('X-Amz-Expires', '120')
 
