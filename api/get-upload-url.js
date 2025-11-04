@@ -1,6 +1,8 @@
 import { getEnv } from "@vercel/functions";
 import { randomBytes, randomUUID } from "node:crypto";
 import { AwsClient } from "aws4fetch";
+import { authenticateRequest, resolveUserAccessContext } from "./_utils/auth.js";
+import { HttpError } from "./_utils/errors.js";
 
 const FALLBACK_FILENAME = "file";
 
@@ -123,43 +125,42 @@ export async function GET(request) {
     const { accessKeyId, secretAccessKey, bucketName, accountId } = getR2Config();
 
     if (!accessKeyId || !secretAccessKey || !bucketName || !accountId) {
-      return new Response(
-        JSON.stringify({
-          error: "Missing R2 configuration",
-          message:
-            "R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_BUCKET_NAME, and R2_ACCOUNT_ID must be configured.",
-        }),
-        {
-          status: 500,
-          headers: {
-            ...corsHeaders,
-            "Content-Type": "application/json",
-          },
-        }
+      throw new HttpError(
+        500,
+        "R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_BUCKET_NAME, and R2_ACCOUNT_ID must be configured."
       );
+    }
+
+    const { searchParams } = new URL(request.url);
+    const userIdParam = searchParams.get("userId");
+    const filename = searchParams.get("filename");
+
+    if (!userIdParam || !filename) {
+      throw new HttpError(400, "Missing 'userId' or 'filename' query param");
+    }
+
+    const userId = userIdParam.trim();
+
+    if (!userId) {
+      throw new HttpError(400, "Invalid 'userId' value");
+    }
+
+    const { user } = await authenticateRequest(request);
+
+    if (user.id !== userId) {
+      throw new HttpError(403, "You can only request upload URLs for your own account");
+    }
+
+    const userAccess = await resolveUserAccessContext(user.id);
+
+    if (!userAccess.entitlements?.canUpload) {
+      throw new HttpError(403, "Your current plan does not allow uploading files");
     }
 
     const client = new AwsClient({
       accessKeyId,
       secretAccessKey,
     });
-
-    const { searchParams } = new URL(request.url);
-    const userId = searchParams.get("userId");
-    const filename = searchParams.get("filename");
-
-    if (!userId || !filename) {
-      return new Response(
-        JSON.stringify({ error: "Missing 'userId' or 'filename' query param" }),
-        {
-          status: 400,
-          headers: {
-            ...corsHeaders,
-            "Content-Type": "application/json",
-          },
-        }
-      );
-    }
 
     const generatedKey = generateObjectKey(filename);
     const url = new URL(
@@ -186,6 +187,16 @@ export async function GET(request) {
       }
     );
   } catch (error) {
+    if (error instanceof HttpError) {
+      return new Response(JSON.stringify({ error: error.message }), {
+        status: error.status,
+        headers: {
+          ...corsHeaders,
+          "Content-Type": "application/json",
+        },
+      });
+    }
+
     console.error("💥 SIGNING ERROR:", error);
     return new Response(
       JSON.stringify({ error: "Internal Server Error", message: error.message }),
