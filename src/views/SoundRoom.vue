@@ -47,8 +47,8 @@
       />
     </div>
     <FooterBar
-      @saveRoom="saveRoom"
-      v-bind="{isSaving: isSavingRoom}"
+      :on-save="saveRoom"
+      v-bind="{ isSaving: isSavingRoom }"
     />
   </div>
   <RouterView/>

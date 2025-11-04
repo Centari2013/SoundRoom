@@ -72,9 +72,9 @@ import BaseButton from '@/components/ui/input/BaseButton.vue';
 import YesNoModal from '@/components/ui/modals/YesNoModal.vue';
 import IRSelect from '@/components/SoundRoom/IRSelect.vue';
 
-const emit = defineEmits(['saveRoom']);
 const props = defineProps({
   isSaving: { type: Boolean, required: true },
+  onSave: { type: Function, required: true },
 });
 
 const router = useRouter();
@@ -85,25 +85,38 @@ const showSaveConfirm = ref(false);
 const showNewRoomConfirm = ref(false);
 
 
-function handleSaveOnly() {
+async function handleSaveOnly() {
   if (!isAuthenticated.value) {
     showSaveConfirm.value = false;
     router.push('/login');
     return;
   }
-  emit('saveRoom');
-  showSaveConfirm.value = false;
+  try {
+    await props.onSave();
+  } catch (error) {
+    console.error('Error saving room:', error);
+  } finally {
+    showSaveConfirm.value = false;
+  }
 }
 
-function handleSaveThenNewRoom() {
+async function handleSaveThenNewRoom() {
   if (!isAuthenticated.value) {
     showNewRoomConfirm.value = false;
     router.push('/login');
     return;
   }
-  emit('saveRoom');
-  resetRoomState();
-  router.push('/');
+  try {
+    const didSave = await props.onSave();
+    if (didSave) {
+      resetRoomState();
+      router.push('/');
+    }
+  } catch (error) {
+    console.error('Error saving room before creating a new one:', error);
+  } finally {
+    showNewRoomConfirm.value = false;
+  }
 }
 
 function handleSkipSaveThenNewRoom() {
