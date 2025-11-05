@@ -30,6 +30,21 @@ npm run build
 
 The compiled site will be output to the `dist/` directory.
 
+## Testing
+
+SoundRoom ships with configured test runners, although only a small number of
+assertions are in place today. You can run:
+
+```bash
+npm test        # run unit + end-to-end suites
+npm run test:unit
+npm run test:e2e
+```
+
+Playwright requires Chromium (installed automatically on first run) and will
+look for the dev server at `http://127.0.0.1:4173` when executing the production
+build tests.
+
 ## Project Structure Overview
 
 ```
@@ -47,6 +62,6 @@ See [ARCHITECTURE.md](ARCHITECTURE.md) for more detailed explanations of these f
 ## Tips
 
 - Restart the dev server if you add new environment variables.
-- The project currently has no automated tests, but Playwright is included for future end‑to‑end testing.
+- Playwright downloads browsers the first time you execute `npm run test:e2e`.
 
 Happy hacking!

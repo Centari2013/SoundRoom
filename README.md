@@ -101,6 +101,16 @@ Planned next-phase upgrades:
    npm run build
    ```
 
+6. **Run the tests (optional)**
+   ```bash
+   # Run both unit and end-to-end suites
+   npm test
+
+   # Or run a single suite
+   npm run test:unit
+   npm run test:e2e
+   ```
+
 ---
 
 ## 🎮 Usage Overview
