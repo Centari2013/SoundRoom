@@ -64,6 +64,9 @@
 </template>
 
 <script setup>
+defineOptions({
+  name: 'SoundRoomRoot',
+})
 import { ref, provide, onBeforeMount, onUnmounted } from 'vue'
 
 // Shared constants

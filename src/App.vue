@@ -30,8 +30,10 @@
       <RouterView v-else v-slot="{ Component, route }">
         <Suspense>
           <template #default>
-            <ErrorBoundary :key="route.fullPath">
-              <component v-if="Component" :is="Component" />
+            <ErrorBoundary :reset-on="routeKey">
+              <KeepAlive :include="keepAliveViews">
+                <component v-if="Component" :is="Component" :key="routeKey" />
+              </KeepAlive>
             </ErrorBoundary>
           </template>
           <template #fallback>
@@ -53,7 +55,7 @@
 </template>
 
 <script setup>
-import { ref, watch } from 'vue'
+import { ref, watch, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { SpeedInsights } from '@vercel/speed-insights/vue'
 import HeaderBar from '@/components/SoundRoom/HeaderBar.vue'
@@ -67,6 +69,8 @@ const isMobile = isMobileBrowser()
 const globalError = ref(null)
 const router = useRouter()
 const route = useRoute()
+const routeKey = computed(() => route.matched[0]?.path ?? route.fullPath)
+const keepAliveViews = ['SoundRoomRoot']
 
 router.onError((error, to) => {
   console.error('Router navigation error:', error)
