@@ -101,14 +101,19 @@ function updateCoords() {
 
 const soundNodeTitleCoords = computed(() => {
   coordsVersion.value // makes it reactive to window resize
-  return audioEngine.value.soundSources.value.map(sn => {          
-  const stagePos = stageDivRef.value.getBoundingClientRect();
-  return {
-        x: stagePos.left + sn.instance.state.x,
-        y: stagePos.top + sn.instance.state.y + 20, //20 is to account for directional arrow
-        name: sn.name
-      }
-});
+
+  const stageElement = stageDivRef.value
+  if (!stageElement) {
+    return []
+  }
+
+  const stagePos = stageElement.getBoundingClientRect()
+
+  return audioEngine.value.soundSources.value.map(sn => ({
+    x: stagePos.left + sn.instance.state.x,
+    y: stagePos.top + sn.instance.state.y + 20, //20 is to account for directional arrow
+    name: sn.name,
+  }))
 })
 
 
