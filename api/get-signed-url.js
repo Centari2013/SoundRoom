@@ -63,8 +63,18 @@ export async function GET(request) {
       throw new HttpError(400, "Missing 'key' query param")
     }
 
-    const { user } = await authenticateRequest(request)
-    const userAccess = await resolveUserAccessContext(user.id)
+    const authHeader =
+      request.headers.get('authorization') || request.headers.get('Authorization') || ''
+    const hasBearerToken = /^Bearer\s+\S+/.test(authHeader)
+
+    let user = null
+    let userAccess = { plan: 'free' }
+
+    if (hasBearerToken) {
+      const authResult = await authenticateRequest(request)
+      user = authResult.user
+      userAccess = await resolveUserAccessContext(user.id)
+    }
 
     const { base, bucket, objectPath } = parseStorageKey(key)
 
@@ -88,7 +98,8 @@ export async function GET(request) {
       throw new HttpError(404, 'Sound file not found')
     }
 
-    const isOwner = !!soundFile.owner_id && soundFile.owner_id === user.id
+    const userId = user?.id ?? null
+    const isOwner = !!soundFile.owner_id && soundFile.owner_id === userId
 
     if (soundFile.owner_id && !isOwner) {
       throw new HttpError(403, 'You do not have access to this file')
