@@ -25,13 +25,28 @@
 </template>
 
 <script setup>
-import { ref, onErrorCaptured } from 'vue'
+import { ref, onErrorCaptured, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import BaseButton from '@/components/ui/input/BaseButton.vue'
 
+const DEFAULT_ERROR_MESSAGE = 'Something went wrong. Refresh the page to try again.'
 const hasError = ref(false)
-const errorMessage = ref('Something went wrong. Refresh the page to try again.')
+const errorMessage = ref(DEFAULT_ERROR_MESSAGE)
 const router = useRouter()
+const props = defineProps({
+  resetOn: {
+    type: [String, Number, Boolean],
+    default: null,
+  },
+})
+
+watch(
+  () => props.resetOn,
+  () => {
+    hasError.value = false
+    errorMessage.value = DEFAULT_ERROR_MESSAGE
+  }
+)
 
 function reloadPage() {
   window.location.reload()
@@ -39,13 +54,13 @@ function reloadPage() {
 
 function goHome() {
   hasError.value = false
-  errorMessage.value = 'Something went wrong. Refresh the page to try again.'
+  errorMessage.value = DEFAULT_ERROR_MESSAGE
   void router.push('/')
 }
 
 onErrorCaptured((error) => {
   hasError.value = true
-  errorMessage.value = error?.message ?? 'Something went wrong. Refresh the page to try again.'
+  errorMessage.value = error?.message ?? DEFAULT_ERROR_MESSAGE
   console.error('Captured UI error:', error)
   return false
 })
