@@ -31,14 +31,12 @@ export function buildStorageKey(base, bucket, path) {
 export async function fetchAudioBlob(key) {
   const token = await getAccessToken()
 
-  if (!token) {
-    throw new Error('You must be signed in to access audio files')
-  }
-
   const res = await fetch(`/api/get-signed-url?key=${encodeURIComponent(key)}`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
+    headers: token
+      ? {
+          Authorization: `Bearer ${token}`,
+        }
+      : undefined,
   })
 
   if (!res.ok) {
