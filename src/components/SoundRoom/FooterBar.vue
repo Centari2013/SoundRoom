@@ -21,8 +21,8 @@
   />
 
   <!-- Footer Buttons -->
-  <div class="relative flex items-center justify-between h-15 p-2">
-    <div class="flex space-x-3">
+  <div class="relative flex flex-col gap-3 md:flex-row md:items-center md:justify-between border-t border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-950 px-4 py-3">
+    <div class="flex flex-wrap items-center justify-center gap-3 md:justify-start">
       <BaseButton
         @click="showSaveConfirm = true"
         :disabled="isSaving || !isRoomSaveable"
@@ -43,11 +43,15 @@
         New Room +
       </BaseButton>
     </div>
-    <div class="absolute left-1/2 -translate-x-1/2">
+    <div class="flex justify-center md:hidden">
       <IRSelect />
     </div>
 
-    <div v-if="isAuthenticated" class="ml-auto">
+    <div class="hidden md:block absolute left-1/2 -translate-x-1/2">
+      <IRSelect />
+    </div>
+
+    <div v-if="isAuthenticated" class="flex justify-center md:justify-end">
       <RouterLink
         to="/room-manager"
         aria-label="Open Room Manager"
@@ -58,7 +62,7 @@
       </RouterLink>
     </div>
   </div>
-  
+
 </template>
 
 <script setup>

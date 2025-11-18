@@ -1,51 +1,80 @@
 <template>
   <div class="h-full bg-white text-neutral-900 dark:bg-neutral-950 dark:text-white flex flex-col">
     <!-- Main Layout -->
-    <div class="flex flex-1 overflow-hidden">
+    <div class="flex-1 flex flex-col overflow-hidden">
+      <div class="flex flex-1 flex-col md:flex-row overflow-hidden">
 
-      <!-- Left Sidebar -->
-      <SidebarLeft 
-        class="min-w-[7.5rem] max-w-64 w-[20%] flex-shrink"
-        :MAX_SOURCES="MAX_LIB_SOURCES"
-        :handleDragStart="handleDragStart"
-        :listener="listener"
-      />
+        <!-- Left Sidebar (Desktop) -->
+        <SidebarLeft
+          class="hidden md:flex min-w-[7.5rem] max-w-64 w-[20%] flex-shrink"
+          :MAX_SOURCES="MAX_LIB_SOURCES"
+          :handleDragStart="handleDragStart"
+          :listener="listener"
+        />
 
-      <!-- Canvas + Controls -->
-      <main class="flex-1 flex flex-col">
-        <!-- Toolbar -->
-        <Toolbar/>
+        <!-- Canvas + Controls -->
+        <main class="flex-1 flex flex-col order-2 md:order-none">
+          <!-- Toolbar (Desktop) -->
+          <div class="hidden md:block">
+            <Toolbar />
+          </div>
 
-        <!-- Canvas Area -->
-        <div class="flex-1 bg-neutral-200 dark:bg-black flex items-center justify-center">
-          <MainCanvasStage
-            v-bind="{
-              handleDrop,
-              onKeyDown,
-              onKeyUp,
-              contextMenuActions,
-              showContextMenu,
-              selectedIndex,
-              handleStageClick
-            }"
-            @selectNode="e => { selectedIndex = e }"
-          />
-          <!-- Frosted Load/Save Overlay -->
-           <PulsingOverlay
-            v-if="isLoadingRoom || isSavingRoom"
-            :text="isLoadingRoom ? 'Loading your room...' : 'Saving your room...'"
+          <!-- Canvas Area -->
+          <div class="relative flex-1 bg-neutral-200 dark:bg-black">
+            <div
+              class="flex h-[80vh] min-h-[70vh] max-h-[90vh] w-full items-center justify-center overflow-auto touch-pan-y touch-pinch-zoom md:h-full md:min-h-0 md:max-h-none md:overflow-hidden"
+            >
+              <MainCanvasStage
+                v-bind="{
+                  handleDrop,
+                  onKeyDown,
+                  onKeyUp,
+                  contextMenuActions,
+                  showContextMenu,
+                  selectedIndex,
+                  handleStageClick
+                }"
+                @selectNode="e => {
+                  selectedIndex = e
+                }"
+              />
+            </div>
+            <!-- Frosted Load/Save Overlay -->
+            <PulsingOverlay
+              v-if="isLoadingRoom || isSavingRoom"
+              :text="isLoadingRoom ? 'Loading your room...' : 'Saving your room...'"
             />
-        </div>
-      </main>
+          </div>
 
-      <!-- Right Sidebar -->
-      <SidebarRight
-        class="min-w-[7.5rem] max-w-64 w-[20%] flex-shrink"
-        v-bind="{
-          selectedSource
-        }"
-      />
+          <!-- Mobile Controls -->
+          <div class="md:hidden flex flex-col gap-4 border-t border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-950 p-4">
+            <MobileToolbar />
+            <SourceDrawer
+              v-model:open="isSourceDrawerOpen"
+              :MAX_SOURCES="MAX_LIB_SOURCES"
+              :handleDragStart="handleDragStart"
+              :listener="listener"
+            />
+          </div>
+        </main>
+
+        <!-- Right Sidebar (Desktop) -->
+        <SidebarRight
+          class="hidden md:flex min-w-[7.5rem] max-w-64 w-[20%] flex-shrink"
+          v-bind="{
+            selectedSource
+          }"
+        />
+      </div>
     </div>
+
+    <SelectedSourceDrawer
+      v-if="selectedSource"
+      class="md:hidden"
+      :selected-source="selectedSource"
+      @close="selectedIndex = null"
+    />
+
     <FooterBar
       :on-save="saveRoom"
       v-bind="{ isSaving: isSavingRoom }"
@@ -74,8 +103,11 @@ const SOUND_NODE_PART_NAME = 'sound-node-part'
 
 // UI Components
 import Toolbar from '@/components/SoundRoom/Toolbar.vue'
+import MobileToolbar from '@/components/SoundRoom/MobileToolbar.vue'
 import SidebarLeft from '@/components/SoundRoom/SidebarLeft/SidebarLeft.vue'
 import SidebarRight from '@/components/SoundRoom/SidebarRight/SidebarRight.vue'
+import SourceDrawer from '@/components/SoundRoom/SourceDrawer.vue'
+import SelectedSourceDrawer from '@/components/SoundRoom/SelectedSourceDrawer.vue'
 import MainCanvasStage from '@/components/SoundRoom/MainCanvasStage/MainCanvasStage.vue'
 import FooterBar from '@/components/SoundRoom/FooterBar.vue'
 import PulsingOverlay from '@/components/ui/overlays/PulsingOverlay.vue'
@@ -100,6 +132,7 @@ import { storeToRefs } from 'pinia'
 // State
 const selectedIndex = ref(null)
 const draggedSource = ref(null)
+const isSourceDrawerOpen = ref(false)
 
 const roomStore = useRoomStore()
 const listenerStore = useListenerStore()
