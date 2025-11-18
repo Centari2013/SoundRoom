@@ -1,8 +1,8 @@
 <template>
   <div class="h-full bg-white text-neutral-900 dark:bg-neutral-950 dark:text-white flex flex-col">
     <!-- Main Layout -->
-    <div class="flex-1 flex flex-col overflow-hidden">
-      <div class="flex flex-1 flex-col md:flex-row overflow-hidden">
+    <div class="flex-1 flex flex-col overflow-y-auto md:overflow-hidden">
+      <div class="flex flex-col md:flex-row md:flex-1 md:overflow-hidden">
 
         <!-- Left Sidebar (Desktop) -->
         <SidebarLeft
@@ -13,14 +13,14 @@
         />
 
         <!-- Canvas + Controls -->
-        <main class="flex-1 flex flex-col order-2 md:order-none">
+        <main class="flex flex-col order-2 md:order-none md:flex-1">
           <!-- Toolbar (Desktop) -->
           <div class="hidden md:block">
             <Toolbar />
           </div>
 
           <!-- Canvas Area -->
-          <div class="relative flex-1 bg-neutral-200 dark:bg-black">
+          <div class="relative md:flex-1 bg-neutral-200 dark:bg-black">
             <div
               class="flex h-[80vh] min-h-[70vh] max-h-[90vh] w-full items-center justify-center overflow-auto touch-pan-y touch-pinch-zoom md:h-full md:min-h-0 md:max-h-none md:overflow-hidden"
             >
