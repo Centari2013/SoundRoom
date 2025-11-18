@@ -2,7 +2,7 @@
   <div class="h-full bg-white text-neutral-900 dark:bg-neutral-950 dark:text-white flex flex-col">
     <Transition name="mobile-panel">
       <div
-        v-if="mobilePanel"
+        v-if="isMobile && mobilePanel"
         class="sm:hidden fixed inset-0 z-40 flex flex-col justify-end pointer-events-none"
       >
         <button
@@ -66,7 +66,10 @@
       <!-- Canvas + Controls -->
       <main class="flex-1 flex flex-col min-h-[20rem]">
         <!-- Mobile panel toggles -->
-        <div class="sm:hidden border-b border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-950 px-4 py-3 flex gap-3 sticky top-0 z-10">
+        <div
+          v-if="isMobile"
+          class="sm:hidden border-b border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-950 px-4 py-3 flex gap-3 sticky top-0 z-10"
+        >
           <button
             type="button"
             class="flex-1 min-h-[44px] rounded-full border text-sm font-semibold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
@@ -170,6 +173,7 @@ import MainCanvasStage from '@/components/SoundRoom/MainCanvasStage/MainCanvasSt
 import FooterBar from '@/components/SoundRoom/FooterBar.vue'
 import PulsingOverlay from '@/components/ui/overlays/PulsingOverlay.vue'
 import WelcomeOverlay from '@/components/ui/overlays/WelcomeOverlay.vue'
+import { isMobileBrowser } from '@/utils/device'
 
 // Store
 import { useRoomStore } from '@/stores/useRoomStore'
@@ -194,6 +198,7 @@ const mobilePanel = ref(null)
 const isDesktopViewport = ref(false)
 let desktopViewportQuery
 let desktopViewportHandler
+const isMobile = isMobileBrowser()
 
 const roomStore = useRoomStore()
 const listenerStore = useListenerStore()
@@ -284,7 +289,7 @@ onBeforeMount(async () => {
 })
 
 onMounted(() => {
-  if (typeof window === 'undefined' || !('matchMedia' in window)) {
+  if (!isMobile || typeof window === 'undefined' || !('matchMedia' in window)) {
     return
   }
 
@@ -305,7 +310,7 @@ onMounted(() => {
 })
 
 watch(mobilePanel, (panel) => {
-  if (typeof document === 'undefined') return
+  if (!isMobile || typeof document === 'undefined') return
   if (isDesktopViewport.value) {
     document.body.style.overflow = ''
     return
@@ -314,6 +319,7 @@ watch(mobilePanel, (panel) => {
 })
 
 function toggleMobilePanel(panel) {
+  if (!isMobile) return
   mobilePanel.value = mobilePanel.value === panel ? null : panel
 }
 
@@ -324,11 +330,13 @@ onUnmounted(() => {
   cacheStore.audioCacheManager.clearMemoryCache()
   // Uncomment to also wipe IndexedDB cache if long-term storage isn't desired
   // void cacheStore.audioCacheManager.clearPersistentCache()
-  if (desktopViewportQuery && desktopViewportHandler) {
-    desktopViewportQuery.removeEventListener('change', desktopViewportHandler)
-  }
-  if (typeof document !== 'undefined') {
-    document.body.style.overflow = ''
+  if (isMobile) {
+    if (desktopViewportQuery && desktopViewportHandler) {
+      desktopViewportQuery.removeEventListener('change', desktopViewportHandler)
+    }
+    if (typeof document !== 'undefined') {
+      document.body.style.overflow = ''
+    }
   }
 })
 </script>
