@@ -1,14 +1,63 @@
 <template>
   <div class="h-full bg-white text-neutral-900 dark:bg-neutral-950 dark:text-white flex flex-col">
+    <Transition name="mobile-panel">
+      <div
+        v-if="mobilePanel"
+        class="sm:hidden fixed inset-0 z-40 flex flex-col justify-end pointer-events-none"
+      >
+        <button
+          type="button"
+          class="absolute inset-0 w-full h-full bg-black/40 pointer-events-auto"
+          aria-label="Close mobile panel overlay"
+          @click="toggleMobilePanel(null)"
+        ></button>
+        <div
+          class="relative pointer-events-auto bg-white dark:bg-neutral-950 rounded-t-3xl shadow-2xl border border-neutral-200 dark:border-neutral-800"
+        >
+          <div class="flex items-center justify-between px-4 py-3 border-b border-neutral-200 dark:border-neutral-800">
+            <p class="text-sm font-semibold">
+              {{ mobilePanel === 'library' ? 'Sound Library' : 'Sound Settings' }}
+            </p>
+            <button
+              type="button"
+              class="min-h-[44px] px-3 text-sm font-medium text-blue-600 dark:text-blue-400"
+              @click="toggleMobilePanel(null)"
+            >
+              Close
+            </button>
+          </div>
+          <div
+            :key="mobilePanel"
+            class="overflow-y-auto max-h-[70vh]"
+          >
+            <SidebarLeft
+              v-if="mobilePanel === 'library'"
+              id="mobile-library-panel"
+              class="border-0 rounded-t-3xl"
+              :MAX_SOURCES="MAX_LIB_SOURCES"
+              :handleDragStart="handleDragStart"
+              :listener="listener"
+            />
+            <SidebarRight
+              v-else
+              id="mobile-inspector-panel"
+              class="border-0 rounded-t-3xl"
+              v-bind="{
+                selectedSource
+              }"
+            />
+          </div>
+        </div>
+      </div>
+    </Transition>
+
     <!-- Main Layout -->
     <div
       class="flex flex-1 overflow-y-auto sm:overflow-hidden flex-col sm:flex-row"
     >
-      <!-- Stack panels vertically on mobile to prevent overlap -->
-
-      <!-- Left Sidebar -->
+      <!-- Desktop left sidebar -->
       <SidebarLeft
-        class="w-full sm:w-[20%] min-w-[7.5rem] max-w-64 flex-shrink-0 border-b sm:border-b-0"
+        class="hidden sm:flex sm:w-[20%] min-w-[7.5rem] max-w-64 flex-shrink-0"
         :MAX_SOURCES="MAX_LIB_SOURCES"
         :handleDragStart="handleDragStart"
         :listener="listener"
@@ -16,6 +65,38 @@
 
       <!-- Canvas + Controls -->
       <main class="flex-1 flex flex-col min-h-[20rem]">
+        <!-- Mobile panel toggles -->
+        <div class="sm:hidden border-b border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-950 px-4 py-3 flex gap-3 sticky top-0 z-10">
+          <button
+            type="button"
+            class="flex-1 min-h-[44px] rounded-full border text-sm font-semibold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+            :class="[
+              mobilePanel === 'library'
+                ? 'bg-blue-600 text-white border-blue-600'
+                : 'bg-transparent border-neutral-300 text-neutral-900 dark:text-white dark:border-neutral-700'
+            ]"
+            aria-controls="mobile-library-panel"
+            :aria-expanded="mobilePanel === 'library'"
+            @click="toggleMobilePanel('library')"
+          >
+            Library
+          </button>
+          <button
+            type="button"
+            class="flex-1 min-h-[44px] rounded-full border text-sm font-semibold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+            :class="[
+              mobilePanel === 'inspector'
+                ? 'bg-blue-600 text-white border-blue-600'
+                : 'bg-transparent border-neutral-300 text-neutral-900 dark:text-white dark:border-neutral-700'
+            ]"
+            aria-controls="mobile-inspector-panel"
+            :aria-expanded="mobilePanel === 'inspector'"
+            @click="toggleMobilePanel('inspector')"
+          >
+            Inspector
+          </button>
+        </div>
+
         <!-- Toolbar -->
         <Toolbar/>
 
@@ -47,9 +128,9 @@
         </div>
       </main>
 
-      <!-- Right Sidebar -->
+      <!-- Desktop right sidebar -->
       <SidebarRight
-        class="w-full sm:w-[20%] min-w-[7.5rem] max-w-64 flex-shrink-0 border-t sm:border-t-0"
+        class="hidden sm:flex sm:w-[20%] min-w-[7.5rem] max-w-64 flex-shrink-0"
         v-bind="{
           selectedSource
         }"
@@ -76,7 +157,7 @@
 defineOptions({
   name: 'SoundRoomRoot',
 })
-import { ref, provide, onBeforeMount, onUnmounted } from 'vue'
+import { ref, provide, onBeforeMount, onMounted, onUnmounted, watch } from 'vue'
 
 // Shared constants
 const SOUND_NODE_PART_NAME = 'sound-node-part'
@@ -109,6 +190,10 @@ import { storeToRefs } from 'pinia'
 // State
 const selectedIndex = ref(null)
 const draggedSource = ref(null)
+const mobilePanel = ref(null)
+const isDesktopViewport = ref(false)
+let desktopViewportQuery
+let desktopViewportHandler
 
 const roomStore = useRoomStore()
 const listenerStore = useListenerStore()
@@ -198,6 +283,40 @@ onBeforeMount(async () => {
   roomStore.getSaveSnapshot({ markAsInitial: true }) // Initialize stored snapshots for save/empty comparisons
 })
 
+onMounted(() => {
+  if (typeof window === 'undefined' || !('matchMedia' in window)) {
+    return
+  }
+
+  desktopViewportQuery = window.matchMedia('(min-width: 640px)')
+
+  desktopViewportHandler = (event) => {
+    isDesktopViewport.value = event.matches
+    if (event.matches) {
+      mobilePanel.value = null
+      if (typeof document !== 'undefined') {
+        document.body.style.overflow = ''
+      }
+    }
+  }
+
+  desktopViewportHandler(desktopViewportQuery)
+  desktopViewportQuery.addEventListener('change', desktopViewportHandler)
+})
+
+watch(mobilePanel, (panel) => {
+  if (typeof document === 'undefined') return
+  if (isDesktopViewport.value) {
+    document.body.style.overflow = ''
+    return
+  }
+  document.body.style.overflow = panel ? 'hidden' : ''
+})
+
+function toggleMobilePanel(panel) {
+  mobilePanel.value = mobilePanel.value === panel ? null : panel
+}
+
 onUnmounted(() => {
   unregisterSoundRoomActions()
   audioEngine.value.dispose()
@@ -205,5 +324,24 @@ onUnmounted(() => {
   cacheStore.audioCacheManager.clearMemoryCache()
   // Uncomment to also wipe IndexedDB cache if long-term storage isn't desired
   // void cacheStore.audioCacheManager.clearPersistentCache()
+  if (desktopViewportQuery && desktopViewportHandler) {
+    desktopViewportQuery.removeEventListener('change', desktopViewportHandler)
+  }
+  if (typeof document !== 'undefined') {
+    document.body.style.overflow = ''
+  }
 })
 </script>
+
+<style scoped>
+.mobile-panel-enter-active,
+.mobile-panel-leave-active {
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+.mobile-panel-enter-from,
+.mobile-panel-leave-to {
+  opacity: 0;
+  transform: translateY(1rem);
+}
+</style>
