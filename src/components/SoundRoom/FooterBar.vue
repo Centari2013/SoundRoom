@@ -21,12 +21,12 @@
   />
 
   <!-- Footer Buttons -->
-  <div class="relative flex items-center justify-between h-15 p-2">
-    <div class="flex space-x-3">
+  <div class="relative flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between p-3">
+    <div class="flex flex-wrap gap-3">
       <BaseButton
         @click="showSaveConfirm = true"
         :disabled="isSaving || !isRoomSaveable"
-        class="px-3 py-2 rounded bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400"
+        class="px-4 py-3 min-h-[44px] min-w-[120px] rounded bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400"
         type="button"
         aria-label="Open save room confirmation"
       >
@@ -36,23 +36,24 @@
       <BaseButton
         @click="showNewRoomConfirm = true"
         :disabled="isSaving || isRoomEmpty"
-        class="px-3 py-2 rounded bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400"
+        class="px-4 py-3 min-h-[44px] min-w-[120px] rounded bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400"
         type="button"
         aria-label="Open new room confirmation"
       >
         New Room +
       </BaseButton>
     </div>
-    <div class="absolute left-1/2 -translate-x-1/2">
+    <!-- Center the IR select inline on desktop while keeping it in flow on mobile -->
+    <div class="flex justify-center order-3 sm:order-none">
       <IRSelect />
     </div>
 
-    <div v-if="isAuthenticated" class="ml-auto">
+    <div v-if="isAuthenticated" class="flex justify-end">
       <RouterLink
         to="/room-manager"
         aria-label="Open Room Manager"
       >
-        <BaseButton class="w-full">
+        <BaseButton class="w-full px-4 py-3 min-h-[44px]">
           RoomManager
         </BaseButton>
       </RouterLink>

@@ -1,6 +1,7 @@
 <template>
+  <!-- Allow the inspector to scroll independently when panels stack on mobile -->
   <aside
-    class="flex flex-col h-full bg-neutral-100 dark:bg-neutral-900 border-l border-neutral-300 dark:border-neutral-800 p-4 space-y-4"
+    class="flex flex-col h-full w-full bg-neutral-100 dark:bg-neutral-900 border-l border-neutral-300 dark:border-neutral-800 p-4 space-y-4 overflow-y-auto"
     role="region"
     aria-labelledby="selected-sound-panel-label"
   >

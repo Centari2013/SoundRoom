@@ -1,10 +1,11 @@
  <template>
+  <!-- touch-manipulation lets the canvas scroll while allowing Konva drag gestures -->
   <div
     ref="stageDivRef"
     role="application"
     tabindex="0"
     aria-label="SoundRoom 2D audio environment. Use keyboard or mouse to interact with sound nodes."
-    class="border-2 border-neutral-400 dark:border-neutral-700 flex items-center justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+    class="border-2 border-neutral-400 dark:border-neutral-700 flex items-center justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 touch-manipulation sm:touch-auto"
     :class="`w-[${room.width}px] h-[${room.height}px]`"
     @dragover.prevent
     @drop="handleDrop"

@@ -1,46 +1,55 @@
 <template>
   <div class="h-full bg-white text-neutral-900 dark:bg-neutral-950 dark:text-white flex flex-col">
     <!-- Main Layout -->
-    <div class="flex flex-1 overflow-hidden">
+    <div
+      class="flex flex-1 overflow-y-auto sm:overflow-hidden flex-col sm:flex-row"
+    >
+      <!-- Stack panels vertically on mobile to prevent overlap -->
 
       <!-- Left Sidebar -->
-      <SidebarLeft 
-        class="min-w-[7.5rem] max-w-64 w-[20%] flex-shrink"
+      <SidebarLeft
+        class="w-full sm:w-[20%] min-w-[7.5rem] max-w-64 flex-shrink-0 border-b sm:border-b-0"
         :MAX_SOURCES="MAX_LIB_SOURCES"
         :handleDragStart="handleDragStart"
         :listener="listener"
       />
 
       <!-- Canvas + Controls -->
-      <main class="flex-1 flex flex-col">
+      <main class="flex-1 flex flex-col min-h-[20rem]">
         <!-- Toolbar -->
         <Toolbar/>
 
         <!-- Canvas Area -->
-        <div class="flex-1 bg-neutral-200 dark:bg-black flex items-center justify-center">
-          <MainCanvasStage
-            v-bind="{
-              handleDrop,
-              onKeyDown,
-              onKeyUp,
-              contextMenuActions,
-              showContextMenu,
-              selectedIndex,
-              handleStageClick
-            }"
-            @selectNode="e => { selectedIndex = e }"
-          />
+        <div class="flex-1 bg-neutral-200 dark:bg-black relative flex flex-col">
+          <!-- Scrollable canvas wrapper for small screens -->
+          <div class="flex-1 overflow-y-auto overflow-x-auto sm:overflow-visible overscroll-contain">
+            <div class="min-h-full flex items-center justify-center p-4 sm:p-6">
+              <MainCanvasStage
+                class="shrink-0"
+                v-bind="{
+                  handleDrop,
+                  onKeyDown,
+                  onKeyUp,
+                  contextMenuActions,
+                  showContextMenu,
+                  selectedIndex,
+                  handleStageClick
+                }"
+                @selectNode="e => { selectedIndex = e }"
+              />
+            </div>
+          </div>
           <!-- Frosted Load/Save Overlay -->
-           <PulsingOverlay
+          <PulsingOverlay
             v-if="isLoadingRoom || isSavingRoom"
             :text="isLoadingRoom ? 'Loading your room...' : 'Saving your room...'"
-            />
+          />
         </div>
       </main>
 
       <!-- Right Sidebar -->
       <SidebarRight
-        class="min-w-[7.5rem] max-w-64 w-[20%] flex-shrink"
+        class="w-full sm:w-[20%] min-w-[7.5rem] max-w-64 flex-shrink-0 border-t sm:border-t-0"
         v-bind="{
           selectedSource
         }"

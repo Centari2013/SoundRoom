@@ -32,7 +32,9 @@
       :fill="getFillColor"
       name="sound-node-part"
       @mousedown="onSourceMouseDown"
+      @touchstart="onSourceMouseDown"
       @mouseup="onSourceMouseUp"
+      @touchend="onSourceMouseUp"
       @mouseover="setCursor($event, 'pointer')"
       @mouseout="setCursor($event, 'default')"
     />
@@ -62,7 +64,9 @@
       stroke="#000"
       :strokeWidth="1"
       @mousedown="onSourceMouseDown"
+      @touchstart="onSourceMouseDown"
       @mouseup="onSourceMouseUp"
+      @touchend="onSourceMouseUp"
       @mouseover="setCursor($event, 'pointer')"
       @mouseout="setCursor($event, 'default')"
       name="sound-node-part"
@@ -79,7 +83,9 @@
       :rotation="source.instance.state.angle - 90 + 20"
       fill="transparent"
       @mousedown="onHandleMouseDown"
+      @touchstart="onHandleMouseDown"
       @mouseup="onHandleMouseUp"
+      @touchend="onHandleMouseUp"
       @mouseover="setCursor($event, 'pointer')"
       @mouseout="setCursor($event, 'default')"
       name="sound-node-part"
@@ -155,6 +161,7 @@ let initialSourceAngle = null
 function onSourceMouseDown(e) {
   emit('select', props.index) // select current SoundSourceNode to display in SelectSourcePanel.vue
   e.evt.stopPropagation()
+  e.evt.preventDefault()
 
   const stage = e.target.getStage()
   const mousePos = stage.getPointerPosition()
@@ -164,7 +171,11 @@ function onSourceMouseDown(e) {
   const group = e.target.getParent()
   group.draggable(true)
 
-  stage.on("mousemove.sourceDragDetect", () => {
+  // Listen for both mouse and touch move events so dragging works on touchscreens
+  const moveEvents = ["mousemove", "touchmove"]
+  const upEvents = ["mouseup", "touchend"]
+
+  const handleDragDetect = () => {
     const currentPos = stage.getPointerPosition()
     const dx = currentPos.x - mouseDownPos.x
     const dy = currentPos.y - mouseDownPos.y
@@ -173,18 +184,22 @@ function onSourceMouseDown(e) {
       isDragging = true
       group.startDrag()
     }
-  })
+  }
 
-  stage.on("mouseup.sourceDragDetect", () => {
-    stage.off("mousemove.sourceDragDetect")
-    stage.off("mouseup.sourceDragDetect")
+  moveEvents.forEach(evt => stage.on(`${evt}.sourceDragDetect`, handleDragDetect))
+
+  const handlePointerUp = (evt) => {
+    moveEvents.forEach(eventName => stage.off(`${eventName}.sourceDragDetect`))
+    upEvents.forEach(eventName => stage.off(`${eventName}.sourceDragDetect`))
 
     if (!isDragging) {
       group.draggable(false)
     }
 
-    onSourceMouseUp(e)
-  })
+    onSourceMouseUp(evt)
+  }
+
+  upEvents.forEach(evt => stage.on(`${evt}.sourceDragDetect`, handlePointerUp))
 
   moveSourcePayload = {
     index: props.index,
@@ -226,6 +241,7 @@ function onSourceMouseUp(e) {
 function onHandleMouseDown(e) {
   emit('select', props.index)
   e.evt.stopPropagation()
+  e.evt.preventDefault()
 
   initialSourceAngle = props.source.instance.state.angle
 
@@ -235,12 +251,16 @@ function onHandleMouseDown(e) {
   const dy = mousePos.y - props.source.instance.state.y
   initialMouseAngle = Math.atan2(dy, dx) * (180 / Math.PI)
 
-  stage.on("mousemove.sourceRotate", onHandleMouseMove)
-  stage.on("mouseup.sourceRotate", () => {
+  const moveEvents = ["mousemove", "touchmove"]
+  const upEvents = ["mouseup", "touchend"]
+
+  moveEvents.forEach(evt => stage.on(`${evt}.sourceRotate`, onHandleMouseMove))
+  const stopRotate = () => {
     onHandleMouseUp()
-    stage.off("mousemove.sourceRotate")
-    stage.off("mouseup.sourceRotate")
-  })
+    moveEvents.forEach(evt => stage.off(`${evt}.sourceRotate`))
+    upEvents.forEach(evt => stage.off(`${evt}.sourceRotate`))
+  }
+  upEvents.forEach(evt => stage.on(`${evt}.sourceRotate`, stopRotate))
 }
 
 function onHandleMouseMove(e) {
