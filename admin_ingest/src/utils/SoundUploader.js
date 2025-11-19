@@ -1,0 +1,72 @@
+import { supabase } from './supabaseClient'
+
+/**
+ * Fetch a signed upload URL using the exact flow the customer-facing uploader uses.
+ * This keeps the folder structure identical (users/{userId}/{generatedKey}).
+ */
+async function getSignedUploadUrl(userId, filename) {
+  const params = new URLSearchParams({ userId, filename })
+  const response = await fetch(`/api/get-upload-url?${params.toString()}`)
+
+  if (!response.ok) {
+    const body = await response.text().catch(() => '')
+    throw new Error(body || 'Unable to get signed Cloudflare R2 URL')
+  }
+
+  const payload = await response.json()
+  if (!payload?.signedUrl || !payload?.key) {
+    throw new Error('Signed upload URL response was missing "signedUrl" or "key"')
+  }
+  return payload
+}
+
+function uploadViaXhr(file, signedUrl) {
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest()
+    xhr.open('PUT', signedUrl)
+    xhr.setRequestHeader('Content-Type', file.type)
+
+    xhr.onload = () => {
+      if (xhr.status >= 200 && xhr.status < 300) {
+        resolve()
+      } else {
+        reject(new Error(`R2 upload failed with status ${xhr.status}`))
+      }
+    }
+
+    xhr.onerror = () => reject(new Error('Network error while uploading to R2'))
+    xhr.send(file)
+  })
+}
+
+/**
+ * Upload a single file and then insert the DB row.
+ * @param {Object} options
+ * @param {File} options.file
+ * @param {string} options.userId
+ * @param {Object} options.metadata - payload destined for public.sound_files
+ */
+export async function uploadFileAndInsert({ file, userId, metadata }) {
+  if (!userId) {
+    throw new Error('Supabase user is required before uploading')
+  }
+
+  const { signedUrl, key } = await getSignedUploadUrl(userId, file.name)
+  await uploadViaXhr(file, signedUrl)
+
+  const payload = {
+    ...metadata,
+    path: key,
+    bucket: userId,
+    owner_id: userId,
+    size: file.size,
+    mime_type: file.type
+  }
+
+  const { error } = await supabase.from('sound_files').insert(payload)
+  if (error) {
+    throw error
+  }
+
+  return { key }
+}
