@@ -202,7 +202,7 @@ const uploadedCount = computed(() => Object.values(uploadedMap.value || {}).filt
 </script>
 
 <template>
-  <main class="min-h-screen bg-gray-950 text-gray-100">
+  <main class="min-h-screen bg-gray-900 text-gray-100">
     <div class="max-w-6xl mx-auto py-10 px-6 space-y-6">
       <h1 class="text-3xl font-bold">SoundRoom Admin Ingest</h1>
       <p class="text-sm text-gray-400">
