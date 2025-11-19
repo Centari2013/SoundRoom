@@ -202,22 +202,38 @@ const uploadedCount = computed(() => Object.values(uploadedMap.value || {}).filt
 </script>
 
 <template>
-  <main class="min-h-screen bg-gray-900 text-gray-100">
-    <div class="max-w-6xl mx-auto py-10 px-6 space-y-6">
-      <h1 class="text-3xl font-bold">SoundRoom Admin Ingest</h1>
-      <p class="text-sm text-gray-400">
-        Local-only helper for bulk ingesting cleaned libraries. Auth is routed through Supabase, uploads
-        mirror the production path (Cloudflare R2 → public.sound_files).
-      </p>
+  <main class="min-h-screen bg-gray-950 text-gray-100">
+    <div class="max-w-6xl mx-auto py-14 px-6 space-y-12">
+      <!-- Header -->
+      <header class="space-y-2 pb-6 border-b border-gray-800">
+        <h1 class="text-4xl font-bold tracking-tight">SoundRoom — Admin Ingest</h1>
+        <p class="text-sm text-gray-400 leading-relaxed max-w-2xl">
+          Local-only tool for bulk ingestion of curated audio assets.  
+          Authentication is routed through Supabase. Uploads write to Cloudflare R2 following the production directory structure.
+        </p>
+      </header>
 
-      <DirectoryPicker @directory-loaded="handleDirectoryLoaded" />
+      <!-- Directory picker -->
+      <section class="bg-gray-900 rounded-2xl border border-gray-800 shadow-lg p-8">
+        <DirectoryPicker @directory-loaded="handleDirectoryLoaded" />
+      </section>
 
-      <section v-if="currentFile" class="space-y-4">
-        <div class="flex items-center justify-between text-sm text-gray-400">
-          <div>{{ directoryName ? `Directory: ${directoryName}` : 'No directory selected yet' }}</div>
+      <!-- File Review -->
+      <section v-if="currentFile" class="space-y-8">
+        <div class="flex justify-between items-center text-sm text-gray-400">
           <div>
-            Auth: <span v-if="sessionChecked">{{ user ? user.email : 'Sign in via Supabase Auth UI' }}</span>
-            <span v-else>Checking session…</span>
+            <span class="text-gray-500">Directory:</span>
+            <span class="text-gray-300 font-medium">
+              {{ directoryName || 'None selected' }}
+            </span>
+          </div>
+
+          <div>
+            <span class="text-gray-500">Auth:</span>
+            <span v-if="sessionChecked" class="text-gray-300 font-medium">
+              {{ user ? user.email : 'Sign in via Supabase Auth UI' }}
+            </span>
+            <span v-else class="text-gray-500">Checking session…</span>
           </div>
         </div>
 
@@ -236,24 +252,52 @@ const uploadedCount = computed(() => Object.values(uploadedMap.value || {}).filt
         />
       </section>
 
-      <div v-else class="text-center text-gray-500 py-20 border border-dashed border-gray-700 rounded-xl">
-        Select a directory to begin.
+      <!-- Empty state -->
+      <div
+        v-else
+        class="text-center py-24 rounded-2xl border border-dashed border-gray-700 bg-gray-900/40"
+      >
+        <p class="text-gray-400 text-lg font-medium mb-1">No directory selected</p>
+        <p class="text-gray-500 text-sm">
+          Choose a folder to begin reviewing and ingesting audio files.
+        </p>
       </div>
 
-      <div class="text-xs text-gray-500">Progress: {{ uploadedCount }} / {{ totalFiles }} uploaded.</div>
+      <!-- Progress footer -->
+      <footer class="text-xs text-gray-500 pt-8">
+        Progress:
+        <span class="text-gray-300 font-semibold">
+          {{ uploadedCount }} / {{ totalFiles }}
+        </span>
+        uploaded
+      </footer>
     </div>
 
+    <!-- Toast -->
     <transition name="fade">
       <div
         v-if="toast"
-        class="fixed bottom-6 right-6 px-4 py-2 rounded-lg"
-        :class="toast?.variant === 'error' ? 'bg-red-500/90 text-black' : 'bg-emerald-500/90 text-black'"
+        class="fixed bottom-6 right-6 px-4 py-2 rounded-lg shadow-xl backdrop-blur-sm text-black"
+        :class="toast.variant === 'error'
+          ? 'bg-red-500/90'
+          : 'bg-emerald-500/90'"
       >
-        {{ toast?.message }}
+        {{ toast.message }}
       </div>
     </transition>
   </main>
 </template>
+
+<style scoped>
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.25s ease;
+}
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+</style>
 
 <style scoped>
 .fade-enter-active,

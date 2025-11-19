@@ -75,55 +75,71 @@ function handleEnter(event) {
 
 <template>
   <section
-    class="bg-gray-900 rounded-2xl border border-gray-800 p-6"
+    class="bg-gray-900/60 rounded-2xl border border-gray-800 p-6 shadow-xl backdrop-blur-sm"
     tabindex="0"
     @keyup="handleEnter"
   >
-    <header class="flex flex-col gap-1 mb-4">
-      <div class="text-sm text-gray-400">{{ progressLabel }}</div>
-      <h3 class="text-2xl font-semibold">{{ fileEntry.name }}</h3>
-      <p class="text-xs text-gray-500">Original file: {{ fileEntry.originalName }}</p>
+    <!-- Header -->
+    <header class="flex flex-col gap-1 mb-6">
+      <div class="text-xs uppercase tracking-wide text-gray-500">{{ progressLabel }}</div>
+      <h3 class="text-2xl font-semibold text-gray-100">{{ fileEntry.name }}</h3>
+      <p class="text-sm text-gray-500">Original file: {{ fileEntry.originalName }}</p>
     </header>
 
-    <div class="grid gap-6 md:grid-cols-2">
-      <div class="space-y-4">
+    <div class="grid gap-8 md:grid-cols-2">
+      <!-- LEFT COLUMN -->
+      <div class="space-y-6">
         <audio
-          class="w-full"
+          class="w-full rounded-lg overflow-hidden shadow border border-gray-800"
           controls
           preload="metadata"
           :src="fileEntry.previewUrl"
           @loadedmetadata="handleAudioMetadata"
         ></audio>
 
-        <div class="grid gap-2">
-          <label class="text-sm font-medium">Name</label>
-          <input type="text" :value="fileEntry.name" @input="emitField('name', $event.target.value)" />
-        </div>
-
-        <div class="grid gap-2">
-          <label class="text-sm font-medium">Category</label>
-          <select :value="fileEntry.category" @change="emitField('category', $event.target.value)">
-            <option disabled value="">Select category</option>
-            <option v-for="category in categories" :key="category" :value="category">
-              {{ category }}
-            </option>
-          </select>
-        </div>
-
-        <div class="grid gap-2">
-          <label class="text-sm font-medium">Plan tier</label>
-          <select :value="fileEntry.plan_tier" @change="emitField('plan_tier', $event.target.value)">
-            <option disabled value="">Select tier</option>
-            <option v-for="tier in planOptions" :key="tier" :value="tier">
-              {{ tier }}
-            </option>
-          </select>
-        </div>
-
-        <div class="grid gap-2">
-          <label class="text-sm font-medium">Tags (comma separated)</label>
+        <!-- Name -->
+        <div class="space-y-1.5">
+          <label class="text-sm text-gray-300 font-medium">Display Name</label>
           <input
             type="text"
+            class="w-full bg-gray-800/70 border border-gray-700 rounded-md px-3 py-2 text-sm text-gray-100 focus:(outline-none ring-2 ring-emerald-500)"
+            :value="fileEntry.name"
+            @input="emitField('name', $event.target.value)"
+          />
+        </div>
+
+        <!-- Category -->
+        <div class="space-y-1.5">
+          <label class="text-sm text-gray-300 font-medium">Category</label>
+          <select
+            class="w-full bg-gray-800 border border-gray-700 rounded-md px-3 py-2 text-sm text-gray-100 focus:(outline-none ring-2 ring-emerald-500)"
+            :value="fileEntry.category"
+            @change="emitField('category', $event.target.value)"
+          >
+            <option disabled value="">Select category</option>
+            <option v-for="c in categories" :key="c" :value="c">{{ c }}</option>
+          </select>
+        </div>
+
+        <!-- Plan tier -->
+        <div class="space-y-1.5">
+          <label class="text-sm text-gray-300 font-medium">Plan tier</label>
+          <select
+            class="w-full bg-gray-800 border border-gray-700 rounded-md px-3 py-2 text-sm text-gray-100 focus:(outline-none ring-2 ring-emerald-500)"
+            :value="fileEntry.plan_tier"
+            @change="emitField('plan_tier', $event.target.value)"
+          >
+            <option disabled value="">Select tier</option>
+            <option v-for="t in planOptions" :key="t" :value="t">{{ t }}</option>
+          </select>
+        </div>
+
+        <!-- Tags -->
+        <div class="space-y-1.5">
+          <label class="text-sm text-gray-300 font-medium">Tags (comma separated)</label>
+          <input
+            type="text"
+            class="w-full bg-gray-800/70 border border-gray-700 rounded-md px-3 py-2 text-sm text-gray-100 focus:(outline-none ring-2 ring-emerald-500)"
             v-model="tagString"
             @blur="handleTagBlur"
             @keyup.enter="handleTagBlur"
@@ -132,64 +148,90 @@ function handleEnter(event) {
         </div>
       </div>
 
-      <div class="space-y-4">
-        <div class="grid gap-2">
-          <label class="text-sm font-medium">Cone inner</label>
+      <!-- RIGHT COLUMN -->
+      <div class="space-y-6">
+        <!-- Cone inner -->
+        <div class="space-y-1.5">
+          <label class="text-sm text-gray-300 font-medium">Cone inner</label>
           <input
             type="number"
             min="0"
             step="1"
+            class="w-full bg-gray-800/70 border border-gray-700 rounded-md px-3 py-2 text-sm text-gray-100 focus:(outline-none ring-2 ring-emerald-500)"
             :value="fileEntry.cone_inner"
             @input="emitField('cone_inner', Number($event.target.value))"
           />
         </div>
 
-        <div class="grid gap-2">
-          <label class="text-sm font-medium">Cone outer</label>
+        <!-- Cone outer -->
+        <div class="space-y-1.5">
+          <label class="text-sm text-gray-300 font-medium">Cone outer</label>
           <input
             type="number"
             min="0"
             step="1"
+            class="w-full bg-gray-800/70 border border-gray-700 rounded-md px-3 py-2 text-sm text-gray-100 focus:(outline-none ring-2 ring-emerald-500)"
             :value="fileEntry.cone_outer"
             @input="emitField('cone_outer', Number($event.target.value))"
           />
         </div>
 
-        <div class="grid gap-2">
-          <label class="text-sm font-medium">Duration (seconds)</label>
-          <input type="number" :value="fileEntry.duration_seconds ?? ''" readonly class="bg-gray-900" />
+        <!-- Duration -->
+        <div class="space-y-1.5">
+          <label class="text-sm text-gray-300 font-medium">Duration (seconds)</label>
+          <input
+            type="number"
+            readonly
+            class="w-full bg-gray-800 border border-gray-700 rounded-md px-3 py-2 text-sm text-gray-400"
+            :value="fileEntry.duration_seconds ?? ''"
+          />
         </div>
 
-        <div class="grid gap-2">
-          <label class="text-sm font-medium">Size</label>
-          <input type="text" :value="fileEntry.sizeLabel" readonly class="bg-gray-900" />
+        <!-- Size -->
+        <div class="space-y-1.5">
+          <label class="text-sm text-gray-300 font-medium">File size</label>
+          <input
+            type="text"
+            readonly
+            class="w-full bg-gray-800 border border-gray-700 rounded-md px-3 py-2 text-sm text-gray-400"
+            :value="fileEntry.sizeLabel"
+          />
         </div>
 
-        <div class="grid gap-2">
-          <label class="text-sm font-medium">MIME type</label>
-          <input type="text" :value="fileEntry.mime_type" readonly class="bg-gray-900" />
+        <!-- MIME -->
+        <div class="space-y-1.5">
+          <label class="text-sm text-gray-300 font-medium">MIME type</label>
+          <input
+            type="text"
+            readonly
+            class="w-full bg-gray-800 border border-gray-700 rounded-md px-3 py-2 text-sm text-gray-400"
+            :value="fileEntry.mime_type"
+          />
         </div>
 
+        <!-- Buttons -->
         <div class="flex gap-3 pt-4">
           <button
             type="button"
-            class="bg-gray-900 border border-gray-800"
+            class="px-4 py-2 rounded-md bg-gray-800 border border-gray-700 text-gray-200 hover:bg-gray-700 disabled:opacity-40"
             @click="emit('previous')"
             :disabled="index === 0 || uploading"
           >
             Previous
           </button>
+
           <button
             type="button"
-            class="bg-gray-900 border border-gray-800"
+            class="px-4 py-2 rounded-md bg-gray-800 border border-gray-700 text-gray-200 hover:bg-gray-700 disabled:opacity-40"
             @click="emit('next')"
             :disabled="index >= total - 1 || uploading"
           >
             Next
           </button>
+
           <button
             type="button"
-            class="bg-emerald-500 text-black font-semibold ml-auto"
+            class="ml-auto px-4 py-2 rounded-md bg-emerald-500 text-black font-semibold hover:bg-emerald-400 disabled:opacity-40"
             @click="emit('upload')"
             :disabled="uploading || fileEntry.uploaded"
           >
@@ -200,3 +242,5 @@ function handleEnter(event) {
     </div>
   </section>
 </template>
+
+

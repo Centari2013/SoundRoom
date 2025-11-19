@@ -16,31 +16,26 @@ function resetDragState() {
   dragActive.value = false
 }
 
-function handleDragEnter(event) {
-  event.preventDefault()
-  dragDepth += 1
+function handleDragEnter(e) {
+  e.preventDefault()
+  dragDepth++
   dragActive.value = true
 }
 
-function handleDragLeave(event) {
-  event.preventDefault()
+function handleDragLeave(e) {
+  e.preventDefault()
   dragDepth = Math.max(0, dragDepth - 1)
-  if (dragDepth === 0) {
-    dragActive.value = false
-  }
+  if (dragDepth === 0) dragActive.value = false
 }
 
-function handleDragOver(event) {
-  event.preventDefault()
-  if (event.dataTransfer) {
-    event.dataTransfer.dropEffect = 'copy'
-  }
+function handleDragOver(e) {
+  e.preventDefault()
+  if (e.dataTransfer) e.dataTransfer.dropEffect = 'copy'
   dragActive.value = true
 }
 
 function normalizeRelativePath(file) {
-  if (file.webkitRelativePath) return file.webkitRelativePath
-  return file.name
+  return file.webkitRelativePath || file.name
 }
 
 function isSupportedExtension(name = '') {
@@ -51,69 +46,64 @@ function isSupportedExtension(name = '') {
 function deriveDirectoryName(fileList) {
   if (!fileList?.length) return 'Unknown folder'
   const firstPath = normalizeRelativePath(fileList[0])
-  if (firstPath.includes('/')) {
-    return firstPath.split('/')[0]
-  }
-  return 'Loose files'
+  return firstPath.includes('/') ? firstPath.split('/')[0] : 'Loose files'
 }
 
 function filterSupported(list) {
-  const allowed = []
-  Array.from(list || []).forEach((file) => {
-    if (isSupportedExtension(file.name)) {
-      allowed.push({ file, relativePath: normalizeRelativePath(file) })
-    }
-  })
-  return allowed
+  return Array.from(list || [])
+    .filter((file) => isSupportedExtension(file.name))
+    .map((file) => ({
+      file,
+      relativePath: normalizeRelativePath(file)
+    }))
 }
 
-function emitFiles(selectedFiles, directoryLabel) {
-  lastDirectoryName.value = directoryLabel
-  persistState({ lastDirectoryName: directoryLabel })
-  emit('directory-loaded', {
-    directoryName: directoryLabel,
-    files: selectedFiles
-  })
+function emitFiles(selected, name) {
+  lastDirectoryName.value = name
+  persistState({ lastDirectoryName: name })
+  emit('directory-loaded', { directoryName: name, files: selected })
 }
 
-function handleInput(event) {
-  const selected = filterSupported(event.target.files)
-  emitFiles(selected, deriveDirectoryName(event.target.files))
+function handleInput(e) {
+  const selected = filterSupported(e.target.files)
+  emitFiles(selected, deriveDirectoryName(e.target.files))
 }
 
 async function handleSystemPicker() {
-  if (!supportsNativePicker) {
-    return
-  }
+  if (!supportsNativePicker) return
   pickerBusy.value = true
+
   try {
     const dirHandle = await window.showDirectoryPicker()
     const collected = []
 
-    // Recursively traverse directory handles to match <input webkitdirectory> behaviour.
     async function walkDirectory(handle, prefix = '') {
       for await (const entry of handle.values()) {
         if (entry.kind === 'file') {
           const file = await entry.getFile()
-          const name = prefix ? `${prefix}/${entry.name}` : entry.name
-          if (isSupportedExtension(entry.name)) {
-            Object.defineProperty(file, 'webkitRelativePath', {
-              configurable: true,
-              enumerable: true,
-              value: name
-            })
-            collected.push({ file, relativePath: name })
-          }
-        } else if (entry.kind === 'directory') {
-          await walkDirectory(entry, prefix ? `${prefix}/${entry.name}` : entry.name)
+          if (!isSupportedExtension(file.name)) continue
+          const rel = prefix ? `${prefix}/${entry.name}` : entry.name
+
+          Object.defineProperty(file, 'webkitRelativePath', {
+            value: rel,
+            enumerable: true,
+            configurable: true
+          })
+
+          collected.push({ file, relativePath: rel })
+        }
+
+        if (entry.kind === 'directory') {
+          const next = prefix ? `${prefix}/${entry.name}` : entry.name
+          await walkDirectory(entry, next)
         }
       }
     }
 
     await walkDirectory(dirHandle)
     emitFiles(collected, dirHandle.name)
-  } catch (error) {
-    console.warn('[admin-ingest] Directory picker cancelled', error)
+  } catch (_err) {
+    /* user cancelled — ignore */
   } finally {
     pickerBusy.value = false
   }
@@ -122,45 +112,51 @@ async function handleSystemPicker() {
 async function walkDroppedEntry(entry, prefix = '', collected = []) {
   if (entry.isFile) {
     const file = await new Promise((resolve, reject) => entry.file(resolve, reject)).catch(() => null)
-    if (!file || !isSupportedExtension(file.name)) {
-      return collected
+    if (file && isSupportedExtension(file.name)) {
+      const rel = prefix ? `${prefix}/${file.name}` : file.name
+      Object.defineProperty(file, 'webkitRelativePath', {
+        value: rel,
+        enumerable: true,
+        configurable: true
+      })
+      collected.push({ file, relativePath: rel })
     }
-    const relativePath = prefix ? `${prefix}/${file.name}` : file.name
-    Object.defineProperty(file, 'webkitRelativePath', {
-      configurable: true,
-      enumerable: true,
-      value: relativePath
-    })
-    collected.push({ file, relativePath })
     return collected
   }
+
   if (entry.isDirectory) {
     const reader = entry.createReader()
     const readEntries = () =>
-      new Promise((resolve, reject) => {
-        reader.readEntries(resolve, reject)
-      })
-    const nextPrefix = prefix ? `${prefix}/${entry.name}` : entry.name
+      new Promise((resolve, reject) => reader.readEntries(resolve, reject))
+
+    const next = prefix ? `${prefix}/${entry.name}` : entry.name
     let batch = await readEntries()
+
     while (batch.length) {
       for (const child of batch) {
-        await walkDroppedEntry(child, nextPrefix, collected)
+        await walkDroppedEntry(child, next, collected)
       }
       batch = await readEntries()
     }
   }
+
   return collected
 }
 
-async function handleDrop(event) {
-  event.preventDefault()
+async function handleDrop(e) {
+  e.preventDefault()
   resetDragState()
-  const dataTransfer = event.dataTransfer
-  if (!dataTransfer) return
 
-  const items = Array.from(dataTransfer.items || [])
+  const dt = e.dataTransfer
+  if (!dt) return
+
+  const items = Array.from(dt.items || [])
   const entries = items
-    .map((item) => (item.kind === 'file' && typeof item.webkitGetAsEntry === 'function' ? item.webkitGetAsEntry() : null))
+    .map((item) =>
+      item.kind === 'file' && typeof item.webkitGetAsEntry === 'function'
+        ? item.webkitGetAsEntry()
+        : null
+    )
     .filter(Boolean)
 
   if (entries.length) {
@@ -169,71 +165,88 @@ async function handleDrop(event) {
       await walkDroppedEntry(entry, '', collected)
     }
     if (collected.length) {
-      const label = entries.length === 1 && entries[0]?.isDirectory
-        ? entries[0].name || 'Dropped folder'
-        : deriveDirectoryName([
-            {
-              webkitRelativePath: collected[0]?.relativePath,
-              name: collected[0]?.file?.name
-            }
-          ])
+      const label =
+        entries.length === 1 && entries[0].isDirectory
+          ? entries[0].name
+          : deriveDirectoryName([{ webkitRelativePath: collected[0].relativePath }])
       emitFiles(collected, label)
     }
     return
   }
 
-  if (dataTransfer.files?.length) {
-    const selected = filterSupported(dataTransfer.files)
+  if (dt.files?.length) {
+    const selected = filterSupported(dt.files)
     if (selected.length) {
-      emitFiles(selected, deriveDirectoryName(dataTransfer.files))
+      emitFiles(selected, deriveDirectoryName(dt.files))
     }
   }
 }
 </script>
 
 <template>
-  <section class="bg-gray-800/50 rounded-xl p-6 border border-gray-700">
-    <header class="flex flex-col gap-1 mb-4">
-      <h2 class="text-lg font-semibold">Directory picker</h2>
+  <section class="rounded-xl p-6 bg-gray-900 border border-gray-800 shadow-lg space-y-6">
+    <!-- Header -->
+    <header class="space-y-1">
+      <h2 class="text-xl font-semibold tracking-tight">Directory Picker</h2>
       <p class="text-sm text-gray-400">
-        Supported formats: <code>.mp3</code>, <code>.wav</code>, <code>.ogg</code>, <code>.flac</code>
+        Supported formats:
+        <code class="text-gray-300">.mp3</code>,
+        <code class="text-gray-300">.wav</code>,
+        <code class="text-gray-300">.ogg</code>,
+        <code class="text-gray-300">.flac</code>
       </p>
-      <p v-if="lastDirectoryName" class="text-xs text-gray-500">Last directory: {{ lastDirectoryName }}</p>
+      <p v-if="lastDirectoryName" class="text-xs text-gray-500">
+        Last used: {{ lastDirectoryName }}
+      </p>
     </header>
 
-    <div class="flex flex-wrap gap-3 items-center">
+    <!-- Buttons -->
+    <div class="flex flex-wrap items-center gap-4">
+      <!-- Fallback/HTML picker -->
       <label
-        class="px-4 py-2 rounded-md bg-emerald-500 text-black font-semibold cursor-pointer hover:bg-emerald-400"
+        class="inline-flex items-center px-4 py-2 rounded-md bg-emerald-600 text-black font-semibold cursor-pointer hover:bg-emerald-500 transition"
       >
         <span>Select folder</span>
-        <input type="file" class="hidden" multiple webkitdirectory @change="handleInput" />
+        <input
+          type="file"
+          class="hidden"
+          multiple
+          webkitdirectory
+          @change="handleInput"
+        />
       </label>
 
+      <!-- System picker -->
       <button
         type="button"
-        :disabled="pickerBusy || !supportsNativePicker"
         @click="handleSystemPicker"
-        class="px-4 py-2 rounded-md bg-gray-900 border border-gray-700 hover:bg-gray-800 disabled:opacity-50"
+        :disabled="pickerBusy || !supportsNativePicker"
+        class="px-4 py-2 rounded-md bg-gray-800 border border-gray-700 font-medium hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition"
       >
-        Use File System Access API
+        Use System Picker
       </button>
 
       <p v-if="!supportsNativePicker" class="text-xs text-gray-500">
-        Browser does not support showDirectoryPicker — fallback input is used.
+        Browser does not support showDirectoryPicker — using fallback mode.
       </p>
     </div>
 
+    <!-- Drag + Drop area -->
     <div
-      class="mt-4 border border-dashed border-gray-700 rounded-lg p-4 text-sm text-gray-400 text-center transition-colors"
-      :class="dragActive ? 'border-emerald-400 bg-emerald-500/5 text-emerald-100' : ''"
-      @dragenter.prevent="handleDragEnter"
-      @dragover.prevent="handleDragOver"
+      class="rounded-lg border border-dashed p-8 text-center transition-colors text-sm"
+      :class="
+        dragActive
+          ? 'border-emerald-400 bg-emerald-600/10 text-emerald-200'
+          : 'border-gray-700 bg-gray-900/40 text-gray-400'
+      "
+      @dragenter="handleDragEnter"
+      @dragover="handleDragOver"
       @dragleave="handleDragLeave"
-      @drop.prevent="handleDrop"
+      @drop="handleDrop"
     >
-      <p class="font-semibold text-gray-200">Or drag & drop a folder here</p>
+      <p class="font-medium text-gray-200 mb-1">Or drag & drop a folder here</p>
       <p class="text-xs text-gray-500">
-        Useful when the File System Access API isn’t available — we’ll still read nested files.
+        Nested files will be read recursively.
       </p>
     </div>
   </section>
