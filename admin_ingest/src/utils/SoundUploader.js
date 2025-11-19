@@ -67,7 +67,6 @@ export async function uploadFileAndInsert({ file, userId, metadata }) {
   const payload = {
     ...metadata,
     path: key,
-    bucket: userId,
     owner_id: userId,
     size: file.size,
     mime_type: file.type

@@ -18,7 +18,7 @@ const props = defineProps({
     type: Array,
     default: () => []
   },
-  categories: {
+  buckets: {
     type: Array,
     default: () => []
   },
@@ -115,16 +115,22 @@ function handleEnter(event) {
           />
         </div>
 
-        <!-- Category -->
+        <!-- Bucket -->
         <div class="space-y-1.5">
-          <label class="text-sm text-gray-300 font-medium">Category</label>
+          <label class="text-sm text-gray-300 font-medium">Bucket</label>
           <select
             class="w-full bg-gray-800 border border-gray-700 rounded-md px-3 py-2 text-sm text-gray-100 focus:(outline-none ring-2 ring-emerald-500)"
-            :value="fileEntry.category"
-            @change="emitField('category', $event.target.value)"
+            :value="fileEntry.bucket"
+            @change="emitField('bucket', $event.target.value)"
           >
-            <option disabled value="">Select category</option>
-            <option v-for="c in categories" :key="c" :value="c">{{ c }}</option>
+            <option disabled value="">Select bucket</option>
+            <option
+              v-for="bucket in buckets"
+              :key="bucket.value"
+              :value="bucket.value"
+            >
+              {{ bucket.value }} — {{ bucket.description }}
+            </option>
           </select>
         </div>
 

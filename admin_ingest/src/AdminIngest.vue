@@ -2,7 +2,7 @@
 import { computed, onMounted, reactive, ref, watch } from 'vue'
 import DirectoryPicker from './DirectoryPicker.vue'
 import FileReview from './FileReview.vue'
-import { CATEGORY_OPTIONS } from './utils/categoryList'
+import { BUCKET_OPTIONS } from './utils/categoryList'
 import { loadPersistedState, persistState } from './utils/localStore'
 import { uploadFileAndInsert } from './utils/SoundUploader'
 import { supabase } from './utils/supabaseClient'
@@ -119,7 +119,9 @@ function baseFileDraft(relativePath, file, index) {
     cone_inner: storedDraft.cone_inner ?? 30,
     cone_outer: storedDraft.cone_outer ?? 60,
     plan_tier: storedDraft.plan_tier || supportedPlanTiers.at(-1),
-    category: storedDraft.category || CATEGORY_OPTIONS[0],
+    bucket:
+      storedDraft.bucket || storedDraft.category ||
+      BUCKET_OPTIONS[0]?.value || '',
     duration_seconds: storedDraft.duration_seconds ?? null,
     relativePath,
     uploaded: Boolean(uploadedMap.value[relativePath]),
@@ -204,7 +206,12 @@ async function uploadCurrent() {
     cone_inner: fileEntry.cone_inner,
     cone_outer: fileEntry.cone_outer,
     plan_tier: fileEntry.plan_tier,
-    category: fileEntry.category
+    bucket: fileEntry.bucket
+  }
+
+  if (!metadata.bucket) {
+    showToast('Select a bucket before uploading.')
+    return
   }
 
   if (!metadata.duration_seconds) {
@@ -335,7 +342,7 @@ const uploadedCount = computed(() => Object.values(uploadedMap.value || {}).filt
           :index="currentIndex"
           :total="totalFiles"
           :plan-options="supportedPlanTiers"
-          :categories="CATEGORY_OPTIONS"
+          :buckets="BUCKET_OPTIONS"
           :uploading="uploading"
           :upload-blocked-reason="uploadBlockedReason"
           @update-field="updateField"
