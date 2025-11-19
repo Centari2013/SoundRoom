@@ -18,6 +18,10 @@ const uploading = ref(false)
 const user = ref(null)
 const sessionChecked = ref(false)
 const directoryName = ref(null)
+const email = ref('')
+const password = ref('')
+const authLoading = ref(false)
+const authError = ref(null)
 
 function hydrateFromPersistence() {
   const stored = loadPersistedState()
@@ -66,6 +70,29 @@ async function initAuth() {
 }
 
 onMounted(initAuth)
+
+async function signIn() {
+  if (!email.value || !password.value || authLoading.value) return
+  authLoading.value = true
+  authError.value = null
+  try {
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email: email.value,
+      password: password.value
+    })
+    if (error) throw error
+    user.value = data.user ?? data.session?.user ?? null
+  } catch (error) {
+    authError.value = error.message || 'Sign-in failed'
+  } finally {
+    authLoading.value = false
+  }
+}
+
+async function signOut() {
+  await supabase.auth.signOut()
+  user.value = null
+}
 
 function formatBytes(bytes) {
   if (!bytes && bytes !== 0) return '—'
@@ -215,10 +242,69 @@ const uploadedCount = computed(() => Object.values(uploadedMap.value || {}).filt
       <header class="space-y-2 pb-6 border-b border-gray-800">
         <h1 class="text-4xl font-bold tracking-tight">SoundRoom — Admin Ingest</h1>
         <p class="text-sm text-gray-400 leading-relaxed max-w-2xl">
-          Local-only tool for bulk ingestion of curated audio assets.  
+          Local-only tool for bulk ingestion of curated audio assets.
           Authentication is routed through Supabase. Uploads write to Cloudflare R2 following the production directory structure.
         </p>
       </header>
+
+      <!-- Auth helper -->
+      <section class="bg-gray-900 rounded-2xl border border-gray-800 shadow-lg p-8 space-y-4">
+        <div class="flex justify-between items-start gap-4 flex-col sm:flex-row sm:items-center">
+          <div class="space-y-1">
+            <h2 class="text-lg font-semibold text-gray-100">Supabase authentication</h2>
+            <p class="text-sm text-gray-400">
+              Sign in with the same credentials you use in Supabase Auth. The session is stored locally, so you only need to sign in once per browser.
+            </p>
+          </div>
+          <span class="text-sm text-gray-300 font-medium">{{ user ? `Signed in as ${user.email}` : 'Not signed in' }}</span>
+        </div>
+
+        <div v-if="!user" class="grid gap-4 sm:grid-cols-3">
+          <label class="space-y-1 text-sm text-gray-300 font-medium">
+            Email
+            <input
+              v-model="email"
+              type="email"
+              class="w-full bg-gray-800/70 border border-gray-700 rounded-md px-3 py-2 text-sm text-gray-100 focus:(outline-none ring-2 ring-emerald-500)"
+              placeholder="you@example.com"
+            />
+          </label>
+
+          <label class="space-y-1 text-sm text-gray-300 font-medium">
+            Password
+            <input
+              v-model="password"
+              type="password"
+              class="w-full bg-gray-800/70 border border-gray-700 rounded-md px-3 py-2 text-sm text-gray-100 focus:(outline-none ring-2 ring-emerald-500)"
+              placeholder="••••••••"
+            />
+          </label>
+
+          <div class="flex items-end">
+            <button
+              type="button"
+              class="w-full px-4 py-2 rounded-md bg-emerald-500 text-black font-semibold hover:bg-emerald-400 disabled:opacity-50"
+              :disabled="authLoading || !email || !password"
+              @click="signIn"
+            >
+              {{ authLoading ? 'Signing in…' : 'Sign in' }}
+            </button>
+          </div>
+        </div>
+
+        <div v-else class="flex items-center gap-3 text-sm text-gray-300">
+          <span class="px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-300 border border-emerald-500/30">Authenticated</span>
+          <button
+            type="button"
+            class="px-3 py-1 rounded-md bg-gray-800 border border-gray-700 text-gray-200 hover:bg-gray-700"
+            @click="signOut"
+          >
+            Sign out
+          </button>
+        </div>
+
+        <p v-if="authError" class="text-sm text-red-300">{{ authError }}</p>
+      </section>
 
       <!-- Directory picker -->
       <section class="bg-gray-900 rounded-2xl border border-gray-800 shadow-lg p-8">
