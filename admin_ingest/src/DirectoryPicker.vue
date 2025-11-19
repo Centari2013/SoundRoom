@@ -89,13 +89,13 @@ async function handleSystemPicker() {
 </script>
 
 <template>
-  <section class="bg-slate-800/50 rounded-xl p-6 border border-slate-700">
+  <section class="bg-gray-800/50 rounded-xl p-6 border border-gray-700">
     <header class="flex flex-col gap-1 mb-4">
       <h2 class="text-lg font-semibold">Directory picker</h2>
-      <p class="text-sm text-slate-400">
+      <p class="text-sm text-gray-400">
         Supported formats: <code>.mp3</code>, <code>.wav</code>, <code>.ogg</code>, <code>.flac</code>
       </p>
-      <p v-if="lastDirectoryName" class="text-xs text-slate-500">Last directory: {{ lastDirectoryName }}</p>
+      <p v-if="lastDirectoryName" class="text-xs text-gray-500">Last directory: {{ lastDirectoryName }}</p>
     </header>
 
     <div class="flex flex-wrap gap-3 items-center">
@@ -110,12 +110,12 @@ async function handleSystemPicker() {
         type="button"
         :disabled="pickerBusy || !supportsNativePicker"
         @click="handleSystemPicker"
-        class="px-4 py-2 rounded-md bg-slate-800 border border-slate-700 hover:bg-slate-700 disabled:opacity-50"
+        class="px-4 py-2 rounded-md bg-gray-900 border border-gray-700 hover:bg-gray-800 disabled:opacity-50"
       >
         Use File System Access API
       </button>
 
-      <p v-if="!supportsNativePicker" class="text-xs text-slate-500">
+      <p v-if="!supportsNativePicker" class="text-xs text-gray-500">
         Browser does not support showDirectoryPicker — fallback input is used.
       </p>
     </div>

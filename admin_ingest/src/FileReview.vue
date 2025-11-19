@@ -75,14 +75,14 @@ function handleEnter(event) {
 
 <template>
   <section
-    class="bg-slate-900 rounded-2xl border border-slate-800 p-6"
+    class="bg-gray-900 rounded-2xl border border-gray-800 p-6"
     tabindex="0"
     @keyup="handleEnter"
   >
     <header class="flex flex-col gap-1 mb-4">
-      <div class="text-sm text-slate-400">{{ progressLabel }}</div>
+      <div class="text-sm text-gray-400">{{ progressLabel }}</div>
       <h3 class="text-2xl font-semibold">{{ fileEntry.name }}</h3>
-      <p class="text-xs text-slate-500">Original file: {{ fileEntry.originalName }}</p>
+      <p class="text-xs text-gray-500">Original file: {{ fileEntry.originalName }}</p>
     </header>
 
     <div class="grid gap-6 md:grid-cols-2">
@@ -157,23 +157,23 @@ function handleEnter(event) {
 
         <div class="grid gap-2">
           <label class="text-sm font-medium">Duration (seconds)</label>
-          <input type="number" :value="fileEntry.duration_seconds ?? ''" readonly class="bg-slate-900" />
+          <input type="number" :value="fileEntry.duration_seconds ?? ''" readonly class="bg-gray-900" />
         </div>
 
         <div class="grid gap-2">
           <label class="text-sm font-medium">Size</label>
-          <input type="text" :value="fileEntry.sizeLabel" readonly class="bg-slate-900" />
+          <input type="text" :value="fileEntry.sizeLabel" readonly class="bg-gray-900" />
         </div>
 
         <div class="grid gap-2">
           <label class="text-sm font-medium">MIME type</label>
-          <input type="text" :value="fileEntry.mime_type" readonly class="bg-slate-900" />
+          <input type="text" :value="fileEntry.mime_type" readonly class="bg-gray-900" />
         </div>
 
         <div class="flex gap-3 pt-4">
           <button
             type="button"
-            class="bg-slate-800 border border-slate-700"
+            class="bg-gray-900 border border-gray-800"
             @click="emit('previous')"
             :disabled="index === 0 || uploading"
           >
@@ -181,7 +181,7 @@ function handleEnter(event) {
           </button>
           <button
             type="button"
-            class="bg-slate-800 border border-slate-700"
+            class="bg-gray-900 border border-gray-800"
             @click="emit('next')"
             :disabled="index >= total - 1 || uploading"
           >

@@ -202,10 +202,10 @@ const uploadedCount = computed(() => Object.values(uploadedMap.value || {}).filt
 </script>
 
 <template>
-  <main class="min-h-screen bg-slate-950 text-slate-100">
+  <main class="min-h-screen bg-gray-950 text-gray-100">
     <div class="max-w-6xl mx-auto py-10 px-6 space-y-6">
       <h1 class="text-3xl font-bold">SoundRoom Admin Ingest</h1>
-      <p class="text-sm text-slate-400">
+      <p class="text-sm text-gray-400">
         Local-only helper for bulk ingesting cleaned libraries. Auth is routed through Supabase, uploads
         mirror the production path (Cloudflare R2 → public.sound_files).
       </p>
@@ -213,7 +213,7 @@ const uploadedCount = computed(() => Object.values(uploadedMap.value || {}).filt
       <DirectoryPicker @directory-loaded="handleDirectoryLoaded" />
 
       <section v-if="currentFile" class="space-y-4">
-        <div class="flex items-center justify-between text-sm text-slate-400">
+        <div class="flex items-center justify-between text-sm text-gray-400">
           <div>{{ directoryName ? `Directory: ${directoryName}` : 'No directory selected yet' }}</div>
           <div>
             Auth: <span v-if="sessionChecked">{{ user ? user.email : 'Sign in via Supabase Auth UI' }}</span>
@@ -236,11 +236,11 @@ const uploadedCount = computed(() => Object.values(uploadedMap.value || {}).filt
         />
       </section>
 
-      <div v-else class="text-center text-slate-500 py-20 border border-dashed border-slate-700 rounded-xl">
+      <div v-else class="text-center text-gray-500 py-20 border border-dashed border-gray-700 rounded-xl">
         Select a directory to begin.
       </div>
 
-      <div class="text-xs text-slate-500">Progress: {{ uploadedCount }} / {{ totalFiles }} uploaded.</div>
+      <div class="text-xs text-gray-500">Progress: {{ uploadedCount }} / {{ totalFiles }} uploaded.</div>
     </div>
 
     <transition name="fade">
