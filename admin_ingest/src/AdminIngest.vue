@@ -121,6 +121,13 @@ function handleDirectoryLoaded(payload) {
 
 const currentFile = computed(() => files.value[currentIndex.value] ?? null)
 
+const uploadBlockedReason = computed(() => {
+  if (!currentFile.value) return null
+  if (!user.value) return 'Sign in via Supabase before uploading.'
+  if (!currentFile.value.duration_seconds) return 'Waiting for audio duration metadata.'
+  return null
+})
+
 function updateField({ field, value }) {
   if (!currentFile.value) return
   currentFile.value[field] = value
@@ -244,6 +251,7 @@ const uploadedCount = computed(() => Object.values(uploadedMap.value || {}).filt
           :plan-options="supportedPlanTiers"
           :categories="CATEGORY_OPTIONS"
           :uploading="uploading"
+          :upload-blocked-reason="uploadBlockedReason"
           @update-field="updateField"
           @duration-detected="handleDuration"
           @upload="uploadCurrent"
