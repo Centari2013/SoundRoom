@@ -1,7 +1,5 @@
-import { defineConfig } from 'tailwindcss'
-
-export default defineConfig({
+export default {
   darkMode: 'class',
   content: ['./index.html', './src/**/*.{vue,js,ts,jsx,tsx}'],
   plugins: []
-})
+}
