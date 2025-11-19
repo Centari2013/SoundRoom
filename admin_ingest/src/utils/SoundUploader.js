@@ -8,12 +8,22 @@ async function getSignedUploadUrl(userId, filename) {
   const params = new URLSearchParams({ userId, filename })
   const response = await fetch(`/api/get-upload-url?${params.toString()}`)
 
+  const rawBody = await response.text().catch(() => '')
+
   if (!response.ok) {
-    const body = await response.text().catch(() => '')
-    throw new Error(body || 'Unable to get signed Cloudflare R2 URL')
+    throw new Error(rawBody || 'Unable to get signed Cloudflare R2 URL')
   }
 
-  const payload = await response.json()
+  let payload
+  try {
+    payload = JSON.parse(rawBody)
+  } catch (_err) {
+    const snippet = rawBody?.slice(0, 240)
+    throw new Error(
+      `Unexpected response from /api/get-upload-url (status ${response.status}): ${snippet || 'Empty body'}`
+    )
+  }
+
   if (!payload?.signedUrl || !payload?.key) {
     throw new Error('Signed upload URL response was missing "signedUrl" or "key"')
   }
