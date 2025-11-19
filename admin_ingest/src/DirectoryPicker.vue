@@ -7,11 +7,45 @@ const supportedExtensions = ['.mp3', '.wav', '.ogg', '.flac']
 const persisted = loadPersistedState()
 const lastDirectoryName = ref(persisted.lastDirectoryName ?? null)
 const pickerBusy = ref(false)
+const dragActive = ref(false)
 const supportsNativePicker = typeof window !== 'undefined' && 'showDirectoryPicker' in window
+let dragDepth = 0
+
+function resetDragState() {
+  dragDepth = 0
+  dragActive.value = false
+}
+
+function handleDragEnter(event) {
+  event.preventDefault()
+  dragDepth += 1
+  dragActive.value = true
+}
+
+function handleDragLeave(event) {
+  event.preventDefault()
+  dragDepth = Math.max(0, dragDepth - 1)
+  if (dragDepth === 0) {
+    dragActive.value = false
+  }
+}
+
+function handleDragOver(event) {
+  event.preventDefault()
+  if (event.dataTransfer) {
+    event.dataTransfer.dropEffect = 'copy'
+  }
+  dragActive.value = true
+}
 
 function normalizeRelativePath(file) {
   if (file.webkitRelativePath) return file.webkitRelativePath
   return file.name
+}
+
+function isSupportedExtension(name = '') {
+  const lower = name.toLowerCase()
+  return supportedExtensions.some((ext) => lower.endsWith(ext))
 }
 
 function deriveDirectoryName(fileList) {
@@ -26,8 +60,7 @@ function deriveDirectoryName(fileList) {
 function filterSupported(list) {
   const allowed = []
   Array.from(list || []).forEach((file) => {
-    const lower = file.name.toLowerCase()
-    if (supportedExtensions.some((ext) => lower.endsWith(ext))) {
+    if (isSupportedExtension(file.name)) {
       allowed.push({ file, relativePath: normalizeRelativePath(file) })
     }
   })
@@ -63,8 +96,7 @@ async function handleSystemPicker() {
         if (entry.kind === 'file') {
           const file = await entry.getFile()
           const name = prefix ? `${prefix}/${entry.name}` : entry.name
-          const lower = entry.name.toLowerCase()
-          if (supportedExtensions.some((ext) => lower.endsWith(ext))) {
+          if (isSupportedExtension(entry.name)) {
             Object.defineProperty(file, 'webkitRelativePath', {
               configurable: true,
               enumerable: true,
@@ -84,6 +116,77 @@ async function handleSystemPicker() {
     console.warn('[admin-ingest] Directory picker cancelled', error)
   } finally {
     pickerBusy.value = false
+  }
+}
+
+async function walkDroppedEntry(entry, prefix = '', collected = []) {
+  if (entry.isFile) {
+    const file = await new Promise((resolve, reject) => entry.file(resolve, reject)).catch(() => null)
+    if (!file || !isSupportedExtension(file.name)) {
+      return collected
+    }
+    const relativePath = prefix ? `${prefix}/${file.name}` : file.name
+    Object.defineProperty(file, 'webkitRelativePath', {
+      configurable: true,
+      enumerable: true,
+      value: relativePath
+    })
+    collected.push({ file, relativePath })
+    return collected
+  }
+  if (entry.isDirectory) {
+    const reader = entry.createReader()
+    const readEntries = () =>
+      new Promise((resolve, reject) => {
+        reader.readEntries(resolve, reject)
+      })
+    const nextPrefix = prefix ? `${prefix}/${entry.name}` : entry.name
+    let batch = await readEntries()
+    while (batch.length) {
+      for (const child of batch) {
+        await walkDroppedEntry(child, nextPrefix, collected)
+      }
+      batch = await readEntries()
+    }
+  }
+  return collected
+}
+
+async function handleDrop(event) {
+  event.preventDefault()
+  resetDragState()
+  const dataTransfer = event.dataTransfer
+  if (!dataTransfer) return
+
+  const items = Array.from(dataTransfer.items || [])
+  const entries = items
+    .map((item) => (item.kind === 'file' && typeof item.webkitGetAsEntry === 'function' ? item.webkitGetAsEntry() : null))
+    .filter(Boolean)
+
+  if (entries.length) {
+    const collected = []
+    for (const entry of entries) {
+      await walkDroppedEntry(entry, '', collected)
+    }
+    if (collected.length) {
+      const label = entries.length === 1 && entries[0]?.isDirectory
+        ? entries[0].name || 'Dropped folder'
+        : deriveDirectoryName([
+            {
+              webkitRelativePath: collected[0]?.relativePath,
+              name: collected[0]?.file?.name
+            }
+          ])
+      emitFiles(collected, label)
+    }
+    return
+  }
+
+  if (dataTransfer.files?.length) {
+    const selected = filterSupported(dataTransfer.files)
+    if (selected.length) {
+      emitFiles(selected, deriveDirectoryName(dataTransfer.files))
+    }
   }
 }
 </script>
@@ -117,6 +220,20 @@ async function handleSystemPicker() {
 
       <p v-if="!supportsNativePicker" class="text-xs text-gray-500">
         Browser does not support showDirectoryPicker — fallback input is used.
+      </p>
+    </div>
+
+    <div
+      class="mt-4 border border-dashed border-gray-700 rounded-lg p-4 text-sm text-gray-400 text-center transition-colors"
+      :class="dragActive ? 'border-emerald-400 bg-emerald-500/5 text-emerald-100' : ''"
+      @dragenter.prevent="handleDragEnter"
+      @dragover.prevent="handleDragOver"
+      @dragleave="handleDragLeave"
+      @drop.prevent="handleDrop"
+    >
+      <p class="font-semibold text-gray-200">Or drag & drop a folder here</p>
+      <p class="text-xs text-gray-500">
+        Useful when the File System Access API isn’t available — we’ll still read nested files.
       </p>
     </div>
   </section>
