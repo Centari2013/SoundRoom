@@ -89,7 +89,7 @@ async function handleSystemPicker() {
 </script>
 
 <template>
-  <section class="bg-panel-accent/50 rounded-xl p-6 border border-slate-700">
+  <section class="bg-slate-800/50 rounded-xl p-6 border border-slate-700">
     <header class="flex flex-col gap-1 mb-4">
       <h2 class="text-lg font-semibold">Directory picker</h2>
       <p class="text-sm text-slate-400">
