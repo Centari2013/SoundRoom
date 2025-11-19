@@ -129,7 +129,7 @@ function handleEnter(event) {
               :key="bucket.value"
               :value="bucket.value"
             >
-              {{ bucket.value }} — {{ bucket.description }}
+              {{ bucket.label || bucket.value }} — {{ bucket.description }}
             </option>
           </select>
         </div>

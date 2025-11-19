@@ -66,6 +66,19 @@ function createRandomId() {
   return Math.random().toString(36).slice(2);
 }
 
+function sanitizeSegment(value) {
+  if (!value) return ''
+  return value
+    .toString()
+    .trim()
+    .normalize('NFKD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-zA-Z0-9_-]+/g, '-')
+    .replace(/-{2,}/g, '-')
+    .replace(/^-|-$/g, '')
+    .toLowerCase()
+}
+
 function generateObjectKey(filename) {
   const timestamp = Date.now().toString(36);
   const randomId = createRandomId().slice(0, 16);
@@ -147,10 +160,33 @@ export async function GET(request) {
     const { searchParams } = new URL(request.url);
     const userId = searchParams.get("userId");
     const filename = searchParams.get("filename");
+    const planTier = searchParams.get("planTier");
+    const bucket = searchParams.get("bucket");
 
-    if (!userId || !filename) {
+    if (!filename) {
       return new Response(
-        JSON.stringify({ error: "Missing 'userId' or 'filename' query param" }),
+        JSON.stringify({ error: "Missing 'filename' query param" }),
+        {
+          status: 400,
+          headers: {
+            ...corsHeaders,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+    }
+
+    const safeBase = sanitizeSegment(planTier);
+    const safeBucket = sanitizeSegment(bucket);
+
+    let storagePrefix = "";
+    if (safeBase && safeBucket) {
+      storagePrefix = `${safeBase}/${safeBucket}`;
+    } else if (userId) {
+      storagePrefix = `users/${userId}`;
+    } else {
+      return new Response(
+        JSON.stringify({ error: "Missing 'planTier'/'bucket' or 'userId' query params" }),
         {
           status: 400,
           headers: {
@@ -163,7 +199,7 @@ export async function GET(request) {
 
     const generatedKey = generateObjectKey(filename);
     const url = new URL(
-      `https://${bucketName}.${accountId}.r2.cloudflarestorage.com/users/${userId}/${generatedKey}`
+      `https://${bucketName}.${accountId}.r2.cloudflarestorage.com/${storagePrefix}/${generatedKey}`
     );
     url.searchParams.set("X-Amz-Expires", "120");
 
@@ -176,6 +212,8 @@ export async function GET(request) {
         signedUrl: signed.url,
         key: generatedKey,
         displayName: filename,
+        base: safeBase || "users",
+        bucket: safeBucket || userId,
       }),
       {
         status: 200,

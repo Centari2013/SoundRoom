@@ -9,6 +9,19 @@ import { supabase } from './utils/supabaseClient'
 import { PLANS } from '@app/constants/entitlements'
 
 const supportedPlanTiers = PLANS ?? ['free', 'basic', 'pro']
+
+function normalizeBucket(bucketValue) {
+  if (!bucketValue) return ''
+  return bucketValue
+    .toString()
+    .trim()
+    .toLowerCase()
+    .normalize('NFKD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9_-]+/g, '-')
+    .replace(/-{2,}/g, '-')
+    .replace(/^-|-$/g, '')
+}
 const files = ref([])
 const currentIndex = ref(0)
 const uploadedMap = ref({})
@@ -120,7 +133,7 @@ function baseFileDraft(relativePath, file, index) {
     cone_outer: storedDraft.cone_outer ?? 60,
     plan_tier: storedDraft.plan_tier || supportedPlanTiers.at(-1),
     bucket:
-      storedDraft.bucket || storedDraft.category ||
+      normalizeBucket(storedDraft.bucket || storedDraft.category) ||
       BUCKET_OPTIONS[0]?.value || '',
     duration_seconds: storedDraft.duration_seconds ?? null,
     relativePath,
@@ -199,6 +212,8 @@ async function uploadCurrent() {
   }
 
   const fileEntry = currentFile.value
+  const normalizedBucket = normalizeBucket(fileEntry.bucket)
+
   const metadata = {
     name: fileEntry.name,
     tags: fileEntry.tags,
@@ -206,7 +221,7 @@ async function uploadCurrent() {
     cone_inner: fileEntry.cone_inner,
     cone_outer: fileEntry.cone_outer,
     plan_tier: fileEntry.plan_tier,
-    bucket: fileEntry.bucket
+    bucket: normalizedBucket
   }
 
   if (!metadata.bucket) {
@@ -224,6 +239,8 @@ async function uploadCurrent() {
     await uploadFileAndInsert({
       file: fileEntry.file,
       userId: user.value.id,
+      planTier: metadata.plan_tier,
+      bucket: metadata.bucket,
       metadata
     })
     fileEntry.uploaded = true
