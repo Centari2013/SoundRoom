@@ -91,10 +91,14 @@ function formatSecondsToTime(totalSeconds = 0) {
     : `${minutes}:${seconds.toString().padStart(2, '0')}`
 }
 
-onMounted(async () => {
+function syncDurationFromProps() {
   const durationSeconds = props.soundData?.duration_seconds ?? 0
   audioDuration.value = formatSecondsToTime(durationSeconds)
-  duration.value = Math.min(duration.value, durationSeconds || duration.value)
+  duration.value = Math.min(15, durationSeconds || 15)
+}
+
+onMounted(async () => {
+  syncDurationFromProps()
 
   nextTick(() => {
     if (circleRef.value) {
@@ -103,6 +107,13 @@ onMounted(async () => {
     }
   })
 })
+
+watch(
+  () => props.soundData?.duration_seconds,
+  () => {
+    syncDurationFromProps()
+  }
+)
 
 async function togglePlay() {
   if (props.locked) {

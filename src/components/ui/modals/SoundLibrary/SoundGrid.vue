@@ -7,7 +7,7 @@
     <div ref="gridScroll" class="mt-5 place-content-start p-6 pt-20 overflow-y-auto h-full grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
       <SoundGridItem
         v-for="sound in sounds"
-        :key="sound.id"
+        :key="sound.libraryId || sound.id"
         :sound="sound"
         :userSound="activeCategory === 'your-sounds'"
         v-bind="{ waiting, soundLibrarySources, currentlyPlayingId }"
