@@ -1,4 +1,5 @@
 import { supabase } from './supabaseClient'
+import { requestPreviewGeneration } from '@app/utils/previewGeneration'
 
 /**
  * Fetch a signed upload URL using the exact flow the customer-facing uploader uses.
@@ -68,7 +69,7 @@ export async function uploadFileAndInsert({ file, userId, planTier, bucket, meta
     throw new Error('Supabase user is required before uploading')
   }
 
-  const { signedUrl, key } = await getSignedUploadUrl({
+  const { signedUrl, key, base, bucket: bucketSegment } = await getSignedUploadUrl({
     userId,
     filename: file.name,
     planTier,
@@ -80,12 +81,17 @@ export async function uploadFileAndInsert({ file, userId, planTier, bucket, meta
     ...metadata,
     path: key,
     size: file.size,
-    mime_type: file.type
+    mime_type: file.type,
+    preview_url: null
   }
 
-  const { error } = await supabase.from('sound_files').insert(payload)
+  const { data, error } = await supabase.from('sound_files').insert(payload).select('id').single()
   if (error) {
     throw error
+  }
+
+  if (data?.id) {
+    await requestPreviewGeneration({ key, base, bucket: bucketSegment ?? bucket, soundId: data.id })
   }
 
   return { key }
