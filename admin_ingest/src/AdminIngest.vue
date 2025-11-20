@@ -2,13 +2,26 @@
 import { computed, onMounted, reactive, ref, watch } from 'vue'
 import DirectoryPicker from './DirectoryPicker.vue'
 import FileReview from './FileReview.vue'
-import { CATEGORY_OPTIONS } from './utils/categoryList'
+import { BUCKET_OPTIONS } from './utils/categoryList'
 import { loadPersistedState, persistState } from './utils/localStore'
 import { uploadFileAndInsert } from './utils/SoundUploader'
 import { supabase } from './utils/supabaseClient'
 import { PLANS } from '@app/constants/entitlements'
 
 const supportedPlanTiers = PLANS ?? ['free', 'basic', 'pro']
+
+function normalizeBucket(bucketValue) {
+  if (!bucketValue) return ''
+  return bucketValue
+    .toString()
+    .trim()
+    .toLowerCase()
+    .normalize('NFKD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9_-]+/g, '-')
+    .replace(/-{2,}/g, '-')
+    .replace(/^-|-$/g, '')
+}
 const files = ref([])
 const currentIndex = ref(0)
 const uploadedMap = ref({})
@@ -18,6 +31,10 @@ const uploading = ref(false)
 const user = ref(null)
 const sessionChecked = ref(false)
 const directoryName = ref(null)
+const email = ref('')
+const password = ref('')
+const authLoading = ref(false)
+const authError = ref(null)
 
 function hydrateFromPersistence() {
   const stored = loadPersistedState()
@@ -67,6 +84,29 @@ async function initAuth() {
 
 onMounted(initAuth)
 
+async function signIn() {
+  if (!email.value || !password.value || authLoading.value) return
+  authLoading.value = true
+  authError.value = null
+  try {
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email: email.value,
+      password: password.value
+    })
+    if (error) throw error
+    user.value = data.user ?? data.session?.user ?? null
+  } catch (error) {
+    authError.value = error.message || 'Sign-in failed'
+  } finally {
+    authLoading.value = false
+  }
+}
+
+async function signOut() {
+  await supabase.auth.signOut()
+  user.value = null
+}
+
 function formatBytes(bytes) {
   if (!bytes && bytes !== 0) return '—'
   const units = ['B', 'KB', 'MB', 'GB']
@@ -92,7 +132,9 @@ function baseFileDraft(relativePath, file, index) {
     cone_inner: storedDraft.cone_inner ?? 30,
     cone_outer: storedDraft.cone_outer ?? 60,
     plan_tier: storedDraft.plan_tier || supportedPlanTiers.at(-1),
-    category: storedDraft.category || CATEGORY_OPTIONS[0],
+    bucket:
+      normalizeBucket(storedDraft.bucket || storedDraft.category) ||
+      BUCKET_OPTIONS[0]?.value || '',
     duration_seconds: storedDraft.duration_seconds ?? null,
     relativePath,
     uploaded: Boolean(uploadedMap.value[relativePath]),
@@ -120,6 +162,13 @@ function handleDirectoryLoaded(payload) {
 }
 
 const currentFile = computed(() => files.value[currentIndex.value] ?? null)
+
+const uploadBlockedReason = computed(() => {
+  if (!currentFile.value) return null
+  if (!user.value) return 'Sign in via Supabase before uploading.'
+  if (!currentFile.value.duration_seconds) return 'Waiting for audio duration metadata.'
+  return null
+})
 
 function updateField({ field, value }) {
   if (!currentFile.value) return
@@ -163,6 +212,8 @@ async function uploadCurrent() {
   }
 
   const fileEntry = currentFile.value
+  const normalizedBucket = normalizeBucket(fileEntry.bucket)
+
   const metadata = {
     name: fileEntry.name,
     tags: fileEntry.tags,
@@ -170,7 +221,12 @@ async function uploadCurrent() {
     cone_inner: fileEntry.cone_inner,
     cone_outer: fileEntry.cone_outer,
     plan_tier: fileEntry.plan_tier,
-    category: fileEntry.category
+    bucket: normalizedBucket
+  }
+
+  if (!metadata.bucket) {
+    showToast('Select a bucket before uploading.')
+    return
   }
 
   if (!metadata.duration_seconds) {
@@ -183,6 +239,8 @@ async function uploadCurrent() {
     await uploadFileAndInsert({
       file: fileEntry.file,
       userId: user.value.id,
+      planTier: metadata.plan_tier,
+      bucket: metadata.bucket,
       metadata
     })
     fileEntry.uploaded = true
@@ -208,10 +266,69 @@ const uploadedCount = computed(() => Object.values(uploadedMap.value || {}).filt
       <header class="space-y-2 pb-6 border-b border-gray-800">
         <h1 class="text-4xl font-bold tracking-tight">SoundRoom — Admin Ingest</h1>
         <p class="text-sm text-gray-400 leading-relaxed max-w-2xl">
-          Local-only tool for bulk ingestion of curated audio assets.  
+          Local-only tool for bulk ingestion of curated audio assets.
           Authentication is routed through Supabase. Uploads write to Cloudflare R2 following the production directory structure.
         </p>
       </header>
+
+      <!-- Auth helper -->
+      <section class="bg-gray-900 rounded-2xl border border-gray-800 shadow-lg p-8 space-y-4">
+        <div class="flex justify-between items-start gap-4 flex-col sm:flex-row sm:items-center">
+          <div class="space-y-1">
+            <h2 class="text-lg font-semibold text-gray-100">Supabase authentication</h2>
+            <p class="text-sm text-gray-400">
+              Sign in with the same credentials you use in Supabase Auth. The session is stored locally, so you only need to sign in once per browser.
+            </p>
+          </div>
+          <span class="text-sm text-gray-300 font-medium">{{ user ? `Signed in as ${user.email}` : 'Not signed in' }}</span>
+        </div>
+
+        <div v-if="!user" class="grid gap-4 sm:grid-cols-3">
+          <label class="space-y-1 text-sm text-gray-300 font-medium">
+            Email
+            <input
+              v-model="email"
+              type="email"
+              class="w-full bg-gray-800/70 border border-gray-700 rounded-md px-3 py-2 text-sm text-gray-100 focus:(outline-none ring-2 ring-emerald-500)"
+              placeholder="you@example.com"
+            />
+          </label>
+
+          <label class="space-y-1 text-sm text-gray-300 font-medium">
+            Password
+            <input
+              v-model="password"
+              type="password"
+              class="w-full bg-gray-800/70 border border-gray-700 rounded-md px-3 py-2 text-sm text-gray-100 focus:(outline-none ring-2 ring-emerald-500)"
+              placeholder="••••••••"
+            />
+          </label>
+
+          <div class="flex items-end">
+            <button
+              type="button"
+              class="w-full px-4 py-2 rounded-md bg-emerald-500 text-black font-semibold hover:bg-emerald-400 disabled:opacity-50"
+              :disabled="authLoading || !email || !password"
+              @click="signIn"
+            >
+              {{ authLoading ? 'Signing in…' : 'Sign in' }}
+            </button>
+          </div>
+        </div>
+
+        <div v-else class="flex items-center gap-3 text-sm text-gray-300">
+          <span class="px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-300 border border-emerald-500/30">Authenticated</span>
+          <button
+            type="button"
+            class="px-3 py-1 rounded-md bg-gray-800 border border-gray-700 text-gray-200 hover:bg-gray-700"
+            @click="signOut"
+          >
+            Sign out
+          </button>
+        </div>
+
+        <p v-if="authError" class="text-sm text-red-300">{{ authError }}</p>
+      </section>
 
       <!-- Directory picker -->
       <section class="bg-gray-900 rounded-2xl border border-gray-800 shadow-lg p-8">
@@ -242,8 +359,9 @@ const uploadedCount = computed(() => Object.values(uploadedMap.value || {}).filt
           :index="currentIndex"
           :total="totalFiles"
           :plan-options="supportedPlanTiers"
-          :categories="CATEGORY_OPTIONS"
+          :buckets="BUCKET_OPTIONS"
           :uploading="uploading"
+          :upload-blocked-reason="uploadBlockedReason"
           @update-field="updateField"
           @duration-detected="handleDuration"
           @upload="uploadCurrent"

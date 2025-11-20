@@ -17,7 +17,12 @@ export default defineConfig({
   envDir: __dirname,
   server: {
     port: 4175,
-    strictPort: false
+    strictPort: false,
+    proxy: {
+      // When running `vercel dev` (port 3000) alongside the Vite admin ingest dev server
+      // (port 4175), forward API requests to the backend so relative /api calls work.
+      '/api': 'http://localhost:3000'
+    }
   },
   build: {
     outDir: path.resolve(ADMIN_ROOT, 'dist'),

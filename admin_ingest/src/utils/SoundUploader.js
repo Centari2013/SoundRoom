@@ -2,18 +2,33 @@ import { supabase } from './supabaseClient'
 
 /**
  * Fetch a signed upload URL using the exact flow the customer-facing uploader uses.
- * This keeps the folder structure identical (users/{userId}/{generatedKey}).
+ * Admin ingest writes to {planTier}/{bucket}/{generatedKey} while retaining the user
+ * fallback for customer uploads.
  */
-async function getSignedUploadUrl(userId, filename) {
-  const params = new URLSearchParams({ userId, filename })
+async function getSignedUploadUrl({ userId, filename, planTier, bucket }) {
+  const params = new URLSearchParams({ filename })
+
+  if (userId) params.set('userId', userId)
+  if (planTier) params.set('planTier', planTier)
+  if (bucket) params.set('bucket', bucket)
   const response = await fetch(`/api/get-upload-url?${params.toString()}`)
 
+  const rawBody = await response.text().catch(() => '')
+
   if (!response.ok) {
-    const body = await response.text().catch(() => '')
-    throw new Error(body || 'Unable to get signed Cloudflare R2 URL')
+    throw new Error(rawBody || 'Unable to get signed Cloudflare R2 URL')
   }
 
-  const payload = await response.json()
+  let payload
+  try {
+    payload = JSON.parse(rawBody)
+  } catch (_err) {
+    const snippet = rawBody?.slice(0, 240)
+    throw new Error(
+      `Unexpected response from /api/get-upload-url (status ${response.status}): ${snippet || 'Empty body'}`
+    )
+  }
+
   if (!payload?.signedUrl || !payload?.key) {
     throw new Error('Signed upload URL response was missing "signedUrl" or "key"')
   }
@@ -44,20 +59,26 @@ function uploadViaXhr(file, signedUrl) {
  * @param {Object} options
  * @param {File} options.file
  * @param {string} options.userId
+ * @param {string} options.planTier
+ * @param {string} options.bucket
  * @param {Object} options.metadata - payload destined for public.sound_files
  */
-export async function uploadFileAndInsert({ file, userId, metadata }) {
+export async function uploadFileAndInsert({ file, userId, planTier, bucket, metadata }) {
   if (!userId) {
     throw new Error('Supabase user is required before uploading')
   }
 
-  const { signedUrl, key } = await getSignedUploadUrl(userId, file.name)
+  const { signedUrl, key } = await getSignedUploadUrl({
+    userId,
+    filename: file.name,
+    planTier,
+    bucket
+  })
   await uploadViaXhr(file, signedUrl)
 
   const payload = {
     ...metadata,
     path: key,
-    bucket: userId,
     owner_id: userId,
     size: file.size,
     mime_type: file.type

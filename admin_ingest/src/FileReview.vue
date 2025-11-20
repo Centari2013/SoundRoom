@@ -18,11 +18,15 @@ const props = defineProps({
     type: Array,
     default: () => []
   },
-  categories: {
+  buckets: {
     type: Array,
     default: () => []
   },
-  uploading: Boolean
+  uploading: Boolean,
+  uploadBlockedReason: {
+    type: String,
+    default: null
+  }
 })
 
 const emit = defineEmits([
@@ -34,6 +38,9 @@ const emit = defineEmits([
 ])
 
 const tagString = ref(props.fileEntry.tags?.join(', ') ?? '')
+const uploadDisabled = computed(
+  () => props.uploading || props.fileEntry.uploaded || Boolean(props.uploadBlockedReason)
+)
 
 watch(
   () => props.fileEntry,
@@ -108,16 +115,22 @@ function handleEnter(event) {
           />
         </div>
 
-        <!-- Category -->
+        <!-- Bucket -->
         <div class="space-y-1.5">
-          <label class="text-sm text-gray-300 font-medium">Category</label>
+          <label class="text-sm text-gray-300 font-medium">Bucket</label>
           <select
             class="w-full bg-gray-800 border border-gray-700 rounded-md px-3 py-2 text-sm text-gray-100 focus:(outline-none ring-2 ring-emerald-500)"
-            :value="fileEntry.category"
-            @change="emitField('category', $event.target.value)"
+            :value="fileEntry.bucket"
+            @change="emitField('bucket', $event.target.value)"
           >
-            <option disabled value="">Select category</option>
-            <option v-for="c in categories" :key="c" :value="c">{{ c }}</option>
+            <option disabled value="">Select bucket</option>
+            <option
+              v-for="bucket in buckets"
+              :key="bucket.value"
+              :value="bucket.value"
+            >
+              {{ bucket.label || bucket.value }} — {{ bucket.description }}
+            </option>
           </select>
         </div>
 
@@ -229,14 +242,19 @@ function handleEnter(event) {
             Next
           </button>
 
-          <button
-            type="button"
-            class="ml-auto px-4 py-2 rounded-md bg-emerald-500 text-black font-semibold hover:bg-emerald-400 disabled:opacity-40"
-            @click="emit('upload')"
-            :disabled="uploading || fileEntry.uploaded"
-          >
-            {{ fileEntry.uploaded ? 'Uploaded' : uploading ? 'Uploading…' : 'Upload' }}
-          </button>
+          <div class="ml-auto flex flex-col items-end gap-2">
+            <button
+              type="button"
+              class="px-4 py-2 rounded-md bg-emerald-500 text-black font-semibold hover:bg-emerald-400 disabled:opacity-40"
+              @click="emit('upload')"
+              :disabled="uploadDisabled"
+            >
+              {{ fileEntry.uploaded ? 'Uploaded' : uploading ? 'Uploading…' : 'Upload' }}
+            </button>
+            <p v-if="uploadBlockedReason" class="text-xs text-gray-400">
+              {{ uploadBlockedReason }}
+            </p>
+          </div>
         </div>
       </div>
     </div>
