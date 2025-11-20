@@ -10,7 +10,7 @@ export const BUCKET_OPTIONS = [
     description: 'Ambience, drones, tonal beds, soft textures, abstract pads, whitespace, reverb beds.'
   },
   {
-    value: 'work-focus',
+    value: 'tools',
     label: 'Work/Focus',
     description: 'White noise, brown noise, fans, HVAC hums, soft machinery, steady-state loops.'
   },
