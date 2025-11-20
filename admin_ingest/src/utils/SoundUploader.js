@@ -79,7 +79,6 @@ export async function uploadFileAndInsert({ file, userId, planTier, bucket, meta
   const payload = {
     ...metadata,
     path: key,
-    owner_id: userId,
     size: file.size,
     mime_type: file.type
   }
