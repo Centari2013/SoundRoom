@@ -10,7 +10,7 @@ import { execFile } from 'node:child_process'
 import { promisify } from 'node:util'
 import ffmpegPath from 'ffmpeg-static'
 import ffprobePath from 'ffprobe-static'
-import { supabaseAdmin } from './_utils/serverClients'
+import { supabaseAdmin } from './_utils/serverClients.js'
 
 const TEN_SECONDS = 10
 const execFileAsync = promisify(execFile)
