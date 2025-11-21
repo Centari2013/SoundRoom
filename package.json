@@ -23,9 +23,12 @@
     "@tensorflow/tfjs-converter": "^4.22.0",
     "@vercel/functions": "^2.2.2",
     "@vercel/speed-insights": "^1.2.0",
+    "@aws-sdk/client-s3": "^3.744.0",
     "aws4fetch": "^1.0.20",
     "dayjs": "^1.11.13",
     "dotenv": "^16.5.0",
+    "ffmpeg-static": "^5.2.0",
+    "ffprobe-static": "^3.1.0",
     "idb-keyval": "^3.0.0",
     "konva": "^9.3.20",
     "p-limit": "^6.2.0",
@@ -38,7 +41,8 @@
     "vue-3-slider-component": "^1.0.2",
     "vue-konva": "^3.2.1",
     "vue-router": "^4.5.1",
-    "vue3-marquee": "^4.2.2"
+    "vue3-marquee": "^4.2.2",
+    "tslib": "^2.8.1"
   },
   "devDependencies": {
     "@playwright/test": "^1.53.1",

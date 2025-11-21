@@ -1,4 +1,5 @@
 import { supabase } from '@/utils/supabase';
+import { buildApiUrl } from './apiBase';
 
 async function getAccessToken() {
   const { data } = await supabase.auth.getSession();
@@ -14,7 +15,7 @@ async function getAccessToken() {
  */
 async function getSignedUploadUrl(userId, displayName) {
   const params = new URLSearchParams({ userId, filename: displayName });
-  const res = await fetch(`/api/get-upload-url?${params.toString()}`);
+  const res = await fetch(buildApiUrl(`/api/get-upload-url?${params.toString()}`));
   if (!res.ok) {
     let message = 'Failed to get signed upload URL';
     const rawBody = await res.text().catch(() => '');
@@ -47,7 +48,7 @@ async function getSignedUploadUrl(userId, displayName) {
  * @returns {Promise<string>} key of the uploaded file
  */
 export default async function uploadAudio(file, userId, onProgress) {
-  const { signedUrl, key } = await getSignedUploadUrl(userId, file.name);
+  const { signedUrl, key, base, bucket } = await getSignedUploadUrl(userId, file.name);
 
   return new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest();
@@ -61,7 +62,7 @@ export default async function uploadAudio(file, userId, onProgress) {
 
     xhr.onload = () => {
       if (xhr.status >= 200 && xhr.status < 300) {
-        resolve(key);
+        resolve({ key, base, bucket });
       } else {
         reject(new Error(`Upload failed with status ${xhr.status}`));
       }
