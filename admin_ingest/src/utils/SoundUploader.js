@@ -1,5 +1,6 @@
 import { supabase } from './supabaseClient'
 import { requestPreviewGeneration } from '@app/utils/previewGeneration'
+import { buildApiUrl } from '@app/utils/apiBase'
 
 /**
  * Fetch a signed upload URL using the exact flow the customer-facing uploader uses.
@@ -12,12 +13,21 @@ async function getSignedUploadUrl({ userId, filename, planTier, bucket }) {
   if (userId) params.set('userId', userId)
   if (planTier) params.set('planTier', planTier)
   if (bucket) params.set('bucket', bucket)
-  const response = await fetch(`/api/get-upload-url?${params.toString()}`)
+
+  const endpoint = buildApiUrl(`/api/get-upload-url?${params.toString()}`)
+  const response = await fetch(endpoint)
 
   const rawBody = await response.text().catch(() => '')
 
   if (!response.ok) {
-    throw new Error(rawBody || 'Unable to get signed Cloudflare R2 URL')
+    let message = rawBody || 'Unable to get signed Cloudflare R2 URL'
+    try {
+      const json = JSON.parse(rawBody)
+      message = json?.error || json?.message || message
+    } catch (_err) {
+      // fall back to the raw or default message
+    }
+    throw new Error(`${message} (status ${response.status})`)
   }
 
   let payload

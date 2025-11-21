@@ -1,4 +1,5 @@
 import { supabase } from '@/utils/supabase';
+import { buildApiUrl } from './apiBase';
 
 async function getAccessToken() {
   const { data } = await supabase.auth.getSession();
@@ -14,7 +15,7 @@ async function getAccessToken() {
  */
 async function getSignedUploadUrl(userId, displayName) {
   const params = new URLSearchParams({ userId, filename: displayName });
-  const res = await fetch(`/api/get-upload-url?${params.toString()}`);
+  const res = await fetch(buildApiUrl(`/api/get-upload-url?${params.toString()}`));
   if (!res.ok) {
     let message = 'Failed to get signed upload URL';
     const rawBody = await res.text().catch(() => '');

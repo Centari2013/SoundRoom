@@ -1,5 +1,7 @@
+import { buildApiUrl } from './apiBase'
+
 export async function requestPreviewGeneration(payload) {
-  const response = await fetch('/api/generate-preview', {
+  const response = await fetch(buildApiUrl('/api/generate-preview'), {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload)
