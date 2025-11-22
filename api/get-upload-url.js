@@ -2,46 +2,6 @@ import { getEnv } from "@vercel/functions";
 import { randomBytes, randomUUID } from "node:crypto";
 import { AwsClient } from "aws4fetch";
 
-const FALLBACK_FILENAME = "file";
-
-function coerceFilename(value) {
-  if (typeof value === "string") {
-    const trimmed = value.trim();
-    if (trimmed.length > 0) {
-      return trimmed;
-    }
-  }
-  return FALLBACK_FILENAME;
-}
-
-function sanitizeFilename(filename = FALLBACK_FILENAME) {
-  const coerced = coerceFilename(filename);
-  const lastDot = coerced.lastIndexOf(".");
-  const base = lastDot > 0 ? coerced.slice(0, lastDot) : coerced;
-  const extension = lastDot > 0 ? coerced.slice(lastDot + 1) : "";
-
-  let normalizedBase = base;
-  try {
-    normalizedBase = normalizedBase.normalize("NFKD").replace(/[\u0300-\u036f]/g, "");
-  } catch {
-    // If the runtime does not support Intl normalization we simply fall back
-    // to the raw base name.
-  }
-
-  const safeBase = normalizedBase
-    .replace(/[^a-zA-Z0-9_-]+/g, "-")
-    .replace(/-{2,}/g, "-")
-    .replace(/^-|-$/g, "");
-
-  const finalBase = (safeBase || FALLBACK_FILENAME).slice(0, 80).toLowerCase();
-  const safeExtension = extension
-    .replace(/[^a-zA-Z0-9]+/g, "")
-    .slice(0, 16)
-    .toLowerCase();
-
-  return safeExtension ? `${finalBase}.${safeExtension}` : finalBase;
-}
-
 function createRandomId() {
   if (typeof randomUUID === "function") {
     return randomUUID().replace(/-/g, "");
@@ -71,19 +31,8 @@ function sanitizeSegment(value) {
   return value
     .toString()
     .trim()
-    .normalize('NFKD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/[^a-zA-Z0-9_-]+/g, '-')
-    .replace(/-{2,}/g, '-')
-    .replace(/^-|-$/g, '')
-    .toLowerCase()
-}
-
-function generateObjectKey(filename) {
-  const timestamp = Date.now().toString(36);
-  const randomId = createRandomId().slice(0, 16);
-  const safeFilename = sanitizeFilename(filename);
-  return `${timestamp}-${randomId}-${safeFilename}`;
+    .replace(/^\/+|\/+$/g, '')
+    .replace(/[^a-zA-Z0-9._-]+/g, '')
 }
 
 function getR2Config() {
@@ -158,48 +107,11 @@ export async function GET(request) {
     });
 
     const { searchParams } = new URL(request.url);
-    const userId = searchParams.get("userId");
-    const filename = searchParams.get("filename");
-    const planTier = searchParams.get("planTier");
-    const bucket = searchParams.get("bucket");
+    const providedKey = sanitizeSegment(searchParams.get("key"));
 
-    if (!filename) {
-      return new Response(
-        JSON.stringify({ error: "Missing 'filename' query param" }),
-        {
-          status: 400,
-          headers: {
-            ...corsHeaders,
-            "Content-Type": "application/json",
-          },
-        }
-      );
-    }
-
-    const safeBase = sanitizeSegment(planTier);
-    const safeBucket = sanitizeSegment(bucket);
-
-    let storagePrefix = "";
-    if (safeBase && safeBucket) {
-      storagePrefix = `${safeBase}/${safeBucket}`;
-    } else if (userId) {
-      storagePrefix = `users/${userId}`;
-    } else {
-      return new Response(
-        JSON.stringify({ error: "Missing 'planTier'/'bucket' or 'userId' query params" }),
-        {
-          status: 400,
-          headers: {
-            ...corsHeaders,
-            "Content-Type": "application/json",
-          },
-        }
-      );
-    }
-
-    const generatedKey = generateObjectKey(filename);
+    const objectKey = providedKey || `${createRandomId()}.bin`;
     const url = new URL(
-      `https://${bucketName}.${accountId}.r2.cloudflarestorage.com/${storagePrefix}/${generatedKey}`
+      `https://${bucketName}.${accountId}.r2.cloudflarestorage.com/${objectKey}`
     );
     url.searchParams.set("X-Amz-Expires", "120");
 
@@ -210,10 +122,8 @@ export async function GET(request) {
     return new Response(
       JSON.stringify({
         signedUrl: signed.url,
-        key: generatedKey,
-        displayName: filename,
-        base: safeBase || "users",
-        bucket: safeBucket || userId,
+        key: objectKey,
+        displayName: objectKey,
       }),
       {
         status: 200,

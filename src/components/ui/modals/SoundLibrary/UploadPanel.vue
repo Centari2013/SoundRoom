@@ -162,7 +162,7 @@ async function uploadAll() {
 
   const uploadPromises = files.value.map(file =>
     limit(async () => {
-      const { key: storageKey, base, bucket } = await uploadAudio(file.raw, user.value.id, (percent) => {
+      const { key: storageKey, soundId } = await uploadAudio(file.raw, user.value.id, (percent) => {
         file.progress = percent
       })
       const duration = await getFileDuration(file.raw)
@@ -170,6 +170,7 @@ async function uploadAll() {
       const { data, error } = await supabase
         .from('sound_files')
         .insert({
+          id: soundId,
           path: storageKey,
           name: file.name,
           bucket: user.value.id,
@@ -188,8 +189,6 @@ async function uploadAll() {
       if (data?.id) {
         await requestPreviewGeneration({
           key: storageKey,
-          base,
-          bucket,
           soundId: data.id
         })
       }
