@@ -4,8 +4,6 @@
     :x="listener.x"
     :y="listener.y"
     :draggable="false"
-    @mouseover="setCursor($event, 'pointer')"
-    @mouseout="setCursor($event, 'default')"
     @dragmove="onListenerDragMove"
   >
 
@@ -20,6 +18,8 @@
       shadowOffsetY="2"
       @mousedown="onListenerMouseDown"
       @mouseup="onListenerMouseUp"
+      @mouseover="setCursor($event, 'pointer')"
+      @mouseout="setCursor($event, 'default')"
     />
     <v-circle
       :radius="6"
@@ -28,6 +28,8 @@
       :strokeWidth="1"
       @mousedown="onListenerMouseDown"
       @mouseup="onListenerMouseUp"
+      @mouseover="setCursor($event, 'pointer')"
+      @mouseout="setCursor($event, 'default')"
     />
 
     <!-- Directional Marker -->
@@ -47,17 +49,21 @@
       opacity="0.95"
       @mousedown="onListenerMouseDown"
       @mouseup="onListenerMouseUp"
+      @mouseover="setCursor($event, 'pointer')"
+      @mouseout="setCursor($event, 'default')"
     />
 
     <!-- Rotation Hitbox -->
     <v-arc
-      :x="Math.cos(toRad(listener.angle + 90)) * 7"
-      :y="Math.sin(toRad(listener.angle + 90)) * 7"
+      :x="Math.cos(toRad(listener.angle + 90))"
+      :y="Math.sin(toRad(listener.angle + 90))"
       :innerRadius="0"
-      :outerRadius="25"
+      :outerRadius="40"
       :angle="135"
+      fill="rgba(59, 130, 246, 0.1)"
       :rotation="listener.angle + 20"
-      fill="transparent"
+      @mouseover="setCursor($event, 'grabbing')"
+      @mouseout="setCursor($event, 'default')"
       @mousedown="onHandleMouseDown"
       @mouseup="onHandleMouseUp"
     />
