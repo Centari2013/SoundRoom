@@ -6,40 +6,30 @@ import { createClient } from '@supabase/supabase-js'
 
 dotenv.config({ path: '.env.local' })
 
-function getEnv() {
-  const {
-    SUPABASE_URL,
-    SUPABASE_SERVICE_ROLE_KEY,
-    R2_ACCOUNT_ID,
-    R2_ACCESS_KEY_ID,
-    R2_SECRET_ACCESS_KEY,
-    R2_BUCKET_NAME,
-    MIGRATION_CONCURRENCY,
-  } = process.env
+const DEFAULT_CONCURRENCY = 5
 
-  const missing = [
-    ['SUPABASE_URL', SUPABASE_URL],
-    ['SUPABASE_SERVICE_ROLE_KEY', SUPABASE_SERVICE_ROLE_KEY],
-    ['R2_ACCOUNT_ID', R2_ACCOUNT_ID],
-    ['R2_ACCESS_KEY_ID', R2_ACCESS_KEY_ID],
-    ['R2_SECRET_ACCESS_KEY', R2_SECRET_ACCESS_KEY],
-    ['R2_BUCKET_NAME', R2_BUCKET_NAME],
-  ]
-    .filter(([, value]) => !value)
-    .map(([key]) => key)
-
-  if (missing.length) {
-    throw new Error(`Missing required environment variables: ${missing.join(', ')}`)
+function required(name, value) {
+  if (!value) {
+    throw new Error(`Missing required environment variable: ${name}`)
   }
+  return value
+}
+
+function loadEnv() {
+  const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL
 
   return {
-    supabaseUrl: SUPABASE_URL,
-    supabaseServiceKey: SUPABASE_SERVICE_ROLE_KEY,
-    r2AccountId: R2_ACCOUNT_ID,
-    r2AccessKeyId: R2_ACCESS_KEY_ID,
-    r2SecretAccessKey: R2_SECRET_ACCESS_KEY,
-    r2BucketName: R2_BUCKET_NAME,
-    concurrency: Number(MIGRATION_CONCURRENCY || 5),
+    supabaseUrl: required('SUPABASE_URL', supabaseUrl),
+    supabaseServiceKey: required(
+      'SUPABASE_SERVICE_ROLE_KEY',
+      process.env.SUPABASE_SERVICE_ROLE_KEY
+    ),
+    r2AccountId: required('R2_ACCOUNT_ID', process.env.R2_ACCOUNT_ID),
+    r2AccessKeyId: required('R2_ACCESS_KEY_ID', process.env.R2_ACCESS_KEY_ID),
+    r2SecretAccessKey: required('R2_SECRET_ACCESS_KEY', process.env.R2_SECRET_ACCESS_KEY),
+    r2BucketName: required('R2_BUCKET_NAME', process.env.R2_BUCKET_NAME),
+    concurrency:
+      Number.parseInt(process.env.MIGRATION_CONCURRENCY || '', 10) || DEFAULT_CONCURRENCY,
   }
 }
 
@@ -51,10 +41,22 @@ async function streamToBuffer(stream) {
   return Buffer.concat(chunks)
 }
 
-async function main() {
-  const env = getEnv()
+function createSupabaseClient(url, serviceKey) {
+  return createClient(url, serviceKey, { auth: { persistSession: false } })
+}
 
-  const supabase = createClient(env.supabaseUrl, env.supabaseServiceKey)
+function normalizeKey(key) {
+  if (!key) return ''
+  return key
+    .split('?')[0]
+    .replace(/^\/+/, '')
+    .trim()
+}
+
+async function main() {
+  const env = loadEnv()
+
+  const supabase = createSupabaseClient(env.supabaseUrl, env.supabaseServiceKey)
 
   const s3 = new S3Client({
     region: 'auto',
@@ -86,7 +88,7 @@ async function main() {
           return
         }
 
-        const cleanKey = oldKey.split('?')[0]
+        const cleanKey = normalizeKey(oldKey)
         const extension = path.extname(cleanKey)
         if (!extension) {
           console.error(`Skipping sound ${id}: could not determine file extension from key "${oldKey}"`)
