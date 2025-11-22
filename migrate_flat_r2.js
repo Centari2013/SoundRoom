@@ -33,6 +33,19 @@ function loadEnv() {
   }
 }
 
+function normalizeSegment(value) {
+  if (!value) return ''
+  return value
+    .toString()
+    .trim()
+    .normalize('NFKD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-zA-Z0-9_-]+/g, '-')
+    .replace(/-{2,}/g, '-')
+    .replace(/^-|-$/g, '')
+    .toLowerCase()
+}
+
 async function streamToBuffer(stream) {
   const chunks = []
   for await (const chunk of stream) {
@@ -65,62 +78,86 @@ function stripBucketPrefix(key, bucketName) {
   return normalizedKey
 }
 
+function buildStorageKey(base, bucket, path) {
+  const segments = [base, bucket, path]
+    .map((segment) => (segment ?? '').toString().replace(/^\/+|\/+$/g, ''))
+    .filter(Boolean)
+
+  return segments.join('/')
+}
+
 function generateLegacyKeyCandidates(sound, bucketName) {
-  const candidates = new Set()
+  const candidates = []
+  const seen = new Set()
   const rawPath = normalizeKey(sound.path)
-  const bucket = normalizeKey(sound.bucket)
-  const planTier = normalizeKey(sound.plan_tier)
-  const owner = normalizeKey(sound.owner_id)
+  const normalizedBucketSegment = normalizeSegment(sound.bucket)
+  const planTier = normalizeSegment(sound.plan_tier)
+  const owner = normalizeSegment(sound.owner_id)
   const normalizedBucketName = normalizeKey(bucketName)
 
   const knownTiers = ['free', 'basic', 'plus', 'pro']
+  const derivedBase = normalizeSegment(sound.base) || planTier || (owner ? 'users' : '')
 
-  if (rawPath) {
-    candidates.add(rawPath)
+  const addCandidate = (value) => {
+    const key = normalizeKey(value)
+    if (key && !seen.has(key)) {
+      seen.add(key)
+      candidates.push(key)
+    }
+  }
 
-    const withoutBucket = stripBucketPrefix(rawPath, normalizedBucketName)
-    candidates.add(withoutBucket)
+  const primaryPath = stripBucketPrefix(rawPath, normalizedBucketName)
+  const pathVariants = [primaryPath]
 
-    const parts = rawPath.split('/')
-    if (parts[0] === normalizedBucketName && parts.length > 1) {
-      candidates.add(parts.slice(1).join('/'))
+  if (rawPath && rawPath !== primaryPath) {
+    pathVariants.push(rawPath)
+  }
+
+  for (const variant of pathVariants.filter(Boolean)) {
+    addCandidate(variant)
+
+    if (normalizedBucketSegment) {
+      addCandidate(buildStorageKey('', normalizedBucketSegment, variant))
     }
 
-    if (planTier && !rawPath.startsWith(`${planTier}/`)) {
-      candidates.add(`${planTier}/${rawPath}`)
+    if (derivedBase) {
+      addCandidate(buildStorageKey(derivedBase, normalizedBucketSegment, variant))
+      addCandidate(buildStorageKey(derivedBase, '', variant))
     }
 
-    const leadingSegment = withoutBucket.split('/')[0]
+    const leadingSegment = variant.split('/')[0]
     if (leadingSegment && knownTiers.includes(leadingSegment)) {
+      const remainder = variant.split('/').slice(1).join('/')
       for (const tier of knownTiers) {
-        candidates.add(`${tier}/${withoutBucket.split('/').slice(1).join('/')}`)
+        addCandidate(buildStorageKey(tier, '', remainder))
+        addCandidate(buildStorageKey(tier, normalizedBucketSegment, remainder))
       }
     }
   }
 
-  // If the stored path is just a filename, try constructing common prefixes
-  const isFileOnly = rawPath && !rawPath.includes('/')
+  const isFileOnly = primaryPath && !primaryPath.includes('/')
   if (isFileOnly) {
-    if (planTier && bucket) {
-      candidates.add(`${planTier}/${bucket}/${rawPath}`)
+    if (planTier && normalizedBucketSegment) {
+      addCandidate(buildStorageKey(planTier, normalizedBucketSegment, primaryPath))
+      addCandidate(buildStorageKey(planTier, 'misc', primaryPath))
     }
-    if (bucket) {
-      candidates.add(`${bucket}/${rawPath}`)
+
+    if (normalizedBucketSegment) {
+      addCandidate(buildStorageKey('', normalizedBucketSegment, primaryPath))
+      addCandidate(buildStorageKey('misc', normalizedBucketSegment, primaryPath))
     }
+
     if (planTier && owner) {
-      candidates.add(`${planTier}/${owner}/${rawPath}`)
+      addCandidate(buildStorageKey(planTier, owner, primaryPath))
     }
-    if (planTier) {
-      candidates.add(`${planTier}/${rawPath}`)
-      candidates.add(`${planTier}/misc/${rawPath}`)
-    }
+
     for (const tier of knownTiers) {
-      candidates.add(`${tier}/${rawPath}`)
-      candidates.add(`${tier}/misc/${rawPath}`)
+      addCandidate(buildStorageKey(tier, normalizedBucketSegment, primaryPath))
+      addCandidate(buildStorageKey(tier, 'misc', primaryPath))
     }
   }
 
-  return Array.from(candidates).filter(Boolean)
+  return candidates
 }
 
 function resolveExtension(sound, key) {
@@ -148,7 +185,7 @@ async function main() {
   console.log(`Fetching sounds from Supabase...`)
   const { data: sounds, error } = await supabase
     .from('sound_files')
-    .select('id, path, name, bucket, plan_tier, owner_id')
+    .select('id, path, name, bucket, plan_tier, owner_id, base')
   if (error) {
     throw new Error(`Failed to fetch sounds: ${error.message}`)
   }
