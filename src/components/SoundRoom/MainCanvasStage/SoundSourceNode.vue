@@ -12,11 +12,11 @@
       :angle="coneOuter"
       :rotation="(-coneOuter / 2) + source.instance.state.angle"
       :radius="50"
-      fill="rgba(255, 137, 137, 0.16)"
-      :stroke="'rgba(255, 137, 137, 0.28)'"
+      :fill="outerConeFill"
+      :stroke="outerConeStroke"
       :strokeWidth="1.5"
-      shadowColor="rgba(255, 120, 120, 0.65)"
-      :shadowBlur="18"
+      :shadowColor="outerConeShadow"
+      :shadowBlur="16"
       :listening="false"
     />
 
@@ -26,8 +26,8 @@
       :angle="coneInner"
       :rotation="(-coneInner / 2) + source.instance.state.angle"
       :radius="50"
-      fill="rgba(255, 180, 180, 0.18)"
-      :stroke="'rgba(255, 180, 180, 0.35)'"
+      :fill="innerConeFill"
+      :stroke="innerConeStroke"
       :strokeWidth="1"
       :listening="false"
     />
@@ -50,8 +50,8 @@
       :stroke="dotStrokeColor"
       :strokeWidth="2"
       :shadowColor="getFillColor"
-      :shadowBlur="10"
-      :shadowOpacity="0.65"
+      :shadowBlur="dotShadowBlur"
+      :shadowOpacity="dotShadowOpacity"
       shadowForStrokeEnabled="false"
       name="sound-node-part"
       @mousedown="onSourceMouseDown"
@@ -83,10 +83,10 @@
       :rotation="source.instance.state.angle - 90"
       :fillLinearGradientStartPoint="{ x: 0, y: 0 }"
       :fillLinearGradientEndPoint="{ x: 0, y: 25 }"
-      :fillLinearGradientColorStops="[0, 'rgba(255,255,255,0.95)', 1, 'rgba(255,255,255,0.65)']"
-      stroke="rgba(0, 0, 0, 0.6)"
+      :fillLinearGradientColorStops="[0, 'rgba(255,255,255,0.95)', 1, directionGradientEnd]"
+      :stroke="directionStroke"
       :strokeWidth="1.25"
-      :shadowColor="'rgba(0,0,0,0.35)'"
+      :shadowColor="directionShadow"
       :shadowBlur="4"
       @mousedown="onSourceMouseDown"
       @mouseup="onSourceMouseUp"
@@ -130,6 +130,8 @@ const props = defineProps({
 
 const { room } = storeToRefs(useRoomStore())
 const { actionManager } = storeToRefs(useActionManagerStore())
+const isDarkMode = document.documentElement.classList.contains('dark') ||
+  (typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches)
 const emit = defineEmits(['select'])
 
 const sched = computed(() => props.source.instance.state.schedule)
@@ -145,6 +147,17 @@ const getFillColor = computed(() => {
 const dotStrokeColor = computed(() => (props.selected ? '#ffffff' : 'rgba(255, 255, 255, 0.9)'))
 const selectionGlowColor = '#6fd7ff'
 const selectedScale = computed(() => (props.selected ? 1.05 : 1))
+
+const outerConeFill = computed(() => isDarkMode ? 'rgba(255, 137, 137, 0.16)' : 'rgba(255, 137, 137, 0.11)')
+const outerConeStroke = computed(() => isDarkMode ? 'rgba(255, 137, 137, 0.28)' : 'rgba(255, 137, 137, 0.22)')
+const outerConeShadow = computed(() => isDarkMode ? 'rgba(255, 120, 120, 0.65)' : 'rgba(255, 120, 120, 0.42)')
+const innerConeFill = computed(() => isDarkMode ? 'rgba(255, 180, 180, 0.18)' : 'rgba(255, 180, 180, 0.14)')
+const innerConeStroke = computed(() => isDarkMode ? 'rgba(255, 180, 180, 0.35)' : 'rgba(255, 180, 180, 0.24)')
+const dotShadowBlur = computed(() => isDarkMode ? 10 : 7)
+const dotShadowOpacity = computed(() => isDarkMode ? 0.65 : 0.42)
+const directionGradientEnd = computed(() => isDarkMode ? 'rgba(255,255,255,0.65)' : 'rgba(255,255,255,0.52)')
+const directionStroke = computed(() => isDarkMode ? 'rgba(0, 0, 0, 0.6)' : 'rgba(0, 0, 0, 0.45)')
+const directionShadow = computed(() => isDarkMode ? 'rgba(0,0,0,0.35)' : 'rgba(0,0,0,0.25)')
 
 
 

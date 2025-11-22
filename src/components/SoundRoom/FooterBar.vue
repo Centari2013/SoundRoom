@@ -21,7 +21,7 @@
   />
 
   <!-- Footer Buttons -->
-  <div class="relative flex items-center justify-between h-15 p-2">
+  <div class="relative flex items-center justify-between h-15 p-2 bg-neutral-200 dark:bg-transparent border-t border-neutral-300/60 dark:border-neutral-800 shadow-[0_-3px_12px_rgba(0,0,0,0.08)]">
     <div class="flex space-x-3">
       <BaseButton
         @click="showSaveConfirm = true"

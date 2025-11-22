@@ -1,11 +1,11 @@
 <template>
-  <div class="flex items-center justify-between p-3 border-neutral-300 dark:border-neutral-800 bg-neutral-100 dark:bg-neutral-900 space-x-10 w-full">
+  <div class="flex items-center justify-between p-3 border-b border-neutral-300/70 dark:border-neutral-800 bg-neutral-200 dark:bg-neutral-900 space-x-10 w-full shadow-[0_3px_12px_rgba(0,0,0,0.08)]">
           
     <div class="flex space-x-2 w-1/3">
       <BaseButton
       :disabled="audioEngine.soundSources.value.length === 0"
       @click="isPlaying ? audioEngine.pauseAll() : audioEngine.playAll()"
-      class="px-3 py-1 rounded text-sm bg-neutral-200 dark:bg-neutral-800 hover:bg-neutral-300 dark:hover:bg-neutral-700"
+      class="px-3 py-1 rounded text-sm bg-neutral-200 dark:bg-neutral-800 hover:bg-neutral-300 dark:hover:bg-neutral-700 border border-neutral-300/80 dark:border-neutral-700 shadow-[0_2px_8px_rgba(0,0,0,0.12)]"
       > 
         
         <component :is="isPlaying ? Pause : Play" class="h-4 w-4 fill-black dark:fill-white" />
@@ -13,14 +13,14 @@
       <BaseButton
         :disabled="actionStackEmpty || waiting"
         @click="actionManager.undoLastAction"
-        class="px-3 py-1 rounded text-sm bg-neutral-200 dark:bg-neutral-800 hover:bg-neutral-300 dark:hover:bg-neutral-700"
+        class="px-3 py-1 rounded text-sm bg-neutral-200 dark:bg-neutral-800 hover:bg-neutral-300 dark:hover:bg-neutral-700 border border-neutral-300/80 dark:border-neutral-700 shadow-[0_2px_8px_rgba(0,0,0,0.12)]"
       >
         <UndoRedo class="h-4 w-4 fill-black dark:fill-white"/>
       </BaseButton>
       <BaseButton
         :disabled="redoStackEmpty || waiting"
         @click="actionManager.redoLastAction"
-        class="px-3 py-1 rounded text-sm bg-neutral-200 dark:bg-neutral-800 hover:bg-neutral-300 dark:hover:bg-neutral-700"
+        class="px-3 py-1 rounded text-sm bg-neutral-200 dark:bg-neutral-800 hover:bg-neutral-300 dark:hover:bg-neutral-700 border border-neutral-300/80 dark:border-neutral-700 shadow-[0_2px_8px_rgba(0,0,0,0.12)]"
       >
         <UndoRedo class="h-4 w-4 scale-x-[-1] fill-black dark:fill-white"/>
       </BaseButton>
@@ -34,7 +34,7 @@
     />
     <div class="flex items-center justify-center space-x-2 w-1/3">
      
-      <span class="text-xs text-neutral-500">Master</span>
+      <span class="text-xs text-neutral-700">Master</span>
       <VueSlider 
         v-model="audioEngine.masterVolume.value"
         :min="0" 

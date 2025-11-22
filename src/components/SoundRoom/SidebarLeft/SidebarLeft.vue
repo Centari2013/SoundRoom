@@ -1,6 +1,6 @@
 <template>
   <aside
-    class="flex flex-col h-full bg-neutral-200 dark:bg-neutral-900 border-r border-neutral-400 dark:border-neutral-800 p-4 space-y-6"
+    class="flex flex-col h-full bg-neutral-200 dark:bg-neutral-900 border-r border-neutral-300/70 dark:border-neutral-800 p-4 space-y-6 shadow-[4px_0_12px_rgba(0,0,0,0.06)]"
     role="region"
     aria-labelledby="library-panel-label"
   >

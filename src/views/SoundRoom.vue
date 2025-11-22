@@ -1,5 +1,5 @@
 <template>
-  <div class="h-full bg-white text-neutral-900 dark:bg-neutral-950 dark:text-white flex flex-col">
+  <div class="h-full bg-neutral-100 text-neutral-800 dark:bg-neutral-950 dark:text-white flex flex-col">
     <!-- Main Layout -->
     <div class="flex flex-1 overflow-hidden">
 
@@ -12,12 +12,12 @@
       />
 
       <!-- Canvas + Controls -->
-      <main class="flex-1 flex flex-col">
+      <main class="flex-1 flex flex-col bg-neutral-100 dark:bg-transparent">
         <!-- Toolbar -->
         <Toolbar/>
 
         <!-- Canvas Area -->
-        <div class="flex-1 relative overflow-hidden bg-neutral-100 dark:bg-neutral-900 flex items-center justify-center">
+        <div class="flex-1 relative overflow-hidden bg-neutral-200 dark:bg-neutral-900 flex items-center justify-center border-y border-neutral-300/50 dark:border-transparent shadow-[0_4px_12px_rgba(0,0,0,0.08)]">
           <div class="pointer-events-none absolute inset-0 canvas-vignette" aria-hidden="true"></div>
           <MainCanvasStage
             v-bind="{
@@ -202,12 +202,12 @@ onUnmounted(() => {
 
 <style scoped>
 .canvas-vignette {
-  --vignette-inner: rgba(255, 255, 255, 0.12);
-  --vignette-middle: rgba(255, 255, 255, 0.05);
-  --vignette-outer: rgba(0, 0, 0, 0.23);
-  --vignette-shadow: inset 0 0 90px rgba(0, 0, 0, 0.24);
+  --vignette-inner: rgba(255, 255, 255, 0.08);
+  --vignette-middle: rgba(255, 255, 255, 0.03);
+  --vignette-outer: rgba(0, 0, 0, 0.14);
+  --vignette-shadow: inset 0 0 70px rgba(0, 0, 0, 0.14);
 
-  background: radial-gradient(circle at center, var(--vignette-inner) 0%, var(--vignette-middle) 38%, var(--vignette-outer) 100%);
+  background: radial-gradient(circle at center, var(--vignette-inner) 0%, var(--vignette-middle) 42%, var(--vignette-outer) 100%);
   box-shadow: var(--vignette-shadow);
 }
 

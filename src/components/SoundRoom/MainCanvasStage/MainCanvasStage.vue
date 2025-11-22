@@ -4,7 +4,7 @@
     role="application"
     tabindex="0"
     aria-label="SoundRoom 2D audio environment. Use keyboard or mouse to interact with sound nodes."
-    class="canvas-grid relative border-2 border-neutral-400 dark:border-neutral-700 flex items-center justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+    class="canvas-grid relative border border-neutral-300/60 dark:border-neutral-700 flex items-center justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 shadow-[0_6px_20px_rgba(0,0,0,0.08)]"
     :class="`w-[${room.width}px] h-[${room.height}px]`"
     @dragover.prevent
     @drop="handleDrop"
@@ -121,8 +121,8 @@ const soundNodeTitleCoords = computed(() => {
 .canvas-grid {
   background-size: 40px 40px; /* Adjust spacing between grid lines */
   background-image:
-    linear-gradient(to right, rgba(0, 0, 0, 0.06) 2px, transparent 2px),
-    linear-gradient(to bottom, rgba(0, 0, 0, 0.06) 2px, transparent 2px); /* Adjust line opacity */
+    linear-gradient(to right, rgba(0, 0, 0, 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(0, 0, 0, 0.05) 1px, transparent 1px); /* Adjust line opacity */
 }
 
 @media (prefers-color-scheme: dark) {
