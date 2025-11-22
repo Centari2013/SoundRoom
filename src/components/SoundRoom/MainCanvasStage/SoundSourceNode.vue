@@ -147,31 +147,47 @@ const isScheduled = computed(() => sched.value?.enabled)
 const isScheduledPlaying = computed(() => sched.value?.isPlaying)
 const sourceIsPlaying = computed(() => props.source.instance.playing);
 
+const lightPalette = computed(() => {
+  const styles = getComputedStyle(document.documentElement)
+  return {
+    bg2: styles.getPropertyValue('--lm-bg-2')?.trim() || '#dcdcdc',
+    nodeRed: styles.getPropertyValue('--lm-node-red')?.trim() || '#d45a5a',
+    nodeBlue: styles.getPropertyValue('--lm-node-blue')?.trim() || '#6c8edb',
+    coneRed: styles.getPropertyValue('--lm-cone-red')?.trim() || 'rgba(212, 90, 90, 0.1)',
+    coneBlue: styles.getPropertyValue('--lm-cone-blue')?.trim() || 'rgba(108, 142, 219, 0.12)'
+  }
+})
+
 const getFillColor = computed(() => {
   if (isDarkMode.value) {
     if (props.selected) return '#ff0' // Yellow for selected node
     return isScheduled.value ? '#2e90fa' : '#f44336' // Red for unscheduled/looping
   }
-  if (props.selected) return 'var(--lm-bg-2)'
-  return isScheduled.value ? 'var(--lm-node-blue)' : 'var(--lm-node-red)'
+  const colors = lightPalette.value
+  if (props.selected) return colors.bg2
+  return isScheduled.value ? colors.nodeBlue : colors.nodeRed
 })
 
 const dotStrokeColor = computed(() => (isDarkMode.value ? (props.selected ? '#ffffff' : 'rgba(255, 255, 255, 0.9)') : '#333333'))
 const selectionGlowColor = computed(() => (isDarkMode.value ? '#6fd7ff' : 'rgba(0, 0, 0, 0.05)'))
 const selectedScale = computed(() => (props.selected ? 1.05 : 1))
 
-const outerConeFill = computed(() => isDarkMode.value
-  ? 'rgba(255, 137, 137, 0.16)'
-  : (isScheduled.value ? 'var(--lm-cone-blue)' : 'var(--lm-cone-red)'))
+const outerConeFill = computed(() => {
+  if (isDarkMode.value) return 'rgba(255, 137, 137, 0.16)'
+  const colors = lightPalette.value
+  return isScheduled.value ? colors.coneBlue : colors.coneRed
+})
 const outerConeStroke = computed(() => isDarkMode.value
   ? 'rgba(255, 137, 137, 0.28)'
   : (isScheduled.value ? 'rgba(108, 142, 219, 0.24)' : 'rgba(212, 90, 90, 0.2)'))
 const outerConeShadowColor = computed(() => isDarkMode.value ? 'rgba(255, 120, 120, 0.65)' : 'rgba(0, 0, 0, 0.12)')
 const outerConeShadowBlur = computed(() => isDarkMode.value ? 18 : 10)
 
-const innerConeFill = computed(() => isDarkMode.value
-  ? 'rgba(255, 180, 180, 0.18)'
-  : (isScheduled.value ? 'rgba(108, 142, 219, 0.18)' : 'rgba(212, 90, 90, 0.16)'))
+const innerConeFill = computed(() => {
+  if (isDarkMode.value) return 'rgba(255, 180, 180, 0.18)'
+  const colors = lightPalette.value
+  return isScheduled.value ? 'rgba(108, 142, 219, 0.18)' : 'rgba(212, 90, 90, 0.16)'
+})
 const innerConeStroke = computed(() => isDarkMode.value ? 'rgba(255, 180, 180, 0.35)' : 'rgba(0, 0, 0, 0.18)')
 
 const selectionGlowOpacity = computed(() => isDarkMode.value ? 0.75 : 0.22)
