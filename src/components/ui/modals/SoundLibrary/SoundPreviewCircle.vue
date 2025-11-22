@@ -55,7 +55,7 @@ const props = defineProps({
 const emit = defineEmits(['updateCurrent', 'locked'])
 
 const audioDuration = ref(null)
-const duration = ref(15)
+const duration = ref(0)
 const isPlaying = ref(false)
 const progress = ref(0)
 const isLoading = ref(false)
@@ -92,9 +92,10 @@ function formatSecondsToTime(totalSeconds = 0) {
 }
 
 function syncDurationFromProps() {
-  const durationSeconds = props.soundData?.duration_seconds ?? 0
+  const previewDuration = props.soundData?.preview_duration_seconds
+  const durationSeconds = previewDuration ?? props.soundData?.duration_seconds ?? 0
   audioDuration.value = formatSecondsToTime(durationSeconds)
-  duration.value = Math.min(15, durationSeconds || 15)
+  duration.value = durationSeconds
 }
 
 onMounted(async () => {
@@ -155,20 +156,31 @@ async function togglePlay() {
     cacheManager.setAudioContext(context)
   }
 
+  const previewUrl = props.soundData?.preview_url
   const bucket = props.soundData?.bucket
   const path = props.soundData?.path
   const base = props.soundData?.base ?? props.soundData?.plan_tier ?? (props.soundData?.owner_id ? 'users' : 'free')
   const derivedStorageKey = bucket && path ? buildStorageKey(base, bucket, path) : null
   const storageKey = props.soundData?.storageKey ?? derivedStorageKey
-  const fileId = props.soundData?.libraryId ?? storageKey ?? props.soundData?.audioPath ?? crypto.randomUUID()
+  const fallbackFileId = props.soundData?.libraryId ?? storageKey ?? props.soundData?.audioPath ?? crypto.randomUUID()
+  const fileId = previewUrl ? `preview-${fallbackFileId}` : fallbackFileId
 
   isLoading.value = true
 
   try {
     const buffer = await cacheManager.getAudioBuffer(fileId, async () => {
+      if (previewUrl) {
+        const previewResponse = await fetch(previewUrl)
+        if (!previewResponse.ok) {
+          throw new Error(`Failed to fetch preview audio (status ${previewResponse.status})`)
+        }
+        return await previewResponse.blob()
+      }
+
       if (storageKey) {
         return await fetchAudioBlob(storageKey)
       }
+
       if (props.soundData?.audioPath) {
         const res = await fetch(props.soundData.audioPath)
         if (!res.ok) {
@@ -176,6 +188,7 @@ async function togglePlay() {
         }
         return await res.blob()
       }
+
       throw new Error('Missing storage metadata for sound preview.')
     })
 
@@ -190,16 +203,18 @@ async function togglePlay() {
     bufferSource.onended = () => stopPlayback(true)
     bufferSource.connect(context.destination)
 
-    const segmentDuration = Math.min(duration.value, buffer.duration)
+    const playbackDuration = buffer.duration
+    duration.value = playbackDuration
+    audioDuration.value = formatSecondsToTime(playbackDuration)
     playStartTime = context.currentTime
 
-    bufferSource.start(0, 0, segmentDuration)
+    bufferSource.start(0, 0, playbackDuration)
 
     isPlaying.value = true
     emit('updateCurrent', props.soundData.libraryId)
 
-    setupProgressTracking(context, segmentDuration)
-    timeoutId = setTimeout(() => stopPlayback(), segmentDuration * 1000)
+    setupProgressTracking(context, playbackDuration)
+    timeoutId = setTimeout(() => stopPlayback(), playbackDuration * 1000)
   } catch (err) {
     console.error('Failed to preview sound:', err)
     stopPlayback()
