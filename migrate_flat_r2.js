@@ -53,6 +53,30 @@ function normalizeKey(key) {
     .trim()
 }
 
+function resolveLegacyKey(sound) {
+  const rawPath = normalizeKey(sound.path)
+  const base = normalizeKey(sound.plan_tier) || 'users'
+  const bucket = normalizeKey(sound.bucket || sound.owner_id)
+
+  if (rawPath.includes('/')) {
+    return rawPath
+  }
+
+  if (!bucket) {
+    return rawPath
+  }
+
+  return [base, bucket, rawPath].filter(Boolean).join('/')
+}
+
+function resolveExtension(sound, key) {
+  const extFromKey = path.extname(key)
+  if (extFromKey) return extFromKey
+
+  const extFromName = path.extname(sound.name || '')
+  return extFromName
+}
+
 async function main() {
   const env = loadEnv()
 
@@ -68,7 +92,9 @@ async function main() {
   })
 
   console.log(`Fetching sounds from Supabase...`)
-  const { data: sounds, error } = await supabase.from('sounds').select('id, r2_object_key')
+  const { data: sounds, error } = await supabase
+    .from('sound_files')
+    .select('id, path, name, bucket, plan_tier, owner_id')
   if (error) {
     throw new Error(`Failed to fetch sounds: ${error.message}`)
   }
@@ -82,28 +108,31 @@ async function main() {
   await Promise.all(
     sounds.map((sound) =>
       limit(async () => {
-        const { id, r2_object_key: oldKey } = sound
-        if (!oldKey) {
-          console.warn(`Skipping sound ${id}: missing r2_object_key`)
+        const legacyKey = resolveLegacyKey(sound)
+
+        if (!legacyKey) {
+          console.warn(`Skipping sound ${sound.id}: missing path/bucket information`)
           return
         }
 
-        const cleanKey = normalizeKey(oldKey)
-        const extension = path.extname(cleanKey)
+        const cleanKey = normalizeKey(legacyKey)
+        const extension = resolveExtension(sound, cleanKey)
         if (!extension) {
-          console.error(`Skipping sound ${id}: could not determine file extension from key "${oldKey}"`)
+          console.error(
+            `Skipping sound ${sound.id}: could not determine file extension from key "${legacyKey}" or name "${sound.name}"`
+          )
           return
         }
 
-        const newKey = `${id}${extension}`
+        const newKey = `${sound.id}${extension}`
 
         if (cleanKey === newKey) {
-          console.log(`Skipping sound ${id}: already stored as ${newKey}`)
+          console.log(`Skipping sound ${sound.id}: already stored as ${newKey}`)
           return
         }
 
         try {
-          console.log(`Migrating sound ${id}: ${oldKey} → ${newKey}`)
+          console.log(`Migrating sound ${sound.id}: ${legacyKey} → ${newKey}`)
           const objectResponse = await s3.send(
             new GetObjectCommand({
               Bucket: env.r2BucketName,
@@ -128,9 +157,9 @@ async function main() {
           )
 
           const { error: updateError } = await supabase
-            .from('sounds')
-            .update({ r2_object_key: newKey })
-            .eq('id', id)
+            .from('sound_files')
+            .update({ path: newKey })
+            .eq('id', sound.id)
 
           if (updateError) {
             throw new Error(`Supabase update failed: ${updateError.message}`)
@@ -138,7 +167,7 @@ async function main() {
 
           console.log('Updated Supabase record')
         } catch (migrationError) {
-          console.error(`Failed to migrate sound ${id}:`, migrationError)
+          console.error(`Failed to migrate sound ${sound.id}:`, migrationError)
         }
       })
     )
