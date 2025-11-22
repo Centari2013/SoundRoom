@@ -3,6 +3,8 @@
     :x="source.instance.state.x"
     :y="source.instance.state.y"
     @dragmove="onSourceDragMove"
+    :scaleX="selectedScale"
+    :scaleY="selectedScale"
   >
     <!-- Outer Cone -->
     <v-wedge
@@ -10,9 +12,11 @@
       :angle="coneOuter"
       :rotation="(-coneOuter / 2) + source.instance.state.angle"
       :radius="50"
-      fill="rgba(255, 100, 100, 0.2)"
-      shadowColor="rgba(255, 100, 100, 0.7)"
-      :shadowBlur="12"
+      fill="rgba(255, 137, 137, 0.16)"
+      :stroke="'rgba(255, 137, 137, 0.28)'"
+      :strokeWidth="1.5"
+      shadowColor="rgba(255, 120, 120, 0.65)"
+      :shadowBlur="18"
       :listening="false"
     />
 
@@ -22,14 +26,33 @@
       :angle="coneInner"
       :rotation="(-coneInner / 2) + source.instance.state.angle"
       :radius="50"
-      fill="rgba(255, 120, 120, 0.2)"
+      fill="rgba(255, 180, 180, 0.18)"
+      :stroke="'rgba(255, 180, 180, 0.35)'"
+      :strokeWidth="1"
       :listening="false"
     />
 
     <!-- Source Dot -->
     <v-circle
+      v-if="props.selected"
+      :radius="16"
+      :stroke="selectionGlowColor"
+      :strokeWidth="3"
+      :opacity="0.75"
+      shadowForStrokeEnabled="true"
+      :shadowColor="selectionGlowColor"
+      :shadowBlur="14"
+      :listening="false"
+    />
+    <v-circle
       :radius="10"
       :fill="getFillColor"
+      :stroke="dotStrokeColor"
+      :strokeWidth="2"
+      :shadowColor="getFillColor"
+      :shadowBlur="10"
+      :shadowOpacity="0.65"
+      shadowForStrokeEnabled="false"
       name="sound-node-part"
       @mousedown="onSourceMouseDown"
       @mouseup="onSourceMouseUp"
@@ -58,9 +81,13 @@
         ctx.fillStrokeShape(shape);
       }"
       :rotation="source.instance.state.angle - 90"
-      fill="#fff"
-      stroke="#000"
-      :strokeWidth="1"
+      :fillLinearGradientStartPoint="{ x: 0, y: 0 }"
+      :fillLinearGradientEndPoint="{ x: 0, y: 25 }"
+      :fillLinearGradientColorStops="[0, 'rgba(255,255,255,0.95)', 1, 'rgba(255,255,255,0.65)']"
+      stroke="rgba(0, 0, 0, 0.6)"
+      :strokeWidth="1.25"
+      :shadowColor="'rgba(0,0,0,0.35)'"
+      :shadowBlur="4"
       @mousedown="onSourceMouseDown"
       @mouseup="onSourceMouseUp"
       @mouseover="setCursor($event, 'pointer')"
@@ -114,6 +141,10 @@ const getFillColor = computed(() => {
   if (props.selected) return '#ff0' // Yellow for selected node
   return isScheduled.value ? '#2e90fa' : '#f44336' // Red for unscheduled/looping
 })
+
+const dotStrokeColor = computed(() => (props.selected ? '#ffffff' : 'rgba(255, 255, 255, 0.9)'))
+const selectionGlowColor = '#6fd7ff'
+const selectedScale = computed(() => (props.selected ? 1.05 : 1))
 
 
 

@@ -7,46 +7,73 @@
     @dragmove="onListenerDragMove"
   >
 
+    <!-- Anchor Glow -->
+    <v-circle
+      :radius="22"
+      fill="rgba(59, 130, 246, 0.08)"
+      shadowColor="rgba(59, 130, 246, 0.3)"
+      shadowBlur="18"
+      shadowOpacity="0.35"
+      listening="false"
+    />
+
     <!-- Listener Body -->
     <v-circle
-      :radius="12"
-      fill="rgba(59, 130, 246, 0.1)"
-      stroke="rgba(59, 130, 246, 0.8)"
-      :strokeWidth="2"
-      shadowColor="rgba(0, 0, 0, 0.15)"
-      shadowBlur="6"
-      shadowOffsetY="2"
+      :radius="14"
+      fill="rgba(59, 130, 246, 0.15)"
+      stroke="rgba(96, 165, 250, 0.9)"
+      :strokeWidth="2.5"
+      shadowColor="rgba(0, 0, 0, 0.2)"
+      shadowBlur="10"
+      shadowOpacity="0.55"
       @mousedown="onListenerMouseDown"
       @mouseup="onListenerMouseUp"
       @mouseover="setCursor($event, 'pointer')"
       @mouseout="setCursor($event, 'default')"
     />
     <v-circle
-      :radius="6"
-      fill="rgba(15, 23, 42, 0.85)"
-      stroke="rgba(59, 130, 246, 0.85)"
-      :strokeWidth="1"
+      :radius="8"
+      fill="rgba(15, 23, 42, 0.9)"
+      stroke="rgba(191, 219, 254, 0.85)"
+      :strokeWidth="1.25"
+      shadowColor="rgba(59, 130, 246, 0.35)"
+      shadowBlur="8"
+      shadowOpacity="0.45"
       @mousedown="onListenerMouseDown"
       @mouseup="onListenerMouseUp"
       @mouseover="setCursor($event, 'pointer')"
       @mouseout="setCursor($event, 'default')"
+    />
+    <v-circle
+      :radius="4"
+      fill="rgba(255, 255, 255, 0.75)"
+      stroke="rgba(255, 255, 255, 0.2)"
+      :strokeWidth="0.5"
+      shadowColor="rgba(255, 255, 255, 0.35)"
+      shadowBlur="6"
+      shadowOpacity="0.5"
+      listening="false"
     />
 
     <!-- Directional Marker -->
     <v-shape
       :sceneFunc="(ctx, shape) => {
         ctx.beginPath()
-        ctx.moveTo(0, 16)
-        ctx.lineTo(9, -4)
-        ctx.lineTo(-9, -4)
+        ctx.moveTo(0, 18)
+        ctx.lineTo(9.5, -3.5)
+        ctx.quadraticCurveTo(0, -7, -9.5, -3.5)
         ctx.closePath()
         ctx.fillStrokeShape(shape)
       }"
       :rotation="listener.angle"
-      fill="rgba(59, 130, 246, 0.9)"
-      stroke="rgba(15, 23, 42, 0.9)"
-      :strokeWidth="1.5"
-      opacity="0.95"
+      :fillLinearGradientStartPoint="{ x: -12, y: 12 }"
+      :fillLinearGradientEndPoint="{ x: 12, y: -10 }"
+      :fillLinearGradientColorStops="[0, 'rgba(191, 219, 254, 0.18)', 1, 'rgba(59, 130, 246, 0.85)']"
+      stroke="rgba(15, 23, 42, 0.85)"
+      :strokeWidth="1.25"
+      shadowColor="rgba(59, 130, 246, 0.35)"
+      shadowBlur="6"
+      opacity="0.96"
       @mousedown="onListenerMouseDown"
       @mouseup="onListenerMouseUp"
       @mouseover="setCursor($event, 'pointer')"
