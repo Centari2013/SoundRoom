@@ -46,7 +46,7 @@
       :style="{
         left: `${listenerIconPosition.x}px`,
         top: `${listenerIconPosition.y}px`,
-        transform: `translate(-50%, -50%) rotate(${listenerIconPosition.angle}deg)`
+        transform: `translate(-50%, -50%) rotate(${listenerIconPosition.angle - 180}deg)`
       }"
     >
       <ListenerIcon
