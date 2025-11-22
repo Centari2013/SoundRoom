@@ -1,4 +1,6 @@
-import 'dotenv/config'
+import dotenv from 'dotenv'
+dotenv.config({ path: '.env.local' })
+
 import { createClient } from '@supabase/supabase-js'
 import { S3Client, GetObjectCommand, PutObjectCommand } from '@aws-sdk/client-s3'
 import { randomUUID } from 'node:crypto'
@@ -150,6 +152,7 @@ function describeEnv(env) {
   })()
 
   console.log('▶️  Preview generator configuration:')
+  console.log(`   Supabase Service Role Key: ${env.supabaseServiceKey}`)
   console.log(`   Supabase project: ${supabaseHost}`)
   console.log(`   R2 account:      ${env.r2AccountId}`)
   console.log(`   Source bucket:   ${env.r2PrivateBucket}`)
@@ -182,7 +185,7 @@ async function fetchSoundsWithoutPreview(supabase) {
 
   while (true) {
     const { data, error } = await supabase
-      .from('sounds')
+      .from('sound_files')
       .select('*')
       .is('preview_url', null)
       .order('id', { ascending: true })
@@ -224,7 +227,7 @@ async function processSound({ sound, r2Client, supabase, env }) {
 
     const previewUrl = buildPreviewUrl(env.r2PreviewBase, sound.id)
     const { error } = await supabase
-      .from('sounds')
+      .from('sound_files')
       .update({ preview_url: previewUrl })
       .eq('id', sound.id)
 
@@ -285,9 +288,8 @@ async function main() {
   }
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
-  main().catch((error) => {
-    console.error('Preview generation script failed:', error)
-    process.exit(1)
-  })
-}
+main().catch((error) => {
+  console.error('Preview generation script failed:', error)
+  process.exit(1)
+})
+
