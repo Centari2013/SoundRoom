@@ -21,12 +21,12 @@
   />
 
   <!-- Footer Buttons -->
-  <div class="relative flex items-center justify-between h-15 p-2">
+  <div class="relative flex items-center justify-between h-15 p-2 bg-neutral-200 border-t border-neutral-300/70 dark:border-neutral-800 shadow-[0_-4px_12px_rgba(0,0,0,0.1)] dark:shadow-none">
     <div class="flex space-x-3">
       <BaseButton
         @click="showSaveConfirm = true"
         :disabled="isSaving || !isRoomSaveable"
-        class="px-3 py-2 rounded bg-neutral-200 hover:bg-neutral-300 text-neutral-700 dark:bg-neutral-800 dark:hover:bg-neutral-700 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400"
+        class="px-3 py-2 rounded bg-neutral-300 hover:bg-neutral-400 text-neutral-800 dark:bg-neutral-800 dark:hover:bg-neutral-700 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400"
         type="button"
         aria-label="Open save room confirmation"
       >
@@ -36,7 +36,7 @@
       <BaseButton
         @click="showNewRoomConfirm = true"
         :disabled="isSaving || isRoomEmpty"
-        class="px-3 py-2 rounded bg-neutral-200 hover:bg-neutral-300 text-neutral-700 dark:bg-neutral-800 dark:hover:bg-neutral-700 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400"
+        class="px-3 py-2 rounded bg-neutral-300 hover:bg-neutral-400 text-neutral-800 dark:bg-neutral-800 dark:hover:bg-neutral-700 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400"
         type="button"
         aria-label="Open new room confirmation"
       >
