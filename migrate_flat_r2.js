@@ -57,34 +57,80 @@ async function streamToBuffer(stream) {
   return Buffer.concat(chunks)
 }
 
-async function migrateSound(sound) {
-  const oldKey = sound.r2_object_key
+function safeSegment(value) {
+  if (!value) return ''
+  return value
+    .toString()
+    .trim()
+    .normalize('NFKD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-zA-Z0-9_-]+/g, '-')
+    .replace(/-{2,}/g, '-')
+    .replace(/^-|-$/g, '')
+}
 
-  if (!oldKey) {
-    console.warn(`Skipping sound ${sound.id}: no r2_object_key present`)
+function findCandidate(row, keys) {
+  for (const key of keys) {
+    if (row[key]) return row[key]
+  }
+  return null
+}
+
+function resolveOriginalKey(row) {
+  const key = findCandidate(row, [
+    'path',
+    'r2_key',
+    'r2_object_key',
+    'object_key',
+    'key',
+    'storage_key',
+    'file_key',
+    'original_key',
+  ])
+
+  const base = safeSegment(findCandidate(row, ['base', 'storage_base', 'storageBase', 'plan_tier', 'tier']))
+  const bucket = safeSegment(
+    findCandidate(row, ['bucket', 'storage_bucket', 'storageBucket', 'r2_bucket', 'owner_id', 'user_id'])
+  )
+
+  if (key && base && bucket) {
+    if (key.startsWith(`${base}/`) || key.startsWith(`${base}/${bucket}/`)) {
+      return key
+    }
+    return `${base}/${bucket}/${key}`
+  }
+
+  return key
+}
+
+async function migrateSound(sound) {
+  const originalKey = resolveOriginalKey(sound)
+
+  if (!originalKey) {
+    console.warn(`Skipping sound ${sound.id}: no object key found`)
     return
   }
 
-  const extension = path.extname(oldKey)
+  const extension = path.extname(originalKey || sound.path)
   if (!extension) {
-    console.warn(`Skipping sound ${sound.id}: cannot determine extension from key "${oldKey}"`)
+    console.warn(`Skipping sound ${sound.id}: cannot determine extension from key "${originalKey}"`)
     return
   }
 
   const newKey = `${sound.id}${extension}`
-
-  if (path.basename(oldKey) === newKey) {
+  const alreadyFlat = path.basename(originalKey) === newKey || sound.path === newKey
+  if (alreadyFlat) {
     console.log(`Skipping sound ${sound.id}: already migrated as ${newKey}`)
     return
   }
 
-  console.log(`Migrating sound ${sound.id}: ${oldKey} → ${newKey}`)
+  console.log(`Migrating sound ${sound.id}: ${originalKey} → ${newKey}`)
 
   try {
     const getResult = await s3.send(
       new GetObjectCommand({
         Bucket: R2_BUCKET_NAME,
-        Key: oldKey,
+        Key: originalKey,
       })
     )
 
@@ -104,8 +150,8 @@ async function migrateSound(sound) {
     )
 
     const { error: updateError } = await supabase
-      .from('sounds')
-      .update({ r2_object_key: newKey })
+      .from('sound_files')
+      .update({ path: newKey })
       .eq('id', sound.id)
 
     if (updateError) {
@@ -119,10 +165,10 @@ async function migrateSound(sound) {
 }
 
 async function main() {
-  const { data: sounds, error } = await supabase.from('sounds').select('*')
+  const { data: sounds, error } = await supabase.from('sound_files').select('*')
 
   if (error) {
-    console.error('Failed to fetch sounds:', error)
+    console.error('Failed to fetch sound_files:', error)
     process.exit(1)
   }
 
