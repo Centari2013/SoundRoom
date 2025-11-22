@@ -4,7 +4,7 @@
     role="application"
     tabindex="0"
     aria-label="SoundRoom 2D audio environment. Use keyboard or mouse to interact with sound nodes."
-    class="canvas-grid border-2 border-neutral-400 dark:border-neutral-700 flex items-center justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+    class="canvas-grid relative border-2 border-neutral-400 dark:border-neutral-700 flex items-center justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
     :class="`w-[${room.width}px] h-[${room.height}px]`"
     @dragover.prevent
     @drop="handleDrop"
@@ -102,16 +102,13 @@ function updateCoords() {
 const soundNodeTitleCoords = computed(() => {
   coordsVersion.value // makes it reactive to window resize
 
-  const stageElement = stageDivRef.value
-  if (!stageElement) {
+  if (!stageDivRef.value) {
     return []
   }
 
-  const stagePos = stageElement.getBoundingClientRect()
-
   return audioEngine.value.soundSources.value.map(sn => ({
-    x: stagePos.left + sn.instance.state.x,
-    y: stagePos.top + sn.instance.state.y + 20, //20 is to account for directional arrow
+    x: sn.instance.state.x,
+    y: sn.instance.state.y + 20, //20 is to account for directional arrow
     name: sn.name,
   }))
 })
