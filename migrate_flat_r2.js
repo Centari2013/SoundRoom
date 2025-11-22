@@ -73,6 +73,8 @@ function generateLegacyKeyCandidates(sound, bucketName) {
   const owner = normalizeKey(sound.owner_id)
   const normalizedBucketName = normalizeKey(bucketName)
 
+  const knownTiers = ['free', 'basic', 'plus', 'pro']
+
   if (rawPath) {
     candidates.add(rawPath)
 
@@ -86,6 +88,13 @@ function generateLegacyKeyCandidates(sound, bucketName) {
 
     if (planTier && !rawPath.startsWith(`${planTier}/`)) {
       candidates.add(`${planTier}/${rawPath}`)
+    }
+
+    const leadingSegment = withoutBucket.split('/')[0]
+    if (leadingSegment && knownTiers.includes(leadingSegment)) {
+      for (const tier of knownTiers) {
+        candidates.add(`${tier}/${withoutBucket.split('/').slice(1).join('/')}`)
+      }
     }
   }
 
@@ -103,6 +112,9 @@ function generateLegacyKeyCandidates(sound, bucketName) {
     }
     if (planTier) {
       candidates.add(`${planTier}/${rawPath}`)
+    }
+    for (const tier of knownTiers) {
+      candidates.add(`${tier}/${rawPath}`)
     }
   }
 
