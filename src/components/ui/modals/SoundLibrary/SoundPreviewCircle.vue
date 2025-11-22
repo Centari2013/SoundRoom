@@ -116,10 +116,6 @@ watch(
 )
 
 async function togglePlay() {
-  if (props.locked) {
-    emit('locked')
-    return
-  }
   if (isLoading.value) return
   if (isPlaying.value) {
     stopPlayback()
