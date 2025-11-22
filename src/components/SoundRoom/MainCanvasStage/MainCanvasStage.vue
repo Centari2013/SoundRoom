@@ -4,7 +4,7 @@
     role="application"
     tabindex="0"
     aria-label="SoundRoom 2D audio environment. Use keyboard or mouse to interact with sound nodes."
-    class="relative flex items-center justify-center border border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-900 canvas-surface focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+    class="relative flex items-center justify-center border border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-900 canvas-surface grid-theme-light dark:grid-theme-dark focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
     :class="`w-[${room.width}px] h-[${room.height}px]`"
     @dragover.prevent
     @drop="handleDrop"
@@ -123,8 +123,8 @@ const soundNodeTitleCoords = computed(() => {
 /* Subtle surface treatment: tweak variables below to adjust grid spacing, line opacity, or vignette strength. */
 .canvas-surface {
   --grid-size: 40px; /* change to tighten/loosen spacing */
-  --grid-line: rgba(0, 0, 0, 0.06); /* lighten/darken grid in light mode */
-  --vignette-edge: rgba(0, 0, 0, 0.16); /* increase for deeper edge falloff */
+  --grid-line: rgba(0, 0, 0, 0.08); /* light-mode grid visibility */
+  --vignette-edge: rgba(0, 0, 0, 0.18); /* increase for deeper edge falloff */
 
   background-image:
     radial-gradient(ellipse at center, rgba(255, 255, 255, 0) 45%, var(--vignette-edge) 100%),
@@ -136,8 +136,14 @@ const soundNodeTitleCoords = computed(() => {
     var(--grid-size) var(--grid-size);
 }
 
-:global(.dark) .canvas-surface {
-  --grid-line: rgba(255, 255, 255, 0.06);
-  --vignette-edge: rgba(0, 0, 0, 0.32);
+/* Theme-aware tokens applied via Tailwind dark: variant for guaranteed visibility. */
+.grid-theme-light {
+  --grid-line: rgba(0, 0, 0, 0.1); /* 10% opacity to ensure visibility on light bg */
+  --vignette-edge: rgba(0, 0, 0, 0.2);
+}
+
+.grid-theme-dark {
+  --grid-line: rgba(255, 255, 255, 0.12); /* brighter lines for dark mode */
+  --vignette-edge: rgba(0, 0, 0, 0.44);
 }
 </style>
