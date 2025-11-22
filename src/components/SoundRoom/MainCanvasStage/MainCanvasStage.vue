@@ -123,7 +123,7 @@ const soundNodeTitleCoords = computed(() => {
 /* Subtle surface treatment: tweak variables below to adjust grid spacing, line opacity, or vignette strength. */
 .canvas-surface {
   --grid-size: 40px; /* change to tighten/loosen spacing */
-  --grid-line: rgba(0, 0, 0, 0.08); /* light-mode grid visibility */
+  --grid-line: rgba(0, 0, 0, 0.12); /* dark grid lines for light mode */
   --vignette-edge: rgba(0, 0, 0, 0.18); /* increase for deeper edge falloff */
 
   background-image:
@@ -138,12 +138,12 @@ const soundNodeTitleCoords = computed(() => {
 
 /* Theme-aware tokens applied via Tailwind dark: variant for guaranteed visibility. */
 .grid-theme-light {
-  --grid-line: rgba(0, 0, 0, 0.1); /* 10% opacity to ensure visibility on light bg */
+  --grid-line: rgba(0, 0, 0, 0.12); /* slightly darker lines for light backgrounds */
   --vignette-edge: rgba(0, 0, 0, 0.2);
 }
 
 .grid-theme-dark {
-  --grid-line: rgba(255, 255, 255, 0.12); /* brighter lines for dark mode */
+  --grid-line: rgba(255, 255, 255, 0.14); /* lighter lines for dark mode */
   --vignette-edge: rgba(0, 0, 0, 0.44);
 }
 </style>
