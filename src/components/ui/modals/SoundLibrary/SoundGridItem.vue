@@ -3,7 +3,7 @@
     :class="[
       'relative aspect-square flex flex-col items-center justify-between p-4 rounded-xl bg-neutral-100 dark:bg-neutral-800 shadow border transition-shadow duration-200',
       highlightClass,
-      { 'border-neutral-300 dark:border-neutral-700': !highlightClass }
+      { 'border-neutral-300/80 dark:border-neutral-700 shadow-[0_8px_18px_rgba(0,0,0,0.12)] text-neutral-800 dark:text-neutral-100': !highlightClass }
     ]"
   >
 

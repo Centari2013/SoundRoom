@@ -1,9 +1,9 @@
 <template>
   <div class="modal-backdrop z-50" @click.self="$emit('close')">
-    <div class="modal-panel max-w-3xl mx-auto p-6 bg-white dark:bg-neutral-950 rounded-xl shadow-lg overflow-y-auto max-h-[90vh]">
-      <h2 class="text-xl font-bold mb-4">Upload Your Sounds</h2>
+    <div class="modal-panel max-w-3xl mx-auto p-6 !bg-neutral-100 border border-neutral-300/80 text-neutral-800 shadow-[0_16px_36px_rgba(0,0,0,0.16)] dark:bg-neutral-950 dark:border-neutral-800 rounded-xl overflow-y-auto max-h-[90vh]">
+      <h2 class="text-xl font-bold mb-4 text-neutral-800 dark:text-neutral-50">Upload Your Sounds</h2>
 
-      <div class="border border-dashed border-neutral-400 dark:border-neutral-700 rounded-lg p-6 text-center mb-6">
+      <div class="border border-dashed border-neutral-400/80 dark:border-neutral-700 rounded-lg p-6 text-center mb-6 bg-neutral-50">
         <input
           type="file"
           accept="audio/*"
@@ -13,15 +13,15 @@
           @change="handleFileSelect"
         />
         <BaseButton @click="fileInput.click()">Select Audio Files</BaseButton>
-        <p class="text-sm text-neutral-500 mt-2">Max 10MB per file</p>
+        <p class="text-sm text-neutral-600 mt-2">Max 10MB per file</p>
       </div>
 
       <div v-if="files.length > 0" class="space-y-4">
-        <div v-for="file in files" :key="file.id" class="bg-neutral-100 dark:bg-neutral-900 rounded-md p-4 flex flex-col gap-2">
+        <div v-for="file in files" :key="file.id" class="bg-neutral-100 dark:bg-neutral-900 rounded-md p-4 flex flex-col gap-2 border border-neutral-300/60 dark:border-neutral-800">
           <div class="flex justify-between items-center">
             <input
               v-model="file.name"
-              class="flex-1 p-1 text-base border border-neutral-300 dark:border-neutral-700 rounded-md bg-white dark:bg-neutral-800"
+              class="flex-1 p-1 text-base border border-neutral-300 dark:border-neutral-700 rounded-md bg-neutral-50 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-100"
             />
             <BaseButton class="ml-2" @click="autoTag(file)" :disabled="file.tagging">
               <template v-if="file.tagging">
@@ -37,7 +37,7 @@
           <div class="flex items-center gap-2">
             <audio :src="file.previewUrl" controls class="w-full" />
           </div>
-          <div class="h-2 bg-neutral-300 dark:bg-neutral-700 rounded overflow-hidden" v-if="uploading">
+          <div class="h-2 bg-neutral-300/80 dark:bg-neutral-700 rounded overflow-hidden" v-if="uploading">
             <div
               class="h-full bg-green-500 transition-all duration-300"
               :style="{ width: `${file.progress}%` }"
@@ -48,7 +48,7 @@
           <span
             v-for="(tag, index) in file.tags"
             :key="tag"
-            class="flex items-center bg-neutral-200 dark:bg-neutral-800 text-xs px-2 rounded"
+            class="flex items-center bg-neutral-200 dark:bg-neutral-800 text-xs px-2 rounded text-neutral-800 dark:text-neutral-200 border border-neutral-300/70 dark:border-neutral-700"
           >
             {{ tag }}
             <label
@@ -69,7 +69,7 @@
             @keydown="','"
             @blur="addTag(file)"
             placeholder="Add tag..."
-            class="text-sm p-1 rounded border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 w-25"
+            class="text-sm p-1 rounded border border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 w-25 text-neutral-800 dark:text-neutral-100"
           />
         </div>
 

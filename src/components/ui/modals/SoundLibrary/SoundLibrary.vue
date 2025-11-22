@@ -3,7 +3,7 @@
     @click.self="router.push('/')"
     class="modal-backdrop"
   >
-    <div class="modal-panel flex">
+    <div class="modal-panel flex !bg-neutral-100 border border-neutral-300/70 text-neutral-800 shadow-[0_16px_36px_rgba(0,0,0,0.16)] dark:bg-neutral-950 dark:border-neutral-800 dark:text-neutral-100">
       <CategoryList
         :categories="categories"
         :active="activeCategory"

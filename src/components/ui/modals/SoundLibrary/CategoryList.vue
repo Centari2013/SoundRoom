@@ -1,6 +1,6 @@
 <template>
-  <aside class="w-60 bg-neutral-200 dark:bg-neutral-900 border-r border-neutral-300 dark:border-neutral-800 p-4 space-y-3 overflow-y-auto">
-    <h2 class="font-bold text-sm mb-2">Categories</h2>
+  <aside class="w-60 bg-neutral-200 dark:bg-neutral-900 border-r border-neutral-300/80 dark:border-neutral-800 p-4 space-y-3 overflow-y-auto text-neutral-800 dark:text-neutral-200">
+    <h2 class="font-bold text-sm mb-2 text-neutral-800 dark:text-neutral-100">Categories</h2>
     <BaseButton
       v-if="isAuthenticated"
       :key="'your-sounds'"
@@ -12,7 +12,7 @@
         <span v-if="!canUpload" class="badge">Pro</span>
       </span>
     </BaseButton>
-    <hr v-if="isAuthenticated" class="text-neutral-300 dark:text-neutral-800"/>
+    <hr v-if="isAuthenticated" class="border-neutral-300/80 dark:border-neutral-800"/>
     <BaseButton
       v-for="cat in categories"
       :key="cat.id"

@@ -3,7 +3,7 @@
   <div
     class="mb-3 w-8 h-8 rounded-full border-2 relative flex items-center justify-center cursor-pointer hover:scale-105 transition-transform"
     :class="[
-      isPlaying ? 'border-blue-600' : 'border-neutral-500',
+      isPlaying ? 'border-blue-600' : 'border-neutral-600',
       isLoading ? 'opacity-50 cursor-wait' : 'cursor-pointer hover:scale-105'
     ]"
     @click="togglePlay"
@@ -36,7 +36,7 @@
   </div>
 
   <!-- Duration -->
-  <span class="text-xs text-neutral-500 mt-2">{{ audioDuration }}</span>
+  <span class="text-xs text-neutral-600 mt-2">{{ audioDuration }}</span>
 </template>
 
 <script setup>
