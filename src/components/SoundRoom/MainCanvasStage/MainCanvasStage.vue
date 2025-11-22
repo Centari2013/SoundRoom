@@ -36,9 +36,19 @@
           @select="$emit('selectNode', $event)"
           @contextmenu="showContextMenu"
         />
-        <ListenerNode/>
+        <ListenerNode @active-change="isListenerActive = $event" />
       </v-layer>
     </v-stage>
+
+    <ListenerIcon
+      class="absolute pointer-events-none -translate-x-1/2 -translate-y-1/2"
+      :style="{
+        left: `${listener.x}px`,
+        top: `${listener.y}px`,
+        transform: `translate(-50%, -50%) rotate(${listener.angle}deg)`,
+      }"
+      :is-active="isListenerActive"
+    />
 
     <!-- Labels — depends if they're meaningful or decorative -->
     <SoundSourceLabel
@@ -55,16 +65,19 @@ import { ref, computed, onMounted, onUnmounted } from 'vue'
 import ContextMenu from '@/components/ui/context/ContextMenu.vue'
 import SoundSourceNode from '@/components/SoundRoom/MainCanvasStage/SoundSourceNode.vue'
 import ListenerNode from '@/components/SoundRoom/MainCanvasStage/ListenerNode.vue'
+import ListenerIcon from '@/components/icons/ListenerIcon.vue'
 
 import SoundSourceLabel from '@/components/ui/text/SoundSourceLabel.vue'
 
 import { useRoomStore } from '@/stores/useRoomStore'
 import { useAudioEngineStore } from '@/stores/useAudioEngineStore'
+import { useListenerStore } from '@/stores/useListenerStore'
 import { useCanvasStore } from '@/stores/useCanvasStore'
 import { storeToRefs } from 'pinia'
 
 const { room } = storeToRefs(useRoomStore())
 const { audioEngine } = storeToRefs(useAudioEngineStore())
+const { listener } = storeToRefs(useListenerStore())
 
 const props = defineProps({
   handleDrop: Function,
@@ -83,6 +96,7 @@ const stageDivRef = ref(null)
 const contextMenuRef = ref(null)
 const vStageRef = ref(null) // for Konva stage
 const coordsVersion = ref(0) // reactive bump trigger
+const isListenerActive = ref(false)
 
 onMounted(() => {
   window.addEventListener('resize', updateCoords)

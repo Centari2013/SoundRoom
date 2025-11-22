@@ -9,29 +9,11 @@
     @dragmove="onListenerDragMove"
   >
 
-    <!-- Listener Dot -->
+    <!-- Invisible listener hit area (visual handled by overlay icon) -->
     <v-circle
-      :radius="10"
-      fill="#00f"
-      @mousedown="onListenerMouseDown"
-      @mouseup="onListenerMouseUp"
-    />
-
-    <!-- Direction Diamond -->
-    <v-shape
-      :sceneFunc="(ctx, shape) => {
-        ctx.beginPath()
-        ctx.moveTo(0, 0)
-        ctx.lineTo(7, 5)
-        ctx.lineTo(0, 25)
-        ctx.lineTo(-7, 5)
-        ctx.closePath()
-        ctx.fillStrokeShape(shape)
-      }"
-      :rotation="listener.angle"
-      fill="#fff"
-      stroke="#000"
-      :strokeWidth="1"
+      :radius="12"
+      fill="transparent"
+      :opacity="0"
       @mousedown="onListenerMouseDown"
       @mouseup="onListenerMouseUp"
     />
@@ -57,6 +39,9 @@ import { useListenerStore } from '@/stores/useListenerStore';
 import { useActionManagerStore } from '@/stores/useActionManagerStore';
 import { useRoomStore } from '@/stores/useRoomStore';
 import { storeToRefs } from 'pinia';
+
+
+const emit = defineEmits(['active-change'])
 
 
 const { listener } = storeToRefs(useListenerStore())
@@ -89,6 +74,8 @@ function setCursor(e, type) {
 
 function onListenerMouseDown(e) {
   if (e.button === 2) return // if right click, do nothing
+
+  emit('active-change', true)
 
   const stage = e.target.getStage()
   dragStartPos = stage.getPointerPosition()
@@ -152,12 +139,15 @@ function onListenerMouseUp(e) {
   }
 
   moveListenerPayload = null
+  emit('active-change', false)
 }
 
 
 // Rotation handling
 function onHandleMouseDown(e) {
   e.evt.stopPropagation()
+
+  emit('active-change', true)
 
   initialListenerAngle = listener.value.angle
 
@@ -200,6 +190,7 @@ function onHandleMouseUp() {
   }
 
   initialListenerAngle = null
+  emit('active-change', false)
 }
 
 onBeforeUnmount(() => {
