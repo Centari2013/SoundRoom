@@ -60,7 +60,37 @@
       fill="transparent"
       @mousedown="onHandleMouseDown"
       @mouseup="onHandleMouseUp"
+      @mouseover="onHandleMouseOver"
+      @mouseout="onHandleMouseOut"
     />
+
+    <!-- Rotation Icon -->
+    <v-group
+      :x="Math.cos(toRad(listener.angle + 90)) * 7"
+      :y="Math.sin(toRad(listener.angle + 90)) * 7"
+      :rotation="listener.angle + 20"
+      :opacity="rotationHandleIconVisible ? 0.85 : 0"
+      listening="false"
+    >
+      <v-arc
+        :innerRadius="10"
+        :outerRadius="14"
+        :angle="220"
+        :rotation="-110"
+        stroke="rgba(59, 130, 246, 0.75)"
+        :strokeWidth="2"
+        lineCap="round"
+      />
+      <v-regular-polygon
+        :x="12"
+        :y="-2"
+        :sides="3"
+        :radius="4"
+        fill="rgba(59, 130, 246, 0.85)"
+        shadowColor="rgba(0, 0, 0, 0.15)"
+        shadowBlur="2"
+      />
+    </v-group>
   </v-group>
 </template>
 
@@ -80,6 +110,8 @@ let moveListenerPayload = null
 let initialMouseAngle = null
 let initialListenerAngle = null
 let mouseMoveListener = null
+
+const rotationHandleIconVisible = ref(false)
 
 
 let dragStartPos = null
@@ -186,6 +218,14 @@ function onHandleMouseDown(e) {
     stage.off("mousemove.listenerRotate")
     stage.off("mouseup.listenerRotate")
   })
+}
+
+function onHandleMouseOver() {
+  rotationHandleIconVisible.value = true
+}
+
+function onHandleMouseOut() {
+  rotationHandleIconVisible.value = false
 }
 
 function onHandleMouseMove(e) {
