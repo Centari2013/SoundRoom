@@ -48,7 +48,7 @@ async function getSignedUploadUrl(userId, displayName) {
  * @returns {Promise<string>} key of the uploaded file
  */
 export default async function uploadAudio(file, userId, onProgress) {
-  const { signedUrl, key, base, bucket } = await getSignedUploadUrl(userId, file.name);
+  const { signedUrl, key } = await getSignedUploadUrl(userId, file.name);
 
   return new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest();
@@ -62,7 +62,7 @@ export default async function uploadAudio(file, userId, onProgress) {
 
     xhr.onload = () => {
       if (xhr.status >= 200 && xhr.status < 300) {
-        resolve({ key, base, bucket });
+        resolve({ key });
       } else {
         reject(new Error(`Upload failed with status ${xhr.status}`));
       }

@@ -2,17 +2,26 @@ import { supabase } from './supabaseClient'
 import { requestPreviewGeneration } from '@app/utils/previewGeneration'
 import { buildApiUrl } from '@app/utils/apiBase'
 
+function getFileExtension(filename = '') {
+  const lastDot = filename.lastIndexOf('.')
+  if (lastDot === -1 || lastDot === filename.length - 1) return ''
+  return filename.slice(lastDot + 1).toLowerCase()
+}
+
+function buildStorageKey(soundId, extension) {
+  const extSegment = extension ? `.${extension}` : ''
+  return `${soundId}${extSegment}`
+}
+
 /**
  * Fetch a signed upload URL using the exact flow the customer-facing uploader uses.
  * Admin ingest writes to {planTier}/{bucket}/{generatedKey} while retaining the user
  * fallback for customer uploads.
  */
-async function getSignedUploadUrl({ userId, filename, planTier, bucket }) {
-  const params = new URLSearchParams({ filename })
-
-  if (userId) params.set('userId', userId)
-  if (planTier) params.set('planTier', planTier)
-  if (bucket) params.set('bucket', bucket)
+async function getSignedUploadUrl({ key, filename }) {
+  const params = new URLSearchParams()
+  if (filename) params.set('filename', filename)
+  if (key) params.set('key', key)
 
   const endpoint = buildApiUrl(`/api/get-upload-url?${params.toString()}`)
   const response = await fetch(endpoint)
@@ -74,35 +83,44 @@ function uploadViaXhr(file, signedUrl) {
  * @param {string} options.bucket
  * @param {Object} options.metadata - payload destined for public.sound_files
  */
-export async function uploadFileAndInsert({ file, userId, planTier, bucket, metadata }) {
+export async function uploadFileAndInsert({ file, userId, metadata }) {
   if (!userId) {
     throw new Error('Supabase user is required before uploading')
   }
 
-  const { signedUrl, key, base, bucket: bucketSegment } = await getSignedUploadUrl({
-    userId,
-    filename: file.name,
-    planTier,
-    bucket
-  })
-  await uploadViaXhr(file, signedUrl)
-
-  const payload = {
+  const extension = getFileExtension(file.name)
+  const insertPayload = {
     ...metadata,
-    path: key,
     size: file.size,
     mime_type: file.type,
     preview_url: null
   }
 
-  const { data, error } = await supabase.from('sound_files').insert(payload).select('id').single()
-  if (error) {
-    throw error
+  const { data: created, error: insertError } = await supabase
+    .from('sound_files')
+    .insert(insertPayload)
+    .select('id')
+    .single()
+
+  if (insertError) {
+    throw insertError
   }
 
-  if (data?.id) {
-    await requestPreviewGeneration({ key, base, bucket: bucketSegment ?? bucket, soundId: data.id })
+  const storageKey = buildStorageKey(created.id, extension)
+
+  const { signedUrl } = await getSignedUploadUrl({ key: storageKey, filename: file.name })
+  await uploadViaXhr(file, signedUrl)
+
+  const { error: updateError } = await supabase
+    .from('sound_files')
+    .update({ path: storageKey })
+    .eq('id', created.id)
+
+  if (updateError) {
+    throw updateError
   }
 
-  return { key }
+  await requestPreviewGeneration({ key: storageKey, soundId: created.id })
+
+  return { key: storageKey, soundId: created.id }
 }

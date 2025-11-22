@@ -30,16 +30,6 @@ function loadEnv() {
   }
 }
 
-function safeSegment(value) {
-  if (!value) return ''
-  return value
-    .toString()
-    .trim()
-    .replace(/[^a-zA-Z0-9_-]+/g, '-')
-    .replace(/-{2,}/g, '-')
-    .replace(/^-|-$/g, '')
-}
-
 function createR2Client({ accessKeyId, secretAccessKey, accountId }) {
   return new S3Client({
     region: 'auto',
@@ -111,29 +101,28 @@ export async function POST(request) {
       )
     }
 
-    const { key, base, bucket, soundId } = await request.json()
+    const { key, soundId } = await request.json()
 
-    if (!key || !bucket || !soundId) {
+    if (!key || !soundId) {
       return new Response(
         JSON.stringify({
           error: 'Missing required fields',
-          message: 'key, bucket, and soundId are required to generate a preview.'
+          message: 'key and soundId are required to generate a preview.'
         }),
         { status: 400, headers: { 'Content-Type': 'application/json' } }
       )
     }
 
-    const safeBase = safeSegment(base) || 'users'
-    const safeBucket = safeSegment(bucket)
-    if (!safeBucket) {
+    const sanitizedKey = key.toString().replace(/\s+/g, '').replace(/\/+/g, '')
+    if (!sanitizedKey || sanitizedKey.includes('..') || sanitizedKey.includes('/')) {
       return new Response(
-        JSON.stringify({ error: 'Invalid bucket identifier' }),
+        JSON.stringify({ error: 'Invalid object key provided' }),
         { status: 400, headers: { 'Content-Type': 'application/json' } }
       )
     }
 
     const r2 = createR2Client(env)
-    const originalKey = `${safeBase}/${safeBucket}/${key}`
+    const originalKey = sanitizedKey
 
     const tmpDir = os.tmpdir()
     const inputPath = path.join(tmpDir, `${randomUUID()}-source`)

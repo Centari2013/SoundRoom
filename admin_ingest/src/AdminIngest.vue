@@ -239,8 +239,6 @@ async function uploadCurrent() {
     await uploadFileAndInsert({
       file: fileEntry.file,
       userId: user.value.id,
-      planTier: metadata.plan_tier,
-      bucket: metadata.bucket,
       metadata
     })
     fileEntry.uploaded = true
