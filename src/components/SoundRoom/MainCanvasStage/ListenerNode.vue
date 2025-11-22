@@ -59,9 +59,9 @@
     <v-shape
       :sceneFunc="(ctx, shape) => {
         ctx.beginPath()
-        ctx.moveTo(0, 18)
-        ctx.lineTo(9.5, -3.5)
-        ctx.quadraticCurveTo(0, -7, -9.5, -3.5)
+        ctx.moveTo(0, 25)
+        ctx.lineTo(9.5, -0)
+        ctx.quadraticCurveTo(0, -7, -9.5, 0)
         ctx.closePath()
         ctx.fillStrokeShape(shape)
       }"
