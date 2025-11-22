@@ -40,6 +40,13 @@
       </v-layer>
     </v-stage>
 
+    <ListenerIcon
+      class="pointer-events-none absolute top-0 left-0 w-8 h-8 text-blue-400"
+      :style="listenerIconStyle"
+      :is-active="isListenerActive"
+      aria-hidden="true"
+    />
+
     <!-- Labels — depends if they're meaningful or decorative -->
     <SoundSourceLabel
       v-for="sntc in soundNodeTitleCoords"
@@ -55,16 +62,19 @@ import { ref, computed, onMounted, onUnmounted } from 'vue'
 import ContextMenu from '@/components/ui/context/ContextMenu.vue'
 import SoundSourceNode from '@/components/SoundRoom/MainCanvasStage/SoundSourceNode.vue'
 import ListenerNode from '@/components/SoundRoom/MainCanvasStage/ListenerNode.vue'
+import ListenerIcon from '@/components/SoundRoom/MainCanvasStage/ListenerIcon.vue'
 
 import SoundSourceLabel from '@/components/ui/text/SoundSourceLabel.vue'
 
 import { useRoomStore } from '@/stores/useRoomStore'
 import { useAudioEngineStore } from '@/stores/useAudioEngineStore'
 import { useCanvasStore } from '@/stores/useCanvasStore'
+import { useListenerStore } from '@/stores/useListenerStore'
 import { storeToRefs } from 'pinia'
 
 const { room } = storeToRefs(useRoomStore())
 const { audioEngine } = storeToRefs(useAudioEngineStore())
+const { listener, isActive: isListenerActive } = storeToRefs(useListenerStore())
 
 const props = defineProps({
   handleDrop: Function,
@@ -97,6 +107,11 @@ onUnmounted(() => {
 function updateCoords() {
   coordsVersion.value++
 }
+
+const listenerIconStyle = computed(() => ({
+  transform: `translate(${listener.value.x}px, ${listener.value.y}px) translate(-50%, -50%) rotate(${listener.value.angle}deg)`,
+  transformOrigin: 'center',
+}))
 
 
 const soundNodeTitleCoords = computed(() => {

@@ -12,12 +12,13 @@
     <!-- Listener Dot -->
     <v-circle
       :radius="10"
-      fill="#00f"
+      fill="rgba(0,0,0,0.001)"
+      strokeEnabled="false"
       @mousedown="onListenerMouseDown"
       @mouseup="onListenerMouseUp"
     />
 
-    <!-- Direction Diamond -->
+    <!-- Direction Diamond (hidden; keeps hit target consistent) -->
     <v-shape
       :sceneFunc="(ctx, shape) => {
         ctx.beginPath()
@@ -29,9 +30,7 @@
         ctx.fillStrokeShape(shape)
       }"
       :rotation="listener.angle"
-      fill="#fff"
-      stroke="#000"
-      :strokeWidth="1"
+      opacity="0"
       @mousedown="onListenerMouseDown"
       @mouseup="onListenerMouseUp"
     />
@@ -59,7 +58,8 @@ import { useRoomStore } from '@/stores/useRoomStore';
 import { storeToRefs } from 'pinia';
 
 
-const { listener } = storeToRefs(useListenerStore())
+const listenerStore = useListenerStore()
+const { listener } = storeToRefs(listenerStore)
 const { actionManager } = storeToRefs(useActionManagerStore())
 const { room } = storeToRefs(useRoomStore())
 
@@ -89,6 +89,8 @@ function setCursor(e, type) {
 
 function onListenerMouseDown(e) {
   if (e.button === 2) return // if right click, do nothing
+
+  listenerStore.setIsActive(true)
 
   const stage = e.target.getStage()
   dragStartPos = stage.getPointerPosition()
@@ -152,12 +154,15 @@ function onListenerMouseUp(e) {
   }
 
   moveListenerPayload = null
+  listenerStore.setIsActive(false)
 }
 
 
 // Rotation handling
 function onHandleMouseDown(e) {
   e.evt.stopPropagation()
+
+  listenerStore.setIsActive(true)
 
   initialListenerAngle = listener.value.angle
 
@@ -192,6 +197,8 @@ function onHandleMouseMove(e) {
 function onHandleMouseUp() {
   const finalAngle = listener.value.angle
 
+  listenerStore.setIsActive(false)
+
   if (initialListenerAngle !== null && initialListenerAngle !== finalAngle) {
     actionManager.value.doAction("rotate_listener_angle", {
       from: initialListenerAngle,
@@ -207,6 +214,7 @@ onBeforeUnmount(() => {
     window.removeEventListener('mousemove', mouseMoveListener)
     mouseMoveListener = null
   }
+  listenerStore.setIsActive(false)
 })
 
 </script>

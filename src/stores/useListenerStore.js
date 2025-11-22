@@ -8,6 +8,7 @@ import Listener from '@/lib/Listener'
 
 export const useListenerStore = defineStore('listener', () => {
   const listener = ref(new Listener())
+  const isActive = ref(false)
 
   /**
    * Hydrate the listener from serialized data.
@@ -17,6 +18,7 @@ export const useListenerStore = defineStore('listener', () => {
    */
   function loadListener(data) {
     listener.value = Listener.fromJSON(data)
+    isActive.value = false
   }
 
   /**
@@ -29,17 +31,29 @@ export const useListenerStore = defineStore('listener', () => {
   }
 
   /**
+   * Toggle the active state used for listener visuals.
+   *
+   * @param {boolean} state
+   */
+  function setIsActive(state) {
+    isActive.value = state
+  }
+
+  /**
    * Reset the listener to its initial state.
    */
   function resetListener() {
     listener.value.dispose()
     listener.value = new Listener()
+    isActive.value = false
   }
 
   return {
     listener,
+    isActive,
     loadListener,
     listenerToJSON,
-    resetListener
+    resetListener,
+    setIsActive
   }
 })
