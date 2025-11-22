@@ -7,6 +7,9 @@ import svgLoader from 'vite-svg-loader'
 const isGitHubPages = process.env.DEPLOY_TARGET === 'GH_PAGES';
 
 export default defineConfig({
+  server: {
+    host: true
+  },
   plugins: [vue(), tailwindcss(), svgLoader(), sentryVitePlugin({
     org: "soundroom",
     project: "javascript-vue"

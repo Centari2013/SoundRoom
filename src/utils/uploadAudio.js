@@ -1,4 +1,5 @@
 import { supabase } from '@/utils/supabase';
+import { buildApiUrl } from './apiBase';
 
 async function getAccessToken() {
   const { data } = await supabase.auth.getSession();
@@ -12,9 +13,26 @@ async function getAccessToken() {
  * @param {string} filename - original file name
  * @returns {Promise<{signedUrl: string, key: string}>}
  */
-async function getSignedUploadUrl(userId, displayName) {
-  const params = new URLSearchParams({ userId, filename: displayName });
-  const res = await fetch(`/api/get-upload-url?${params.toString()}`);
+function createSoundId() {
+  if (typeof crypto?.randomUUID === 'function') return crypto.randomUUID();
+  const buffer = new Uint8Array(16);
+  crypto.getRandomValues(buffer);
+  return [...buffer]
+    .map((b, i) => (i === 6 ? (b & 0x0f) | 0x40 : i === 8 ? (b & 0x3f) | 0x80 : b).toString(16).padStart(2, '0'))
+    .join('');
+}
+
+function buildObjectKey(soundId, displayName) {
+  const trimmed = displayName?.trim() || '';
+  const ext = trimmed.includes('.') ? trimmed.split('.').pop() : '';
+  const safeExt = (ext || '').replace(/[^a-zA-Z0-9]+/g, '').toLowerCase();
+  return safeExt ? `${soundId}.${safeExt}` : soundId;
+}
+
+async function getSignedUploadUrl(key, userId) {
+  const params = new URLSearchParams({ key });
+  if (userId) params.set('userId', userId);
+  const res = await fetch(buildApiUrl(`/api/get-upload-url?${params.toString()}`));
   if (!res.ok) {
     let message = 'Failed to get signed upload URL';
     const rawBody = await res.text().catch(() => '');
@@ -44,10 +62,12 @@ async function getSignedUploadUrl(userId, displayName) {
  * @param {File|Blob} file - file to upload
  * @param {string} userId - Supabase user ID
  * @param {function} [onProgress] - optional progress callback (percent => void)
- * @returns {Promise<string>} key of the uploaded file
+ * @returns {Promise<{ key: string, soundId: string }>} key and id of the uploaded file
  */
 export default async function uploadAudio(file, userId, onProgress) {
-  const { signedUrl, key } = await getSignedUploadUrl(userId, file.name);
+  const soundId = createSoundId();
+  const objectKey = buildObjectKey(soundId, file.name);
+  const { signedUrl, key } = await getSignedUploadUrl(objectKey, userId);
 
   return new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest();
@@ -61,7 +81,7 @@ export default async function uploadAudio(file, userId, onProgress) {
 
     xhr.onload = () => {
       if (xhr.status >= 200 && xhr.status < 300) {
-        resolve(key);
+        resolve({ key, soundId });
       } else {
         reject(new Error(`Upload failed with status ${xhr.status}`));
       }

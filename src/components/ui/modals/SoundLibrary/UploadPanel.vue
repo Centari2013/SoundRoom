@@ -101,6 +101,7 @@ import { getFileDuration, stripExtension } from '@/utils/audioFileUtils'
 import { supabase } from '@/utils/supabase'
 import { useAuth } from '@/composables/useAuth'
 import { classifyAudio, initAudioClassifier } from '@/utils/audioTaggerNamer'
+import { requestPreviewGeneration } from '@/utils/previewGeneration'
 
 const emit = defineEmits(['close', 'finished'])
 
@@ -161,21 +162,36 @@ async function uploadAll() {
 
   const uploadPromises = files.value.map(file =>
     limit(async () => {
-      const storageKey = await uploadAudio(file.raw, user.value.id, (percent) => {
+      const { key: storageKey, soundId } = await uploadAudio(file.raw, user.value.id, (percent) => {
         file.progress = percent
       })
       const duration = await getFileDuration(file.raw)
 
-      await supabase.from('sound_files').insert({
-        path: storageKey,
-        name: file.name,
-        bucket: user.value.id,
-        duration_seconds: duration,
-        size: file.raw.size,
-        mime_type: file.raw.type,
-        tags: file.tags,
-        owner_id: user.value.id
-      })
+      const { data, error } = await supabase
+        .from('sound_files')
+        .insert({
+          id: soundId,
+          path: storageKey,
+          name: file.name,
+          bucket: user.value.id,
+          duration_seconds: duration,
+          size: file.raw.size,
+          mime_type: file.raw.type,
+          tags: file.tags,
+          owner_id: user.value.id,
+          preview_url: null
+        })
+        .select('id')
+        .single()
+
+      if (error) throw error
+
+      if (data?.id) {
+        await requestPreviewGeneration({
+          key: storageKey,
+          soundId: data.id
+        })
+      }
     }).catch(err => {
       console.error('Upload failed for', file.name, err)
     })

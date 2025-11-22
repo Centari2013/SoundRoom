@@ -67,7 +67,13 @@ const normalizedTier = computed(() => {
   return typeof tier === 'string' ? tier.toLowerCase() : ''
 })
 
-const highlightClass = computed(() => getSoundHighlightClass(normalizedTier.value))
+const highlightClass = computed(() => {
+  if (!props.sound.locked || props.sound.accessReason !== 'tier') {
+    return ''
+  }
+
+  return getSoundHighlightClass(normalizedTier.value)
+})
 
 const badgeClass = computed(() => {
   if (props.sound.accessReason === 'ownership') {

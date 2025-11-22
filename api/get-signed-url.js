@@ -14,28 +14,6 @@ const corsHeaders = {
   'Access-Control-Allow-Credentials': 'true',
 }
 
-function parseStorageKey(key) {
-  const sanitized = key.replace(/^\/+|\/+$/g, '')
-  const segments = sanitized.split('/')
-
-  if (segments.length < 3) {
-    throw new HttpError(400, 'Invalid storage key')
-  }
-
-  const [base, bucket, ...rest] = segments
-  const objectPath = rest.join('/')
-
-  if (!base || !bucket || !objectPath) {
-    throw new HttpError(400, 'Invalid storage key')
-  }
-
-  if (base.includes('..') || bucket.includes('..') || objectPath.includes('..')) {
-    throw new HttpError(400, 'Invalid storage key')
-  }
-
-  return { base, bucket, objectPath }
-}
-
 export function OPTIONS() {
   return new Response(null, {
     status: 204,
@@ -57,10 +35,15 @@ export async function GET(request) {
     }
 
     const { searchParams } = new URL(request.url)
-    const key = searchParams.get('key')
+    const key = searchParams.get('key')?.trim()
 
     if (!key) {
       throw new HttpError(400, "Missing 'key' query param")
+    }
+
+    const objectKey = key.replace(/^\/+|\/+$/g, '')
+    if (objectKey.includes('..')) {
+      throw new HttpError(400, 'Invalid storage key')
     }
 
     const authHeader =
@@ -76,8 +59,6 @@ export async function GET(request) {
       userAccess = await resolveUserAccessContext(user.id)
     }
 
-    const { base, bucket, objectPath } = parseStorageKey(key)
-
     if (!supabaseAdmin) {
       throw new HttpError(500, 'Supabase admin client is not configured')
     }
@@ -85,8 +66,7 @@ export async function GET(request) {
     const { data: soundFile, error: soundFileError } = await supabaseAdmin
       .from('sound_files')
       .select('id, owner_id, plan_tier, bucket, path')
-      .eq('bucket', bucket)
-      .eq('path', objectPath)
+      .eq('path', objectKey)
       .maybeSingle()
 
     if (soundFileError) {
@@ -105,22 +85,12 @@ export async function GET(request) {
       throw new HttpError(403, 'You do not have access to this file')
     }
 
-    const recordBase = soundFile.base ?? soundFile.plan_tier ?? (soundFile.owner_id ? 'users' : null)
-
-    if (recordBase && recordBase !== base) {
-      throw new HttpError(403, 'Storage base mismatch')
-    }
-
     if (!isOwner) {
-      const requiredPlan = resolveRequiredPlan(soundFile, base)
+      const requiredPlan = resolveRequiredPlan(soundFile, soundFile.plan_tier)
 
       if (!hasPlanAccess(userAccess.plan, requiredPlan)) {
         throw new HttpError(403, 'Your plan does not permit access to this file')
       }
-    }
-
-    if (soundFile.bucket && soundFile.bucket !== bucket) {
-      throw new HttpError(403, 'Storage bucket mismatch')
     }
 
     const client = new AwsClient({
@@ -128,8 +98,7 @@ export async function GET(request) {
       secretAccessKey: R2_SECRET_ACCESS_KEY,
     })
 
-
-    const url = new URL(`https://${R2_BUCKET_NAME}.${R2_ACCOUNT_ID}.r2.cloudflarestorage.com/${key}`)
+    const url = new URL(`https://${R2_BUCKET_NAME}.${R2_ACCOUNT_ID}.r2.cloudflarestorage.com/${objectKey}`)
     url.searchParams.set('X-Amz-Expires', '120')
 
     const signed = await client.sign(new Request(url, { method: 'GET' }), {
