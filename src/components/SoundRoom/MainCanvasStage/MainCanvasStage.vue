@@ -4,7 +4,7 @@
     role="application"
     tabindex="0"
     aria-label="SoundRoom 2D audio environment. Use keyboard or mouse to interact with sound nodes."
-    class="relative border-2 border-neutral-400 dark:border-neutral-700 flex items-center justify-center bg-neutral-900 dark:bg-neutral-950 canvas-grid focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+    class="relative flex items-center justify-center border border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-900 canvas-surface focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
     :class="`w-[${room.width}px] h-[${room.height}px]`"
     @dragover.prevent
     @drop="handleDrop"
@@ -120,20 +120,24 @@ const soundNodeTitleCoords = computed(() => {
 </script>
 
 <style scoped>
-/* Grid overlay behind the nodes; tweak rgba opacity to soften or sharpen the lines. */
-.canvas-grid {
+/* Subtle surface treatment: tweak variables below to adjust grid spacing, line opacity, or vignette strength. */
+.canvas-surface {
+  --grid-size: 40px; /* change to tighten/loosen spacing */
+  --grid-line: rgba(0, 0, 0, 0.06); /* lighten/darken grid in light mode */
+  --vignette-edge: rgba(0, 0, 0, 0.16); /* increase for deeper edge falloff */
+
   background-image:
-    linear-gradient(
-      to right,
-      rgba(255, 255, 255, 0.06) 1px,
-      transparent 1px
-    ),
-    linear-gradient(
-      to bottom,
-      rgba(255, 255, 255, 0.06) 1px,
-      transparent 1px
-    );
-  /* Adjust the 40px size to change grid spacing. */
-  background-size: 40px 40px;
+    radial-gradient(ellipse at center, rgba(255, 255, 255, 0) 45%, var(--vignette-edge) 100%),
+    linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px);
+  background-size:
+    auto,
+    var(--grid-size) var(--grid-size),
+    var(--grid-size) var(--grid-size);
+}
+
+:global(.dark) .canvas-surface {
+  --grid-line: rgba(255, 255, 255, 0.06);
+  --vignette-edge: rgba(0, 0, 0, 0.32);
 }
 </style>
