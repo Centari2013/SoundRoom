@@ -34,19 +34,22 @@ export async function DELETE(request) {
     }
 
     const { searchParams } = new URL(request.url)
-    const requestedBucket = searchParams.get('bucket')
-    const requestedBase = searchParams.get('base')
     const pathParam = searchParams.get('path')?.trim()
 
     if (!pathParam) {
       throw new HttpError(400, "Missing 'path' query param")
     }
 
+    const objectKey = pathParam.replace(/^\/+|\/+$/g, '')
+    if (objectKey.includes('..')) {
+      throw new HttpError(400, 'Invalid storage key')
+    }
+
     const { data: soundFile, error: soundFileError } = await supabaseAdmin
       .from('sound_files')
       .select('id, owner_id, bucket, path')
       .eq('owner_id', user.id)
-      .eq('path', pathParam)
+      .eq('path', objectKey)
       .eq('bucket', user.id)
       .maybeSingle()
 
@@ -57,25 +60,6 @@ export async function DELETE(request) {
 
     if (!soundFile) {
       throw new HttpError(404, 'Sound file not found')
-    }
-
-    const storageBase = soundFile.base || 'users'
-    const storageBucket = soundFile.bucket || user.id
-
-    if (storageBucket !== user.id) {
-      throw new HttpError(403, 'You can only delete files from your own bucket')
-    }
-
-    if (storageBase !== 'users') {
-      throw new HttpError(403, 'Invalid storage base for deletion')
-    }
-
-    if (requestedBucket && requestedBucket !== storageBucket) {
-      throw new HttpError(403, 'Bucket mismatch')
-    }
-
-    if (requestedBase && requestedBase !== storageBase) {
-      throw new HttpError(403, 'Base mismatch')
     }
 
     const {
@@ -94,7 +78,7 @@ export async function DELETE(request) {
       secretAccessKey: R2_SECRET_ACCESS_KEY,
     })
 
-    const url = `https://${R2_BUCKET_NAME}.${R2_ACCOUNT_ID}.r2.cloudflarestorage.com/${storageBase}/${storageBucket}/${soundFile.path}`
+    const url = `https://${R2_BUCKET_NAME}.${R2_ACCOUNT_ID}.r2.cloudflarestorage.com/${soundFile.path}`
     const signed = await client.sign(new Request(url, { method: 'DELETE' }), {
       aws: { signQuery: true },
     })

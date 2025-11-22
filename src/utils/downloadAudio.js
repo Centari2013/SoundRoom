@@ -7,19 +7,12 @@ async function getAccessToken() {
 }
 
 /**
- * Normalise and join storage segments into a canonical R2 object key.
- *
- * @param {string} base
- * @param {string} bucket
- * @param {string} path
- * @returns {string}
+ * Normalise the stored object path into the canonical R2 object key.
+ * All files now live at the bucket root using the "<id>.<ext>" format,
+ * so we simply trim leading/trailing slashes on the provided path.
  */
-export function buildStorageKey(base, bucket, path) {
-  const segments = [base, bucket, path]
-    .map(segment => (segment ?? '').toString().replace(/^\/+|\/+$/g, ''))
-    .filter(Boolean)
-
-  return segments.join('/')
+export function buildStorageKey(_base, _bucket, path) {
+  return (path ?? '').toString().replace(/^\/+|\/+$/g, '')
 }
 
 /**

@@ -10,6 +10,20 @@ import { PLANS } from '@app/constants/entitlements'
 
 const supportedPlanTiers = PLANS ?? ['free', 'basic', 'pro']
 
+function createSoundId() {
+  if (typeof crypto?.randomUUID === 'function') return crypto.randomUUID()
+  const buffer = new Uint8Array(16)
+  crypto.getRandomValues(buffer)
+  return [...buffer].map((b, i) => (i === 6 ? (b & 0x0f) | 0x40 : i === 8 ? (b & 0x3f) | 0x80 : b).toString(16).padStart(2, '0')).join('')
+}
+
+function buildFlatKey(soundId, filename) {
+  const trimmed = filename?.trim() || ''
+  const ext = trimmed.includes('.') ? trimmed.split('.').pop() : ''
+  const safeExt = (ext || '').replace(/[^a-zA-Z0-9]+/g, '').toLowerCase()
+  return safeExt ? `${soundId}.${safeExt}` : soundId
+}
+
 function normalizeBucket(bucketValue) {
   if (!bucketValue) return ''
   return bucketValue
@@ -214,14 +228,19 @@ async function uploadCurrent() {
   const fileEntry = currentFile.value
   const normalizedBucket = normalizeBucket(fileEntry.bucket)
 
+  const soundId = createSoundId()
+  const objectKey = buildFlatKey(soundId, fileEntry.file.name)
+
   const metadata = {
+    id: soundId,
     name: fileEntry.name,
     tags: fileEntry.tags,
     duration_seconds: fileEntry.duration_seconds,
     cone_inner: fileEntry.cone_inner,
     cone_outer: fileEntry.cone_outer,
     plan_tier: fileEntry.plan_tier,
-    bucket: normalizedBucket
+    bucket: normalizedBucket,
+    path: objectKey
   }
 
   if (!metadata.bucket) {
@@ -239,8 +258,6 @@ async function uploadCurrent() {
     await uploadFileAndInsert({
       file: fileEntry.file,
       userId: user.value.id,
-      planTier: metadata.plan_tier,
-      bucket: metadata.bucket,
       metadata
     })
     fileEntry.uploaded = true
@@ -267,7 +284,7 @@ const uploadedCount = computed(() => Object.values(uploadedMap.value || {}).filt
         <h1 class="text-4xl font-bold tracking-tight">SoundRoom — Admin Ingest</h1>
         <p class="text-sm text-gray-400 leading-relaxed max-w-2xl">
           Local-only tool for bulk ingestion of curated audio assets.
-          Authentication is routed through Supabase. Uploads write to Cloudflare R2 following the production directory structure.
+          Authentication is routed through Supabase. Uploads write to Cloudflare R2 using flat <code>&lt;id&gt;.&lt;ext&gt;</code> keys.
         </p>
       </header>
 

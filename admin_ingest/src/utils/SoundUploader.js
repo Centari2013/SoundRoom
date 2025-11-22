@@ -2,17 +2,26 @@ import { supabase } from './supabaseClient'
 import { requestPreviewGeneration } from '@app/utils/previewGeneration'
 import { buildApiUrl } from '@app/utils/apiBase'
 
+function sanitizeExtension(filename = '') {
+  const trimmed = filename.trim()
+  const lastDot = trimmed.lastIndexOf('.')
+  if (lastDot === -1) return ''
+  return trimmed.slice(lastDot + 1).replace(/[^a-zA-Z0-9]+/g, '').toLowerCase()
+}
+
+function createObjectKey(soundId, filename) {
+  const extension = sanitizeExtension(filename)
+  return extension ? `${soundId}.${extension}` : soundId
+}
+
 /**
- * Fetch a signed upload URL using the exact flow the customer-facing uploader uses.
- * Admin ingest writes to {planTier}/{bucket}/{generatedKey} while retaining the user
- * fallback for customer uploads.
+ * Fetch a signed upload URL using the exact flow the customer-facing uploader uses,
+ * but always targeting the flat <soundId>.<ext> naming convention.
  */
-async function getSignedUploadUrl({ userId, filename, planTier, bucket }) {
-  const params = new URLSearchParams({ filename })
+async function getSignedUploadUrl({ objectKey, userId }) {
+  const params = new URLSearchParams({ key: objectKey })
 
   if (userId) params.set('userId', userId)
-  if (planTier) params.set('planTier', planTier)
-  if (bucket) params.set('bucket', bucket)
 
   const endpoint = buildApiUrl(`/api/get-upload-url?${params.toString()}`)
   const response = await fetch(endpoint)
@@ -70,21 +79,19 @@ function uploadViaXhr(file, signedUrl) {
  * @param {Object} options
  * @param {File} options.file
  * @param {string} options.userId
- * @param {string} options.planTier
- * @param {string} options.bucket
  * @param {Object} options.metadata - payload destined for public.sound_files
  */
-export async function uploadFileAndInsert({ file, userId, planTier, bucket, metadata }) {
+export async function uploadFileAndInsert({ file, userId, metadata }) {
   if (!userId) {
     throw new Error('Supabase user is required before uploading')
   }
 
-  const { signedUrl, key, base, bucket: bucketSegment } = await getSignedUploadUrl({
-    userId,
-    filename: file.name,
-    planTier,
-    bucket
-  })
+  if (!metadata?.id) {
+    throw new Error('Sound ID is required to build the flat object key')
+  }
+
+  const objectKey = metadata.path || createObjectKey(metadata.id, file.name)
+  const { signedUrl, key } = await getSignedUploadUrl({ objectKey, userId })
   await uploadViaXhr(file, signedUrl)
 
   const payload = {
@@ -101,7 +108,7 @@ export async function uploadFileAndInsert({ file, userId, planTier, bucket, meta
   }
 
   if (data?.id) {
-    await requestPreviewGeneration({ key, base, bucket: bucketSegment ?? bucket, soundId: data.id })
+    await requestPreviewGeneration({ key, soundId: data.id })
   }
 
   return { key }
