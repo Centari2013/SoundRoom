@@ -124,15 +124,15 @@ const soundNodeTitleCoords = computed(() => {
 .canvas-grid {
   background-size: 40px 40px; /* Adjust spacing between grid lines */
   background-image:
-    linear-gradient(to right, rgba(0, 0, 0, 0.06) 1px, transparent 2px),
-    linear-gradient(to bottom, rgba(0, 0, 0, 0.06) 1px, transparent 2px); /* Adjust line opacity */
+    linear-gradient(to right, rgba(0, 0, 0, 0.06) 2px, transparent 2px),
+    linear-gradient(to bottom, rgba(0, 0, 0, 0.06) 2px, transparent 2px); /* Adjust line opacity */
 }
 
 @media (prefers-color-scheme: dark) {
   .canvas-grid {
     background-image:
-      linear-gradient(to right, rgba(255, 255, 255, 0.08) 1px, transparent 2px),
-      linear-gradient(to bottom, rgba(255, 255, 255, 0.08) 1px, transparent 2px); /* Adjust dark mode opacity separately */
+      linear-gradient(to right, rgba(255, 255, 255, 0.08) 2px, transparent 2px),
+      linear-gradient(to bottom, rgba(255, 255, 255, 0.08) 2px, transparent 2px); /* Adjust dark mode opacity separately */
   }
 }
 </style>
