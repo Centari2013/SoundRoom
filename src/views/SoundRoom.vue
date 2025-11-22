@@ -211,16 +211,9 @@ onUnmounted(() => {
   box-shadow: var(--vignette-shadow);
 }
 
-:global(.dark) .canvas-vignette {
-  --vignette-inner: rgba(255, 255, 255, 0.1);
-  --vignette-middle: rgba(255, 255, 255, 0.03);
-  --vignette-outer: rgba(0, 0, 0, 0.48);
-  --vignette-shadow: inset 0 0 140px rgba(0, 0, 0, 0.42);
-}
-
 @media (prefers-color-scheme: dark) {
   .canvas-vignette {
-    --vignette-inner: rgba(255, 255, 255, 0.1);
+    --vignette-inner: rgba(224, 224, 224, 0.1);
     --vignette-middle: rgba(255, 255, 255, 0.03);
     --vignette-outer: rgba(0, 0, 0, 0.48);
     --vignette-shadow: inset 0 0 140px rgba(0, 0, 0, 0.42);
