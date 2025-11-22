@@ -202,12 +202,28 @@ onUnmounted(() => {
 
 <style scoped>
 .canvas-vignette {
-  background: radial-gradient(circle at center, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.04) 40%, rgba(0, 0, 0, 0.25) 100%);
-  box-shadow: inset 0 0 80px rgba(0, 0, 0, 0.25);
+  --vignette-inner: rgba(255, 255, 255, 0.12);
+  --vignette-middle: rgba(255, 255, 255, 0.05);
+  --vignette-outer: rgba(0, 0, 0, 0.23);
+  --vignette-shadow: inset 0 0 90px rgba(0, 0, 0, 0.24);
+
+  background: radial-gradient(circle at center, var(--vignette-inner) 0%, var(--vignette-middle) 38%, var(--vignette-outer) 100%);
+  box-shadow: var(--vignette-shadow);
 }
 
 :global(.dark) .canvas-vignette {
-  background: radial-gradient(circle at center, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.02) 38%, rgba(0, 0, 0, 0.45) 100%);
-  box-shadow: inset 0 0 120px rgba(0, 0, 0, 0.4);
+  --vignette-inner: rgba(255, 255, 255, 0.1);
+  --vignette-middle: rgba(255, 255, 255, 0.03);
+  --vignette-outer: rgba(0, 0, 0, 0.48);
+  --vignette-shadow: inset 0 0 140px rgba(0, 0, 0, 0.42);
+}
+
+@media (prefers-color-scheme: dark) {
+  .canvas-vignette {
+    --vignette-inner: rgba(255, 255, 255, 0.1);
+    --vignette-middle: rgba(255, 255, 255, 0.03);
+    --vignette-outer: rgba(0, 0, 0, 0.48);
+    --vignette-shadow: inset 0 0 140px rgba(0, 0, 0, 0.42);
+  }
 }
 </style>
