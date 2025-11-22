@@ -140,6 +140,41 @@ function buildPreviewUrl(baseUrl, soundId) {
   return `${trimmedBase}/previews/${soundId}-preview.mp3`
 }
 
+function describeEnv(env) {
+  const supabaseHost = (() => {
+    try {
+      return new URL(env.supabaseUrl).host
+    } catch (error) {
+      return '(invalid URL)'
+    }
+  })()
+
+  console.log('▶️  Preview generator configuration:')
+  console.log(`   Supabase project: ${supabaseHost}`)
+  console.log(`   R2 account:      ${env.r2AccountId}`)
+  console.log(`   Source bucket:   ${env.r2PrivateBucket}`)
+  console.log(`   Preview bucket:  ${env.r2PreviewBucket}`)
+  console.log(`   Public base URL: ${env.r2PreviewBase}`)
+  console.log(`   Concurrency:     ${env.concurrency}`)
+}
+
+async function ensureBinaries() {
+  const binaries = [
+    { exec: ffprobeExecutable, name: 'ffprobe', args: ['-version'] },
+    { exec: ffmpegExecutable, name: 'ffmpeg', args: ['-version'] }
+  ]
+
+  for (const { exec, name, args } of binaries) {
+    try {
+      await execFileAsync(exec, args)
+    } catch (error) {
+      throw new Error(
+        `${name} is not available on the PATH (looked for \"${exec}\"); install it or add it to PATH.`
+      )
+    }
+  }
+}
+
 async function fetchSoundsWithoutPreview(supabase) {
   const pageSize = 200
   let from = 0
@@ -176,12 +211,15 @@ async function processSound({ sound, r2Client, supabase, env }) {
   const previewPath = path.join(tempDir, `${randomUUID()}-preview.mp3`)
 
   try {
+    console.log(`⬇️  Downloading sound ${sound.id} from ${env.r2PrivateBucket}/${originalKey}`)
     await downloadOriginal(r2Client, env.r2PrivateBucket, originalKey, inputPath)
     const durationSeconds = await probeDuration(inputPath)
     const previewDuration = Math.min(durationSeconds || 0, TEN_SECONDS)
+    console.log(`🎚️  Encoding preview for sound ${sound.id} (duration ${durationSeconds.toFixed(2)}s) ...`)
     await encodePreview(inputPath, previewPath, previewDuration)
 
     const previewKey = `previews/${sound.id}-preview.mp3`
+    console.log(`⬆️  Uploading preview to ${env.r2PreviewBucket}/${previewKey}`)
     await uploadPreview(r2Client, env.r2PreviewBucket, previewKey, previewPath)
 
     const previewUrl = buildPreviewUrl(env.r2PreviewBase, sound.id)
@@ -204,7 +242,11 @@ async function processSound({ sound, r2Client, supabase, env }) {
 }
 
 async function main() {
+  console.log('Starting preview generation...')
   const env = loadEnv()
+  describeEnv(env)
+  await ensureBinaries()
+
   const supabase = createSupabaseClient(env.supabaseUrl, env.supabaseServiceKey)
   const r2Client = createR2Client({
     accountId: env.r2AccountId,
@@ -212,6 +254,7 @@ async function main() {
     secretAccessKey: env.r2SecretAccessKey
   })
 
+  console.log('Fetching sounds that are missing previews...')
   const pendingSounds = await fetchSoundsWithoutPreview(supabase)
   if (!pendingSounds.length) {
     console.log('No sounds require preview generation.')

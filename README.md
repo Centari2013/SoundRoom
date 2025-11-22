@@ -169,10 +169,11 @@ sounds that do not yet have a `preview_url` in Supabase.
    node generate_previews.js
    ```
 
-The script downloads the original audio from the private R2 bucket, encodes a
-mono 64kbps MP3 preview (up to 10 seconds), uploads it to the public previews
-bucket at `previews/<sound_id>-preview.mp3`, and sets `preview_url` on the
-corresponding row in the `sounds` table.
+The script will print a short configuration summary, verify `ffmpeg` and
+`ffprobe` are callable, download the original audio from the private R2 bucket,
+encode a mono 64kbps MP3 preview (up to 10 seconds), upload it to the public
+previews bucket at `previews/<sound_id>-preview.mp3`, and set `preview_url` on
+the corresponding row in the `sounds` table.
 
 ---
 
