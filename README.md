@@ -141,6 +141,39 @@ non-Vue modules that power SoundRoom. The new
 [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) document covers local setup and
 general guidelines for hacking on the project.
 
+### Backfill missing sound previews
+
+The standalone `generate_previews.js` script recreates 10-second MP3 previews for
+sounds that do not yet have a `preview_url` in Supabase.
+
+1. Install system tools: `ffmpeg` and `ffprobe` must be available on your PATH
+   (the script uses `ffmpeg-static`/`ffprobe-static` if installed via npm).
+2. Set the required environment variables (service role key is needed to update
+   Supabase):
+
+   ```env
+   SUPABASE_URL=...
+   SUPABASE_SERVICE_ROLE_KEY=...
+   R2_ACCOUNT_ID=...
+   R2_ACCESS_KEY_ID=...
+   R2_SECRET_ACCESS_KEY=...
+   R2_BUCKET_NAME=...            # private/original objects
+   R2_PREVIEW_BUCKET_NAME=...    # public bucket to hold previews
+   R2_PREVIEW_PUBLIC_BASE_URL=...# public base URL for the previews bucket
+   PREVIEW_CONCURRENCY=2         # optional, defaults to 2
+   ```
+
+3. Run the backfill from the repo root:
+
+   ```bash
+   node generate_previews.js
+   ```
+
+The script downloads the original audio from the private R2 bucket, encodes a
+mono 64kbps MP3 preview (up to 10 seconds), uploads it to the public previews
+bucket at `previews/<sound_id>-preview.mp3`, and sets `preview_url` on the
+corresponding row in the `sounds` table.
+
 ---
 
 ## 🪪 License
