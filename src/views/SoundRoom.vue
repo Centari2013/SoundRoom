@@ -17,7 +17,8 @@
         <Toolbar/>
 
         <!-- Canvas Area -->
-        <div class="flex-1 bg-neutral-200 dark:bg-black flex items-center justify-center">
+        <div class="flex-1 relative overflow-hidden bg-neutral-100 dark:bg-neutral-900 flex items-center justify-center">
+          <div class="pointer-events-none absolute inset-0 canvas-vignette" aria-hidden="true"></div>
           <MainCanvasStage
             v-bind="{
               handleDrop,
@@ -198,3 +199,24 @@ onUnmounted(() => {
   // void cacheStore.audioCacheManager.clearPersistentCache()
 })
 </script>
+
+<style scoped>
+.canvas-vignette {
+  --vignette-inner: rgba(255, 255, 255, 0.12);
+  --vignette-middle: rgba(255, 255, 255, 0.05);
+  --vignette-outer: rgba(0, 0, 0, 0.23);
+  --vignette-shadow: inset 0 0 90px rgba(0, 0, 0, 0.24);
+
+  background: radial-gradient(circle at center, var(--vignette-inner) 0%, var(--vignette-middle) 38%, var(--vignette-outer) 100%);
+  box-shadow: var(--vignette-shadow);
+}
+
+@media (prefers-color-scheme: dark) {
+  .canvas-vignette {
+    --vignette-inner: rgba(224, 224, 224, 0.1);
+    --vignette-middle: rgba(255, 255, 255, 0.03);
+    --vignette-outer: rgba(0, 0, 0, 0.48);
+    --vignette-shadow: inset 0 0 140px rgba(0, 0, 0, 0.42);
+  }
+}
+</style>
