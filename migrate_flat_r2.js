@@ -53,6 +53,18 @@ function normalizeKey(key) {
     .trim()
 }
 
+function stripBucketPrefix(key, bucketName) {
+  if (!key || !bucketName) return key
+  const normalizedBucket = normalizeKey(bucketName)
+  const normalizedKey = normalizeKey(key)
+
+  if (normalizedKey.startsWith(`${normalizedBucket}/`)) {
+    return normalizedKey.slice(normalizedBucket.length + 1)
+  }
+
+  return normalizedKey
+}
+
 function resolveLegacyKey(sound) {
   const rawPath = normalizeKey(sound.path)
   const base = normalizeKey(sound.plan_tier) || 'users'
@@ -116,7 +128,8 @@ async function main() {
         }
 
         const cleanKey = normalizeKey(legacyKey)
-        const extension = resolveExtension(sound, cleanKey)
+        const effectiveKey = stripBucketPrefix(cleanKey, env.r2BucketName)
+        const extension = resolveExtension(sound, effectiveKey)
         if (!extension) {
           console.error(
             `Skipping sound ${sound.id}: could not determine file extension from key "${legacyKey}" or name "${sound.name}"`
@@ -126,7 +139,7 @@ async function main() {
 
         const newKey = `${sound.id}${extension}`
 
-        if (cleanKey === newKey) {
+        if (effectiveKey === newKey) {
           console.log(`Skipping sound ${sound.id}: already stored as ${newKey}`)
           return
         }
@@ -136,7 +149,7 @@ async function main() {
           const objectResponse = await s3.send(
             new GetObjectCommand({
               Bucket: env.r2BucketName,
-              Key: cleanKey,
+              Key: effectiveKey,
             })
           )
 
