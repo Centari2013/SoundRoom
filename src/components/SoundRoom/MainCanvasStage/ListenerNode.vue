@@ -9,29 +9,42 @@
     @dragmove="onListenerDragMove"
   >
 
-    <!-- Listener Dot -->
+    <!-- Listener Body -->
     <v-circle
-      :radius="10"
-      fill="#00f"
+      :radius="12"
+      fill="rgba(59, 130, 246, 0.1)"
+      stroke="rgba(59, 130, 246, 0.8)"
+      :strokeWidth="2"
+      shadowColor="rgba(0, 0, 0, 0.15)"
+      shadowBlur="6"
+      shadowOffsetY="2"
+      @mousedown="onListenerMouseDown"
+      @mouseup="onListenerMouseUp"
+    />
+    <v-circle
+      :radius="6"
+      fill="rgba(15, 23, 42, 0.85)"
+      stroke="rgba(59, 130, 246, 0.85)"
+      :strokeWidth="1"
       @mousedown="onListenerMouseDown"
       @mouseup="onListenerMouseUp"
     />
 
-    <!-- Direction Diamond -->
+    <!-- Directional Marker -->
     <v-shape
       :sceneFunc="(ctx, shape) => {
         ctx.beginPath()
-        ctx.moveTo(0, 0)
-        ctx.lineTo(7, 5)
-        ctx.lineTo(0, 25)
-        ctx.lineTo(-7, 5)
+        ctx.moveTo(0, 16)
+        ctx.lineTo(9, -4)
+        ctx.lineTo(-9, -4)
         ctx.closePath()
         ctx.fillStrokeShape(shape)
       }"
       :rotation="listener.angle"
-      fill="#fff"
-      stroke="#000"
-      :strokeWidth="1"
+      fill="rgba(59, 130, 246, 0.9)"
+      stroke="rgba(15, 23, 42, 0.9)"
+      :strokeWidth="1.5"
+      opacity="0.95"
       @mousedown="onListenerMouseDown"
       @mouseup="onListenerMouseUp"
     />
