@@ -9,15 +9,15 @@
     @dragmove="onListenerDragMove"
   >
 
-    <!-- Listener Dot -->
+    <!-- Invisible hit targets (visual handled by ListenerIcon overlay) -->
     <v-circle
-      :radius="10"
-      fill="#00f"
+      :radius="12"
+      fill="rgba(0,0,255,0.2)"
+      opacity="0"
       @mousedown="onListenerMouseDown"
       @mouseup="onListenerMouseUp"
     />
 
-    <!-- Direction Diamond -->
     <v-shape
       :sceneFunc="(ctx, shape) => {
         ctx.beginPath()
@@ -32,6 +32,7 @@
       fill="#fff"
       stroke="#000"
       :strokeWidth="1"
+      opacity="0"
       @mousedown="onListenerMouseDown"
       @mouseup="onListenerMouseUp"
     />
