@@ -19,7 +19,7 @@
     <SoundPreviewCircle
       :soundData="sound"
       :currentlyPlayingId="currentlyPlayingId"
-      :locked="sound.locked && !isLoaded"
+      :locked="previewLocked"
       @updateCurrent="$emit('updateCurrent', $event)"
       @locked="$emit('locked', sound)"
     />
@@ -81,6 +81,8 @@ const badgeClass = computed(() => {
   }
   return getPlanBadgeClass(normalizedTier.value)
 })
+
+const previewLocked = computed(() => props.sound.accessReason === 'ownership')
 
 const buttonLabel = computed(() => {
   if (isLoaded.value) return 'Remove'
