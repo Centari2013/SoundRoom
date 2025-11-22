@@ -10,22 +10,22 @@
     <!-- Anchor Glow -->
     <v-circle
       :radius="22"
-      fill="rgba(59, 130, 246, 0.08)"
-      shadowColor="rgba(59, 130, 246, 0.3)"
-      shadowBlur="18"
-      shadowOpacity="0.35"
+      :fill="anchorGlowFill"
+      :shadowColor="anchorShadowColor"
+      :shadowBlur="anchorShadowBlur"
+      :shadowOpacity="anchorShadowOpacity"
       listening="false"
     />
 
     <!-- Listener Body -->
     <v-circle
       :radius="14"
-      fill="rgba(59, 130, 246, 0.15)"
-      stroke="rgba(96, 165, 250, 0.9)"
+      :fill="bodyFill"
+      :stroke="bodyStroke"
       :strokeWidth="2.5"
-      shadowColor="rgba(0, 0, 0, 0.2)"
-      shadowBlur="10"
-      shadowOpacity="0.55"
+      :shadowColor="bodyShadowColor"
+      :shadowBlur="bodyShadowBlur"
+      :shadowOpacity="bodyShadowOpacity"
       @mousedown="onListenerMouseDown"
       @mouseup="onListenerMouseUp"
       @mouseover="setCursor($event, 'pointer')"
@@ -36,9 +36,9 @@
       fill="rgba(15, 23, 42, 0.9)"
       stroke="rgba(191, 219, 254, 0.85)"
       :strokeWidth="1.25"
-      shadowColor="rgba(59, 130, 246, 0.35)"
-      shadowBlur="8"
-      shadowOpacity="0.45"
+      :shadowColor="detailShadowColor"
+      :shadowBlur="detailShadowBlur"
+      :shadowOpacity="detailShadowOpacity"
       @mousedown="onListenerMouseDown"
       @mouseup="onListenerMouseUp"
       @mouseover="setCursor($event, 'pointer')"
@@ -49,9 +49,9 @@
       fill="rgba(255, 255, 255, 0.75)"
       stroke="rgba(255, 255, 255, 0.2)"
       :strokeWidth="0.5"
-      shadowColor="rgba(255, 255, 255, 0.35)"
+      :shadowColor="highlightShadowColor"
       shadowBlur="6"
-      shadowOpacity="0.5"
+      :shadowOpacity="highlightShadowOpacity"
       listening="false"
     />
 
@@ -68,10 +68,10 @@
       :rotation="listener.angle"
       :fillLinearGradientStartPoint="{ x: -12, y: 12 }"
       :fillLinearGradientEndPoint="{ x: 12, y: -10 }"
-      :fillLinearGradientColorStops="[0, 'rgba(191, 219, 254, 0.18)', 1, 'rgba(59, 130, 246, 0.85)']"
+      :fillLinearGradientColorStops="directionGradientStops"
       stroke="rgba(15, 23, 42, 0.85)"
       :strokeWidth="1.25"
-      shadowColor="rgba(59, 130, 246, 0.35)"
+      :shadowColor="directionShadowColor"
       shadowBlur="6"
       opacity="0.96"
       @mousedown="onListenerMouseDown"
@@ -87,7 +87,7 @@
       :innerRadius="0"
       :outerRadius="40"
       :angle="135"
-      fill="rgba(59, 130, 246, 0.1)"
+      :fill="rotationHandleFill"
       :rotation="listener.angle + 20"
       @mouseover="setCursor($event, 'grabbing')"
       @mouseout="setCursor($event, 'default')"
@@ -98,7 +98,7 @@
 </template>
 
 <script setup>
-import { ref, onBeforeUnmount } from 'vue';
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
 import { useListenerStore } from '@/stores/useListenerStore';
 import { useActionManagerStore } from '@/stores/useActionManagerStore';
 import { useRoomStore } from '@/stores/useRoomStore';
@@ -108,6 +108,42 @@ import { storeToRefs } from 'pinia';
 const { listener } = storeToRefs(useListenerStore())
 const { actionManager } = storeToRefs(useActionManagerStore())
 const { room } = storeToRefs(useRoomStore())
+
+const prefersDark = window.matchMedia('(prefers-color-scheme: dark)')
+const isDarkMode = ref(prefersDark.matches)
+
+const syncTheme = (event) => {
+  isDarkMode.value = event.matches
+}
+
+onMounted(() => prefersDark.addEventListener('change', syncTheme))
+onBeforeUnmount(() => prefersDark.removeEventListener('change', syncTheme))
+
+const anchorGlowFill = computed(() => isDarkMode.value ? 'rgba(59, 130, 246, 0.08)' : 'rgba(59, 130, 246, 0.05)')
+const anchorShadowColor = computed(() => isDarkMode.value ? 'rgba(59, 130, 246, 0.3)' : 'rgba(59, 130, 246, 0.16)')
+const anchorShadowBlur = computed(() => isDarkMode.value ? 18 : 12)
+const anchorShadowOpacity = computed(() => isDarkMode.value ? 0.35 : 0.22)
+
+const bodyFill = computed(() => isDarkMode.value ? 'rgba(59, 130, 246, 0.15)' : 'rgba(59, 130, 246, 0.12)')
+const bodyStroke = computed(() => isDarkMode.value ? 'rgba(96, 165, 250, 0.9)' : 'rgba(59, 130, 246, 0.9)')
+const bodyShadowColor = computed(() => isDarkMode.value ? 'rgba(0, 0, 0, 0.2)' : 'rgba(0, 0, 0, 0.12)')
+const bodyShadowBlur = computed(() => isDarkMode.value ? 10 : 8)
+const bodyShadowOpacity = computed(() => isDarkMode.value ? 0.55 : 0.35)
+
+const detailShadowColor = computed(() => isDarkMode.value ? 'rgba(59, 130, 246, 0.35)' : 'rgba(59, 130, 246, 0.2)')
+const detailShadowBlur = computed(() => isDarkMode.value ? 8 : 6)
+const detailShadowOpacity = computed(() => isDarkMode.value ? 0.45 : 0.3)
+
+const highlightShadowColor = computed(() => isDarkMode.value ? 'rgba(255, 255, 255, 0.35)' : 'rgba(255, 255, 255, 0.22)')
+const highlightShadowOpacity = computed(() => isDarkMode.value ? 0.5 : 0.35)
+
+const directionGradientStops = computed(() => isDarkMode.value
+  ? [0, 'rgba(191, 219, 254, 0.18)', 1, 'rgba(59, 130, 246, 0.85)']
+  : [0, 'rgba(191, 219, 254, 0.14)', 1, 'rgba(59, 130, 246, 0.75)']
+)
+const directionShadowColor = computed(() => isDarkMode.value ? 'rgba(59, 130, 246, 0.35)' : 'rgba(59, 130, 246, 0.2)')
+
+const rotationHandleFill = computed(() => isDarkMode.value ? 'rgba(59, 130, 246, 0.1)' : 'rgba(59, 130, 246, 0.06)')
 
 let moveListenerPayload = null
 let initialMouseAngle = null

@@ -12,11 +12,11 @@
       :angle="coneOuter"
       :rotation="(-coneOuter / 2) + source.instance.state.angle"
       :radius="50"
-      fill="rgba(255, 137, 137, 0.16)"
-      :stroke="'rgba(255, 137, 137, 0.28)'"
+      :fill="outerConeFill"
+      :stroke="outerConeStroke"
       :strokeWidth="1.5"
-      shadowColor="rgba(255, 120, 120, 0.65)"
-      :shadowBlur="18"
+      :shadowColor="outerConeShadowColor"
+      :shadowBlur="outerConeShadowBlur"
       :listening="false"
     />
 
@@ -26,8 +26,8 @@
       :angle="coneInner"
       :rotation="(-coneInner / 2) + source.instance.state.angle"
       :radius="50"
-      fill="rgba(255, 180, 180, 0.18)"
-      :stroke="'rgba(255, 180, 180, 0.35)'"
+      :fill="innerConeFill"
+      :stroke="innerConeStroke"
       :strokeWidth="1"
       :listening="false"
     />
@@ -38,10 +38,10 @@
       :radius="16"
       :stroke="selectionGlowColor"
       :strokeWidth="3"
-      :opacity="0.75"
+      :opacity="selectionGlowOpacity"
       shadowForStrokeEnabled="true"
       :shadowColor="selectionGlowColor"
-      :shadowBlur="14"
+      :shadowBlur="selectionGlowBlur"
       :listening="false"
     />
     <v-circle
@@ -50,8 +50,8 @@
       :stroke="dotStrokeColor"
       :strokeWidth="2"
       :shadowColor="getFillColor"
-      :shadowBlur="10"
-      :shadowOpacity="0.65"
+      :shadowBlur="nodeShadowBlur"
+      :shadowOpacity="nodeShadowOpacity"
       shadowForStrokeEnabled="false"
       name="sound-node-part"
       @mousedown="onSourceMouseDown"
@@ -115,7 +115,7 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { useRoomStore } from '@/stores/useRoomStore'
 import { useActionManagerStore } from '@/stores/useActionManagerStore'
 import { storeToRefs } from 'pinia'
@@ -132,6 +132,16 @@ const { room } = storeToRefs(useRoomStore())
 const { actionManager } = storeToRefs(useActionManagerStore())
 const emit = defineEmits(['select'])
 
+const prefersDark = window.matchMedia('(prefers-color-scheme: dark)')
+const isDarkMode = ref(prefersDark.matches)
+
+const syncTheme = (event) => {
+  isDarkMode.value = event.matches
+}
+
+onMounted(() => prefersDark.addEventListener('change', syncTheme))
+onBeforeUnmount(() => prefersDark.removeEventListener('change', syncTheme))
+
 const sched = computed(() => props.source.instance.state.schedule)
 const isScheduled = computed(() => sched.value?.enabled)
 const isScheduledPlaying = computed(() => sched.value?.isPlaying)
@@ -145,6 +155,20 @@ const getFillColor = computed(() => {
 const dotStrokeColor = computed(() => (props.selected ? '#ffffff' : 'rgba(255, 255, 255, 0.9)'))
 const selectionGlowColor = '#6fd7ff'
 const selectedScale = computed(() => (props.selected ? 1.05 : 1))
+
+const outerConeFill = computed(() => isDarkMode.value ? 'rgba(255, 137, 137, 0.16)' : 'rgba(255, 137, 137, 0.11)')
+const outerConeStroke = computed(() => isDarkMode.value ? 'rgba(255, 137, 137, 0.28)' : 'rgba(255, 137, 137, 0.18)')
+const outerConeShadowColor = computed(() => isDarkMode.value ? 'rgba(255, 120, 120, 0.65)' : 'rgba(255, 120, 120, 0.35)')
+const outerConeShadowBlur = computed(() => isDarkMode.value ? 18 : 12)
+
+const innerConeFill = computed(() => isDarkMode.value ? 'rgba(255, 180, 180, 0.18)' : 'rgba(255, 180, 180, 0.13)')
+const innerConeStroke = computed(() => isDarkMode.value ? 'rgba(255, 180, 180, 0.35)' : 'rgba(255, 180, 180, 0.22)')
+
+const selectionGlowOpacity = computed(() => isDarkMode.value ? 0.75 : 0.55)
+const selectionGlowBlur = computed(() => isDarkMode.value ? 14 : 10)
+
+const nodeShadowBlur = computed(() => isDarkMode.value ? 10 : 8)
+const nodeShadowOpacity = computed(() => isDarkMode.value ? 0.65 : 0.35)
 
 
 
