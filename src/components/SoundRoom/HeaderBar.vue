@@ -13,7 +13,8 @@
         aria-haspopup="true"
       >
         <span class="sr-only">Open navigation menu</span>
-        <HamburgerIcon class="w-full h-full"/>
+        <HamburgerIcon class="w-full h-full text-neutral-900 dark:text-gray-300" />
+
       </button>
       <transition name="fade">
         <div
