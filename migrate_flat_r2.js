@@ -112,9 +112,11 @@ function generateLegacyKeyCandidates(sound, bucketName) {
     }
     if (planTier) {
       candidates.add(`${planTier}/${rawPath}`)
+      candidates.add(`${planTier}/misc/${rawPath}`)
     }
     for (const tier of knownTiers) {
       candidates.add(`${tier}/${rawPath}`)
+      candidates.add(`${tier}/misc/${rawPath}`)
     }
   }
 
