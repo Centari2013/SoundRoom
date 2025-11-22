@@ -17,7 +17,7 @@
         <Toolbar/>
 
         <!-- Canvas Area -->
-        <div class="flex-1 bg-neutral-200 dark:bg-black flex items-center justify-center">
+        <div class="flex-1 flex items-center justify-center canvas-wrapper grid-theme-light">
           <MainCanvasStage
             v-bind="{
               handleDrop,
@@ -198,3 +198,42 @@ onUnmounted(() => {
   // void cacheStore.audioCacheManager.clearPersistentCache()
 })
 </script>
+
+<style scoped>
+:root {
+  --grid-bg-light: #e5e7eb;
+  --grid-line-light: rgba(0, 0, 0, 0.05);
+  --grid-bg-dark: #0b0c10;
+  --grid-line-dark: rgba(255, 255, 255, 0.08);
+}
+
+.canvas-wrapper {
+  background-color: var(--grid-bg, var(--grid-bg-light));
+  background-image:
+    linear-gradient(var(--grid-line, var(--grid-line-light)) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-line, var(--grid-line-light)) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+.grid-theme-light {
+  --grid-bg: var(--grid-bg-light);
+  --grid-line: var(--grid-line-light);
+}
+
+.grid-theme-dark {
+  --grid-bg: var(--grid-bg-dark);
+  --grid-line: var(--grid-line-dark);
+}
+
+@media (prefers-color-scheme: dark) {
+  .grid-theme-light {
+    --grid-bg: var(--grid-bg-dark);
+    --grid-line: var(--grid-line-dark);
+  }
+}
+
+:global(.dark) .grid-theme-light {
+  --grid-bg: var(--grid-bg-dark);
+  --grid-line: var(--grid-line-dark);
+}
+</style>
