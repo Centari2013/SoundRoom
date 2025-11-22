@@ -65,20 +65,48 @@ function stripBucketPrefix(key, bucketName) {
   return normalizedKey
 }
 
-function resolveLegacyKey(sound) {
+function generateLegacyKeyCandidates(sound, bucketName) {
+  const candidates = new Set()
   const rawPath = normalizeKey(sound.path)
-  const base = normalizeKey(sound.plan_tier) || 'users'
-  const bucket = normalizeKey(sound.bucket || sound.owner_id)
+  const bucket = normalizeKey(sound.bucket)
+  const planTier = normalizeKey(sound.plan_tier)
+  const owner = normalizeKey(sound.owner_id)
+  const normalizedBucketName = normalizeKey(bucketName)
 
-  if (rawPath.includes('/')) {
-    return rawPath
+  if (rawPath) {
+    candidates.add(rawPath)
+
+    const withoutBucket = stripBucketPrefix(rawPath, normalizedBucketName)
+    candidates.add(withoutBucket)
+
+    const parts = rawPath.split('/')
+    if (parts[0] === normalizedBucketName && parts.length > 1) {
+      candidates.add(parts.slice(1).join('/'))
+    }
+
+    if (planTier && !rawPath.startsWith(`${planTier}/`)) {
+      candidates.add(`${planTier}/${rawPath}`)
+    }
   }
 
-  if (!bucket) {
-    return rawPath
+  // If the stored path is just a filename, try constructing common prefixes
+  const isFileOnly = rawPath && !rawPath.includes('/')
+  if (isFileOnly) {
+    if (planTier && bucket) {
+      candidates.add(`${planTier}/${bucket}/${rawPath}`)
+    }
+    if (bucket) {
+      candidates.add(`${bucket}/${rawPath}`)
+    }
+    if (planTier && owner) {
+      candidates.add(`${planTier}/${owner}/${rawPath}`)
+    }
+    if (planTier) {
+      candidates.add(`${planTier}/${rawPath}`)
+    }
   }
 
-  return [base, bucket, rawPath].filter(Boolean).join('/')
+  return Array.from(candidates).filter(Boolean)
 }
 
 function resolveExtension(sound, key) {
@@ -120,38 +148,58 @@ async function main() {
   await Promise.all(
     sounds.map((sound) =>
       limit(async () => {
-        const legacyKey = resolveLegacyKey(sound)
+        const candidates = generateLegacyKeyCandidates(sound, env.r2BucketName)
 
-        if (!legacyKey) {
+        if (!candidates.length) {
           console.warn(`Skipping sound ${sound.id}: missing path/bucket information`)
           return
         }
 
-        const cleanKey = normalizeKey(legacyKey)
-        const effectiveKey = stripBucketPrefix(cleanKey, env.r2BucketName)
-        const extension = resolveExtension(sound, effectiveKey)
+        let foundKey = null
+        let objectResponse = null
+
+        for (const candidate of candidates) {
+          try {
+            const response = await s3.send(
+              new GetObjectCommand({
+                Bucket: env.r2BucketName,
+                Key: candidate,
+              })
+            )
+            foundKey = candidate
+            objectResponse = response
+            break
+          } catch (err) {
+            if (err?.Code !== 'NoSuchKey') {
+              console.error(`Error fetching ${candidate} for sound ${sound.id}:`, err)
+            }
+          }
+        }
+
+        if (!foundKey || !objectResponse) {
+          console.error(
+            `Failed to locate object for sound ${sound.id}. Tried: ${candidates.join(', ')}`
+          )
+          return
+        }
+
+        const extension = resolveExtension(sound, foundKey)
         if (!extension) {
           console.error(
-            `Skipping sound ${sound.id}: could not determine file extension from key "${legacyKey}" or name "${sound.name}"`
+            `Skipping sound ${sound.id}: could not determine file extension from key "${foundKey}" or name "${sound.name}"`
           )
           return
         }
 
         const newKey = `${sound.id}${extension}`
 
-        if (effectiveKey === newKey) {
+        if (foundKey === newKey) {
           console.log(`Skipping sound ${sound.id}: already stored as ${newKey}`)
           return
         }
 
         try {
-          console.log(`Migrating sound ${sound.id}: ${legacyKey} → ${newKey}`)
-          const objectResponse = await s3.send(
-            new GetObjectCommand({
-              Bucket: env.r2BucketName,
-              Key: effectiveKey,
-            })
-          )
+          console.log(`Migrating sound ${sound.id}: ${foundKey} → ${newKey}`)
 
           const body = objectResponse.Body
           if (!body) {
