@@ -92,8 +92,7 @@ function formatSecondsToTime(totalSeconds = 0) {
 }
 
 function syncDurationFromProps() {
-  const previewDuration = props.soundData?.preview_duration_seconds
-  const durationSeconds = previewDuration ?? props.soundData?.duration_seconds ?? 0
+  const durationSeconds = props.soundData?.duration_seconds ?? props.soundData?.preview_duration_seconds ?? 0
   audioDuration.value = formatSecondsToTime(durationSeconds)
   duration.value = durationSeconds
 }
@@ -204,8 +203,6 @@ async function togglePlay() {
     bufferSource.connect(context.destination)
 
     const playbackDuration = buffer.duration
-    duration.value = playbackDuration
-    audioDuration.value = formatSecondsToTime(playbackDuration)
     playStartTime = context.currentTime
 
     bufferSource.start(0, 0, playbackDuration)
