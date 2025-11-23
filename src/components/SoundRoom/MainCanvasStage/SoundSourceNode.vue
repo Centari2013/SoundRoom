@@ -3,6 +3,8 @@
     :x="source.instance.state.x"
     :y="source.instance.state.y"
     @dragmove="onSourceDragMove"
+    :scaleX="selectedScale"
+    :scaleY="selectedScale"
   >
     <!-- Outer Cone -->
     <v-wedge
@@ -10,9 +12,11 @@
       :angle="coneOuter"
       :rotation="(-coneOuter / 2) + source.instance.state.angle"
       :radius="50"
-      fill="rgba(255, 100, 100, 0.2)"
-      shadowColor="rgba(255, 100, 100, 0.7)"
-      :shadowBlur="12"
+      :fill="outerConeFill"
+      :stroke="outerConeStroke"
+      :strokeWidth="1.5"
+      :shadowColor="outerConeShadowColor"
+      :shadowBlur="outerConeShadowBlur"
       :listening="false"
     />
 
@@ -22,14 +26,33 @@
       :angle="coneInner"
       :rotation="(-coneInner / 2) + source.instance.state.angle"
       :radius="50"
-      fill="rgba(255, 120, 120, 0.2)"
+      :fill="innerConeFill"
+      :stroke="innerConeStroke"
+      :strokeWidth="1"
       :listening="false"
     />
 
     <!-- Source Dot -->
     <v-circle
+      v-if="props.selected"
+      :radius="16"
+      :stroke="selectionGlowColor"
+      :strokeWidth="3"
+      :opacity="selectionGlowOpacity"
+      shadowForStrokeEnabled="true"
+      :shadowColor="selectionGlowColor"
+      :shadowBlur="selectionGlowBlur"
+      :listening="false"
+    />
+    <v-circle
       :radius="10"
       :fill="getFillColor"
+      :stroke="dotStrokeColor"
+      :strokeWidth="2"
+      :shadowColor="getFillColor"
+      :shadowBlur="nodeShadowBlur"
+      :shadowOpacity="nodeShadowOpacity"
+      shadowForStrokeEnabled="false"
       name="sound-node-part"
       @mousedown="onSourceMouseDown"
       @mouseup="onSourceMouseUp"
@@ -58,9 +81,13 @@
         ctx.fillStrokeShape(shape);
       }"
       :rotation="source.instance.state.angle - 90"
-      fill="#fff"
-      stroke="#000"
-      :strokeWidth="1"
+      :fillLinearGradientStartPoint="{ x: 0, y: 0 }"
+      :fillLinearGradientEndPoint="{ x: 0, y: 25 }"
+      :fillLinearGradientColorStops="directionGradientStops"
+      :stroke="directionStroke"
+      :strokeWidth="1.25"
+      :shadowColor="directionShadowColor"
+      :shadowBlur="4"
       @mousedown="onSourceMouseDown"
       @mouseup="onSourceMouseUp"
       @mouseover="setCursor($event, 'pointer')"
@@ -88,7 +115,7 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { useRoomStore } from '@/stores/useRoomStore'
 import { useActionManagerStore } from '@/stores/useActionManagerStore'
 import { storeToRefs } from 'pinia'
@@ -105,15 +132,76 @@ const { room } = storeToRefs(useRoomStore())
 const { actionManager } = storeToRefs(useActionManagerStore())
 const emit = defineEmits(['select'])
 
+const prefersDark = window.matchMedia('(prefers-color-scheme: dark)')
+const isDarkMode = ref(prefersDark.matches)
+
+const syncTheme = (event) => {
+  isDarkMode.value = event.matches
+}
+
+onMounted(() => prefersDark.addEventListener('change', syncTheme))
+onBeforeUnmount(() => prefersDark.removeEventListener('change', syncTheme))
+
 const sched = computed(() => props.source.instance.state.schedule)
 const isScheduled = computed(() => sched.value?.enabled)
 const isScheduledPlaying = computed(() => sched.value?.isPlaying)
 const sourceIsPlaying = computed(() => props.source.instance.playing);
 
-const getFillColor = computed(() => {
-  if (props.selected) return '#ff0' // Yellow for selected node
-  return isScheduled.value ? '#2e90fa' : '#f44336' // Red for unscheduled/looping
+const lightPalette = computed(() => {
+  const styles = getComputedStyle(document.documentElement)
+  return {
+    bg2: styles.getPropertyValue('--lm-bg-2')?.trim() || '#dcdcdc',
+    nodeRed: styles.getPropertyValue('--lm-node-red')?.trim() || '#d45a5a',
+    nodeBlue: styles.getPropertyValue('--lm-node-blue')?.trim() || '#6c8edb',
+    coneRed: styles.getPropertyValue('--lm-cone-red')?.trim() || 'rgba(212, 90, 90, 0.1)',
+    coneBlue: styles.getPropertyValue('--lm-cone-blue')?.trim() || 'rgba(108, 142, 219, 0.12)'
+  }
 })
+
+const getFillColor = computed(() => {
+  if (isDarkMode.value) {
+    if (props.selected) return '#ff0' // Yellow for selected node
+    return isScheduled.value ? '#2e90fa' : '#f44336' // Red for unscheduled/looping
+  }
+  const colors = lightPalette.value
+  if (props.selected) return colors.bg2
+  return isScheduled.value ? colors.nodeBlue : colors.nodeRed
+})
+
+const dotStrokeColor = computed(() => (isDarkMode.value ? (props.selected ? '#ffffff' : 'rgba(255, 255, 255, 0.9)') : '#333333'))
+const selectionGlowColor = computed(() => (isDarkMode.value ? '#6fd7ff' : 'rgba(0, 0, 0, 0.05)'))
+const selectedScale = computed(() => (props.selected ? 1.05 : 1))
+
+const outerConeFill = computed(() => {
+  if (isDarkMode.value) return 'rgba(255, 137, 137, 0.16)'
+  const colors = lightPalette.value
+  return isScheduled.value ? colors.coneBlue : colors.coneRed
+})
+const outerConeStroke = computed(() => isDarkMode.value
+  ? 'rgba(255, 137, 137, 0.28)'
+  : (isScheduled.value ? 'rgba(108, 142, 219, 0.24)' : 'rgba(212, 90, 90, 0.2)'))
+const outerConeShadowColor = computed(() => isDarkMode.value ? 'rgba(255, 120, 120, 0.65)' : 'rgba(0, 0, 0, 0.12)')
+const outerConeShadowBlur = computed(() => isDarkMode.value ? 18 : 10)
+
+const innerConeFill = computed(() => {
+  if (isDarkMode.value) return 'rgba(255, 180, 180, 0.18)'
+  const colors = lightPalette.value
+  return isScheduled.value ? 'rgba(108, 142, 219, 0.18)' : 'rgba(212, 90, 90, 0.16)'
+})
+const innerConeStroke = computed(() => isDarkMode.value ? 'rgba(255, 180, 180, 0.35)' : 'rgba(0, 0, 0, 0.18)')
+
+const selectionGlowOpacity = computed(() => isDarkMode.value ? 0.75 : 0.22)
+const selectionGlowBlur = computed(() => isDarkMode.value ? 14 : 8)
+
+const nodeShadowBlur = computed(() => isDarkMode.value ? 10 : 6)
+const nodeShadowOpacity = computed(() => isDarkMode.value ? 0.65 : 0.08)
+
+const directionGradientStops = computed(() => isDarkMode.value
+  ? [0, 'rgba(255,255,255,0.95)', 1, 'rgba(255,255,255,0.65)']
+  : [0, 'rgba(255,255,255,0.7)', 1, 'rgba(0,0,0,0.12)']
+)
+const directionStroke = computed(() => isDarkMode.value ? 'rgba(0, 0, 0, 0.6)' : '#333333')
+const directionShadowColor = computed(() => isDarkMode.value ? 'rgba(0,0,0,0.35)' : 'rgba(0,0,0,0.12)')
 
 
 
