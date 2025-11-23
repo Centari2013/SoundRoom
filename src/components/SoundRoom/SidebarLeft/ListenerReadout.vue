@@ -1,6 +1,6 @@
 <template>
-  <section class="text-[var(--lm-text-1)]">
-    <h5 class="text-sm font-semibold uppercase text-[var(--lm-text-1)] dark:text-neutral-400 mb-2">Listener</h5>
+  <section class="text-[var(--sr-text-1)]">
+    <h5 class="text-sm font-semibold uppercase text-[var(--sr-text-1)] dark:text-neutral-400 mb-2">Listener</h5>
     <div class="text-xs space-y-1">
       <p>X: {{ store.listener.x }}</p>
       <p>Y: {{ store.listener.y }}</p>

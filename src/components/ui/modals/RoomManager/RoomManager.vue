@@ -228,10 +228,8 @@ const createNewRoom = () => {
   margin-left: 20px;
 }
 
-@media (prefers-color-scheme: light) {
-  .load-button {
-    background-color: var(--sr-white);
-  }
+.load-button {
+  background-color: var(--sr-bg-1);
 }
 
 /* Base button styling */
@@ -250,10 +248,8 @@ const createNewRoom = () => {
   background-color: var(--sr-neutral-200);
 }
 
-@media (prefers-color-scheme: dark) {
-  .sound-manager-button:hover {
-    background-color: var(--sr-outline-strong);
-  }
+:global(.dark) .sound-manager-button:hover {
+  background-color: var(--sr-outline-strong);
 }
 
 /* Active/selected state */
@@ -262,9 +258,7 @@ const createNewRoom = () => {
   background-color: var(--sr-neutral-300);
 }
 
-@media (prefers-color-scheme: dark) {
-  .sound-manager-button.active {
-    background-color: var(--sr-outline-strong);
-  }
+:global(.dark) .sound-manager-button.active {
+  background-color: var(--sr-outline-strong);
 }
 </style>

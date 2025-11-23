@@ -67,6 +67,8 @@
         </div>
       </section>
 
+      <ThemeSelector />
+
       <section class="rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white/80 dark:bg-neutral-900/80 p-6 shadow-sm space-y-6">
         <header class="space-y-2">
           <h2 class="text-xl font-semibold">Profile</h2>
@@ -224,6 +226,7 @@ import { computed, reactive, ref, watch, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import BaseButton from '@/components/ui/input/BaseButton.vue'
 import BaseInput from '@/components/ui/input/BaseInput.vue'
+import ThemeSelector from '@/components/ui/ThemeSelector.vue'
 import { useAuth } from '@/composables/useAuth'
 import { supabase } from '@/utils/supabase'
 

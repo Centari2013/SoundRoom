@@ -57,11 +57,9 @@ function handleUpgrade() {
   box-shadow: 0 20px 45px rgba(var(--sr-outline-contrast-rgb), 0.15);
 }
 
-@media (prefers-color-scheme: dark) {
-  .modal-panel {
-    background-color: var(--sr-dark-plain);
-    color: var(--sr-slate-200);
-    box-shadow: 0 20px 45px rgba(var(--sr-black-rgb), 0.6);
-  }
+:global(.dark) .modal-panel {
+  background-color: var(--sr-dark-plain);
+  color: var(--sr-slate-200);
+  box-shadow: 0 20px 45px rgba(var(--sr-black-rgb), 0.6);
 }
 </style>

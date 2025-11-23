@@ -62,16 +62,12 @@ function handleSelectYourSounds() {
   transition: background-color 0.2s;
 }
 .sound-lib-button:hover { background-color: var(--sr-neutral-200); }
-@media (prefers-color-scheme: dark) {
-  .sound-lib-button:hover { background-color: var(--sr-outline-strong); }
-}
+:global(.dark) .sound-lib-button:hover { background-color: var(--sr-outline-strong); }
 .sound-lib-button.active {
   font-weight: 600;
   background-color: var(--sr-neutral-300);
 }
-@media (prefers-color-scheme: dark) {
-  .sound-lib-button.active { background-color: var(--sr-outline-strong); }
-}
+:global(.dark) .sound-lib-button.active { background-color: var(--sr-outline-strong); }
 
 .sound-lib-button.locked {
   opacity: 0.75;
@@ -90,10 +86,7 @@ function handleSelectYourSounds() {
   text-transform: uppercase;
   color: var(--sr-purple-600);
 }
-
-@media (prefers-color-scheme: dark) {
-  .badge {
-    color: var(--sr-purple-500);
-  }
+:global(.dark) .badge {
+  color: var(--sr-purple-500);
 }
 </style>

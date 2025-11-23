@@ -2,10 +2,10 @@
   <transition name="fade" @after-leave="emit('done')">
     <div
       v-if="visible"
-      class="absolute inset-0 flex items-center justify-center backdrop-blur-sm bg-[color-mix(in_srgb,var(--lm-bg-1)_70%,transparent)] dark:bg-black/40 z-50"
+      class="absolute inset-0 flex items-center justify-center backdrop-blur-sm bg-[color-mix(in_srgb,var(--sr-bg-1)_70%,transparent)] dark:bg-black/40 z-50"
     >
       <div
-        class="text-xl font-medium tracking-wide text-[var(--lm-text-0)] dark:text-white animate-pulse"
+        class="text-xl font-medium tracking-wide text-[var(--sr-text-0)] dark:text-white animate-pulse"
       >
         {{ text }}
       </div>

@@ -26,7 +26,7 @@
       <BaseButton
         @click="showSaveConfirm = true"
         :disabled="isSaving || !isRoomSaveable"
-        class="px-3 py-2 rounded bg-[var(--lm-bg-1)] hover:bg-[var(--lm-bg-0)] text-[var(--lm-text-0)] border border-[var(--lm-border)] dark:bg-neutral-800 dark:hover:bg-neutral-700 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400"
+        class="px-3 py-2 rounded bg-[var(--sr-bg-1)] hover:bg-[var(--sr-bg-0)] text-[var(--sr-text-0)] border border-[var(--sr-border)] dark:bg-neutral-800 dark:hover:bg-neutral-700 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400"
         type="button"
         aria-label="Open save room confirmation"
       >
@@ -36,7 +36,7 @@
       <BaseButton
         @click="showNewRoomConfirm = true"
         :disabled="isSaving || isRoomEmpty"
-        class="px-3 py-2 rounded bg-[var(--lm-bg-1)] hover:bg-[var(--lm-bg-0)] text-[var(--lm-text-0)] border border-[var(--lm-border)] dark:bg-neutral-800 dark:hover:bg-neutral-700 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400"
+        class="px-3 py-2 rounded bg-[var(--sr-bg-1)] hover:bg-[var(--sr-bg-0)] text-[var(--sr-text-0)] border border-[var(--sr-border)] dark:bg-neutral-800 dark:hover:bg-neutral-700 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400"
         type="button"
         aria-label="Open new room confirmation"
       >

@@ -7,11 +7,11 @@
     <div class="flex-1 min-h-0 flex flex-col">
       <div
         v-if="globalError"
-        class="flex-1 flex flex-col items-center justify-center text-center px-6 py-12 bg-[var(--lm-bg-0)] text-[var(--lm-text-0)] dark:bg-black dark:text-white"
+        class="flex-1 flex flex-col items-center justify-center text-center px-6 py-12 bg-[var(--sr-bg-0)] text-[var(--sr-text-0)] dark:bg-black dark:text-white"
       >
         <p class="text-sm uppercase tracking-[0.2em] text-rose-500 mb-3">Navigation error</p>
         <h2 class="text-2xl font-semibold mb-3">We couldn't load that page.</h2>
-        <p class="max-w-md text-[var(--lm-text-1)] dark:text-gray-400 mb-8">
+        <p class="max-w-md text-[var(--sr-text-1)] dark:text-gray-400 mb-8">
           {{ globalError.message }}
         </p>
         <div class="flex flex-wrap items-center justify-center gap-3">
@@ -37,10 +37,10 @@
             </ErrorBoundary>
           </template>
           <template #fallback>
-            <div class="flex-1 flex flex-col items-center justify-center text-center px-6 py-12 bg-[var(--lm-bg-0)] text-[var(--lm-text-0)] dark:bg-black dark:text-white">
+            <div class="flex-1 flex flex-col items-center justify-center text-center px-6 py-12 bg-[var(--sr-bg-0)] text-[var(--sr-text-0)] dark:bg-black dark:text-white">
               <p class="text-sm uppercase tracking-[0.2em] text-blue-500 mb-3">Loading</p>
               <h2 class="text-2xl font-semibold mb-3">Preparing SoundRoom…</h2>
-              <p class="max-w-md text-[var(--lm-text-1)] dark:text-gray-400">
+              <p class="max-w-md text-[var(--sr-text-1)] dark:text-gray-400">
                 Hang tight while we load the experience.
               </p>
             </div>

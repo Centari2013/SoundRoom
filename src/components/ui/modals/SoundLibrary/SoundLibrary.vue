@@ -237,10 +237,8 @@ async function listUserSounds() {
   margin-left: 20px;
 }
 
-@media (prefers-color-scheme: light) {
-  .load-button {
-    background-color: var(--sr-white);
-  }
+.load-button {
+  background-color: var(--sr-bg-1);
 }
 
 </style>
