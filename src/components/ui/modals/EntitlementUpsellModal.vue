@@ -41,7 +41,7 @@ function handleUpgrade() {
 .modal-backdrop {
   position: fixed;
   inset: 0;
-  background-color: rgba(0, 0, 0, 0.45);
+  background-color: rgba(var(--sr-black-rgb), 0.45);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -50,18 +50,18 @@ function handleUpgrade() {
 
 .modal-panel {
   width: min(480px, 90vw);
-  background-color: #ffffff;
-  color: #111827;
+  background-color: var(--sr-white);
+  color: var(--sr-outline-contrast);
   border-radius: 16px;
   padding: 32px;
-  box-shadow: 0 20px 45px rgba(15, 23, 42, 0.15);
+  box-shadow: 0 20px 45px rgba(var(--sr-outline-contrast-rgb), 0.15);
 }
 
 @media (prefers-color-scheme: dark) {
   .modal-panel {
-    background-color: #111111;
-    color: #e5e7eb;
-    box-shadow: 0 20px 45px rgba(0, 0, 0, 0.6);
+    background-color: var(--sr-dark-plain);
+    color: var(--sr-slate-200);
+    box-shadow: 0 20px 45px rgba(var(--sr-black-rgb), 0.6);
   }
 }
 </style>

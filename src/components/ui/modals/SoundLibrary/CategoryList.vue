@@ -61,16 +61,16 @@ function handleSelectYourSounds() {
   border-radius: 0.375rem;
   transition: background-color 0.2s;
 }
-.sound-lib-button:hover { background-color: #e5e5e5; }
+.sound-lib-button:hover { background-color: var(--sr-neutral-200); }
 @media (prefers-color-scheme: dark) {
-  .sound-lib-button:hover { background-color: #1f2937; }
+  .sound-lib-button:hover { background-color: var(--sr-outline-strong); }
 }
 .sound-lib-button.active {
   font-weight: 600;
-  background-color: #d4d4d4;
+  background-color: var(--sr-neutral-300);
 }
 @media (prefers-color-scheme: dark) {
-  .sound-lib-button.active { background-color: #1f2937; }
+  .sound-lib-button.active { background-color: var(--sr-outline-strong); }
 }
 
 .sound-lib-button.locked {
@@ -88,12 +88,12 @@ function handleSelectYourSounds() {
   font-size: 0.625rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #7c3aed;
+  color: var(--sr-purple-600);
 }
 
 @media (prefers-color-scheme: dark) {
   .badge {
-    color: #a855f7;
+    color: var(--sr-purple-500);
   }
 }
 </style>

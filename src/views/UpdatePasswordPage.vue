@@ -1,6 +1,6 @@
 <template>
   <div class="flex flex-col items-center justify-center min-h-screen px-4 py-12 bg-white text-black dark:bg-black dark:text-white transition-colors">
-    <div class="w-full max-w-sm space-y-6 bg-[#f8f8f8] dark:bg-[#111] rounded-2xl shadow-xl p-6 border border-gray-200 dark:border-neutral-800 transition-colors">
+    <div class="w-full max-w-sm space-y-6 bg-[var(--sr-panel-soft)] dark:bg-[var(--sr-dark-plain)] rounded-2xl shadow-xl p-6 border border-gray-200 dark:border-neutral-800 transition-colors">
       <h2 class="text-2xl font-semibold text-center tracking-wide">Reset Your Password</h2>
 
       <PasswordInput

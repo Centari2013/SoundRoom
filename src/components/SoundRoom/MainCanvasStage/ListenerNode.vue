@@ -111,6 +111,12 @@ const { room } = storeToRefs(useRoomStore())
 
 const prefersDark = window.matchMedia('(prefers-color-scheme: dark)')
 const isDarkMode = ref(prefersDark.matches)
+const rootStyles = computed(() => (typeof window !== 'undefined' ? getComputedStyle(document.documentElement) : null))
+const getVar = (name, fallback) => rootStyles.value?.getPropertyValue(name)?.trim() || fallback
+const rgbaFromVar = (name, alpha, fallback) => {
+  const rgbValue = rootStyles.value?.getPropertyValue(name)?.trim()
+  return rgbValue ? `rgba(${rgbValue}, ${alpha})` : fallback
+}
 
 const syncTheme = (event) => {
   isDarkMode.value = event.matches
@@ -119,37 +125,65 @@ const syncTheme = (event) => {
 onMounted(() => prefersDark.addEventListener('change', syncTheme))
 onBeforeUnmount(() => prefersDark.removeEventListener('change', syncTheme))
 
-const anchorGlowFill = computed(() => isDarkMode.value ? 'rgba(59, 130, 246, 0.08)' : 'rgba(0, 0, 0, 0.06)')
-const anchorShadowColor = computed(() => isDarkMode.value ? 'rgba(59, 130, 246, 0.3)' : 'rgba(0, 0, 0, 0.1)')
+const anchorGlowFill = computed(() => isDarkMode.value
+  ? rgbaFromVar('--sr-blue-500-rgb', 0.08, 'rgba(59, 130, 246, 0.08)')
+  : rgbaFromVar('--sr-black-rgb', 0.06, 'rgba(0, 0, 0, 0.06)'))
+const anchorShadowColor = computed(() => isDarkMode.value
+  ? rgbaFromVar('--sr-blue-500-rgb', 0.3, 'rgba(59, 130, 246, 0.3)')
+  : rgbaFromVar('--sr-black-rgb', 0.1, 'rgba(0, 0, 0, 0.1)'))
 const anchorShadowBlur = computed(() => isDarkMode.value ? 18 : 10)
 const anchorShadowOpacity = computed(() => isDarkMode.value ? 0.35 : 0.18)
 
-const bodyFill = computed(() => isDarkMode.value ? 'rgba(59, 130, 246, 0.15)' : 'rgba(150, 165, 185, 0.35)')
-const bodyStroke = computed(() => isDarkMode.value ? 'rgba(96, 165, 250, 0.9)' : '#2f3a4a')
-const bodyShadowColor = computed(() => isDarkMode.value ? 'rgba(0, 0, 0, 0.2)' : 'rgba(0, 0, 0, 0.08)')
+const bodyFill = computed(() => isDarkMode.value
+  ? rgbaFromVar('--sr-blue-500-rgb', 0.15, 'rgba(59, 130, 246, 0.15)')
+  : rgbaFromVar('--sr-body-fill-rgb', 0.35, 'rgba(150, 165, 185, 0.35)'))
+const bodyStroke = computed(() => isDarkMode.value
+  ? rgbaFromVar('--sr-blue-400-rgb', 0.9, 'rgba(96, 165, 250, 0.9)')
+  : getVar('--sr-detail-stroke', '#2f3a4a'))
+const bodyShadowColor = computed(() => isDarkMode.value
+  ? rgbaFromVar('--sr-black-rgb', 0.2, 'rgba(0, 0, 0, 0.2)')
+  : rgbaFromVar('--sr-black-rgb', 0.08, 'rgba(0, 0, 0, 0.08)'))
 const bodyShadowBlur = computed(() => isDarkMode.value ? 10 : 8)
 const bodyShadowOpacity = computed(() => isDarkMode.value ? 0.55 : 0.18)
 
-const detailFill = computed(() => isDarkMode.value ? 'rgba(15, 23, 42, 0.9)' : 'rgba(70, 80, 95, 0.85)')
-const detailStroke = computed(() => isDarkMode.value ? 'rgba(191, 219, 254, 0.85)' : 'rgba(60, 70, 85, 0.6)')
+const detailFill = computed(() => isDarkMode.value
+  ? rgbaFromVar('--sr-outline-contrast-rgb', 0.9, 'rgba(15, 23, 42, 0.9)')
+  : rgbaFromVar('--sr-detail-fill-rgb', 0.85, 'rgba(70, 80, 95, 0.85)'))
+const detailStroke = computed(() => isDarkMode.value
+  ? rgbaFromVar('--sr-blue-100-rgb', 0.85, 'rgba(191, 219, 254, 0.85)')
+  : rgbaFromVar('--sr-body-stroke-rgb', 0.6, 'rgba(60, 70, 85, 0.6)'))
 
-const detailShadowColor = computed(() => isDarkMode.value ? 'rgba(59, 130, 246, 0.35)' : 'rgba(0, 0, 0, 0.08)')
+const detailShadowColor = computed(() => isDarkMode.value
+  ? rgbaFromVar('--sr-blue-500-rgb', 0.35, 'rgba(59, 130, 246, 0.35)')
+  : rgbaFromVar('--sr-black-rgb', 0.08, 'rgba(0, 0, 0, 0.08)'))
 const detailShadowBlur = computed(() => isDarkMode.value ? 8 : 6)
 const detailShadowOpacity = computed(() => isDarkMode.value ? 0.45 : 0.2)
 
-const centerHighlightFill = computed(() => isDarkMode.value ? 'rgba(255, 255, 255, 0.75)' : 'rgba(255, 255, 255, 0.6)')
-const centerHighlightStroke = computed(() => isDarkMode.value ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.08)')
-const highlightShadowColor = computed(() => isDarkMode.value ? 'rgba(255, 255, 255, 0.35)' : 'rgba(0, 0, 0, 0.06)')
+const centerHighlightFill = computed(() => isDarkMode.value
+  ? rgbaFromVar('--sr-white-rgb', 0.75, 'rgba(255, 255, 255, 0.75)')
+  : rgbaFromVar('--sr-white-rgb', 0.6, 'rgba(255, 255, 255, 0.6)'))
+const centerHighlightStroke = computed(() => isDarkMode.value
+  ? rgbaFromVar('--sr-white-rgb', 0.2, 'rgba(255, 255, 255, 0.2)')
+  : rgbaFromVar('--sr-black-rgb', 0.08, 'rgba(0, 0, 0, 0.08)'))
+const highlightShadowColor = computed(() => isDarkMode.value
+  ? rgbaFromVar('--sr-white-rgb', 0.35, 'rgba(255, 255, 255, 0.35)')
+  : rgbaFromVar('--sr-black-rgb', 0.06, 'rgba(0, 0, 0, 0.06)'))
 const highlightShadowOpacity = computed(() => isDarkMode.value ? 0.5 : 0.28)
 
 const directionGradientStops = computed(() => isDarkMode.value
-  ? [0, 'rgba(191, 219, 254, 0.18)', 1, 'rgba(59, 130, 246, 0.85)']
-  : [0, 'rgba(140, 150, 165, 0.2)', 1, 'rgba(60, 70, 85, 0.8)']
+  ? [0, rgbaFromVar('--sr-blue-100-rgb', 0.18, 'rgba(191, 219, 254, 0.18)'), 1, rgbaFromVar('--sr-blue-500-rgb', 0.85, 'rgba(59, 130, 246, 0.85)')]
+  : [0, rgbaFromVar('--sr-detail-gradient-rgb', 0.2, 'rgba(140, 150, 165, 0.2)'), 1, rgbaFromVar('--sr-body-stroke-rgb', 0.8, 'rgba(60, 70, 85, 0.8)')]
 )
-const directionStroke = computed(() => isDarkMode.value ? 'rgba(15, 23, 42, 0.85)' : '#222222')
-const directionShadowColor = computed(() => isDarkMode.value ? 'rgba(59, 130, 246, 0.35)' : 'rgba(0, 0, 0, 0.1)')
+const directionStroke = computed(() => isDarkMode.value
+  ? rgbaFromVar('--sr-outline-contrast-rgb', 0.85, 'rgba(15, 23, 42, 0.85)')
+  : getVar('--sr-text-strong', '#222222'))
+const directionShadowColor = computed(() => isDarkMode.value
+  ? rgbaFromVar('--sr-blue-500-rgb', 0.35, 'rgba(59, 130, 246, 0.35)')
+  : rgbaFromVar('--sr-black-rgb', 0.1, 'rgba(0, 0, 0, 0.1)'))
 
-const rotationHandleFill = computed(() => isDarkMode.value ? 'rgba(59, 130, 246, 0.1)' : 'rgba(0, 0, 0, 0.06)')
+const rotationHandleFill = computed(() => isDarkMode.value
+  ? rgbaFromVar('--sr-blue-500-rgb', 0.1, 'rgba(59, 130, 246, 0.1)')
+  : rgbaFromVar('--sr-black-rgb', 0.06, 'rgba(0, 0, 0, 0.06)'))
 
 let moveListenerPayload = null
 let initialMouseAngle = null

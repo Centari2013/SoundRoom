@@ -25,7 +25,7 @@
 </template>
 
 <script setup>
-import { ref, watch, onMounted, onUnmounted } from 'vue'
+import { ref, watch, onMounted, onUnmounted, computed } from 'vue'
 
 const props = defineProps({
   playing: Boolean,
@@ -47,13 +47,22 @@ const props = defineProps({
   },
   color: {
     type: String,
-    default: '#2e90fa',
+    default: null, // handle default ourselves
   },
   strokeWidth: {
     type: Number,
     default: 1.5,
   },
 })
+
+// compute default color AFTER setup
+const fallbackColor = computed(() => {
+  if (typeof window === 'undefined') return '#2e90fa'
+  const styles = getComputedStyle(document.documentElement)
+  return styles.getPropertyValue('--sr-primary')?.trim() || '#2e90fa'
+})
+
+const color = computed(() => props.color || fallbackColor.value)
 
 const rotation = ref(0)
 let spinFrame = null
@@ -73,7 +82,7 @@ watch(() => props.playing, (val) => {
   }
 })
 
-// Pulse effect for scheduled items
+// Pulse
 const outerRadiusBase = props.outerRadius
 const pulseRadius = ref(outerRadiusBase)
 let pulseFrame = null
@@ -82,7 +91,6 @@ let pulseDirection = 1
 function pulse() {
   if (pulseRadius.value >= outerRadiusBase + 2) pulseDirection = -1
   else if (pulseRadius.value <= outerRadiusBase) pulseDirection = 1
-
   pulseRadius.value += 0.06 * pulseDirection
   pulseFrame = requestAnimationFrame(pulse)
 }
@@ -107,8 +115,8 @@ onMounted(() => {
 
 onUnmounted(() => {
   cancelAnimationFrame(spinFrame)
-  spinFrame = null
   cancelAnimationFrame(pulseFrame)
-  pulseFrame = null
+  spinFrame = pulseFrame = null
 })
 </script>
+
