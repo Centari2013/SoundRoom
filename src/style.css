@@ -1,25 +1,50 @@
 @import "tailwindcss";
+
 :root {
   font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
   line-height: 1.5;
   font-weight: 400;
 
   color-scheme: light dark;
-  color: var(--lm-text-0);
-  background-color: var(--lm-bg-0);
+  color: var(--sr-text-0);
+  background-color: var(--sr-bg-0);
 
-  --lm-bg-0: #f5f5f5;
-  --lm-bg-1: #ebebeb;
-  --lm-bg-2: #dcdcdc;
-  --lm-border: #c8c8c8;
-  --lm-text-0: #222222;
-  --lm-text-1: #555555;
-  --lm-grid-line: rgba(0, 0, 0, 0.08);
-  --lm-node-red: #d45a5a;
-  --lm-node-blue: #6c8edb;
-  --lm-cone-red: rgba(212, 90, 90, 0.1);
-  --lm-cone-blue: rgba(108, 142, 219, 0.12);
-  --lm-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
+  /* Light mode base colors */
+  --sr-bg-0: #f5f5f5;
+  --sr-bg-1: #ebebeb;
+  --sr-bg-2: #dcdcdc;
+  --sr-panel-border: #c8c8c8;
+  --sr-grid: rgba(0, 0, 0, 0.08);
+  --sr-text-0: #222222;
+  --sr-text-1: #555555;
+  /* Light mode nodes + cones derived from actual current app colors */
+  --sr-node-red: #d45a5a;
+  --sr-node-blue: #6c8edb;
+  --sr-cone-red: rgba(212, 90, 90, 0.1);
+  --sr-cone-blue: rgba(108, 142, 219, 0.12);
+  --sr-outer-cone-fill: rgba(212, 90, 90, 0.1);
+  --sr-outer-cone-stroke-red: rgba(212, 90, 90, 0.2);
+  --sr-outer-cone-stroke-blue: rgba(108, 142, 219, 0.24);
+  --sr-inner-cone-red: rgba(212, 90, 90, 0.16);
+  --sr-inner-cone-blue: rgba(108, 142, 219, 0.18);
+  --sr-inner-cone-stroke: rgba(0, 0, 0, 0.18);
+  --sr-outer-cone-shadow: rgba(0, 0, 0, 0.12);
+  --sr-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
+  --sr-selection: #ff0;
+  --sr-selection-glow: rgba(0, 0, 0, 0.05);
+  --sr-contrast-strong: #333333;
+  --sr-contrast-medium: #444444;
+  --sr-contrast-soft: #666666;
+  --sr-input-focus: #4a90e2;
+  --sr-schedule-node: #2e90fa;
+  --sr-unscheduled-node: #f44336;
+  --sr-dot-stroke: #333333;
+  --sr-dot-stroke-strong: #ffffff;
+  --sr-dot-stroke-ghost: rgba(255, 255, 255, 0.9);
+  --sr-direction-stroke: #333333;
+  --sr-direction-shadow: rgba(0, 0, 0, 0.12);
+  --sr-direction-gradient-0: rgba(255, 255, 255, 0.7);
+  --sr-direction-gradient-1: rgba(0, 0, 0, 0.12);
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -29,11 +54,11 @@
 
 a {
   font-weight: 500;
-  color: var(--lm-text-0);
+  color: var(--sr-text-0);
   text-decoration: inherit;
 }
 a:hover {
-  color: var(--lm-text-1);
+  color: var(--sr-text-1);
 }
 
 body {
@@ -42,8 +67,8 @@ body {
   place-items: center;
   min-width: 320px;
   min-height: 100vh;
-  color: var(--lm-text-0);
-  background: var(--lm-bg-0);
+  color: var(--sr-text-0);
+  background: var(--sr-bg-0);
 }
 
 h1 {
@@ -62,10 +87,10 @@ button {
   cursor: pointer;
   transition: border-color 0.25s;
 
-  @apply bg-[var(--lm-bg-1)] dark:bg-[#1a1a1a] text-[var(--lm-text-0)];
+  @apply bg-[var(--sr-bg-1)] dark:bg-[var(--sr-bg-1)] text-[var(--sr-text-0)];
 }
 button:hover {
-  border-color: var(--lm-border);
+  border-color: var(--sr-panel-border);
 }
 button:focus,
 button:focus-visible {
@@ -78,7 +103,7 @@ button:focus-visible {
 
 #app {
   margin: 0 auto;
-  
+
   text-align: center;
 }
 
@@ -86,18 +111,18 @@ button:disabled {
   opacity: 0.5;
   cursor: not-allowed;
   pointer-events: none;
-  background-color: #444; /* fallback for dark mode */
+  background-color: var(--sr-contrast-medium);
   color: #ccc;
 }
 
 input[type="text"],
 input[type="email"],
 input[type="password"] {
-  @apply w-full p-3 border border-[var(--lm-border)] rounded-lg dark:bg-[#333] bg-[var(--lm-bg-2)] dark:text-white text-[var(--lm-text-0)];
+  @apply w-full p-3 border border-[var(--sr-panel-border)] rounded-lg dark:bg-[var(--sr-bg-2)] bg-[var(--sr-bg-2)] dark:text-[var(--sr-text-0)] text-[var(--sr-text-0)];
 }
 
 input:disabled {
-  @apply dark:bg-neutral-700 dark:text-neutral-400 opacity-50 cursor-not-allowed bg-[var(--lm-bg-2)] text-[var(--lm-text-1)];
+  @apply dark:bg-[color-mix(in_srgb,var(--sr-bg-2)_85%,black)] dark:text-[color-mix(in_srgb,var(--sr-text-0)_70%,transparent)] opacity-50 cursor-not-allowed bg-[var(--sr-bg-2)] text-[var(--sr-text-1)];
 }
 
 
@@ -106,53 +131,69 @@ input:disabled {
 }
 
 .modal-panel {
-  @apply bg-[var(--lm-bg-0)] dark:bg-neutral-950 rounded-2xl w-[80vw] h-[80vh] shadow-[var(--lm-shadow)] dark:shadow-2xl border border-[var(--lm-border)] dark:border-neutral-800 overflow-hidden;
+  @apply bg-[var(--sr-bg-0)] dark:bg-[var(--sr-bg-0)] rounded-2xl w-[80vw] h-[80vh] shadow-[var(--sr-shadow)] dark:shadow-2xl border border-[var(--sr-panel-border)] dark:border-[var(--sr-panel-border)] overflow-hidden;
 }
 
 .modal-header-float {
   @apply absolute top-0 left-0 right-0 z-10 flex justify-between items-center px-6 py-4
-         bg-[color-mix(in_srgb,var(--lm-bg-0)_85%,transparent)] dark:bg-neutral-950/50 backdrop-blur-md border-b border-[var(--lm-border)] dark:border-neutral-800;
+         bg-[color-mix(in_srgb,var(--sr-bg-0)_85%,transparent)] dark:bg-[color-mix(in_srgb,var(--sr-bg-0)_70%,transparent)] backdrop-blur-md border-b border-[var(--sr-panel-border)] dark:border-[var(--sr-panel-border)];
 }
 
 .modal-header {
   @apply top-0 left-0 right-0 z-10 flex justify-between items-center px-6 py-4
-         bg-[color-mix(in_srgb,var(--lm-bg-0)_85%,transparent)] dark:bg-neutral-950/50 backdrop-blur-md border-b border-[var(--lm-border)] dark:border-neutral-800;
+         bg-[color-mix(in_srgb,var(--sr-bg-0)_85%,transparent)] dark:bg-[color-mix(in_srgb,var(--sr-bg-0)_70%,transparent)] backdrop-blur-md border-b border-[var(--sr-panel-border)] dark:border-[var(--sr-panel-border)];
 }
 
 
-
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --lm-bg-0: #0b0b0f;
-    --lm-bg-1: #131317;
-    --lm-bg-2: #1c1c22;
-    --lm-border: #27272a;
-    --lm-text-0: #f5f5f5;
-    --lm-text-1: #a1a1aa;
-    --lm-grid-line: rgba(255, 255, 255, 0.06);
-    --lm-node-red: #f87171;
-    --lm-node-blue: #60a5fa;
-    --lm-cone-red: rgba(248, 113, 113, 0.12);
-    --lm-cone-blue: rgba(96, 165, 250, 0.14);
-    --lm-shadow: 0 8px 24px rgba(0, 0, 0, 0.55);
-
-    color: var(--lm-text-0);
-    background-color: var(--lm-bg-0);
-  }
+.dark {
+  /* Dark mode base colors */
+  --sr-bg-0: #0b0b0f;
+  --sr-bg-1: #131317;
+  --sr-bg-2: #1c1c22;
+  --sr-panel-border: #27272a;
+  --sr-grid: rgba(255, 255, 255, 0.06);
+  --sr-text-0: #f5f5f5;
+  --sr-text-1: #a1a1aa;
+  /* Dark mode nodes + cones from existing code */
+  --sr-node-red: #f87171;
+  --sr-node-blue: #60a5fa;
+  --sr-cone-red: rgba(248, 113, 113, 0.12);
+  --sr-cone-blue: rgba(96, 165, 250, 0.14);
+  --sr-outer-cone-fill: rgba(255, 137, 137, 0.16);
+  --sr-outer-cone-stroke-red: rgba(255, 137, 137, 0.28);
+  --sr-outer-cone-stroke-blue: rgba(255, 137, 137, 0.28);
+  --sr-inner-cone-red: rgba(255, 180, 180, 0.18);
+  --sr-inner-cone-blue: rgba(255, 180, 180, 0.18);
+  --sr-inner-cone-stroke: rgba(255, 180, 180, 0.35);
+  --sr-outer-cone-shadow: rgba(255, 120, 120, 0.65);
+  --sr-shadow: 0 8px 24px rgba(0, 0, 0, 0.55);
+  --sr-selection-glow: #6fd7ff;
+  --sr-contrast-strong: #ffffff;
+  --sr-contrast-medium: #333333;
+  --sr-contrast-soft: #666666;
+  --sr-input-focus: #4a90e2;
+  --sr-schedule-node: #2e90fa;
+  --sr-unscheduled-node: #f44336;
+  --sr-dot-stroke: rgba(255, 255, 255, 0.9);
+  --sr-dot-stroke-strong: #ffffff;
+  --sr-dot-stroke-ghost: rgba(255, 255, 255, 0.9);
+  --sr-direction-stroke: rgba(0, 0, 0, 0.6);
+  --sr-direction-shadow: rgba(0, 0, 0, 0.35);
+  --sr-direction-gradient-0: rgba(255, 255, 255, 0.95);
+  --sr-direction-gradient-1: rgba(255, 255, 255, 0.65);
 }
 
 @media (prefers-color-scheme: light) {
   :root {
-    color: var(--lm-text-0);
-    background-color: var(--lm-bg-0);
+    color: var(--sr-text-0);
+    background-color: var(--sr-bg-0);
   }
   a:hover {
-    color: var(--lm-text-1);
+    color: var(--sr-text-1);
   }
 
   button:disabled {
-    background-color: var(--lm-bg-2);
-    color: var(--lm-text-1);
+    background-color: var(--sr-bg-2);
+    color: var(--sr-text-1);
   }
 }

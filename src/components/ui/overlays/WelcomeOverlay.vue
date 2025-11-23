@@ -2,7 +2,7 @@
   <transition name="fade">
     <div
       v-if="visible"
-      class="absolute inset-0 z-50 flex items-center justify-center backdrop-blur-md bg-[color-mix(in_srgb,var(--lm-bg-1)_70%,transparent)] dark:bg-black/50"
+      class="absolute inset-0 z-50 flex items-center justify-center backdrop-blur-md bg-[color-mix(in_srgb,var(--sr-bg-1)_70%,transparent)] dark:bg-[color-mix(in_srgb,var(--sr-bg-0)_50%,transparent)]"
     >
       <div class="text-center space-y-4">
         <h1
@@ -12,7 +12,7 @@
         </h1>
         <p
           v-if="subtext"
-          class="text-lg text-[var(--lm-text-1)] dark:text-neutral-300 opacity-80"
+          class="text-lg text-[var(--sr-text-1)] dark:text-[var(--sr-text-1)] opacity-80"
         >
           {{ subtext }}
         </p>

@@ -150,45 +150,71 @@ const sourceIsPlaying = computed(() => props.source.instance.playing);
 const lightPalette = computed(() => {
   const styles = getComputedStyle(document.documentElement)
   return {
-    bg2: styles.getPropertyValue('--lm-bg-2')?.trim() || '#dcdcdc',
-    nodeRed: styles.getPropertyValue('--lm-node-red')?.trim() || '#d45a5a',
-    nodeBlue: styles.getPropertyValue('--lm-node-blue')?.trim() || '#6c8edb',
-    coneRed: styles.getPropertyValue('--lm-cone-red')?.trim() || 'rgba(212, 90, 90, 0.1)',
-    coneBlue: styles.getPropertyValue('--lm-cone-blue')?.trim() || 'rgba(108, 142, 219, 0.12)'
+    bg2: styles.getPropertyValue('--sr-bg-2')?.trim() || '#dcdcdc',
+    nodeRed: styles.getPropertyValue('--sr-node-red')?.trim() || '#d45a5a',
+    nodeBlue: styles.getPropertyValue('--sr-node-blue')?.trim() || '#6c8edb',
+    coneRed: styles.getPropertyValue('--sr-cone-red')?.trim() || 'rgba(212, 90, 90, 0.1)',
+    coneBlue: styles.getPropertyValue('--sr-cone-blue')?.trim() || 'rgba(108, 142, 219, 0.12)',
+    coneRedInner: styles.getPropertyValue('--sr-inner-cone-red')?.trim() || 'rgba(212, 90, 90, 0.16)',
+    coneBlueInner: styles.getPropertyValue('--sr-inner-cone-blue')?.trim() || 'rgba(108, 142, 219, 0.18)',
+    coneInnerStroke: styles.getPropertyValue('--sr-inner-cone-stroke')?.trim() || 'rgba(0, 0, 0, 0.18)',
+    outerConeStrokeRed: styles.getPropertyValue('--sr-outer-cone-stroke-red')?.trim() || 'rgba(212, 90, 90, 0.2)',
+    outerConeStrokeBlue: styles.getPropertyValue('--sr-outer-cone-stroke-blue')?.trim() || 'rgba(108, 142, 219, 0.24)',
+    outerConeShadow: styles.getPropertyValue('--sr-outer-cone-shadow')?.trim() || 'rgba(0, 0, 0, 0.12)',
+    scheduleNode: styles.getPropertyValue('--sr-schedule-node')?.trim() || '#2e90fa',
+    unscheduledNode: styles.getPropertyValue('--sr-unscheduled-node')?.trim() || '#f44336',
+    dotStroke: styles.getPropertyValue('--sr-dot-stroke')?.trim() || '#333333',
+    directionStroke: styles.getPropertyValue('--sr-direction-stroke')?.trim() || '#333333',
+    directionShadow: styles.getPropertyValue('--sr-direction-shadow')?.trim() || 'rgba(0, 0, 0, 0.12)',
+    directionGradient0: styles.getPropertyValue('--sr-direction-gradient-0')?.trim() || 'rgba(255, 255, 255, 0.7)',
+    directionGradient1: styles.getPropertyValue('--sr-direction-gradient-1')?.trim() || 'rgba(0, 0, 0, 0.12)',
   }
 })
 
 const getFillColor = computed(() => {
   if (isDarkMode.value) {
-    if (props.selected) return '#ff0' // Yellow for selected node
-    return isScheduled.value ? '#2e90fa' : '#f44336' // Red for unscheduled/looping
+    if (props.selected) return 'var(--sr-selection)' // Yellow for selected node
+    const styles = getComputedStyle(document.documentElement)
+    const scheduled = styles.getPropertyValue('--sr-schedule-node')?.trim() || '#2e90fa'
+    const unscheduled = styles.getPropertyValue('--sr-unscheduled-node')?.trim() || '#f44336'
+    return isScheduled.value ? scheduled : unscheduled
   }
   const colors = lightPalette.value
   if (props.selected) return colors.bg2
-  return isScheduled.value ? colors.nodeBlue : colors.nodeRed
+  return isScheduled.value ? colors.scheduleNode : colors.unscheduledNode
 })
 
-const dotStrokeColor = computed(() => (isDarkMode.value ? (props.selected ? '#ffffff' : 'rgba(255, 255, 255, 0.9)') : '#333333'))
-const selectionGlowColor = computed(() => (isDarkMode.value ? '#6fd7ff' : 'rgba(0, 0, 0, 0.05)'))
+const dotStrokeColor = computed(() => {
+  if (isDarkMode.value) {
+    const styles = getComputedStyle(document.documentElement)
+    const selected = styles.getPropertyValue('--sr-dot-stroke-strong')?.trim() || '#ffffff'
+    const defaultStroke = styles.getPropertyValue('--sr-dot-stroke-ghost')?.trim() || 'rgba(255, 255, 255, 0.9)'
+    return props.selected ? selected : defaultStroke
+  }
+  return lightPalette.value.dotStroke
+})
+const selectionGlowColor = computed(() => (isDarkMode.value ? 'var(--sr-selection-glow)' : 'var(--sr-selection-glow)'))
 const selectedScale = computed(() => (props.selected ? 1.05 : 1))
 
 const outerConeFill = computed(() => {
-  if (isDarkMode.value) return 'rgba(255, 137, 137, 0.16)'
+  if (isDarkMode.value) return 'var(--sr-outer-cone-fill, rgba(255, 137, 137, 0.16))'
   const colors = lightPalette.value
   return isScheduled.value ? colors.coneBlue : colors.coneRed
 })
 const outerConeStroke = computed(() => isDarkMode.value
-  ? 'rgba(255, 137, 137, 0.28)'
-  : (isScheduled.value ? 'rgba(108, 142, 219, 0.24)' : 'rgba(212, 90, 90, 0.2)'))
-const outerConeShadowColor = computed(() => isDarkMode.value ? 'rgba(255, 120, 120, 0.65)' : 'rgba(0, 0, 0, 0.12)')
+  ? 'var(--sr-outer-cone-stroke-red)'
+  : (isScheduled.value ? colors.outerConeStrokeBlue : colors.outerConeStrokeRed))
+const outerConeShadowColor = computed(() => isDarkMode.value ? 'var(--sr-outer-cone-shadow)' : lightPalette.value.outerConeShadow)
 const outerConeShadowBlur = computed(() => isDarkMode.value ? 18 : 10)
 
 const innerConeFill = computed(() => {
-  if (isDarkMode.value) return 'rgba(255, 180, 180, 0.18)'
+  if (isDarkMode.value) return 'var(--sr-inner-cone-blue)'
   const colors = lightPalette.value
-  return isScheduled.value ? 'rgba(108, 142, 219, 0.18)' : 'rgba(212, 90, 90, 0.16)'
+  return isScheduled.value ? colors.coneBlueInner : colors.coneRedInner
 })
-const innerConeStroke = computed(() => isDarkMode.value ? 'rgba(255, 180, 180, 0.35)' : 'rgba(0, 0, 0, 0.18)')
+const innerConeStroke = computed(() => isDarkMode.value
+  ? 'var(--sr-inner-cone-stroke)'
+  : lightPalette.value.coneInnerStroke)
 
 const selectionGlowOpacity = computed(() => isDarkMode.value ? 0.75 : 0.22)
 const selectionGlowBlur = computed(() => isDarkMode.value ? 14 : 8)
@@ -196,12 +222,20 @@ const selectionGlowBlur = computed(() => isDarkMode.value ? 14 : 8)
 const nodeShadowBlur = computed(() => isDarkMode.value ? 10 : 6)
 const nodeShadowOpacity = computed(() => isDarkMode.value ? 0.65 : 0.08)
 
-const directionGradientStops = computed(() => isDarkMode.value
-  ? [0, 'rgba(255,255,255,0.95)', 1, 'rgba(255,255,255,0.65)']
-  : [0, 'rgba(255,255,255,0.7)', 1, 'rgba(0,0,0,0.12)']
-)
-const directionStroke = computed(() => isDarkMode.value ? 'rgba(0, 0, 0, 0.6)' : '#333333')
-const directionShadowColor = computed(() => isDarkMode.value ? 'rgba(0,0,0,0.35)' : 'rgba(0,0,0,0.12)')
+const directionGradientStops = computed(() => {
+  if (isDarkMode.value) {
+    const styles = getComputedStyle(document.documentElement)
+    return [0, styles.getPropertyValue('--sr-direction-gradient-0')?.trim() || 'rgba(255,255,255,0.95)', 1, styles.getPropertyValue('--sr-direction-gradient-1')?.trim() || 'rgba(255,255,255,0.65)']
+  }
+  const colors = lightPalette.value
+  return [0, colors.directionGradient0, 1, colors.directionGradient1]
+})
+const directionStroke = computed(() => (isDarkMode.value
+  ? getComputedStyle(document.documentElement).getPropertyValue('--sr-direction-stroke')?.trim() || 'rgba(0, 0, 0, 0.6)'
+  : lightPalette.value.directionStroke))
+const directionShadowColor = computed(() => (isDarkMode.value
+  ? getComputedStyle(document.documentElement).getPropertyValue('--sr-direction-shadow')?.trim() || 'rgba(0,0,0,0.35)'
+  : lightPalette.value.directionShadow))
 
 
 
