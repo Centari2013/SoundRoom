@@ -141,6 +141,43 @@
         </header>
 
         <div class="space-y-6">
+          <div class="flex flex-col gap-3 md:flex-row md:items-start md:justify-between md:gap-6">
+            <div>
+              <h3 class="text-base font-medium">Theme</h3>
+              <p class="text-sm text-neutral-600 dark:text-neutral-400">
+                Toggle between light and dark mode or follow your system default colors.
+              </p>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 w-full md:w-auto">
+              <button
+                v-for="option in themeOptions"
+                :key="option.value"
+                type="button"
+                class="group relative rounded-xl border bg-white/70 dark:bg-neutral-900/70 px-4 py-3 text-left shadow-sm transition-colors"
+                :class="[
+                  preferences.theme === option.value
+                    ? 'border-blue-500 ring-2 ring-blue-100 dark:ring-blue-500/30'
+                    : 'border-neutral-200 dark:border-neutral-700 hover:border-neutral-400 dark:hover:border-neutral-500'
+                ]"
+                @click="preferences.theme = option.value"
+              >
+                <div class="flex items-center justify-between gap-3">
+                  <div>
+                    <p class="text-sm font-medium">{{ option.label }}</p>
+                    <p class="text-xs text-neutral-500 dark:text-neutral-400">{{ option.description }}</p>
+                  </div>
+                  <span
+                    class="mt-1 hidden h-6 min-w-[72px] overflow-hidden rounded-md border border-neutral-200 dark:border-neutral-700 sm:flex"
+                    aria-hidden="true"
+                  >
+                    <span class="flex-1 bg-[var(--lm-bg-1)]"></span>
+                    <span class="flex-1 bg-[var(--sr-dark-bg-1)]"></span>
+                  </span>
+                </div>
+              </button>
+            </div>
+          </div>
+
           <div class="flex items-start justify-between gap-6">
             <div>
               <h3 class="text-base font-medium">Auto-resume sessions</h3>
@@ -226,6 +263,7 @@ import BaseButton from '@/components/ui/input/BaseButton.vue'
 import BaseInput from '@/components/ui/input/BaseInput.vue'
 import { useAuth } from '@/composables/useAuth'
 import { supabase } from '@/utils/supabase'
+import { applyTheme, getStoredThemePreference, persistThemePreference } from '@/utils/theme'
 
 const router = useRouter()
 const route = useRoute()
@@ -251,17 +289,24 @@ const profileErrors = reactive({
 const isFetchingProfile = ref(false)
 const avatarFailed = ref(false)
 
+const storedThemePreference = getStoredThemePreference()
+
 const preferenceDefaults = Object.freeze({
   autoResumePlayback: false,
-  showInterfaceTips: true
+  showInterfaceTips: true,
+  theme: 'system'
 })
 
 const preferences = reactive({
   autoResumePlayback: preferenceDefaults.autoResumePlayback,
-  showInterfaceTips: preferenceDefaults.showInterfaceTips
+  showInterfaceTips: preferenceDefaults.showInterfaceTips,
+  theme: storedThemePreference || preferenceDefaults.theme
 })
 
-const preferenceInitial = ref({ ...preferenceDefaults })
+const preferenceInitial = ref({
+  ...preferenceDefaults,
+  theme: storedThemePreference || preferenceDefaults.theme
+})
 const preferenceMessage = ref('')
 
 const securityMessage = ref('')
@@ -272,6 +317,24 @@ const planErrorMessage = ref('')
 const isProcessingCheckout = ref(false)
 
 const LOCAL_PREF_KEY = 'soundroom.userPreferences'
+
+const themeOptions = [
+  {
+    value: 'system',
+    label: 'System',
+    description: 'Match your device setting'
+  },
+  {
+    value: 'light',
+    label: 'Light',
+    description: 'Bright backgrounds and dark text'
+  },
+  {
+    value: 'dark',
+    label: 'Dark',
+    description: 'Dimmed backgrounds with light text'
+  }
+]
 
 const userEmail = computed(() => user.value?.email ?? 'Unknown user')
 const formattedUserId = computed(() => user.value?.id ?? '—')
@@ -393,29 +456,42 @@ function loadPreferences() {
   try {
     const stored = localStorage.getItem(LOCAL_PREF_KEY)
     if (!stored) {
-      preferenceInitial.value = { ...preferenceDefaults }
-      applyPreferences(preferenceDefaults)
+      preferenceInitial.value = {
+        ...preferenceDefaults,
+        theme: storedThemePreference || preferenceDefaults.theme
+      }
+      applyPreferences(preferenceInitial.value)
       return
     }
 
     const parsed = JSON.parse(stored)
-    const merged = { ...preferenceDefaults, ...parsed }
+    const merged = {
+      ...preferenceDefaults,
+      theme: storedThemePreference || preferenceDefaults.theme,
+      ...parsed
+    }
     preferenceInitial.value = { ...merged }
     applyPreferences(merged)
   } catch (error) {
     console.warn('Failed to parse stored preferences', error)
-    preferenceInitial.value = { ...preferenceDefaults }
-    applyPreferences(preferenceDefaults)
+    preferenceInitial.value = {
+      ...preferenceDefaults,
+      theme: storedThemePreference || preferenceDefaults.theme
+    }
+    applyPreferences(preferenceInitial.value)
   }
 }
 
 function resetPreferences() {
   applyPreferences(preferenceDefaults)
   preferenceMessage.value = ''
+  applyTheme(preferences.theme)
 }
 
 function savePreferences() {
   localStorage.setItem(LOCAL_PREF_KEY, JSON.stringify(preferences))
+  persistThemePreference(preferences.theme)
+  applyTheme(preferences.theme)
   preferenceInitial.value = { ...preferences }
   preferenceMessage.value = 'Preferences saved. Nice!'
   setTimeout(() => {
@@ -567,6 +643,14 @@ watch(
   () => {
     avatarFailed.value = false
   }
+)
+
+watch(
+  () => preferences.theme,
+  (value) => {
+    applyTheme(value)
+  },
+  { immediate: true }
 )
 
 watch(hasProfileChanges, (dirty) => {

@@ -2,6 +2,7 @@
 const withAlpha = (variable) => `rgb(var(${variable}) / <alpha-value>)`
 
 module.exports = {
+  darkMode: 'class',
   important: true,
   theme: {
     extend: {
