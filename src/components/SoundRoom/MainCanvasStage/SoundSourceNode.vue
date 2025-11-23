@@ -326,6 +326,11 @@ function onSourceDragMove(e) {
 
 // Source drop
 function onSourceMouseUp(e) {
+  const group = e.target?.getParent?.()
+  if (group?.draggable()) {
+    group.draggable(false)
+  }
+
   const to = {
     x: props.source.instance.state.x,
     y: props.source.instance.state.y
@@ -343,6 +348,12 @@ function onSourceMouseUp(e) {
 function onHandleMouseDown(e) {
   emit('select', props.index)
   e.evt.stopPropagation()
+
+  const group = e.target.getParent()
+  if (group?.draggable()) {
+    group.stopDrag()
+    group.draggable(false)
+  }
 
   initialSourceAngle = props.source.instance.state.angle
 
