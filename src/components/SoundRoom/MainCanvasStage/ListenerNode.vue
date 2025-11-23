@@ -126,64 +126,64 @@ onMounted(() => prefersDark.addEventListener('change', syncTheme))
 onBeforeUnmount(() => prefersDark.removeEventListener('change', syncTheme))
 
 const anchorGlowFill = computed(() => isDarkMode.value
-  ? rgbaFromVar('--sr-blue-500-rgb', 0.08, 'rgba(59, 130, 246, 0.08)')
-  : rgbaFromVar('--sr-black-rgb', 0.06, 'rgba(0, 0, 0, 0.06)'))
+  ? rgbaFromVar('--sr-blue-500-rgb', 0.08, 'var(--sr-blue-500-08)')
+  : rgbaFromVar('--sr-black-rgb', 0.06, 'var(--sr-listener-anchor-glow)'))
 const anchorShadowColor = computed(() => isDarkMode.value
-  ? rgbaFromVar('--sr-blue-500-rgb', 0.3, 'rgba(59, 130, 246, 0.3)')
-  : rgbaFromVar('--sr-black-rgb', 0.1, 'rgba(0, 0, 0, 0.1)'))
+  ? rgbaFromVar('--sr-blue-500-rgb', 0.3, 'var(--sr-blue-500-30)')
+  : rgbaFromVar('--sr-black-rgb', 0.1, 'var(--sr-listener-anchor-shadow)'))
 const anchorShadowBlur = computed(() => isDarkMode.value ? 18 : 10)
 const anchorShadowOpacity = computed(() => isDarkMode.value ? 0.35 : 0.18)
 
 const bodyFill = computed(() => isDarkMode.value
-  ? rgbaFromVar('--sr-blue-500-rgb', 0.15, 'rgba(59, 130, 246, 0.15)')
-  : rgbaFromVar('--sr-body-fill-rgb', 0.35, 'rgba(150, 165, 185, 0.35)'))
+  ? rgbaFromVar('--sr-blue-500-rgb', 0.15, 'var(--sr-blue-500-15)')
+  : rgbaFromVar('--sr-body-fill-rgb', 0.35, 'var(--sr-listener-body-fill)'))
 const bodyStroke = computed(() => isDarkMode.value
-  ? rgbaFromVar('--sr-blue-400-rgb', 0.9, 'rgba(96, 165, 250, 0.9)')
-  : getVar('--sr-detail-stroke', '#2f3a4a'))
+  ? rgbaFromVar('--sr-blue-400-rgb', 0.9, 'var(--sr-blue-400-90)')
+  : getVar('--sr-detail-stroke', 'var(--sr-detail-stroke)'))
 const bodyShadowColor = computed(() => isDarkMode.value
-  ? rgbaFromVar('--sr-black-rgb', 0.2, 'rgba(0, 0, 0, 0.2)')
-  : rgbaFromVar('--sr-black-rgb', 0.08, 'rgba(0, 0, 0, 0.08)'))
+  ? rgbaFromVar('--sr-black-rgb', 0.2, 'var(--sr-black-20)')
+  : rgbaFromVar('--sr-black-rgb', 0.08, 'var(--sr-listener-body-shadow)'))
 const bodyShadowBlur = computed(() => isDarkMode.value ? 10 : 8)
 const bodyShadowOpacity = computed(() => isDarkMode.value ? 0.55 : 0.18)
 
 const detailFill = computed(() => isDarkMode.value
-  ? rgbaFromVar('--sr-outline-contrast-rgb', 0.9, 'rgba(15, 23, 42, 0.9)')
-  : rgbaFromVar('--sr-detail-fill-rgb', 0.85, 'rgba(70, 80, 95, 0.85)'))
+  ? rgbaFromVar('--sr-outline-contrast-rgb', 0.9, 'var(--sr-outline-contrast-90)')
+  : rgbaFromVar('--sr-detail-fill-rgb', 0.85, 'var(--sr-listener-detail-fill)'))
 const detailStroke = computed(() => isDarkMode.value
-  ? rgbaFromVar('--sr-blue-100-rgb', 0.85, 'rgba(191, 219, 254, 0.85)')
-  : rgbaFromVar('--sr-body-stroke-rgb', 0.6, 'rgba(60, 70, 85, 0.6)'))
+  ? rgbaFromVar('--sr-blue-100-rgb', 0.85, 'var(--sr-blue-100-85)')
+  : rgbaFromVar('--sr-body-stroke-rgb', 0.6, 'var(--sr-listener-detail-stroke)'))
 
 const detailShadowColor = computed(() => isDarkMode.value
-  ? rgbaFromVar('--sr-blue-500-rgb', 0.35, 'rgba(59, 130, 246, 0.35)')
-  : rgbaFromVar('--sr-black-rgb', 0.08, 'rgba(0, 0, 0, 0.08)'))
+  ? rgbaFromVar('--sr-blue-500-rgb', 0.35, 'var(--sr-blue-500-35)')
+  : rgbaFromVar('--sr-black-rgb', 0.08, 'var(--sr-listener-detail-shadow)'))
 const detailShadowBlur = computed(() => isDarkMode.value ? 8 : 6)
 const detailShadowOpacity = computed(() => isDarkMode.value ? 0.45 : 0.2)
 
 const centerHighlightFill = computed(() => isDarkMode.value
-  ? rgbaFromVar('--sr-white-rgb', 0.75, 'rgba(255, 255, 255, 0.75)')
-  : rgbaFromVar('--sr-white-rgb', 0.6, 'rgba(255, 255, 255, 0.6)'))
+  ? rgbaFromVar('--sr-white-rgb', 0.75, 'var(--sr-white-75)')
+  : rgbaFromVar('--sr-white-rgb', 0.6, 'var(--sr-listener-center-highlight)'))
 const centerHighlightStroke = computed(() => isDarkMode.value
-  ? rgbaFromVar('--sr-white-rgb', 0.2, 'rgba(255, 255, 255, 0.2)')
-  : rgbaFromVar('--sr-black-rgb', 0.08, 'rgba(0, 0, 0, 0.08)'))
+  ? rgbaFromVar('--sr-white-rgb', 0.2, 'var(--sr-white-20)')
+  : rgbaFromVar('--sr-black-rgb', 0.08, 'var(--sr-listener-center-stroke)'))
 const highlightShadowColor = computed(() => isDarkMode.value
-  ? rgbaFromVar('--sr-white-rgb', 0.35, 'rgba(255, 255, 255, 0.35)')
-  : rgbaFromVar('--sr-black-rgb', 0.06, 'rgba(0, 0, 0, 0.06)'))
+  ? rgbaFromVar('--sr-white-rgb', 0.35, 'var(--sr-white-35)')
+  : rgbaFromVar('--sr-black-rgb', 0.06, 'var(--sr-listener-highlight-shadow)'))
 const highlightShadowOpacity = computed(() => isDarkMode.value ? 0.5 : 0.28)
 
 const directionGradientStops = computed(() => isDarkMode.value
-  ? [0, rgbaFromVar('--sr-blue-100-rgb', 0.18, 'rgba(191, 219, 254, 0.18)'), 1, rgbaFromVar('--sr-blue-500-rgb', 0.85, 'rgba(59, 130, 246, 0.85)')]
-  : [0, rgbaFromVar('--sr-detail-gradient-rgb', 0.2, 'rgba(140, 150, 165, 0.2)'), 1, rgbaFromVar('--sr-body-stroke-rgb', 0.8, 'rgba(60, 70, 85, 0.8)')]
+  ? [0, rgbaFromVar('--sr-blue-100-rgb', 0.18, 'var(--sr-blue-100-18)'), 1, rgbaFromVar('--sr-blue-500-rgb', 0.85, 'var(--sr-blue-500-85)')]
+  : [0, rgbaFromVar('--sr-detail-gradient-rgb', 0.2, 'var(--sr-listener-direction-start)'), 1, rgbaFromVar('--sr-body-stroke-rgb', 0.8, 'var(--sr-listener-direction-end)')]
 )
 const directionStroke = computed(() => isDarkMode.value
-  ? rgbaFromVar('--sr-outline-contrast-rgb', 0.85, 'rgba(15, 23, 42, 0.85)')
-  : getVar('--sr-text-strong', '#222222'))
+  ? rgbaFromVar('--sr-outline-contrast-rgb', 0.85, 'var(--sr-outline-contrast-85)')
+  : getVar('--sr-text-strong', 'var(--sr-text-strong)'))
 const directionShadowColor = computed(() => isDarkMode.value
-  ? rgbaFromVar('--sr-blue-500-rgb', 0.35, 'rgba(59, 130, 246, 0.35)')
-  : rgbaFromVar('--sr-black-rgb', 0.1, 'rgba(0, 0, 0, 0.1)'))
+  ? rgbaFromVar('--sr-blue-500-rgb', 0.35, 'var(--sr-blue-500-35)')
+  : rgbaFromVar('--sr-black-rgb', 0.1, 'var(--sr-listener-direction-shadow)'))
 
 const rotationHandleFill = computed(() => isDarkMode.value
-  ? rgbaFromVar('--sr-blue-500-rgb', 0.1, 'rgba(59, 130, 246, 0.1)')
-  : rgbaFromVar('--sr-black-rgb', 0.06, 'rgba(0, 0, 0, 0.06)'))
+  ? rgbaFromVar('--sr-blue-500-rgb', 0.1, 'var(--sr-blue-500-10)')
+  : rgbaFromVar('--sr-black-rgb', 0.06, 'var(--sr-listener-rotation-fill)'))
 
 let moveListenerPayload = null
 let initialMouseAngle = null

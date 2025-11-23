@@ -154,20 +154,20 @@ const isScheduledPlaying = computed(() => sched.value?.isPlaying)
 const sourceIsPlaying = computed(() => props.source.instance.playing);
 
 const lightPalette = computed(() => ({
-  bg2: getVar('--lm-bg-2', '#dcdcdc'),
-  nodeRed: getVar('--lm-node-red', '#d45a5a'),
-  nodeBlue: getVar('--lm-node-blue', '#6c8edb'),
-  coneRed: getVar('--lm-cone-red', 'rgba(212, 90, 90, 0.1)'),
-  coneBlue: getVar('--lm-cone-blue', 'rgba(108, 142, 219, 0.12)'),
+  bg2: getVar('--lm-bg-2', 'var(--sr-source-selected-bg)'),
+  nodeRed: getVar('--lm-node-red', 'var(--sr-source-node-red)'),
+  nodeBlue: getVar('--lm-node-blue', 'var(--sr-source-node-blue)'),
+  coneRed: getVar('--lm-cone-red', 'var(--sr-source-cone-red)'),
+  coneBlue: getVar('--lm-cone-blue', 'var(--sr-source-cone-blue)'),
 }))
 
 const themeTokens = computed(() => ({
-  primary: getVar('--sr-primary', '#2e90fa'),
-  danger: getVar('--sr-accent-danger', '#f44336'),
-  selected: getVar('--sr-accent-yellow', '#ffff00'),
-  selectionHighlight: getVar('--sr-highlight-blue', '#6fd7ff'),
-  mutedStroke: getVar('--sr-surface-muted', '#333333'),
-  white: getVar('--sr-white', '#ffffff'),
+  primary: getVar('--sr-primary', 'var(--sr-primary)'),
+  danger: getVar('--sr-accent-danger', 'var(--sr-accent-danger)'),
+  selected: getVar('--sr-accent-yellow', 'var(--sr-accent-yellow)'),
+  selectionHighlight: getVar('--sr-highlight-blue', 'var(--sr-highlight-blue)'),
+  mutedStroke: getVar('--sr-surface-muted', 'var(--sr-surface-muted)'),
+  white: getVar('--sr-white', 'var(--sr-white)'),
 }))
 
 const getFillColor = computed(() => {
@@ -181,39 +181,39 @@ const getFillColor = computed(() => {
 })
 
 const dotStrokeColor = computed(() => {
-  if (isDarkMode.value) return props.selected ? themeTokens.value.white : rgbaFromVar('--sr-white-rgb', 0.9, 'rgba(255, 255, 255, 0.9)')
+  if (isDarkMode.value) return props.selected ? themeTokens.value.white : rgbaFromVar('--sr-white-rgb', 0.9, 'var(--sr-white-90)')
   return themeTokens.value.mutedStroke
 })
 const selectionGlowColor = computed(() => (isDarkMode.value
   ? themeTokens.value.selectionHighlight
-  : rgbaFromVar('--sr-black-rgb', 0.05, 'rgba(0, 0, 0, 0.05)')))
+  : rgbaFromVar('--sr-black-rgb', 0.05, 'var(--sr-source-selection-glow)')))
 const selectedScale = computed(() => (props.selected ? 1.05 : 1))
 
 const outerConeFill = computed(() => {
-  if (isDarkMode.value) return rgbaFromVar('--sr-dark-warm-red-rgb', 0.16, 'rgba(255, 137, 137, 0.16)')
+  if (isDarkMode.value) return rgbaFromVar('--sr-dark-warm-red-rgb', 0.16, 'var(--sr-dark-warm-red-16)')
   const colors = lightPalette.value
   return isScheduled.value ? colors.coneBlue : colors.coneRed
 })
 const outerConeStroke = computed(() => isDarkMode.value
-  ? rgbaFromVar('--sr-dark-warm-red-rgb', 0.28, 'rgba(255, 137, 137, 0.28)')
+  ? rgbaFromVar('--sr-dark-warm-red-rgb', 0.28, 'var(--sr-dark-warm-red-28)')
   : (isScheduled.value
-    ? rgbaFromVar('--sr-node-blue-rgb', 0.24, 'rgba(108, 142, 219, 0.24)')
-    : rgbaFromVar('--sr-node-red-rgb', 0.2, 'rgba(212, 90, 90, 0.2)')))
+    ? rgbaFromVar('--sr-node-blue-rgb', 0.24, 'var(--sr-node-blue-24)')
+    : rgbaFromVar('--sr-node-red-rgb', 0.2, 'var(--sr-node-red-20)')))
 const outerConeShadowColor = computed(() => isDarkMode.value
-  ? rgbaFromVar('--sr-dark-bright-red-rgb', 0.65, 'rgba(255, 120, 120, 0.65)')
-  : rgbaFromVar('--sr-black-rgb', 0.12, 'rgba(0, 0, 0, 0.12)'))
+  ? rgbaFromVar('--sr-dark-bright-red-rgb', 0.65, 'var(--sr-dark-bright-red-65)')
+  : rgbaFromVar('--sr-black-rgb', 0.12, 'var(--sr-black-12)'))
 const outerConeShadowBlur = computed(() => isDarkMode.value ? 18 : 10)
 
 const innerConeFill = computed(() => {
-  if (isDarkMode.value) return rgbaFromVar('--sr-dark-soft-red-rgb', 0.18, 'rgba(255, 180, 180, 0.18)')
+  if (isDarkMode.value) return rgbaFromVar('--sr-dark-soft-red-rgb', 0.18, 'var(--sr-dark-soft-red-18)')
   const colors = lightPalette.value
   return isScheduled.value
-    ? rgbaFromVar('--sr-node-blue-rgb', 0.18, 'rgba(108, 142, 219, 0.18)')
-    : rgbaFromVar('--sr-node-red-rgb', 0.16, 'rgba(212, 90, 90, 0.16)')
+    ? rgbaFromVar('--sr-node-blue-rgb', 0.18, 'var(--sr-node-blue-18)')
+    : rgbaFromVar('--sr-node-red-rgb', 0.16, 'var(--sr-node-red-16)')
 })
 const innerConeStroke = computed(() => isDarkMode.value
-  ? rgbaFromVar('--sr-dark-soft-red-rgb', 0.35, 'rgba(255, 180, 180, 0.35)')
-  : rgbaFromVar('--sr-black-rgb', 0.18, 'rgba(0, 0, 0, 0.18)'))
+  ? rgbaFromVar('--sr-dark-soft-red-rgb', 0.35, 'var(--sr-dark-soft-red-35)')
+  : rgbaFromVar('--sr-black-rgb', 0.18, 'var(--sr-black-18)'))
 
 const selectionGlowOpacity = computed(() => isDarkMode.value ? 0.75 : 0.22)
 const selectionGlowBlur = computed(() => isDarkMode.value ? 14 : 8)
@@ -222,15 +222,15 @@ const nodeShadowBlur = computed(() => isDarkMode.value ? 10 : 6)
 const nodeShadowOpacity = computed(() => isDarkMode.value ? 0.65 : 0.08)
 
 const directionGradientStops = computed(() => isDarkMode.value
-  ? [0, rgbaFromVar('--sr-white-rgb', 0.95, 'rgba(255,255,255,0.95)'), 1, rgbaFromVar('--sr-white-rgb', 0.65, 'rgba(255,255,255,0.65)')]
-  : [0, rgbaFromVar('--sr-white-rgb', 0.7, 'rgba(255,255,255,0.7)'), 1, rgbaFromVar('--sr-black-rgb', 0.12, 'rgba(0,0,0,0.12)')]
+  ? [0, rgbaFromVar('--sr-white-rgb', 0.95, 'var(--sr-white-95)'), 1, rgbaFromVar('--sr-white-rgb', 0.65, 'var(--sr-white-65)')]
+  : [0, rgbaFromVar('--sr-white-rgb', 0.7, 'var(--sr-white-70)'), 1, rgbaFromVar('--sr-black-rgb', 0.12, 'var(--sr-black-12)')]
 )
 const directionStroke = computed(() => isDarkMode.value
-  ? rgbaFromVar('--sr-black-rgb', 0.6, 'rgba(0, 0, 0, 0.6)')
+  ? rgbaFromVar('--sr-black-rgb', 0.6, 'var(--sr-black-60)')
   : themeTokens.value.mutedStroke)
 const directionShadowColor = computed(() => isDarkMode.value
-  ? rgbaFromVar('--sr-black-rgb', 0.35, 'rgba(0,0,0,0.35)')
-  : rgbaFromVar('--sr-black-rgb', 0.12, 'rgba(0,0,0,0.12)'))
+  ? rgbaFromVar('--sr-black-rgb', 0.35, 'var(--sr-black-35)')
+  : rgbaFromVar('--sr-black-rgb', 0.12, 'var(--sr-black-12)'))
 
 
 

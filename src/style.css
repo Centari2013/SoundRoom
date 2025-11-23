@@ -13,6 +13,25 @@
   --sr-black: #000000;
   --sr-black-rgb: 0, 0, 0;
 
+  --sr-black-05: rgba(var(--sr-black-rgb), 0.05);
+  --sr-black-06: rgba(var(--sr-black-rgb), 0.06);
+  --sr-black-08: rgba(var(--sr-black-rgb), 0.08);
+  --sr-black-10: rgba(var(--sr-black-rgb), 0.1);
+  --sr-black-12: rgba(var(--sr-black-rgb), 0.12);
+  --sr-black-20: rgba(var(--sr-black-rgb), 0.2);
+  --sr-black-18: rgba(var(--sr-black-rgb), 0.18);
+  --sr-black-35: rgba(var(--sr-black-rgb), 0.35);
+  --sr-black-60: rgba(var(--sr-black-rgb), 0.6);
+
+  --sr-white-20: rgba(var(--sr-white-rgb), 0.2);
+  --sr-white-35: rgba(var(--sr-white-rgb), 0.35);
+  --sr-white-60: rgba(var(--sr-white-rgb), 0.6);
+  --sr-white-65: rgba(var(--sr-white-rgb), 0.65);
+  --sr-white-70: rgba(var(--sr-white-rgb), 0.7);
+  --sr-white-75: rgba(var(--sr-white-rgb), 0.75);
+  --sr-white-90: rgba(var(--sr-white-rgb), 0.9);
+  --sr-white-95: rgba(var(--sr-white-rgb), 0.95);
+
   --sr-neutral-50: #fafafa;
   --sr-neutral-50-rgb: 250, 250, 250;
   --sr-neutral-100: #f5f5f5;
@@ -40,14 +59,23 @@
   --sr-blue-50-rgb: 239, 246, 255;
   --sr-blue-100: #dbeafe;
   --sr-blue-100-rgb: 219, 234, 254;
+  --sr-blue-100-18: rgba(var(--sr-blue-100-rgb), 0.18);
+  --sr-blue-100-85: rgba(var(--sr-blue-100-rgb), 0.85);
   --sr-blue-200: #bfdbfe;
   --sr-blue-200-rgb: 191, 219, 254;
   --sr-blue-300: #93c5fd;
   --sr-blue-300-rgb: 147, 197, 253;
   --sr-blue-400: #60a5fa;
   --sr-blue-400-rgb: 96, 165, 250;
+  --sr-blue-400-90: rgba(var(--sr-blue-400-rgb), 0.9);
   --sr-blue-500: #3b82f6;
   --sr-blue-500-rgb: 59, 130, 246;
+  --sr-blue-500-08: rgba(var(--sr-blue-500-rgb), 0.08);
+  --sr-blue-500-10: rgba(var(--sr-blue-500-rgb), 0.1);
+  --sr-blue-500-15: rgba(var(--sr-blue-500-rgb), 0.15);
+  --sr-blue-500-30: rgba(var(--sr-blue-500-rgb), 0.3);
+  --sr-blue-500-35: rgba(var(--sr-blue-500-rgb), 0.35);
+  --sr-blue-500-85: rgba(var(--sr-blue-500-rgb), 0.85);
   --sr-blue-600: #2563eb;
   --sr-blue-600-rgb: 37, 99, 235;
   --sr-blue-700: #1d4ed8;
@@ -157,17 +185,30 @@
   --sr-text-contrast: #a1a1aa;
   --sr-node-red: #d45a5a;
   --sr-node-red-rgb: 212, 90, 90;
+  --sr-node-red-10: rgba(var(--sr-node-red-rgb), 0.1);
+  --sr-node-red-16: rgba(var(--sr-node-red-rgb), 0.16);
+  --sr-node-red-20: rgba(var(--sr-node-red-rgb), 0.2);
   --sr-node-blue: #6c8edb;
   --sr-node-blue-rgb: 108, 142, 219;
+  --sr-node-blue-12: rgba(var(--sr-node-blue-rgb), 0.12);
+  --sr-node-blue-18: rgba(var(--sr-node-blue-rgb), 0.18);
+  --sr-node-blue-24: rgba(var(--sr-node-blue-rgb), 0.24);
   --sr-highlight-blue: #6fd7ff;
   --sr-detail-stroke: #2f3a4a;
   --sr-body-fill-rgb: 150, 165, 185;
+  --sr-body-fill-35: rgba(var(--sr-body-fill-rgb), 0.35);
   --sr-body-stroke-rgb: 60, 70, 85;
+  --sr-body-stroke-60: rgba(var(--sr-body-stroke-rgb), 0.6);
+  --sr-body-stroke-80: rgba(var(--sr-body-stroke-rgb), 0.8);
   --sr-detail-fill-rgb: 70, 80, 95;
+  --sr-detail-fill-85: rgba(var(--sr-detail-fill-rgb), 0.85);
   --sr-detail-gradient-rgb: 140, 150, 165;
+  --sr-detail-gradient-20: rgba(var(--sr-detail-gradient-rgb), 0.2);
   --sr-outline-strong: #1f2937;
   --sr-outline-contrast: #111827;
   --sr-outline-contrast-rgb: 17, 24, 39;
+  --sr-outline-contrast-85: rgba(var(--sr-outline-contrast-rgb), 0.85);
+  --sr-outline-contrast-90: rgba(var(--sr-outline-contrast-rgb), 0.9);
   --sr-purple-600: #7c3aed;
   --sr-purple-600-rgb: 124, 58, 237;
   --sr-purple-500: #a855f7;
@@ -191,12 +232,40 @@
   --sr-dark-disabled-bg: #444444;
   --sr-dark-disabled-text: #cccccc;
   --sr-dark-warm-red-rgb: 255, 137, 137;
+  --sr-dark-warm-red-16: rgba(var(--sr-dark-warm-red-rgb), 0.16);
+  --sr-dark-warm-red-28: rgba(var(--sr-dark-warm-red-rgb), 0.28);
   --sr-dark-soft-red-rgb: 255, 180, 180;
+  --sr-dark-soft-red-18: rgba(var(--sr-dark-soft-red-rgb), 0.18);
+  --sr-dark-soft-red-35: rgba(var(--sr-dark-soft-red-rgb), 0.35);
   --sr-dark-bright-red-rgb: 255, 120, 120;
+  --sr-dark-bright-red-65: rgba(var(--sr-dark-bright-red-rgb), 0.65);
   --sr-panel-soft: #f8f8f8;
   --sr-dark-plain: #111111;
   --sr-slate-200: #e5e7eb;
   --sr-slate-200-rgb: 229, 231, 235;
+
+  --sr-source-selected-bg: var(--sr-surface-2);
+  --sr-source-node-red: var(--sr-node-red);
+  --sr-source-node-blue: var(--sr-node-blue);
+  --sr-source-cone-red: var(--sr-node-red-10);
+  --sr-source-cone-blue: var(--sr-node-blue-12);
+  --sr-source-selection-glow: var(--sr-black-05);
+
+  --sr-listener-anchor-glow: var(--sr-black-06);
+  --sr-listener-anchor-shadow: var(--sr-black-10);
+  --sr-listener-body-fill: var(--sr-body-fill-35);
+  --sr-listener-body-shadow: var(--sr-black-08);
+  --sr-listener-detail-fill: var(--sr-detail-fill-85);
+  --sr-listener-detail-stroke: var(--sr-body-stroke-60);
+  --sr-listener-detail-shadow: var(--sr-black-08);
+  --sr-listener-center-highlight: var(--sr-white-60);
+  --sr-listener-center-stroke: var(--sr-black-08);
+  --sr-listener-highlight-shadow: var(--sr-black-06);
+  --sr-listener-direction-start: var(--sr-detail-gradient-20);
+  --sr-listener-direction-end: var(--sr-body-stroke-80);
+  --sr-listener-direction-stroke: var(--sr-text-strong);
+  --sr-listener-direction-shadow: var(--sr-black-10);
+  --sr-listener-rotation-fill: var(--sr-black-06);
 
   --lm-bg-0: var(--sr-surface-0);
   --lm-bg-1: var(--sr-surface-1);
@@ -207,8 +276,8 @@
   --lm-grid-line: rgba(var(--sr-black-rgb), 0.08);
   --lm-node-red: var(--sr-node-red);
   --lm-node-blue: var(--sr-node-blue);
-  --lm-cone-red: rgba(212, 90, 90, 0.1);
-  --lm-cone-blue: rgba(108, 142, 219, 0.12);
+  --lm-cone-red: var(--sr-node-red-10);
+  --lm-cone-blue: var(--sr-node-blue-12);
   --lm-shadow: 0 4px 10px rgba(var(--sr-black-rgb), 0.12);
 
   font-synthesis: none;
@@ -327,6 +396,29 @@ input:disabled {
     --lm-cone-blue: var(--sr-dark-cone-blue);
     --lm-shadow: var(--sr-dark-shadow);
 
+    --sr-source-selected-bg: var(--sr-dark-bg-2);
+    --sr-source-node-red: var(--sr-dark-node-red);
+    --sr-source-node-blue: var(--sr-dark-node-blue);
+    --sr-source-cone-red: var(--sr-dark-cone-red);
+    --sr-source-cone-blue: var(--sr-dark-cone-blue);
+    --sr-source-selection-glow: var(--sr-dark-warm-red-16);
+
+    --sr-listener-anchor-glow: var(--sr-blue-500-08);
+    --sr-listener-anchor-shadow: var(--sr-blue-500-30);
+    --sr-listener-body-fill: var(--sr-blue-500-15);
+    --sr-listener-body-shadow: var(--sr-black-20);
+    --sr-listener-detail-fill: var(--sr-outline-contrast-90);
+    --sr-listener-detail-stroke: var(--sr-blue-100-85);
+    --sr-listener-detail-shadow: var(--sr-blue-500-35);
+    --sr-listener-center-highlight: var(--sr-white-75);
+    --sr-listener-center-stroke: var(--sr-white-20);
+    --sr-listener-highlight-shadow: var(--sr-white-35);
+    --sr-listener-direction-start: var(--sr-blue-100-18);
+    --sr-listener-direction-end: var(--sr-blue-500-85);
+    --sr-listener-direction-stroke: var(--sr-outline-contrast-85);
+    --sr-listener-direction-shadow: var(--sr-blue-500-35);
+    --sr-listener-rotation-fill: var(--sr-blue-500-10);
+
     color: var(--lm-text-0);
     background-color: var(--lm-bg-0);
   }
@@ -345,6 +437,29 @@ input:disabled {
   --lm-cone-red: var(--sr-dark-cone-red);
   --lm-cone-blue: var(--sr-dark-cone-blue);
   --lm-shadow: var(--sr-dark-shadow);
+
+  --sr-source-selected-bg: var(--sr-dark-bg-2);
+  --sr-source-node-red: var(--sr-dark-node-red);
+  --sr-source-node-blue: var(--sr-dark-node-blue);
+  --sr-source-cone-red: var(--sr-dark-cone-red);
+  --sr-source-cone-blue: var(--sr-dark-cone-blue);
+  --sr-source-selection-glow: var(--sr-dark-warm-red-16);
+
+  --sr-listener-anchor-glow: var(--sr-blue-500-08);
+  --sr-listener-anchor-shadow: var(--sr-blue-500-30);
+  --sr-listener-body-fill: var(--sr-blue-500-15);
+  --sr-listener-body-shadow: var(--sr-black-20);
+  --sr-listener-detail-fill: var(--sr-outline-contrast-90);
+  --sr-listener-detail-stroke: var(--sr-blue-100-85);
+  --sr-listener-detail-shadow: var(--sr-blue-500-35);
+  --sr-listener-center-highlight: var(--sr-white-75);
+  --sr-listener-center-stroke: var(--sr-white-20);
+  --sr-listener-highlight-shadow: var(--sr-white-35);
+  --sr-listener-direction-start: var(--sr-blue-100-18);
+  --sr-listener-direction-end: var(--sr-blue-500-85);
+  --sr-listener-direction-stroke: var(--sr-outline-contrast-85);
+  --sr-listener-direction-shadow: var(--sr-blue-500-35);
+  --sr-listener-rotation-fill: var(--sr-blue-500-10);
 }
 
 @media (prefers-color-scheme: light) {
