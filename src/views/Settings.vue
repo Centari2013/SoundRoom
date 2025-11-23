@@ -134,6 +134,8 @@
         </form>
       </section>
 
+      <ThemeSelector />
+
       <section class="rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white/80 dark:bg-neutral-900/80 p-6 shadow-sm space-y-6">
         <header class="space-y-2">
           <h2 class="text-xl font-semibold">Playback Preferences</h2>
@@ -226,6 +228,7 @@ import BaseButton from '@/components/ui/input/BaseButton.vue'
 import BaseInput from '@/components/ui/input/BaseInput.vue'
 import { useAuth } from '@/composables/useAuth'
 import { supabase } from '@/utils/supabase'
+import ThemeSelector from '@/components/Settings/ThemeSelector.vue'
 
 const router = useRouter()
 const route = useRoute()

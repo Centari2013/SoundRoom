@@ -6,7 +6,13 @@ import PortalVue from 'portal-vue'
 import { createPinia } from 'pinia';
 import router from '@/utils/router.js'
 import '@/composables/useAuth.js' // Ensure auth is initialized before app mounts
+import { primeThemeFromCache, useTheme } from '@/composables/useTheme.js'
 import * as Sentry from "@sentry/vue";
+
+// Immediately hydrate theme variables to avoid flashes
+primeThemeFromCache()
+const { loadTheme } = useTheme()
+await loadTheme()
 
 const app = createApp(App);
 
