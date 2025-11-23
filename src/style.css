@@ -4,7 +4,7 @@
   line-height: 1.5;
   font-weight: 400;
 
-  color-scheme: light dark;
+  color-scheme: light;
   color: var(--lm-text-0);
   background-color: var(--lm-bg-0);
 
@@ -312,8 +312,13 @@ input:disabled {
 
 
 
+
+:root[data-theme="system"] {
+  color-scheme: light dark;
+}
+
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root[data-theme="system"] {
     --lm-bg-0: var(--sr-dark-bg-0);
     --lm-bg-1: var(--sr-dark-bg-1);
     --lm-bg-2: var(--sr-dark-bg-2);
@@ -329,6 +334,7 @@ input:disabled {
 
     color: var(--lm-text-0);
     background-color: var(--lm-bg-0);
+    color-scheme: dark;
   }
 }
 
@@ -345,6 +351,8 @@ input:disabled {
   --lm-cone-red: var(--sr-dark-cone-red);
   --lm-cone-blue: var(--sr-dark-cone-blue);
   --lm-shadow: var(--sr-dark-shadow);
+
+  color-scheme: dark;
 }
 
 @media (prefers-color-scheme: light) {
