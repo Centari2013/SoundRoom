@@ -33,8 +33,8 @@
     />
     <v-circle
       :radius="8"
-      fill="rgba(15, 23, 42, 0.9)"
-      stroke="rgba(191, 219, 254, 0.85)"
+      :fill="detailFill"
+      :stroke="detailStroke"
       :strokeWidth="1.25"
       :shadowColor="detailShadowColor"
       :shadowBlur="detailShadowBlur"
@@ -46,8 +46,8 @@
     />
     <v-circle
       :radius="4"
-      fill="rgba(255, 255, 255, 0.75)"
-      stroke="rgba(255, 255, 255, 0.2)"
+      :fill="centerHighlightFill"
+      :stroke="centerHighlightStroke"
       :strokeWidth="0.5"
       :shadowColor="highlightShadowColor"
       shadowBlur="6"
@@ -69,7 +69,7 @@
       :fillLinearGradientStartPoint="{ x: -12, y: 12 }"
       :fillLinearGradientEndPoint="{ x: 12, y: -10 }"
       :fillLinearGradientColorStops="directionGradientStops"
-      stroke="rgba(15, 23, 42, 0.85)"
+      :stroke="directionStroke"
       :strokeWidth="1.25"
       :shadowColor="directionShadowColor"
       shadowBlur="6"
@@ -119,31 +119,37 @@ const syncTheme = (event) => {
 onMounted(() => prefersDark.addEventListener('change', syncTheme))
 onBeforeUnmount(() => prefersDark.removeEventListener('change', syncTheme))
 
-const anchorGlowFill = computed(() => isDarkMode.value ? 'rgba(59, 130, 246, 0.08)' : 'rgba(59, 130, 246, 0.05)')
-const anchorShadowColor = computed(() => isDarkMode.value ? 'rgba(59, 130, 246, 0.3)' : 'rgba(59, 130, 246, 0.16)')
-const anchorShadowBlur = computed(() => isDarkMode.value ? 18 : 12)
-const anchorShadowOpacity = computed(() => isDarkMode.value ? 0.35 : 0.22)
+const anchorGlowFill = computed(() => isDarkMode.value ? 'rgba(59, 130, 246, 0.08)' : 'rgba(0, 0, 0, 0.06)')
+const anchorShadowColor = computed(() => isDarkMode.value ? 'rgba(59, 130, 246, 0.3)' : 'rgba(0, 0, 0, 0.1)')
+const anchorShadowBlur = computed(() => isDarkMode.value ? 18 : 10)
+const anchorShadowOpacity = computed(() => isDarkMode.value ? 0.35 : 0.18)
 
-const bodyFill = computed(() => isDarkMode.value ? 'rgba(59, 130, 246, 0.15)' : 'rgba(59, 130, 246, 0.12)')
-const bodyStroke = computed(() => isDarkMode.value ? 'rgba(96, 165, 250, 0.9)' : 'rgba(59, 130, 246, 0.9)')
-const bodyShadowColor = computed(() => isDarkMode.value ? 'rgba(0, 0, 0, 0.2)' : 'rgba(0, 0, 0, 0.12)')
+const bodyFill = computed(() => isDarkMode.value ? 'rgba(59, 130, 246, 0.15)' : 'rgba(150, 165, 185, 0.35)')
+const bodyStroke = computed(() => isDarkMode.value ? 'rgba(96, 165, 250, 0.9)' : '#2f3a4a')
+const bodyShadowColor = computed(() => isDarkMode.value ? 'rgba(0, 0, 0, 0.2)' : 'rgba(0, 0, 0, 0.08)')
 const bodyShadowBlur = computed(() => isDarkMode.value ? 10 : 8)
-const bodyShadowOpacity = computed(() => isDarkMode.value ? 0.55 : 0.35)
+const bodyShadowOpacity = computed(() => isDarkMode.value ? 0.55 : 0.18)
 
-const detailShadowColor = computed(() => isDarkMode.value ? 'rgba(59, 130, 246, 0.35)' : 'rgba(59, 130, 246, 0.2)')
+const detailFill = computed(() => isDarkMode.value ? 'rgba(15, 23, 42, 0.9)' : 'rgba(70, 80, 95, 0.85)')
+const detailStroke = computed(() => isDarkMode.value ? 'rgba(191, 219, 254, 0.85)' : 'rgba(60, 70, 85, 0.6)')
+
+const detailShadowColor = computed(() => isDarkMode.value ? 'rgba(59, 130, 246, 0.35)' : 'rgba(0, 0, 0, 0.08)')
 const detailShadowBlur = computed(() => isDarkMode.value ? 8 : 6)
-const detailShadowOpacity = computed(() => isDarkMode.value ? 0.45 : 0.3)
+const detailShadowOpacity = computed(() => isDarkMode.value ? 0.45 : 0.2)
 
-const highlightShadowColor = computed(() => isDarkMode.value ? 'rgba(255, 255, 255, 0.35)' : 'rgba(255, 255, 255, 0.22)')
-const highlightShadowOpacity = computed(() => isDarkMode.value ? 0.5 : 0.35)
+const centerHighlightFill = computed(() => isDarkMode.value ? 'rgba(255, 255, 255, 0.75)' : 'rgba(255, 255, 255, 0.6)')
+const centerHighlightStroke = computed(() => isDarkMode.value ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.08)')
+const highlightShadowColor = computed(() => isDarkMode.value ? 'rgba(255, 255, 255, 0.35)' : 'rgba(0, 0, 0, 0.06)')
+const highlightShadowOpacity = computed(() => isDarkMode.value ? 0.5 : 0.28)
 
 const directionGradientStops = computed(() => isDarkMode.value
   ? [0, 'rgba(191, 219, 254, 0.18)', 1, 'rgba(59, 130, 246, 0.85)']
-  : [0, 'rgba(191, 219, 254, 0.14)', 1, 'rgba(59, 130, 246, 0.75)']
+  : [0, 'rgba(140, 150, 165, 0.2)', 1, 'rgba(60, 70, 85, 0.8)']
 )
-const directionShadowColor = computed(() => isDarkMode.value ? 'rgba(59, 130, 246, 0.35)' : 'rgba(59, 130, 246, 0.2)')
+const directionStroke = computed(() => isDarkMode.value ? 'rgba(15, 23, 42, 0.85)' : '#222222')
+const directionShadowColor = computed(() => isDarkMode.value ? 'rgba(59, 130, 246, 0.35)' : 'rgba(0, 0, 0, 0.1)')
 
-const rotationHandleFill = computed(() => isDarkMode.value ? 'rgba(59, 130, 246, 0.1)' : 'rgba(59, 130, 246, 0.06)')
+const rotationHandleFill = computed(() => isDarkMode.value ? 'rgba(59, 130, 246, 0.1)' : 'rgba(0, 0, 0, 0.06)')
 
 let moveListenerPayload = null
 let initialMouseAngle = null
