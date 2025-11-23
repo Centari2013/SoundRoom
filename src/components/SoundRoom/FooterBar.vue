@@ -21,12 +21,12 @@
   />
 
   <!-- Footer Buttons -->
-  <div class="relative flex items-center justify-between h-15 p-2">
+  <div class="relative flex items-center justify-between h-15 p-2 bg-neutral-100 border-t border-neutral-300/40 dark:bg-transparent dark:border-transparent">
     <div class="flex space-x-3">
       <BaseButton
         @click="showSaveConfirm = true"
         :disabled="isSaving || !isRoomSaveable"
-        class="px-3 py-2 rounded bg-[var(--lm-bg-1)] hover:bg-[var(--lm-bg-0)] text-[var(--lm-text-0)] border border-[var(--lm-border)] dark:bg-neutral-800 dark:hover:bg-neutral-700 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400"
+        class="px-3 py-2 rounded bg-neutral-200 hover:bg-neutral-300 text-[var(--lm-text-0)] border border-neutral-300 dark:bg-neutral-800 dark:hover:bg-neutral-700 dark:border-transparent transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400"
         type="button"
         aria-label="Open save room confirmation"
       >
@@ -36,7 +36,7 @@
       <BaseButton
         @click="showNewRoomConfirm = true"
         :disabled="isSaving || isRoomEmpty"
-        class="px-3 py-2 rounded bg-[var(--lm-bg-1)] hover:bg-[var(--lm-bg-0)] text-[var(--lm-text-0)] border border-[var(--lm-border)] dark:bg-neutral-800 dark:hover:bg-neutral-700 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400"
+        class="px-3 py-2 rounded bg-neutral-200 hover:bg-neutral-300 text-[var(--lm-text-0)] border border-neutral-300 dark:bg-neutral-800 dark:hover:bg-neutral-700 dark:border-transparent transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400"
         type="button"
         aria-label="Open new room confirmation"
       >

@@ -119,19 +119,19 @@ const syncTheme = (event) => {
 onMounted(() => prefersDark.addEventListener('change', syncTheme))
 onBeforeUnmount(() => prefersDark.removeEventListener('change', syncTheme))
 
-const anchorGlowFill = computed(() => isDarkMode.value ? 'rgba(59, 130, 246, 0.08)' : 'rgba(0, 0, 0, 0.06)')
-const anchorShadowColor = computed(() => isDarkMode.value ? 'rgba(59, 130, 246, 0.3)' : 'rgba(0, 0, 0, 0.1)')
-const anchorShadowBlur = computed(() => isDarkMode.value ? 18 : 10)
-const anchorShadowOpacity = computed(() => isDarkMode.value ? 0.35 : 0.18)
+const anchorGlowFill = computed(() => isDarkMode.value ? 'rgba(59, 130, 246, 0.08)' : 'rgba(0, 0, 0, 0.05)')
+const anchorShadowColor = computed(() => isDarkMode.value ? 'rgba(59, 130, 246, 0.3)' : 'rgba(0, 0, 0, 0.08)')
+const anchorShadowBlur = computed(() => isDarkMode.value ? 18 : 8)
+const anchorShadowOpacity = computed(() => isDarkMode.value ? 0.35 : 0.16)
 
-const bodyFill = computed(() => isDarkMode.value ? 'rgba(59, 130, 246, 0.15)' : 'rgba(150, 165, 185, 0.35)')
+const bodyFill = computed(() => isDarkMode.value ? 'rgba(59, 130, 246, 0.15)' : '#a4afc0')
 const bodyStroke = computed(() => isDarkMode.value ? 'rgba(96, 165, 250, 0.9)' : '#2f3a4a')
 const bodyShadowColor = computed(() => isDarkMode.value ? 'rgba(0, 0, 0, 0.2)' : 'rgba(0, 0, 0, 0.08)')
 const bodyShadowBlur = computed(() => isDarkMode.value ? 10 : 8)
-const bodyShadowOpacity = computed(() => isDarkMode.value ? 0.55 : 0.18)
+const bodyShadowOpacity = computed(() => isDarkMode.value ? 0.55 : 0.2)
 
-const detailFill = computed(() => isDarkMode.value ? 'rgba(15, 23, 42, 0.9)' : 'rgba(70, 80, 95, 0.85)')
-const detailStroke = computed(() => isDarkMode.value ? 'rgba(191, 219, 254, 0.85)' : 'rgba(60, 70, 85, 0.6)')
+const detailFill = computed(() => isDarkMode.value ? 'rgba(15, 23, 42, 0.9)' : 'rgba(86, 96, 112, 0.9)')
+const detailStroke = computed(() => isDarkMode.value ? 'rgba(191, 219, 254, 0.85)' : 'rgba(54, 62, 78, 0.7)')
 
 const detailShadowColor = computed(() => isDarkMode.value ? 'rgba(59, 130, 246, 0.35)' : 'rgba(0, 0, 0, 0.08)')
 const detailShadowBlur = computed(() => isDarkMode.value ? 8 : 6)

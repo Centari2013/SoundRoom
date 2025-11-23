@@ -8,18 +8,18 @@
   color: var(--lm-text-0);
   background-color: var(--lm-bg-0);
 
-  --lm-bg-0: #f5f5f5;
-  --lm-bg-1: #ebebeb;
+  --lm-bg-0: #f3f3f3;
+  --lm-bg-1: #e1e1e1;
   --lm-bg-2: #dcdcdc;
-  --lm-border: #c8c8c8;
+  --lm-border: #c9c9c9;
   --lm-text-0: #222222;
-  --lm-text-1: #555555;
-  --lm-grid-line: rgba(0, 0, 0, 0.08);
+  --lm-text-1: #4a4a4a;
+  --lm-grid-line: rgba(0, 0, 0, 0.06);
   --lm-node-red: #d45a5a;
   --lm-node-blue: #6c8edb;
-  --lm-cone-red: rgba(212, 90, 90, 0.1);
+  --lm-cone-red: rgba(210, 70, 70, 0.1);
   --lm-cone-blue: rgba(108, 142, 219, 0.12);
-  --lm-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
+  --lm-shadow: 0 3px 10px rgba(0, 0, 0, 0.12);
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;

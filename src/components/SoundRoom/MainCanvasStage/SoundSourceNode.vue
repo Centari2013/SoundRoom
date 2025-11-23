@@ -49,7 +49,7 @@
       :fill="getFillColor"
       :stroke="dotStrokeColor"
       :strokeWidth="2"
-      :shadowColor="getFillColor"
+      :shadowColor="nodeShadowColor"
       :shadowBlur="nodeShadowBlur"
       :shadowOpacity="nodeShadowOpacity"
       shadowForStrokeEnabled="false"
@@ -168,7 +168,7 @@ const getFillColor = computed(() => {
   return isScheduled.value ? colors.nodeBlue : colors.nodeRed
 })
 
-const dotStrokeColor = computed(() => (isDarkMode.value ? (props.selected ? '#ffffff' : 'rgba(255, 255, 255, 0.9)') : '#333333'))
+const dotStrokeColor = computed(() => (isDarkMode.value ? (props.selected ? '#ffffff' : 'rgba(255, 255, 255, 0.9)') : '#444444'))
 const selectionGlowColor = computed(() => (isDarkMode.value ? '#6fd7ff' : 'rgba(0, 0, 0, 0.05)'))
 const selectedScale = computed(() => (props.selected ? 1.05 : 1))
 
@@ -179,22 +179,23 @@ const outerConeFill = computed(() => {
 })
 const outerConeStroke = computed(() => isDarkMode.value
   ? 'rgba(255, 137, 137, 0.28)'
-  : (isScheduled.value ? 'rgba(108, 142, 219, 0.24)' : 'rgba(212, 90, 90, 0.2)'))
-const outerConeShadowColor = computed(() => isDarkMode.value ? 'rgba(255, 120, 120, 0.65)' : 'rgba(0, 0, 0, 0.12)')
+  : (isScheduled.value ? 'rgba(108, 142, 219, 0.22)' : 'rgba(210, 70, 70, 0.18)'))
+const outerConeShadowColor = computed(() => isDarkMode.value ? 'rgba(255, 120, 120, 0.65)' : 'rgba(0, 0, 0, 0.1)')
 const outerConeShadowBlur = computed(() => isDarkMode.value ? 18 : 10)
 
 const innerConeFill = computed(() => {
   if (isDarkMode.value) return 'rgba(255, 180, 180, 0.18)'
   const colors = lightPalette.value
-  return isScheduled.value ? 'rgba(108, 142, 219, 0.18)' : 'rgba(212, 90, 90, 0.16)'
+  return isScheduled.value ? 'rgba(108, 142, 219, 0.16)' : 'rgba(210, 70, 70, 0.14)'
 })
-const innerConeStroke = computed(() => isDarkMode.value ? 'rgba(255, 180, 180, 0.35)' : 'rgba(0, 0, 0, 0.18)')
+const innerConeStroke = computed(() => isDarkMode.value ? 'rgba(255, 180, 180, 0.35)' : 'rgba(0, 0, 0, 0.15)')
 
 const selectionGlowOpacity = computed(() => isDarkMode.value ? 0.75 : 0.22)
 const selectionGlowBlur = computed(() => isDarkMode.value ? 14 : 8)
 
-const nodeShadowBlur = computed(() => isDarkMode.value ? 10 : 6)
-const nodeShadowOpacity = computed(() => isDarkMode.value ? 0.65 : 0.08)
+const nodeShadowColor = computed(() => (isDarkMode.value ? getFillColor.value : 'rgba(0, 0, 0, 0.35)'))
+const nodeShadowBlur = computed(() => isDarkMode.value ? 10 : 4)
+const nodeShadowOpacity = computed(() => isDarkMode.value ? 0.65 : 0.14)
 
 const directionGradientStops = computed(() => isDarkMode.value
   ? [0, 'rgba(255,255,255,0.95)', 1, 'rgba(255,255,255,0.65)']

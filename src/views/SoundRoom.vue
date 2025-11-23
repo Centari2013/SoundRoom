@@ -17,7 +17,7 @@
         <Toolbar/>
 
         <!-- Canvas Area -->
-        <div class="flex-1 relative overflow-hidden bg-[var(--lm-bg-1)] dark:bg-neutral-900 flex items-center justify-center border-t border-[var(--lm-border)]/80 dark:border-0">
+        <div class="flex-1 relative overflow-hidden bg-[#e1e1e1] dark:bg-neutral-900 flex items-center justify-center border border-neutral-300/40 dark:border-0 shadow-[0_2px_8px_rgba(0,0,0,0.10)]">
           <div class="pointer-events-none absolute inset-0 canvas-vignette" aria-hidden="true"></div>
           <MainCanvasStage
             v-bind="{
@@ -202,10 +202,10 @@ onUnmounted(() => {
 
 <style scoped>
 .canvas-vignette {
-  --vignette-inner: rgba(0, 0, 0, 0.06);
-  --vignette-middle: rgba(0, 0, 0, 0.04);
-  --vignette-outer: rgba(0, 0, 0, 0.08);
-  --vignette-shadow: inset 0 0 70px rgba(0, 0, 0, 0.12);
+  --vignette-inner: rgba(0, 0, 0, 0.05);
+  --vignette-middle: rgba(0, 0, 0, 0.03);
+  --vignette-outer: rgba(0, 0, 0, 0.05);
+  --vignette-shadow: inset 0 0 60px rgba(0, 0, 0, 0.05);
 
   background: radial-gradient(circle at center, var(--vignette-inner) 0%, var(--vignette-middle) 38%, var(--vignette-outer) 100%);
   box-shadow: var(--vignette-shadow);
