@@ -49,7 +49,7 @@ const router = useRouter()
   position: fixed;
   inset: 0;
   z-index: 50;
-  background-color: rgba(0, 0, 0, 0.4);
+  background-color: rgba(var(--sr-black-rgb), 0.4);
   display: flex;
   justify-content: center;
   align-items: center;

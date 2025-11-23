@@ -230,7 +230,7 @@ const createNewRoom = () => {
 
 @media (prefers-color-scheme: light) {
   .load-button {
-    background-color: #ffffff;
+    background-color: var(--sr-white);
   }
 }
 
@@ -247,24 +247,24 @@ const createNewRoom = () => {
 
 /* Hover state */
 .sound-manager-button:hover {
-  background-color: #e5e5e5; /* neutral-200 */
+  background-color: var(--sr-neutral-200);
 }
 
 @media (prefers-color-scheme: dark) {
   .sound-manager-button:hover {
-    background-color: #1f2937; /* neutral-800 */
+    background-color: var(--sr-outline-strong);
   }
 }
 
 /* Active/selected state */
 .sound-manager-button.active {
   font-weight: 600;
-  background-color: #d4d4d4; /* neutral-200 */
+  background-color: var(--sr-neutral-300);
 }
 
 @media (prefers-color-scheme: dark) {
   .sound-manager-button.active {
-    background-color: #1f2937; /* neutral-800 */
+    background-color: var(--sr-outline-strong);
   }
 }
 </style>

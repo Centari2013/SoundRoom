@@ -54,6 +54,6 @@ onMounted(async () => {
   align-items: center;
   height: 100dvh;
   font-size: 1.2rem;
-  color: #666;
+  color: var(--sr-text-muted);
 }
 </style>

@@ -60,6 +60,6 @@ const inputProps = computed(() => ({
   
 }
 .eye-button:focus {
-  outline: 2px solid #4a90e2; /* Focus ring color */
+  outline: 2px solid var(--sr-focus-blue); /* Focus ring color */
 }
-</style> 
+</style>

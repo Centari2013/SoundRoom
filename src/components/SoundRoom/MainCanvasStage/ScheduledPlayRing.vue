@@ -27,6 +27,7 @@
 <script setup>
 import { ref, watch, onMounted, onUnmounted } from 'vue'
 
+const styles = typeof window !== 'undefined' ? getComputedStyle(document.documentElement) : null
 const props = defineProps({
   playing: Boolean,
   scheduled: {
@@ -47,7 +48,7 @@ const props = defineProps({
   },
   color: {
     type: String,
-    default: '#2e90fa',
+    default: styles?.getPropertyValue('--sr-primary')?.trim() || '#2e90fa',
   },
   strokeWidth: {
     type: Number,
