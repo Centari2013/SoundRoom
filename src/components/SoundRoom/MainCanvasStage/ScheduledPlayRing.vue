@@ -57,9 +57,13 @@ const props = defineProps({
 
 // compute default color AFTER setup
 const fallbackColor = computed(() => {
-  if (typeof window === 'undefined') return '#2e90fa'
+  if (typeof window === 'undefined') return 'rgb(var(--color-accent-strong-rgb))'
   const styles = getComputedStyle(document.documentElement)
-  return styles.getPropertyValue('--sr-primary')?.trim() || '#2e90fa'
+  return (
+    styles.getPropertyValue('--color-accent-strong')?.trim() ||
+    styles.getPropertyValue('--sr-primary')?.trim() ||
+    `rgb(${styles.getPropertyValue('--color-accent-strong-rgb')?.trim() || 'var(--color-accent-strong-rgb)'})`
+  )
 })
 
 const color = computed(() => props.color || fallbackColor.value)

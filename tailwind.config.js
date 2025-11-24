@@ -2,6 +2,7 @@
 const withAlpha = (variable) => `rgb(var(${variable}) / <alpha-value>)`
 
 module.exports = {
+  darkMode: ['class', '[data-theme="dark"]'],
   important: true,
   theme: {
     extend: {
@@ -10,6 +11,31 @@ module.exports = {
         current: 'currentColor',
         white: withAlpha('--sr-white-rgb'),
         black: withAlpha('--sr-black-rgb'),
+        surface: {
+          app: withAlpha('--color-bg-app-rgb'),
+          base: withAlpha('--color-bg-surface-rgb'),
+          raised: withAlpha('--color-bg-elevated-rgb'),
+        },
+        border: {
+          subtle: withAlpha('--color-border-subtle-rgb'),
+          strong: withAlpha('--color-border-strong-rgb'),
+        },
+        text: {
+          primary: withAlpha('--color-text-primary-rgb'),
+          secondary: withAlpha('--color-text-secondary-rgb'),
+          muted: withAlpha('--color-text-muted-rgb'),
+          inverse: withAlpha('--color-text-inverse-rgb'),
+        },
+        accent: {
+          soft: withAlpha('--color-accent-soft-rgb'),
+          DEFAULT: withAlpha('--color-accent-rgb'),
+          strong: withAlpha('--color-accent-strong-rgb'),
+        },
+        status: {
+          success: withAlpha('--color-success-rgb'),
+          warning: withAlpha('--color-warning-rgb'),
+          danger: withAlpha('--color-danger-rgb'),
+        },
         neutral: {
           50: withAlpha('--sr-neutral-50-rgb'),
           100: withAlpha('--sr-neutral-100-rgb'),
