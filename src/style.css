@@ -173,6 +173,7 @@
   --sr-accent-yellow-rgb: 255, 255, 0;
   --sr-accent-danger: #f44336;
   --sr-accent-danger-rgb: 244, 67, 54;
+  --sr-shadow: 0 4px 10px rgba(var(--sr-black-rgb), 0.12);
   --sr-surface-0: var(--sr-neutral-100);
   --sr-surface-1: #ebebeb;
   --sr-surface-2: #dcdcdc;

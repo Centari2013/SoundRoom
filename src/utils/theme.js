@@ -8,17 +8,23 @@ function prefersDarkScheme() {
   return systemThemeQuery?.matches ?? false
 }
 
-function setColorScheme(isDark) {
+function setColorScheme(isDark, appliedTheme) {
   const root = document.documentElement
   root.classList.toggle('dark', isDark)
+  root.dataset.theme = appliedTheme
   root.style.colorScheme = isDark ? 'dark' : 'light'
+
+  const metaTheme = document.querySelector('meta[name="theme-color"]')
+  if (metaTheme) {
+    metaTheme.setAttribute('content', isDark ? '#0b0b0f' : '#f5f5f5')
+  }
 }
 
 export function applyThemePreference(theme = DEFAULT_THEME) {
   const isDark = theme === 'dark' || (theme === 'system' && prefersDarkScheme())
-  document.documentElement.dataset.theme = theme
-  setColorScheme(isDark)
-  return isDark
+  const appliedTheme = isDark ? 'dark' : 'light'
+  setColorScheme(isDark, appliedTheme)
+  return appliedTheme
 }
 
 export function onSystemThemeChange(callback) {
