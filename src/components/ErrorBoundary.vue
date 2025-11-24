@@ -2,11 +2,11 @@
   <slot v-if="!hasError" />
   <div
     v-else
-    class="flex-1 flex flex-col items-center justify-center text-center px-6 py-12 bg-white text-neutral-900 dark:bg-black dark:text-white"
+    class="flex-1 flex flex-col items-center justify-center text-center px-6 py-12 bg-surface-base text-text-primary"
   >
-    <p class="text-sm uppercase tracking-[0.2em] text-rose-500 mb-3">Unexpected error</p>
+    <p class="text-sm uppercase tracking-[0.2em] text-status-danger mb-3">Unexpected error</p>
     <h2 class="text-2xl font-semibold mb-3">We couldn't load this view.</h2>
-    <p class="max-w-md text-gray-600 dark:text-gray-400 mb-8">
+    <p class="max-w-md text-text-muted mb-8">
       {{ errorMessage }}
     </p>
     <div class="flex flex-wrap items-center justify-center gap-3">
@@ -15,7 +15,7 @@
       </BaseButton>
       <BaseButton
         variant="naked"
-        class="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 text-sm font-medium"
+        class="text-accent hover:text-accent-soft text-sm font-medium"
         @click="goHome"
       >
         Go back home

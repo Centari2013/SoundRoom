@@ -1,5 +1,5 @@
 <template>
-  <div class="h-full bg-[var(--lm-bg-0)] text-[var(--lm-text-0)] dark:bg-neutral-950 dark:text-white flex flex-col">
+  <div class="h-full bg-[var(--color-bg-app)] text-[var(--color-text-primary)] flex flex-col">
     <!-- Main Layout -->
     <div class="flex flex-1 overflow-hidden">
 
@@ -17,7 +17,7 @@
         <Toolbar/>
 
         <!-- Canvas Area -->
-        <div class="flex-1 relative overflow-hidden bg-[var(--lm-bg-1)] dark:bg-neutral-900 flex items-center justify-center border-t border-[var(--lm-border)]/80 dark:border-0">
+        <div class="flex-1 relative overflow-hidden bg-[var(--color-bg-surface)] flex items-center justify-center border-t border-[var(--color-border-subtle)]">
           <div class="pointer-events-none absolute inset-0 canvas-vignette" aria-hidden="true"></div>
           <MainCanvasStage
             v-bind="{
@@ -202,21 +202,18 @@ onUnmounted(() => {
 
 <style scoped>
 .canvas-vignette {
-  --vignette-inner: rgba(0, 0, 0, 0.06);
-  --vignette-middle: rgba(0, 0, 0, 0.04);
-  --vignette-outer: rgba(0, 0, 0, 0.08);
-  --vignette-shadow: inset 0 0 70px rgba(0, 0, 0, 0.12);
+  --vignette-inner: rgba(var(--color-text-inverse-rgb), 0.06);
+  --vignette-middle: rgba(var(--color-text-inverse-rgb), 0.04);
+  --vignette-outer: rgba(var(--color-text-inverse-rgb), 0.08);
+  --vignette-shadow: inset 0 0 70px rgba(var(--color-text-inverse-rgb), 0.12);
 
   background: radial-gradient(circle at center, var(--vignette-inner) 0%, var(--vignette-middle) 38%, var(--vignette-outer) 100%);
   box-shadow: var(--vignette-shadow);
 }
-
-@media (prefers-color-scheme: dark) {
-  .canvas-vignette {
-    --vignette-inner: rgba(224, 224, 224, 0.1);
-    --vignette-middle: rgba(255, 255, 255, 0.03);
-    --vignette-outer: rgba(0, 0, 0, 0.48);
-    --vignette-shadow: inset 0 0 140px rgba(0, 0, 0, 0.42);
-  }
+[data-theme="dark"] .canvas-vignette {
+  --vignette-inner: rgba(var(--color-text-primary-rgb), 0.1);
+  --vignette-middle: rgba(var(--color-text-primary-rgb), 0.06);
+  --vignette-outer: rgba(var(--color-text-inverse-rgb), 0.48);
+  --vignette-shadow: inset 0 0 140px rgba(var(--color-text-inverse-rgb), 0.42);
 }
 </style>

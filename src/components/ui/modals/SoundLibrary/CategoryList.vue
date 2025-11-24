@@ -1,5 +1,5 @@
 <template>
-  <aside class="w-60 bg-neutral-200 dark:bg-neutral-900 border-r border-neutral-300 dark:border-neutral-800 p-4 space-y-3 overflow-y-auto">
+  <aside class="w-60 bg-surface-base text-text-primary border-r border-border-subtle p-4 space-y-3 overflow-y-auto">
     <h2 class="font-bold text-sm mb-2">Categories</h2>
     <BaseButton
       v-if="isAuthenticated"
@@ -12,7 +12,7 @@
         <span v-if="!canUpload" class="badge">Pro</span>
       </span>
     </BaseButton>
-    <hr v-if="isAuthenticated" class="text-neutral-300 dark:text-neutral-800"/>
+    <hr v-if="isAuthenticated" class="border-t border-border-subtle"/>
     <BaseButton
       v-for="cat in categories"
       :key="cat.id"
@@ -61,16 +61,10 @@ function handleSelectYourSounds() {
   border-radius: 0.375rem;
   transition: background-color 0.2s;
 }
-.sound-lib-button:hover { background-color: var(--sr-neutral-200); }
-@media (prefers-color-scheme: dark) {
-  .sound-lib-button:hover { background-color: var(--sr-outline-strong); }
-}
+.sound-lib-button:hover { background-color: color-mix(in srgb, var(--color-bg-surface) 85%, transparent); }
 .sound-lib-button.active {
   font-weight: 600;
-  background-color: var(--sr-neutral-300);
-}
-@media (prefers-color-scheme: dark) {
-  .sound-lib-button.active { background-color: var(--sr-outline-strong); }
+  background-color: color-mix(in srgb, var(--color-bg-elevated) 80%, transparent);
 }
 
 .sound-lib-button.locked {
@@ -88,12 +82,6 @@ function handleSelectYourSounds() {
   font-size: 0.625rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--sr-purple-600);
-}
-
-@media (prefers-color-scheme: dark) {
-  .badge {
-    color: var(--sr-purple-500);
-  }
+  color: var(--color-accent-strong);
 }
 </style>

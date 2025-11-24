@@ -1,6 +1,6 @@
 <template>
   <div
-    class="absolute pointer-events-none w-20 overflow-hidden text-xs text-[var(--lm-text-1)] dark:text-neutral-300"
+    class="absolute pointer-events-none w-20 overflow-hidden text-xs text-[var(--color-text-muted)]"
     :style="{
       top: `${y}px`,
       left: `${x}px`,

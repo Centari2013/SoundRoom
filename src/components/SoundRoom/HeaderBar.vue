@@ -1,19 +1,19 @@
 <template>
   <PulsingOverlay v-if="isLoggingOut" :duration="2000" :text="'Logging out...'" @done="isLoggingOut = false" />
-  <header class="px-6 py-4 border-b border-neutral-300 dark:border-neutral-800 dark:bg-black flex items-center justify-between relative">
-    <h1 class="text-xl font-bold tracking-wide dark:text-gray-300"><RouterLink to="/" style="text-decoration: none; color: inherit;">SoundRoom</RouterLink></h1>
+  <header class="px-6 py-4 border-b border-[var(--color-border-subtle)] bg-[var(--color-bg-surface)] text-[var(--color-text-primary)] flex items-center justify-between relative">
+    <h1 class="text-xl font-bold tracking-wide text-[var(--color-text-primary)]"><RouterLink to="/" style="text-decoration: none; color: inherit;">SoundRoom</RouterLink></h1>
     
     <div v-if="shouldShowNavButtons" class="relative">
       <button
         ref="menuButton"
         type="button"
         @click="toggleMenu"
-        class="flex items-center justify-center w-12 h-12 !p-1 !bg-transparent"
+        class="flex items-center justify-center w-12 h-12 !p-1 !bg-transparent text-[var(--color-text-primary)]"
         :aria-expanded="isMenuOpen"
         aria-haspopup="true"
       >
         <span class="sr-only">Open navigation menu</span>
-        <HamburgerIcon class="w-full h-full text-neutral-900 dark:text-gray-300" />
+        <HamburgerIcon class="w-full h-full" />
 
       </button>
       <transition name="fade">
@@ -21,11 +21,11 @@
           v-if="isMenuOpen"
           @mouseleave="closeMenu"
           ref="menuPanel"
-          class="absolute right-0 mt-2 w-44 rounded-lg shadow-lg border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 py-2 z-50 flex flex-col divide-y divide-neutral-200 dark:divide-neutral-800 overflow-hidden"
+          class="absolute right-0 mt-2 w-44 rounded-lg shadow-lg border border-[var(--color-border-subtle)] bg-[var(--color-bg-elevated)] text-[var(--color-text-primary)] py-2 z-50 flex flex-col divide-y divide-[var(--color-border-subtle)] overflow-hidden"
         >
           <template v-for="button in visibleButtons" :key="button.label">
             <button
-              class="w-full px-4 py-2 text-left text-sm text-neutral-800 dark:text-neutral-100 hover:bg-neutral-100 dark:hover:bg-neutral-800 focus:outline-none !bg-transparent"
+              class="w-full px-4 py-2 text-left text-sm text-[var(--color-text-primary)] hover:bg-[color-mix(in_srgb,var(--color-bg-surface)_85%,transparent)] focus:outline-none !bg-transparent"
               type="button"
               @click="runAction(button.action)"
             >
@@ -44,11 +44,13 @@ import { ref, watch, computed, onMounted, onBeforeUnmount } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useAuth } from '@/composables/useAuth';
 import { supabase } from '@/utils/supabase';
+import { getTheme, toggleTheme } from '@/utils/theme.js';
 import PulsingOverlay from '@/components/ui/overlays/PulsingOverlay.vue';
 import HamburgerIcon from '@/assets/icons/hamburger.svg';
 const menuPanel = ref(null)
 const menuButton = ref(null)
 const isMenuOpen = ref(false)
+const activeTheme = ref(getTheme())
 
 const { isAuthenticated, tier } = useAuth();
 const route = useRoute()
@@ -65,6 +67,10 @@ const authMode = ref('signup'); // 'login' | 'signup' | 'reset
 
 const toggleMenu = () => {
   isMenuOpen.value = !isMenuOpen.value
+}
+
+const handleToggleTheme = () => {
+  activeTheme.value = toggleTheme()
 }
 
 const closeMenu = () => {
@@ -117,6 +123,11 @@ async function handleSignOut() {
 }
 
 const headerButtons = computed(() => [
+  {
+    label: activeTheme.value === 'dark' ? 'Switch to Light Theme' : 'Switch to Dark Theme',
+    action: handleToggleTheme,
+    shouldShow: true,
+  },
   {
     label: 'Help',
     action: () => router.push('/help'),

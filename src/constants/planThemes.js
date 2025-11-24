@@ -1,22 +1,22 @@
 export const PLAN_THEMES = {
   free: {
-    card: 'border border-neutral-300 dark:border-neutral-800 hover:border-neutral-900 focus-within:border-neutral-900 dark:hover:border-neutral-100 dark:focus-within:border-neutral-100',
+    card: 'border border-[var(--color-border-subtle)] hover:border-[var(--color-border-strong)] focus-within:border-[var(--color-border-strong)] shadow-[var(--color-shadow-soft)] bg-[var(--color-bg-surface)]',
     ring: '',
-    cta: 'bg-neutral-200 text-neutral-900 hover:bg-neutral-300 dark:bg-neutral-800 dark:text-white dark:hover:bg-neutral-700',
-    badge: 'bg-neutral-500/80 text-white',
+    cta: 'bg-[var(--color-bg-elevated)] text-[var(--color-text-primary)] hover:bg-[var(--color-bg-surface)] focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-bg-app)]',
+    badge: 'bg-[rgba(var(--color-border-strong-rgb),0.85)] text-[var(--color-text-inverse)]',
     soundHighlight: ''
   },
   basic: {
-    card: 'border border-sky-400/70 dark:border-sky-600/80 hover:border-sky-500 focus-within:border-sky-500 dark:hover:border-sky-400 dark:focus-within:border-sky-400 ring-1 ring-sky-400/50 dark:ring-sky-500/60 shadow-sky-500/5',
-    cta: 'bg-sky-600 text-white hover:bg-sky-500 focus-visible:ring-2 focus-visible:ring-sky-400 dark:bg-sky-500 dark:hover:bg-sky-400 dark:focus-visible:ring-sky-300',
-    badge: 'bg-sky-500 text-white',
-    soundHighlight: 'ring-2 ring-offset-2 ring-sky-400/70 dark:ring-sky-500/70 ring-offset-white dark:ring-offset-neutral-950 shadow-sky-500/20 border-sky-300/80 dark:border-sky-600'
+    card: 'border border-[rgba(var(--color-accent-soft-rgb),0.65)] hover:border-[var(--color-accent)] focus-within:border-[var(--color-accent)] ring-1 ring-[rgba(var(--color-accent-rgb),0.4)] shadow-[0_8px_24px_rgba(var(--color-accent-rgb),0.08)] bg-[color-mix(in_srgb,var(--color-bg-surface)_94%,transparent)]',
+    cta: 'bg-[var(--color-accent)] text-[var(--color-text-inverse)] hover:bg-[var(--color-accent-strong)] focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-bg-app)]',
+    badge: 'bg-[var(--color-accent-strong)] text-[var(--color-text-inverse)]',
+    soundHighlight: 'ring-2 ring-offset-2 ring-[rgba(var(--color-accent-rgb),0.65)] ring-offset-[var(--color-bg-app)] shadow-[0_0_0_4px_rgba(var(--color-accent-rgb),0.15)] border-[rgba(var(--color-accent-rgb),0.6)]'
   },
   pro: {
-    card: 'border border-violet-400/80 dark:border-violet-600/80 hover:border-violet-500 focus-within:border-violet-500 dark:hover:border-violet-400 dark:focus-within:border-violet-400 ring-1 ring-violet-400/50 dark:ring-violet-500/60 shadow-violet-500/5',
-    cta: 'bg-violet-600 text-white hover:bg-violet-500 focus-visible:ring-2 focus-visible:ring-violet-400 dark:bg-violet-500 dark:hover:bg-violet-400 dark:focus-visible:ring-violet-300',
-    badge: 'bg-violet-500 text-white',
-    soundHighlight: 'ring-2 ring-offset-2 ring-violet-400/70 dark:ring-violet-500/70 ring-offset-white dark:ring-offset-neutral-950 shadow-violet-500/20 border-violet-300/80 dark:border-violet-600'
+    card: 'border border-[rgba(var(--color-accent-strong-rgb),0.6)] hover:border-[var(--color-accent-strong)] focus-within:border-[var(--color-accent-strong)] ring-1 ring-[rgba(var(--color-accent-strong-rgb),0.35)] shadow-[0_10px_28px_rgba(var(--color-accent-strong-rgb),0.1)] bg-[color-mix(in_srgb,var(--color-bg-elevated)_92%,transparent)]',
+    cta: 'bg-[var(--color-accent-strong)] text-[var(--color-text-inverse)] hover:bg-[var(--color-accent)] focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-bg-app)]',
+    badge: 'bg-[var(--color-accent)] text-[var(--color-text-inverse)]',
+    soundHighlight: 'ring-2 ring-offset-2 ring-[rgba(var(--color-accent-strong-rgb),0.65)] ring-offset-[var(--color-bg-app)] shadow-[0_0_0_5px_rgba(var(--color-accent-strong-rgb),0.18)] border-[rgba(var(--color-accent-strong-rgb),0.7)]'
   }
 }
 

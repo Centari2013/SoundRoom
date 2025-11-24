@@ -7,7 +7,7 @@
       top: `${pos.y}px`,
       left: `${pos.x}px`,
     }"
-    class="context-menu bg-white dark:bg-neutral-800 rounded shadow p-2 text-sm border border-neutral-300 dark:border-neutral-700"
+    class="context-menu bg-surface-base text-text-primary rounded shadow p-2 text-sm border border-border-subtle"
     role="menu"
     aria-label="Context menu"
   >
@@ -15,7 +15,7 @@
       <li
         v-for="(f, i) in functionList"
         :key="f.label"
-        class="px-2 py-1 rounded cursor-pointer hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+        class="px-2 py-1 rounded cursor-pointer hover:bg-[color-mix(in_srgb,var(--color-bg-surface)_85%,transparent)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)]"
         tabindex="0"
         role="menuitem"
         @click="() => handleClick(f.function)"

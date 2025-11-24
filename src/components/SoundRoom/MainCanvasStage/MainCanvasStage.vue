@@ -4,7 +4,7 @@
     role="application"
     tabindex="0"
     aria-label="SoundRoom 2D audio environment. Use keyboard or mouse to interact with sound nodes."
-    class="canvas-grid relative border border-[var(--lm-border)] dark:border-neutral-700 dark:border-2 flex items-center justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 shadow-[var(--lm-shadow)] dark:shadow-none"
+    class="canvas-grid relative border border-[var(--color-border-subtle)] dark:border-2 flex items-center justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] shadow-[var(--color-shadow-soft)]"
     :class="`w-[${room.width}px] h-[${room.height}px]`"
     @dragover.prevent
     @drop="handleDrop"
@@ -126,12 +126,10 @@ const soundNodeTitleCoords = computed(() => {
     linear-gradient(to bottom, var(--lm-grid-line) 1px, transparent 1px); /* Adjust line opacity */
 }
 
-@media (prefers-color-scheme: dark) {
-  .canvas-grid {
-    background-color: transparent;
-    background-image:
-      linear-gradient(to right, rgba(var(--sr-white-rgb), 0.08) 2px, transparent 2px),
-      linear-gradient(to bottom, rgba(var(--sr-white-rgb), 0.08) 2px, transparent 2px); /* Adjust dark mode opacity separately */
-  }
+[data-theme="dark"] .canvas-grid {
+  background-color: transparent;
+  background-image:
+    linear-gradient(to right, rgba(var(--sr-white-rgb), 0.08) 2px, transparent 2px),
+    linear-gradient(to bottom, rgba(var(--sr-white-rgb), 0.08) 2px, transparent 2px); /* Adjust dark mode opacity separately */
 }
 </style>
