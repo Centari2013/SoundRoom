@@ -1,5 +1,5 @@
 <template>
-  <div class="h-full bg-[var(--lm-bg-0)] text-[var(--lm-text-0)] dark:bg-neutral-950 dark:text-white flex flex-col">
+  <div class="h-full bg-[var(--color-bg-app)] text-[var(--color-text-primary)] flex flex-col">
     <!-- Main Layout -->
     <div class="flex flex-1 overflow-hidden">
 
@@ -17,7 +17,7 @@
         <Toolbar/>
 
         <!-- Canvas Area -->
-        <div class="flex-1 relative overflow-hidden bg-[var(--lm-bg-1)] dark:bg-neutral-900 flex items-center justify-center border-t border-[var(--lm-border)]/80 dark:border-0">
+        <div class="flex-1 relative overflow-hidden bg-[var(--color-bg-surface)] flex items-center justify-center border-t border-[var(--color-border-subtle)]">
           <div class="pointer-events-none absolute inset-0 canvas-vignette" aria-hidden="true"></div>
           <MainCanvasStage
             v-bind="{

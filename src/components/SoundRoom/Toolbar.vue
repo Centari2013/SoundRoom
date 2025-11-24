@@ -13,14 +13,14 @@
       <BaseButton
         :disabled="actionStackEmpty || waiting"
         @click="actionManager.undoLastAction"
-        class="px-3 py-1 rounded text-sm bg-[var(--lm-bg-1)] hover:bg-[var(--lm-bg-2)] text-[var(--lm-text-0)] dark:bg-neutral-800 dark:hover:bg-neutral-700"
+        class="px-3 py-1 rounded text-sm bg-[var(--color-bg-surface)] hover:bg-[var(--color-bg-elevated)] text-[var(--color-text-primary)]"
       >
         <UndoRedo class="h-4 w-4 fill-[var(--color-text-primary)]"/>
       </BaseButton>
       <BaseButton
         :disabled="redoStackEmpty || waiting"
         @click="actionManager.redoLastAction"
-        class="px-3 py-1 rounded text-sm bg-[var(--lm-bg-1)] hover:bg-[var(--lm-bg-2)] text-[var(--lm-text-0)] dark:bg-neutral-800 dark:hover:bg-neutral-700"
+        class="px-3 py-1 rounded text-sm bg-[var(--color-bg-surface)] hover:bg-[var(--color-bg-elevated)] text-[var(--color-text-primary)]"
       >
         <UndoRedo class="h-4 w-4 scale-x-[-1] fill-[var(--color-text-primary)]"/>
       </BaseButton>

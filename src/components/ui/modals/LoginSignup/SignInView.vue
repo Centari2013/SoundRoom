@@ -34,7 +34,7 @@
     <span
       v-if="errorMessage"
       id="signin-error"
-      class="text-red-500 text-sm"
+      class="text-status-danger text-sm"
       role="alert"
       aria-live="assertive"
     >

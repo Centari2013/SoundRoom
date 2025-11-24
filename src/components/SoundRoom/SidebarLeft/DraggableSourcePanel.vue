@@ -2,11 +2,11 @@
   <section class="flex flex-col h-full">
   <ContextMenu ref="menuRef" :functionList="[{ label: 'Delete', function: deleteSound }]" />
 
-  <h5 class="text-sm font-semibold uppercase text-[var(--lm-text-1)] dark:text-neutral-400">
+  <h5 class="text-sm font-semibold uppercase text-[var(--color-text-muted)]">
     Sound Sources
   </h5>
 
-  <ul class="overflow-y-auto space-y-2 text-sm text-[var(--lm-text-1)]"
+  <ul class="overflow-y-auto space-y-2 text-sm text-[var(--color-text-primary)]"
   :class="{ 'flex-1 mt-4': soundLibrarySources.length > 0 }">
     <LibrarySource 
       v-for="s in soundLibrarySources"
@@ -20,7 +20,7 @@
   <button
     :disabled="soundLibrarySources.length == MAX_SOURCES"
     @click="() => { router.push('/sound-library') }"
-    class="w-full mt-4 bg-[var(--lm-bg-1)] dark:bg-neutral-800 text-xs rounded hover:bg-[var(--lm-bg-0)] dark:hover:bg-neutral-700 border border-[var(--lm-border)] dark:border-neutral-700 text-[var(--lm-text-0)]"
+    class="w-full mt-4 bg-[var(--color-bg-surface)] text-xs rounded hover:bg-[var(--color-bg-elevated)] border border-[var(--color-border-subtle)] text-[var(--color-text-primary)]"
   >
     + Add Source
   </button>

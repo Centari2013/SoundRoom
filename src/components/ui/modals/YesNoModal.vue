@@ -13,7 +13,7 @@
       :id="`modal-desc-save`"
     >
       <p
-        class="text-lg font-medium text-neutral-800 dark:text-neutral-200"
+        class="text-lg font-medium text-[var(--color-text-primary)]"
         :id="`modal-title-save`"
       >
         {{ message }}
@@ -22,7 +22,7 @@
         <BaseButton
           v-for="button in buttons"
           :key="button.label"
-          class="px-4 py-2 text-sm font-medium rounded bg-blue-600 text-white hover:bg-blue-700 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400"
+          class="px-4 py-2 text-sm font-medium rounded"
           @click="button.action"
           type="button"
         >

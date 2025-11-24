@@ -3,7 +3,7 @@
     <template v-if="isEditing">
       <input
         v-model="localName"
-        class="w-full bg-neutral-700 text-white px-2 py-1 rounded"
+        class="w-full bg-[var(--color-bg-elevated)] text-[var(--color-text-primary)] px-2 py-1 rounded border border-border-subtle focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)]"
         @blur="handleBlur"
         @keyup.enter="handleBlur"
         @keyup.esc="cancelEdit"
@@ -14,7 +14,7 @@
       <span @click="startEditing" class="cursor-pointer hover:underline">
         {{ name || 'Untitled Room' }}
       </span>
-      <p v-if="errorMsg" class="text-red-400 text-xs">{{ errorMsg }}</p>
+      <p v-if="errorMsg" class="text-status-danger text-xs">{{ errorMsg }}</p>
     </template>
   </div>
 </template>

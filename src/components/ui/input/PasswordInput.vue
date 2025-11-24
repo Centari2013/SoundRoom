@@ -12,7 +12,7 @@
       @click.prevent="show = !show"
       :aria-label="show ? 'Hide password' : 'Show password'"
     >
-      <component :is="show ? EyeOpen : EyeClosed" class="w-5 h-5 text-gray-500 dark:text-neutral-900" />
+      <component :is="show ? EyeOpen : EyeClosed" class="w-5 h-5 text-[var(--color-text-muted)]" />
     </BaseButton>
   </div>
 </template>
@@ -60,6 +60,6 @@ const inputProps = computed(() => ({
   
 }
 .eye-button:focus {
-  outline: 2px solid var(--sr-focus-blue); /* Focus ring color */
+  outline: 2px solid var(--color-focus-ring); /* Focus ring color */
 }
 </style>

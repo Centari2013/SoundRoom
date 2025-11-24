@@ -1,14 +1,14 @@
 <template>
-  <main class="flex-1 overflow-y-auto bg-neutral-100 dark:bg-neutral-950 text-neutral-900 dark:text-neutral-100">
+  <main class="flex-1 overflow-y-auto bg-[var(--color-bg-app)] text-[var(--color-text-primary)]">
     <div class="max-w-4xl mx-auto px-6 py-10 space-y-10">
       <section class="space-y-4">
         <div
           v-if="checkoutStatusMessage || checkoutErrorMessage || isProcessingCheckout"
           class="rounded-xl border p-4"
           :class="[
-            isProcessingCheckout ? 'border-blue-200 bg-blue-50 text-blue-700 dark:border-blue-900/60 dark:bg-blue-950/40 dark:text-blue-300' : '',
-            checkoutStatusMessage && !isProcessingCheckout ? 'border-green-200 bg-green-50 text-green-700 dark:border-green-900/60 dark:bg-green-950/40 dark:text-green-300' : '',
-            checkoutErrorMessage ? 'border-red-200 bg-red-50 text-red-700 dark:border-red-900/60 dark:bg-red-950/40 dark:text-red-300' : '',
+            isProcessingCheckout ? 'border-[var(--color-accent-soft)] bg-[rgba(var(--color-accent-rgb),0.12)] text-[var(--color-text-primary)]' : '',
+            checkoutStatusMessage && !isProcessingCheckout ? 'border-[var(--color-success)] bg-[rgba(var(--color-success-rgb),0.12)] text-[var(--color-text-primary)]' : '',
+            checkoutErrorMessage ? 'border-[var(--color-danger)] bg-[rgba(var(--color-danger-rgb),0.12)] text-[var(--color-text-primary)]' : '',
           ]"
         >
           <p v-if="isProcessingCheckout" class="text-sm font-medium">Processing your plan change…</p>
@@ -18,7 +18,7 @@
         <div class="flex items-center justify-between gap-6 flex-wrap">
           <div class="space-y-2 w-full">
             <h1 class="text-3xl font-semibold tracking-tight">Manage Plan</h1>
-            <p class="text-sm text-neutral-600 dark:text-neutral-400 w-full">
+            <p class="text-sm text-[var(--color-text-muted)] w-full">
               Review what is included in your subscription, explore upgrade options, or reach out for billing support.
             </p>
           </div>
@@ -32,24 +32,24 @@
         </div>
 
         <div
-          class="rounded-2xl bg-white/80 dark:bg-neutral-900/80 p-6 shadow-sm border"
+          class="rounded-2xl p-6 shadow-sm border bg-[color-mix(in_srgb,var(--color-bg-surface)_90%,transparent)]"
           :class="planTheme.card"
         >
           <header class="flex flex-wrap items-center justify-between gap-4">
             <div class="space-y-1">
               <h2 class="text-2xl font-semibold">{{ currentPlan.name }}</h2>
-              <p class="text-sm text-neutral-600 dark:text-neutral-400">{{ currentPlan.tagline }}</p>
+              <p class="text-sm text-[var(--color-text-muted)]">{{ currentPlan.tagline }}</p>
             </div>
             <div class="text-right">
               <span class="text-lg font-semibold">{{ currentPlan.price }}</span>
-              <p class="text-xs text-neutral-500 dark:text-neutral-400">Billed monthly — cancel anytime.</p>
+              <p class="text-xs text-[var(--color-text-muted)]">Billed monthly — cancel anytime.</p>
             </div>
           </header>
 
           <div class="mt-6 grid gap-4 sm:grid-cols-2">
             <div v-for="feature in currentPlan.highlights" :key="feature" class="flex items-start gap-3">
-              <span class="mt-1 h-2 w-2 rounded-full bg-blue-500 dark:bg-blue-400"></span>
-              <p class="text-sm text-neutral-700 dark:text-neutral-300">{{ feature }}</p>
+              <span class="mt-1 h-2 w-2 rounded-full bg-[var(--color-accent)]"></span>
+              <p class="text-sm text-[var(--color-text-secondary)]">{{ feature }}</p>
             </div>
           </div>
 
@@ -70,7 +70,7 @@
             <BaseButton
               v-if="currentPlan.cancelAction"
               variant="naked"
-              class="text-sm text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300"
+              class="text-sm text-accent hover:text-accent-soft"
               :disabled="isDowngradeBusy || isCreatingPortalSession"
               @click="currentPlan.cancelAction.handler"
             >
@@ -80,15 +80,15 @@
         </div>
       </section>
 
-      <section class="rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white/80 dark:bg-neutral-900/80 p-6 shadow-sm space-y-6">
+      <section class="rounded-2xl border border-border-subtle bg-[color-mix(in_srgb,var(--color-bg-surface)_90%,transparent)] p-6 shadow-sm space-y-6">
         <header class="space-y-1">
           <h2 class="text-xl font-semibold">Billing & Receipts</h2>
-          <p class="text-sm text-neutral-600 dark:text-neutral-400">
+          <p class="text-sm text-[var(--color-text-muted)]">
             SoundRoom uses Stripe under the hood. Use the billing portal to view invoices, update payment details, or make changes to your plan anytime.
           </p>
         </header>
 
-        <div class="rounded-xl border border-dashed border-neutral-300 dark:border-neutral-700 bg-neutral-100/80 dark:bg-neutral-950/50 px-5 py-6 text-sm text-neutral-600 dark:text-neutral-300">
+        <div class="rounded-xl border border-dashed border-border-subtle bg-[color-mix(in_srgb,var(--color-bg-surface)_90%,transparent)] px-5 py-6 text-sm text-[var(--color-text-secondary)]">
           <p>Need an invoice, tax receipt, or want to change your payment method?</p>
           <p class="mt-3">Email <a class="underline" :href="supportEmailHref">{{ SUPPORT_EMAIL }}</a> and include the email tied to your SoundRoom account.</p>
         </div>
@@ -105,23 +105,23 @@
           <BaseButton @click="contactBilling">
             Contact billing support
           </BaseButton>
-          <BaseButton variant="naked" class="text-sm text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-200" @click="openFAQ">
+          <BaseButton variant="naked" class="text-sm text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]" @click="openFAQ">
             View plan FAQ
           </BaseButton>
         </div>
       </section>
 
-      <section class="rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white/80 dark:bg-neutral-900/80 p-6 shadow-sm space-y-6">
+      <section class="rounded-2xl border border-border-subtle bg-[color-mix(in_srgb,var(--color-bg-surface)_90%,transparent)] p-6 shadow-sm space-y-6">
         <header class="space-y-1">
           <h2 class="text-xl font-semibold">Upcoming Features</h2>
-          <p class="text-sm text-neutral-600 dark:text-neutral-400">We are actively building deeper collaboration and scheduling tools. Here is what is landing next for paying members.</p>
+          <p class="text-sm text-[var(--color-text-muted)]">We are actively building deeper collaboration and scheduling tools. Here is what is landing next for paying members.</p>
         </header>
 
         <ul class="grid gap-4 md:grid-cols-2">
-          <li v-for="item in roadmapHighlights" :key="item.title" class="rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-950 p-5 space-y-2">
-            <p class="text-sm uppercase tracking-wide text-neutral-500 dark:text-neutral-400">{{ item.badge }}</p>
+          <li v-for="item in roadmapHighlights" :key="item.title" class="rounded-xl border border-border-subtle bg-[color-mix(in_srgb,var(--color-bg-surface)_92%,transparent)] p-5 space-y-2">
+            <p class="text-sm uppercase tracking-wide text-[var(--color-text-muted)]">{{ item.badge }}</p>
             <h3 class="text-lg font-medium">{{ item.title }}</h3>
-            <p class="text-sm text-neutral-600 dark:text-neutral-400">{{ item.copy }}</p>
+            <p class="text-sm text-[var(--color-text-muted)]">{{ item.copy }}</p>
           </li>
         </ul>
       </section>

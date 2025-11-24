@@ -7,8 +7,8 @@
       class="modal-panel flex"
     >
       <!-- Left Sidebar -->
-      <aside 
-        class="w-60 bg-neutral-200 dark:bg-neutral-900 border-r border-neutral-300 dark:border-neutral-800 p-4 space-y-3 overflow-y-auto"
+      <aside
+        class="w-60 bg-surface-base text-text-primary border-r border-border-subtle p-4 space-y-3 overflow-y-auto"
       >
         <h2 class="font-bold text-sm mb-2"></h2>
         <BaseButton
@@ -26,7 +26,7 @@
         <!-- Floating Top Bar -->
         <div
           ref="headerBar"
-          class="absolute top-0 left-0 right-0 z-10 flex justify-between items-center px-6 py-4 bg-white/50 dark:bg-neutral-950/50 backdrop-blur-md border-b border-neutral-300 dark:border-neutral-800"
+          class="absolute top-0 left-0 right-0 z-10 flex justify-between items-center px-6 py-4 bg-[color-mix(in_srgb,var(--color-bg-surface)_70%,transparent)] backdrop-blur-md border-b border-border-subtle"
         >
           <h2 class="text-2xl font-bold">RoomManager</h2>
           <BaseButton class="text-sm" @click="router.push('/')">Close</BaseButton>
@@ -53,7 +53,7 @@
         </template>
 
         <template v-else-if="!loading && rooms.length === 0">
-          <div class="col-span-full text-center text-neutral-400 mt-32">
+          <div class="col-span-full text-center text-text-muted mt-32">
             <div class="text-xl font-semibold mb-2">No rooms yet</div>
             <div class="mb-4">Create your first ambient scene and it’ll show up here.</div>
             <BaseButton @click="createNewRoom">+ Create New Room</BaseButton>

@@ -1,9 +1,8 @@
 <template>
   <div
     :class="[
-      'relative aspect-square flex flex-col items-center justify-between p-4 rounded-xl bg-neutral-100 dark:bg-neutral-800 shadow border transition-shadow duration-200',
-      highlightClass,
-      { 'border-neutral-300 dark:border-neutral-700': !highlightClass }
+      'relative aspect-square flex flex-col items-center justify-between p-4 rounded-xl bg-surface-base text-text-primary shadow border-border-subtle border transition-shadow duration-200',
+      highlightClass
     ]"
   >
 
@@ -25,7 +24,7 @@
     />
 
     <BaseButton
-      class="load-BaseButton text-xs px-3 py-1 rounded hover:bg-blue-700 transition-colors mt-2"
+      class="load-BaseButton text-xs px-3 py-1 rounded transition-colors mt-2 bg-[var(--color-bg-elevated)] hover:bg-[var(--color-bg-surface)] text-[var(--color-text-primary)] border border-border-subtle"
       @click="handleToggle"
       :disabled="waiting || sound.send"
     >
@@ -33,7 +32,7 @@
     </BaseButton>
     <BaseButton
       v-if="userSound"
-      class="hover:underline !bg-transparent !border-none hover:text-red-500 !text-xs"
+      class="hover:underline !bg-transparent !border-none !text-xs !text-text-primary hover:!text-status-danger"
       @click="$emit('delete', sound)"
     >
       Delete

@@ -1,16 +1,16 @@
 <template>
-  <main class="flex-1 overflow-y-auto bg-neutral-100 dark:bg-neutral-950 text-neutral-900 dark:text-neutral-100">
+  <main class="flex-1 overflow-y-auto bg-[var(--color-bg-app)] text-[var(--color-text-primary)]">
     <div class="max-w-5xl mx-auto px-6 py-10 space-y-10">
       <section class="space-y-4">
         <div class="flex items-center justify-between gap-6 flex-wrap">
           <div class="space-y-2">
             <h1 class="text-3xl font-semibold tracking-tight">Settings</h1>
-            <p class="text-sm text-neutral-600 dark:text-neutral-400 max-w-xl">
+            <p class="text-sm text-[var(--color-text-muted)] max-w-xl">
               Update how you appear in SoundRoom, adjust playback preferences, and keep your account secure.
             </p>
           </div>
-          <div class="flex items-center gap-3 rounded-full border border-neutral-200 dark:border-neutral-800 px-4 py-2 bg-white/70 dark:bg-neutral-900/70">
-            <span class="text-xs uppercase tracking-wide text-neutral-500 dark:text-neutral-400">Plan</span>
+          <div class="flex items-center gap-3 rounded-full border border-border-subtle px-4 py-2 bg-[color-mix(in_srgb,var(--color-bg-surface)_85%,transparent)]">
+            <span class="text-xs uppercase tracking-wide text-[var(--color-text-muted)]">Plan</span>
             <span class="text-sm font-medium">{{ planLabel }}</span>
             <RouterLink v-if="tier.value === 'free'" :to="'/upgrade'" class="ml-2">
               <BaseButton type="button">
@@ -33,9 +33,9 @@
           v-if="planStatusMessage || planErrorMessage || isProcessingCheckout"
           class="rounded-xl border p-4"
           :class="[
-            isProcessingCheckout ? 'border-blue-200 bg-blue-50 text-blue-700 dark:border-blue-900/60 dark:bg-blue-950/40 dark:text-blue-300' : '',
-            planStatusMessage && !isProcessingCheckout ? 'border-green-200 bg-green-50 text-green-700 dark:border-green-900/60 dark:bg-green-950/40 dark:text-green-300' : '',
-            planErrorMessage ? 'border-red-200 bg-red-50 text-red-700 dark:border-red-900/60 dark:bg-red-950/40 dark:text-red-300' : '',
+            isProcessingCheckout ? 'border-[var(--color-accent-soft)] bg-[rgba(var(--color-accent-rgb),0.12)] text-[var(--color-text-primary)]' : '',
+            planStatusMessage && !isProcessingCheckout ? 'border-[var(--color-success)] bg-[rgba(var(--color-success-rgb),0.12)] text-[var(--color-text-primary)]' : '',
+            planErrorMessage ? 'border-[var(--color-danger)] bg-[rgba(var(--color-danger-rgb),0.12)] text-[var(--color-text-primary)]' : '',
           ]"
         >
           <p v-if="isProcessingCheckout" class="text-sm font-medium">Processing your plan change…</p>
@@ -43,13 +43,13 @@
           <p v-else-if="planErrorMessage" class="text-sm font-medium">{{ planErrorMessage }}</p>
         </div>
 
-        <div class="rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white/70 dark:bg-neutral-900/70 p-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
+        <div class="rounded-2xl border border-border-subtle bg-[color-mix(in_srgb,var(--color-bg-surface)_85%,transparent)] p-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
           <div>
-            <p class="text-sm text-neutral-500 dark:text-neutral-400">Signed in as</p>
+            <p class="text-sm text-[var(--color-text-muted)]">Signed in as</p>
             <p class="text-lg font-medium break-all">{{ userEmail }}</p>
           </div>
           <div class="flex items-center gap-4">
-            <div class="relative w-16 h-16 rounded-full bg-neutral-200 dark:bg-neutral-800 flex items-center justify-center overflow-hidden text-xl font-semibold">
+            <div class="relative w-16 h-16 rounded-full bg-[var(--color-bg-elevated)] flex items-center justify-center overflow-hidden text-xl font-semibold border border-border-subtle">
               <img
                 v-if="avatarPreview && !avatarFailed"
                 :src="avatarPreview"
@@ -60,23 +60,23 @@
               <span v-else>{{ avatarInitial }}</span>
             </div>
             <div>
-              <p class="text-sm text-neutral-500 dark:text-neutral-400">Display name</p>
+              <p class="text-sm text-[var(--color-text-muted)]">Display name</p>
               <p class="text-base font-medium">{{ profileForm.displayName || '—' }}</p>
             </div>
           </div>
         </div>
       </section>
 
-      <section class="rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white/80 dark:bg-neutral-900/80 p-6 shadow-sm space-y-6">
+      <section class="rounded-2xl border border-border-subtle bg-[color-mix(in_srgb,var(--color-bg-surface)_88%,transparent)] p-6 shadow-sm space-y-6">
         <header class="space-y-2">
           <h2 class="text-xl font-semibold">Profile</h2>
-          <p class="text-sm text-neutral-600 dark:text-neutral-400">Set how teammates and collaborators see you.</p>
+          <p class="text-sm text-[var(--color-text-muted)]">Set how teammates and collaborators see you.</p>
         </header>
 
         <div v-if="isFetchingProfile" class="space-y-4 animate-pulse">
-          <div class="h-4 bg-neutral-200 dark:bg-neutral-800 rounded"></div>
-          <div class="h-4 bg-neutral-200 dark:bg-neutral-800 rounded w-2/3"></div>
-          <div class="h-40 bg-neutral-200 dark:bg-neutral-800 rounded"></div>
+          <div class="h-4 bg-[var(--color-bg-elevated)] rounded"></div>
+          <div class="h-4 bg-[var(--color-bg-elevated)] rounded w-2/3"></div>
+          <div class="h-40 bg-[var(--color-bg-elevated)] rounded"></div>
         </div>
 
         <form v-else @submit.prevent="saveProfile" class="space-y-8">
@@ -114,7 +114,7 @@
           <div class="flex flex-wrap items-center justify-end gap-3">
             <button
               type="button"
-              class="text-sm text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-200 transition"
+              class="text-sm text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] transition"
               @click="resetProfileForm"
               :disabled="profileSaving || !hasProfileChanges"
             >
@@ -129,39 +129,39 @@
             </BaseButton>
           </div>
 
-          <p v-if="profileMessage" class="text-sm text-green-600">{{ profileMessage }}</p>
-          <p v-if="profileErrorMessage" class="text-sm text-red-600">{{ profileErrorMessage }}</p>
+          <p v-if="profileMessage" class="text-sm text-status-success">{{ profileMessage }}</p>
+          <p v-if="profileErrorMessage" class="text-sm text-status-danger">{{ profileErrorMessage }}</p>
         </form>
       </section>
 
-      <section class="rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white/80 dark:bg-neutral-900/80 p-6 shadow-sm space-y-6">
+      <section class="rounded-2xl border border-border-subtle bg-[color-mix(in_srgb,var(--color-bg-surface)_88%,transparent)] p-6 shadow-sm space-y-6">
         <header class="space-y-2">
           <h2 class="text-xl font-semibold">Playback Preferences</h2>
-          <p class="text-sm text-neutral-600 dark:text-neutral-400">These settings are stored locally in your browser.</p>
+          <p class="text-sm text-[var(--color-text-muted)]">These settings are stored locally in your browser.</p>
         </header>
 
         <div class="space-y-6">
           <div class="flex items-start justify-between gap-6">
             <div>
               <h3 class="text-base font-medium">Auto-resume sessions</h3>
-              <p class="text-sm text-neutral-600 dark:text-neutral-400">Automatically reload your last SoundRoom when you sign back in.</p>
+              <p class="text-sm text-[var(--color-text-muted)]">Automatically reload your last SoundRoom when you sign back in.</p>
             </div>
             <label class="relative inline-flex items-center cursor-pointer select-none">
               <input type="checkbox" class="sr-only peer" v-model="preferences.autoResumePlayback">
-              <span class="block w-12 h-6 rounded-full bg-neutral-300 dark:bg-neutral-700 transition-colors peer-focus:outline peer-focus:outline-2 peer-focus:outline-blue-500 peer-checked:bg-blue-600"></span>
-              <span class="absolute left-1 top-1 block w-4 h-4 rounded-full bg-white shadow transition-transform peer-checked:translate-x-6"></span>
+              <span class="block w-12 h-6 rounded-full bg-[var(--color-border-subtle)] transition-colors peer-focus:outline peer-focus:outline-2 peer-focus:outline-[var(--color-focus-ring)] peer-checked:bg-[var(--color-accent-strong)]"></span>
+              <span class="absolute left-1 top-1 block w-4 h-4 rounded-full bg-[var(--color-text-inverse)] shadow transition-transform peer-checked:translate-x-6"></span>
             </label>
           </div>
 
           <div class="flex items-start justify-between gap-6">
             <div>
               <h3 class="text-base font-medium">Show interface tips</h3>
-              <p class="text-sm text-neutral-600 dark:text-neutral-400">Keep lightweight reminders visible for keyboard shortcuts and best practices.</p>
+              <p class="text-sm text-[var(--color-text-muted)]">Keep lightweight reminders visible for keyboard shortcuts and best practices.</p>
             </div>
             <label class="relative inline-flex items-center cursor-pointer select-none">
               <input type="checkbox" class="sr-only peer" v-model="preferences.showInterfaceTips">
-              <span class="block w-12 h-6 rounded-full bg-neutral-300 dark:bg-neutral-700 transition-colors peer-focus:outline peer-focus:outline-2 peer-focus:outline-blue-500 peer-checked:bg-blue-600"></span>
-              <span class="absolute left-1 top-1 block w-4 h-4 rounded-full bg-white shadow transition-transform peer-checked:translate-x-6"></span>
+              <span class="block w-12 h-6 rounded-full bg-[var(--color-border-subtle)] transition-colors peer-focus:outline peer-focus:outline-2 peer-focus:outline-[var(--color-focus-ring)] peer-checked:bg-[var(--color-accent-strong)]"></span>
+              <span class="absolute left-1 top-1 block w-4 h-4 rounded-full bg-[var(--color-text-inverse)] shadow transition-transform peer-checked:translate-x-6"></span>
             </label>
           </div>
         </div>
@@ -169,7 +169,7 @@
         <div class="flex flex-wrap items-center justify-end gap-3">
           <button
             type="button"
-            class="text-sm text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-200 transition"
+            class="text-sm text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] transition"
             @click="resetPreferences"
             :disabled="!hasPreferenceChanges"
           >
@@ -183,20 +183,20 @@
             Save preferences
           </BaseButton>
         </div>
-        <p v-if="preferenceMessage" class="text-sm text-green-600">{{ preferenceMessage }}</p>
+        <p v-if="preferenceMessage" class="text-sm text-status-success">{{ preferenceMessage }}</p>
       </section>
 
-      <section class="rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white/80 dark:bg-neutral-900/80 p-6 shadow-sm space-y-6">
+      <section class="rounded-2xl border border-border-subtle bg-[color-mix(in_srgb,var(--color-bg-surface)_88%,transparent)] p-6 shadow-sm space-y-6">
         <header class="space-y-2">
           <h2 class="text-xl font-semibold">Security</h2>
-          <p class="text-sm text-neutral-600 dark:text-neutral-400">Keep your account protected and up to date.</p>
+          <p class="text-sm text-[var(--color-text-muted)]">Keep your account protected and up to date.</p>
         </header>
 
         <div class="space-y-6">
           <div class="flex flex-wrap items-start justify-between gap-6">
             <div>
               <h3 class="text-base font-medium">Password</h3>
-              <p class="text-sm text-neutral-600 dark:text-neutral-400">Use a strong password to protect your SoundRoom sessions and purchases.</p>
+              <p class="text-sm text-[var(--color-text-muted)]">Use a strong password to protect your SoundRoom sessions and purchases.</p>
             </div>
             <RouterLink to="/update-password">
               <BaseButton type="button">Update password</BaseButton>
@@ -206,14 +206,14 @@
           <div class="flex flex-wrap items-start justify-between gap-6">
             <div>
               <h3 class="text-base font-medium">Sign out</h3>
-              <p class="text-sm text-neutral-600 dark:text-neutral-400">Need to switch devices? Sign out to end your session on this browser.</p>
+              <p class="text-sm text-[var(--color-text-muted)]">Need to switch devices? Sign out to end your session on this browser.</p>
             </div>
             <BaseButton type="button" @click="signOutCurrentSession">Sign out of this device</BaseButton>
           </div>
         </div>
 
-        <p v-if="securityMessage" class="text-sm text-green-600">{{ securityMessage }}</p>
-        <p v-if="securityError" class="text-sm text-red-600">{{ securityError }}</p>
+        <p v-if="securityMessage" class="text-sm text-status-success">{{ securityMessage }}</p>
+        <p v-if="securityError" class="text-sm text-status-danger">{{ securityError }}</p>
       </section>
     </div>
   </main>

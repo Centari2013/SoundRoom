@@ -7,7 +7,7 @@
     >
       <div class="modal-panel" role="dialog" aria-modal="true">
         <h2 class="text-2xl font-semibold mb-3">{{ title }}</h2>
-        <p class="text-neutral-600 dark:text-neutral-300 mb-6">{{ message }}</p>
+        <p class="text-[var(--color-text-muted)] mb-6">{{ message }}</p>
         <div class="flex flex-wrap gap-3">
           <BaseButton @click="handleUpgrade">See plans</BaseButton>
           <BaseButton variant="naked" @click="handleClose">Maybe later</BaseButton>
@@ -50,18 +50,10 @@ function handleUpgrade() {
 
 .modal-panel {
   width: min(480px, 90vw);
-  background-color: var(--sr-white);
-  color: var(--sr-outline-contrast);
+  background-color: var(--color-bg-surface);
+  color: var(--color-text-primary);
   border-radius: 16px;
   padding: 32px;
-  box-shadow: 0 20px 45px rgba(var(--sr-outline-contrast-rgb), 0.15);
-}
-
-@media (prefers-color-scheme: dark) {
-  .modal-panel {
-    background-color: var(--sr-dark-plain);
-    color: var(--sr-slate-200);
-    box-shadow: 0 20px 45px rgba(var(--sr-black-rgb), 0.6);
-  }
+  box-shadow: var(--color-shadow-strong);
 }
 </style>

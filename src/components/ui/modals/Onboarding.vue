@@ -1,19 +1,19 @@
 <template>
   <div @click.self="emit('close')" class="modal-backdrop">
-    <div class="bg-white dark:bg-neutral-950 rounded-2xl w-[80vw] max-w-xl h-auto relative flex flex-col overflow-hidden shadow-2xl border border-neutral-300 dark:border-neutral-800">
+    <div class="bg-surface-base text-text-primary rounded-2xl w-[80vw] max-w-xl h-auto relative flex flex-col overflow-hidden shadow-2xl border border-border-subtle">
       
       <!-- Floating Header -->
-      <div class="modal-header p-6 border-b border-neutral-300 dark:border-neutral-800">
+      <div class="modal-header p-6 border-b border-border-subtle">
         <h1 class="text-2xl font-bold tracking-tight">Welcome to SoundRoom</h1>
       </div>
 
       <!-- Body -->
       <div class="p-6 space-y-6 text-sm leading-relaxed">
-        <p class="text-neutral-700 dark:text-neutral-300">
+        <p class="text-[var(--color-text-secondary)]">
           You’re all set. SoundRoom is your canvas for immersive 3D sound. Place audio sources, move your listener, and create rich soundscapes that evolve around you.
         </p>
 
-        <ul class="list-disc list-inside space-y-1 text-neutral-600 dark:text-neutral-400">
+        <ul class="list-disc list-inside space-y-1 text-[var(--color-text-muted)]">
           <li>Use <strong>+ Add Source</strong> to begin layering sounds.</li>
           <li>Drag and drop sounds onto the canvas.</li>
           <li>Move the listener with <strong>WASD</strong> or arrow keys.</li>
@@ -21,14 +21,14 @@
           <li>Undo/redo with <strong>U</strong> / <strong>R</strong>.</li>
         </ul>
 
-        <div class="rounded bg-blue-50 dark:bg-blue-900/30 p-4 text-blue-800 dark:text-blue-200 border border-blue-200 dark:border-blue-700">
+        <div class="rounded p-4 text-[var(--color-accent-strong)] border border-[rgba(var(--color-accent-rgb),0.35)] bg-[rgba(var(--color-accent-rgb),0.08)]">
           <strong>Pro tip:</strong> You can layer ambience, nature, music, and directional audio for maximum effect.
         </div>
       </div>
 
       <!-- Footer -->
-      <div class="flex justify-end p-4 border-t border-neutral-300 dark:border-neutral-800">
-        <BaseButton @click="router.push('/')" class="text-sm px-4 py-2 font-medium rounded hover:text-neutral-600 dark:hover:text-neutral-300">
+      <div class="flex justify-end p-4 border-t border-border-subtle">
+        <BaseButton @click="router.push('/')" class="text-sm px-4 py-2 font-medium rounded hover:text-[var(--color-text-muted)]">
           Let's Go
         </BaseButton>
       </div>
