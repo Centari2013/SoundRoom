@@ -7,8 +7,20 @@ import { createPinia } from 'pinia';
 import router from '@/utils/router.js'
 import '@/composables/useAuth.js' // Ensure auth is initialized before app mounts
 import * as Sentry from "@sentry/vue";
+import { LOCAL_PREF_KEY, DEFAULT_THEME } from '@/constants/preferences'
+import { applyThemePreference } from '@/utils/theme'
 
 const app = createApp(App);
+
+try {
+  const storedPreferences = localStorage.getItem(LOCAL_PREF_KEY)
+  const parsedPreferences = storedPreferences ? JSON.parse(storedPreferences) : {}
+  const themePreference = parsedPreferences?.theme || DEFAULT_THEME
+  applyThemePreference(themePreference)
+} catch (error) {
+  console.warn('Unable to load stored preferences, using default theme.', error)
+  applyThemePreference(DEFAULT_THEME)
+}
 
 Sentry.init({
   app,

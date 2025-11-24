@@ -141,6 +141,42 @@
         </header>
 
         <div class="space-y-6">
+          <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between sm:gap-6">
+            <div class="space-y-1">
+              <h3 class="text-base font-medium">Theme</h3>
+              <p class="text-sm text-neutral-600 dark:text-neutral-400">
+                Switch between light and dark modes or follow your system to preview palette updates.
+              </p>
+              <p class="text-xs text-neutral-500 dark:text-neutral-500">
+                System preference: {{ isSystemDark ? 'Dark' : 'Light' }}
+              </p>
+            </div>
+            <div class="flex flex-wrap items-center gap-2">
+              <label
+                v-for="option in themeOptions"
+                :key="option.value"
+                class="flex items-center gap-2 px-3 py-2 rounded-lg border cursor-pointer transition text-sm bg-white/70 dark:bg-neutral-800/70"
+                :class="[
+                  preferences.theme === option.value
+                    ? 'border-blue-500 text-blue-600 dark:border-blue-400 dark:text-blue-300'
+                    : 'border-neutral-200 text-neutral-700 hover:border-neutral-300 dark:border-neutral-700 dark:text-neutral-200 dark:hover:border-neutral-600'
+                ]"
+              >
+                <input
+                  class="sr-only"
+                  type="radio"
+                  name="theme-preference"
+                  :value="option.value"
+                  v-model="preferences.theme"
+                >
+                <div class="flex flex-col items-start leading-tight">
+                  <span class="font-medium">{{ option.label }}</span>
+                  <span class="text-xs text-neutral-500 dark:text-neutral-400">{{ option.description }}</span>
+                </div>
+              </label>
+            </div>
+          </div>
+
           <div class="flex items-start justify-between gap-6">
             <div>
               <h3 class="text-base font-medium">Auto-resume sessions</h3>
@@ -220,16 +256,24 @@
 </template>
 
 <script setup>
-import { computed, reactive, ref, watch, onMounted } from 'vue'
+import { computed, reactive, ref, watch, onMounted, onBeforeUnmount } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import BaseButton from '@/components/ui/input/BaseButton.vue'
 import BaseInput from '@/components/ui/input/BaseInput.vue'
 import { useAuth } from '@/composables/useAuth'
 import { supabase } from '@/utils/supabase'
+import { LOCAL_PREF_KEY, DEFAULT_THEME } from '@/constants/preferences'
+import { applyThemePreference, getSystemPrefersDark, onSystemThemeChange } from '@/utils/theme'
 
 const router = useRouter()
 const route = useRoute()
 const { user, sessionLoaded, tier, refreshTier, primeTier } = useAuth()
+
+const themeOptions = Object.freeze([
+  { value: 'system', label: 'System', description: 'Follow your device preference' },
+  { value: 'light', label: 'Light', description: 'Force a bright interface' },
+  { value: 'dark', label: 'Dark', description: 'Force a dim interface' },
+])
 
 const profileForm = reactive({
   displayName: '',
@@ -253,12 +297,14 @@ const avatarFailed = ref(false)
 
 const preferenceDefaults = Object.freeze({
   autoResumePlayback: false,
-  showInterfaceTips: true
+  showInterfaceTips: true,
+  theme: DEFAULT_THEME,
 })
 
 const preferences = reactive({
   autoResumePlayback: preferenceDefaults.autoResumePlayback,
-  showInterfaceTips: preferenceDefaults.showInterfaceTips
+  showInterfaceTips: preferenceDefaults.showInterfaceTips,
+  theme: preferenceDefaults.theme,
 })
 
 const preferenceInitial = ref({ ...preferenceDefaults })
@@ -271,7 +317,8 @@ const planStatusMessage = ref('')
 const planErrorMessage = ref('')
 const isProcessingCheckout = ref(false)
 
-const LOCAL_PREF_KEY = 'soundroom.userPreferences'
+const isSystemDark = ref(getSystemPrefersDark())
+let stopSystemThemeListener = () => {}
 
 const userEmail = computed(() => user.value?.email ?? 'Unknown user')
 const formattedUserId = computed(() => user.value?.id ?? '—')
@@ -387,6 +434,7 @@ function applyPreferences(source) {
   Object.entries(preferenceDefaults).forEach(([key, value]) => {
     preferences[key] = source[key] ?? value
   })
+  applyThemePreference(preferences.theme)
 }
 
 function loadPreferences() {
@@ -581,8 +629,26 @@ watch(hasPreferenceChanges, (dirty) => {
   }
 })
 
+watch(
+  () => preferences.theme,
+  () => {
+    applyThemePreference(preferences.theme)
+  }
+)
+
 onMounted(() => {
   loadPreferences()
   syncCheckoutIfNeeded()
+
+  stopSystemThemeListener = onSystemThemeChange((matches) => {
+    isSystemDark.value = matches
+    if (preferences.theme === 'system') {
+      applyThemePreference('system')
+    }
+  })
+})
+
+onBeforeUnmount(() => {
+  stopSystemThemeListener?.()
 })
 </script>
