@@ -10,7 +10,11 @@ function resolveInitialTheme() {
   if (supportedThemes.includes(stored)) return stored
 
   const prefersDark = window.matchMedia?.('(prefers-color-scheme: dark)').matches
-  return prefersDark ? 'dark' : DEFAULT_THEME
+  if (typeof prefersDark === 'boolean') {
+    return prefersDark ? 'dark' : 'light'
+  }
+
+  return DEFAULT_THEME
 }
 
 function applyTheme(theme) {
