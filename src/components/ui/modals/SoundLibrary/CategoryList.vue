@@ -5,6 +5,7 @@
       v-if="isAuthenticated"
       :key="'your-sounds'"
       @click="handleSelectYourSounds"
+      unstyled
       :class="['sound-lib-button', { active: active === 'your-sounds', locked: !canUpload }]"
     >
       <span class="button-inner">
@@ -17,6 +18,7 @@
       v-for="cat in categories"
       :key="cat.id"
       @click="$emit('update:active', cat.id)"
+      unstyled
       :class="['sound-lib-button', { active: active === cat.id }]"
     >
       {{ cat.label }}
