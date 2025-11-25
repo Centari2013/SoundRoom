@@ -7,12 +7,7 @@ function resolveInitialTheme() {
   if (typeof window === 'undefined') return DEFAULT_THEME
 
   const stored = localStorage.getItem(THEME_KEY)
-  if (SUPPORTED_THEMES.includes(stored)) return stored
-
-  const prefersDark = window.matchMedia?.('(prefers-color-scheme: dark)').matches
-  if (typeof prefersDark === 'boolean') {
-    return prefersDark ? 'dark' : 'light'
-  }
+  if (stored === 'light') return stored
 
   return DEFAULT_THEME
 }
