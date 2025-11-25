@@ -134,7 +134,7 @@
         </form>
       </section>
 
-      <ThemeSelect />
+      <ThemeSelector />
 
       <section class="rounded-2xl border border-border-subtle bg-[color-mix(in_srgb,var(--color-bg-surface)_88%,transparent)] p-6 shadow-sm space-y-6">
         <header class="space-y-2">
@@ -226,7 +226,7 @@ import { computed, reactive, ref, watch, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import BaseButton from '@/components/ui/input/BaseButton.vue'
 import BaseInput from '@/components/ui/input/BaseInput.vue'
-import ThemeSelect from '@/components/Settings/ThemeSelect.vue'
+import ThemeSelector from '@/components/Settings/ThemeSelector.vue'
 import { useAuth } from '@/composables/useAuth'
 import { supabase } from '@/utils/supabase'
 
