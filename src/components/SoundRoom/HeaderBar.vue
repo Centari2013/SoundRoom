@@ -1,14 +1,14 @@
 <template>
   <PulsingOverlay v-if="isLoggingOut" :duration="2000" :text="'Logging out...'" @done="isLoggingOut = false" />
-  <header class="px-6 py-4 border-b border-[var(--color-border-subtle)] bg-[var(--color-bg-surface)] text-[var(--color-text-primary)] flex items-center justify-between relative">
-    <h1 class="text-xl font-bold tracking-wide text-[var(--color-text-primary)]"><RouterLink to="/" style="text-decoration: none; color: inherit;">SoundRoom</RouterLink></h1>
+  <header class="px-6 py-4 border-b border-border-subtle bg-surface-base text-text-primary flex items-center justify-between relative">
+    <h1 class="text-xl font-bold tracking-wide text-text-primary"><RouterLink to="/" style="text-decoration: none; color: inherit;">SoundRoom</RouterLink></h1>
     
     <div v-if="shouldShowNavButtons" class="relative">
       <button
         ref="menuButton"
         type="button"
         @click="toggleMenu"
-        class="flex items-center justify-center w-12 h-12 !p-1 !bg-transparent text-[var(--color-text-primary)]"
+        class="flex items-center justify-center w-12 h-12 !p-1 !bg-transparent text-text-primary"
         :aria-expanded="isMenuOpen"
         aria-haspopup="true"
       >
@@ -21,11 +21,11 @@
           v-if="isMenuOpen"
           @mouseleave="closeMenu"
           ref="menuPanel"
-          class="absolute right-0 mt-2 w-44 rounded-lg shadow-lg border border-[var(--color-border-subtle)] bg-[var(--color-bg-elevated)] text-[var(--color-text-primary)] py-2 z-50 flex flex-col divide-y divide-[var(--color-border-subtle)] overflow-hidden"
+          class="absolute right-0 mt-2 w-44 rounded-lg shadow-lg border border-border-subtle bg-surface-raised text-text-primary py-2 z-50 flex flex-col divide-y divide-border-subtle overflow-hidden"
         >
           <template v-for="button in visibleButtons" :key="button.label">
             <button
-              class="w-full px-4 py-2 text-left text-sm text-[var(--color-text-primary)] hover:bg-[color-mix(in_srgb,var(--color-bg-surface)_85%,transparent)] focus:outline-none !bg-transparent"
+              class="w-full px-4 py-2 text-left text-sm text-text-primary hover:bg-surface-base/85 focus:outline-none !bg-transparent"
               type="button"
               @click="runAction(button.action)"
             >

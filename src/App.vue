@@ -5,27 +5,27 @@
   <div class="h-screen max-h-screen min-w-screen flex flex-col">
     <HeaderBar />
     <div class="flex-1 min-h-0 flex flex-col">
-      <div
-        v-if="globalError"
-        class="flex-1 flex flex-col items-center justify-center text-center px-6 py-12 bg-[var(--color-bg-app)] text-[var(--color-text-primary)]"
-      >
-        <p class="text-sm uppercase tracking-[0.2em] text-[var(--color-danger)] mb-3">Navigation error</p>
-        <h2 class="text-2xl font-semibold mb-3">We couldn't load that page.</h2>
-        <p class="max-w-md text-[var(--color-text-muted)] mb-8">
-          {{ globalError.message }}
-        </p>
-        <div class="flex flex-wrap items-center justify-center gap-3">
-          <BaseButton @click="retryGlobalError">
-            Try again
-          </BaseButton>
-          <BaseButton
-            variant="naked"
-            class="text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] text-sm font-medium"
-            @click="returnHome"
-          >
-            Go back home
-          </BaseButton>
-        </div>
+        <div
+          v-if="globalError"
+          class="flex-1 flex flex-col items-center justify-center text-center px-6 py-12 bg-surface-app text-text-primary"
+        >
+          <p class="text-sm uppercase tracking-[0.2em] text-status-danger mb-3">Navigation error</p>
+          <h2 class="text-2xl font-semibold mb-3">We couldn't load that page.</h2>
+          <p class="max-w-md text-text-muted mb-8">
+            {{ globalError.message }}
+          </p>
+          <div class="flex flex-wrap items-center justify-center gap-3">
+            <BaseButton @click="retryGlobalError">
+              Try again
+            </BaseButton>
+            <BaseButton
+              variant="naked"
+              class="text-text-secondary hover:text-text-primary text-sm font-medium"
+              @click="returnHome"
+            >
+              Go back home
+            </BaseButton>
+          </div>
       </div>
       <RouterView v-else v-slot="{ Component, route }">
         <Suspense>
@@ -37,10 +37,10 @@
             </ErrorBoundary>
           </template>
           <template #fallback>
-            <div class="flex-1 flex flex-col items-center justify-center text-center px-6 py-12 bg-[var(--color-bg-app)] text-[var(--color-text-primary)]">
-              <p class="text-sm uppercase tracking-[0.2em] text-[var(--color-accent)] mb-3">Loading</p>
+            <div class="flex-1 flex flex-col items-center justify-center text-center px-6 py-12 bg-surface-app text-text-primary">
+              <p class="text-sm uppercase tracking-[0.2em] text-accent mb-3">Loading</p>
               <h2 class="text-2xl font-semibold mb-3">Preparing SoundRoom…</h2>
-              <p class="max-w-md text-[var(--color-text-muted)]">
+              <p class="max-w-md text-text-muted">
                 Hang tight while we load the experience.
               </p>
             </div>

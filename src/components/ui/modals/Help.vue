@@ -5,7 +5,7 @@
       <!-- Absolute Floating Header -->
       <div class="modal-header-float">
         <h1 class="text-2xl font-bold tracking-tight">Welcome to SoundRoom</h1>
-        <BaseButton @click="handleClose" class="text-sm hover:text-[var(--color-text-muted)]">Close</BaseButton>
+        <BaseButton @click="handleClose" class="text-sm hover:text-text-muted">Close</BaseButton>
       </div>
 
       <!-- Scrollable Content -->
@@ -94,13 +94,13 @@
               >
                 <BaseButton
                   @click="faq.open = !faq.open"
-                  class="w-full text-left font-medium text-[var(--color-text-primary)] focus:outline-none transition-colors"
+                  class="w-full text-left font-medium text-text-primary focus:outline-none transition-colors"
                 >
                   {{ faq.question }}
                 </BaseButton>
                 <p
                   v-if="faq.open"
-                  class="mt-2 text-sm text-[var(--color-text-muted)] leading-snug italic indent-3"
+                  class="mt-2 text-sm text-text-muted leading-snug italic indent-3"
                 >
                   <span
                     v-if="faq.isHtml"
@@ -133,7 +133,7 @@
                     v-model="form.name"
                     required
                     autocomplete="name"
-                    class="w-full px-3 py-2 border border-[var(--color-border-subtle)] rounded bg-[var(--color-bg-surface)] text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-focus-ring)] focus:ring-offset-2 focus:ring-offset-[var(--color-bg-surface)] text-sm"
+                    class="w-full px-3 py-2 border border-border-subtle rounded bg-surface-base text-text-primary focus:outline-none focus:ring-2 focus:ring-focus focus:ring-offset-2 focus:ring-offset-surface-base text-sm"
                   />
                 </div>
 
@@ -145,7 +145,7 @@
                     v-model="form.email"
                     required
                     autocomplete="email"
-                    class="w-full px-3 py-2 border border-[var(--color-border-subtle)] rounded bg-[var(--color-bg-surface)] text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-focus-ring)] focus:ring-offset-2 focus:ring-offset-[var(--color-bg-surface)] text-sm"
+                    class="w-full px-3 py-2 border border-border-subtle rounded bg-surface-base text-text-primary focus:outline-none focus:ring-2 focus:ring-focus focus:ring-offset-2 focus:ring-offset-surface-base text-sm"
                   />
                 </div>
               </div>
@@ -157,7 +157,7 @@
                     id="topic"
                     v-model="form.topic"
                     required
-                    class="w-full px-3 py-2 border border-[var(--color-border-subtle)] rounded bg-[var(--color-bg-surface)] text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-focus-ring)] focus:ring-offset-2 focus:ring-offset-[var(--color-bg-surface)] text-sm"
+                    class="w-full px-3 py-2 border border-border-subtle rounded bg-surface-base text-text-primary focus:outline-none focus:ring-2 focus:ring-focus focus:ring-offset-2 focus:ring-offset-surface-base text-sm"
                   >
                     <option v-for="item in topicOptions" :key="item.value" :value="item.value">{{ item.label }}</option>
                   </select>
@@ -168,7 +168,7 @@
                   <select
                     id="plan"
                     v-model="form.plan"
-                    class="w-full px-3 py-2 border border-[var(--color-border-subtle)] rounded bg-[var(--color-bg-surface)] text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-focus-ring)] focus:ring-offset-2 focus:ring-offset-[var(--color-bg-surface)] text-sm"
+                    class="w-full px-3 py-2 border border-border-subtle rounded bg-surface-base text-text-primary focus:outline-none focus:ring-2 focus:ring-focus focus:ring-offset-2 focus:ring-offset-surface-base text-sm"
                   >
                     <option value="">Select your plan</option>
                     <option v-for="option in planOptions" :key="option" :value="option">{{ PLAN_LABELS[option] }}</option>
@@ -178,13 +178,13 @@
               </div>
 
               <div>
-                <label for="roomLink" class="block text-sm font-medium mb-1">Room link or ID <span class="text-xs text-[var(--color-text-muted)]">(optional)</span></label>
+                <label for="roomLink" class="block text-sm font-medium mb-1">Room link or ID <span class="text-xs text-text-muted">(optional)</span></label>
                 <input
                   type="text"
                   id="roomLink"
                   v-model="form.roomLink"
                   placeholder="Paste a RoomManager link or card ID"
-                  class="w-full px-3 py-2 border border-[var(--color-border-subtle)] rounded bg-[var(--color-bg-surface)] text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-focus-ring)] focus:ring-offset-2 focus:ring-offset-[var(--color-bg-surface)] text-sm"
+                  class="w-full px-3 py-2 border border-border-subtle rounded bg-surface-base text-text-primary focus:outline-none focus:ring-2 focus:ring-focus focus:ring-offset-2 focus:ring-offset-surface-base text-sm"
                 />
               </div>
 
@@ -196,18 +196,18 @@
                   rows="4"
                   required
                   placeholder="Tell us what you were working on and what you expected to happen."
-                  class="w-full px-3 py-2 border border-[var(--color-border-subtle)] rounded bg-[var(--color-bg-surface)] text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-focus-ring)] focus:ring-offset-2 focus:ring-offset-[var(--color-bg-surface)] text-sm"
+                  class="w-full px-3 py-2 border border-border-subtle rounded bg-surface-base text-text-primary focus:outline-none focus:ring-2 focus:ring-focus focus:ring-offset-2 focus:ring-offset-surface-base text-sm"
                 ></textarea>
               </div>
 
               <div>
-                <label for="reproSteps" class="block text-sm font-medium mb-1">Steps to reproduce <span class="text-xs text-[var(--color-text-muted)]">(optional)</span></label>
+                <label for="reproSteps" class="block text-sm font-medium mb-1">Steps to reproduce <span class="text-xs text-text-muted">(optional)</span></label>
                 <textarea
                   id="reproSteps"
                   v-model="form.reproSteps"
                   rows="3"
                   placeholder="Step-by-step details help us debug much faster."
-                  class="w-full px-3 py-2 border border-[var(--color-border-subtle)] rounded bg-[var(--color-bg-surface)] text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-focus-ring)] focus:ring-offset-2 focus:ring-offset-[var(--color-bg-surface)] text-sm"
+                  class="w-full px-3 py-2 border border-border-subtle rounded bg-surface-base text-text-primary focus:outline-none focus:ring-2 focus:ring-focus focus:ring-offset-2 focus:ring-offset-surface-base text-sm"
                 ></textarea>
               </div>
 
@@ -216,7 +216,7 @@
               <BaseButton
                 type="submit"
                 :disabled="submitting"
-                class="bg-[var(--color-accent)] hover:bg-[var(--color-accent-strong)] disabled:opacity-60 disabled:cursor-not-allowed text-[var(--color-text-inverse)] px-4 py-2 rounded text-sm"
+                class="bg-accent hover:bg-accent-strong disabled:opacity-60 disabled:cursor-not-allowed text-text-inverse px-4 py-2 rounded text-sm"
               >
                 <span v-if="submitting">Sending…</span>
                 <span v-else>Send Message</span>
@@ -224,7 +224,7 @@
             </form>
           </div>
 
-          <div v-else class="p-4 rounded bg-[rgba(var(--color-success-rgb),0.12)] text-[var(--color-success)] space-y-2">
+          <div v-else class="p-4 rounded bg-status-success/12 text-status-success space-y-2">
             <p class="font-semibold">Thanks for contacting SoundRoom Support!</p>
             <p class="text-sm">We’ll reply from support@soundroom.live soon. Check for a subject line starting with [SUPPORT] in case it lands in spam.</p>
             <BaseButton class="text-sm" @click="prepareAnotherMessage">Send another message</BaseButton>

@@ -12,7 +12,7 @@
       @click.prevent="show = !show"
       :aria-label="show ? 'Hide password' : 'Show password'"
     >
-      <component :is="show ? EyeOpen : EyeClosed" class="w-5 h-5 text-[var(--color-text-muted)]" />
+      <component :is="show ? EyeOpen : EyeClosed" class="w-5 h-5 text-text-muted" />
     </BaseButton>
   </div>
 </template>

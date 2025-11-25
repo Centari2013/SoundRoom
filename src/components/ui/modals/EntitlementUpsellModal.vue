@@ -7,7 +7,7 @@
     >
       <div class="modal-panel" role="dialog" aria-modal="true">
         <h2 class="text-2xl font-semibold mb-3">{{ title }}</h2>
-        <p class="text-[var(--color-text-muted)] mb-6">{{ message }}</p>
+        <p class="text-text-muted mb-6">{{ message }}</p>
         <div class="flex flex-wrap gap-3">
           <BaseButton @click="handleUpgrade">See plans</BaseButton>
           <BaseButton variant="naked" @click="handleClose">Maybe later</BaseButton>

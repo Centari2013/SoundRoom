@@ -1,16 +1,16 @@
 <template>
-  <main class="flex-1 overflow-y-auto bg-[var(--color-bg-app)] text-[var(--color-text-primary)]">
+  <main class="flex-1 overflow-y-auto bg-surface-app text-text-primary">
     <div class="max-w-5xl mx-auto px-6 py-10 space-y-10">
       <section class="space-y-4">
         <div class="flex items-center justify-between gap-6 flex-wrap">
           <div class="space-y-2">
             <h1 class="text-3xl font-semibold tracking-tight">Settings</h1>
-            <p class="text-sm text-[var(--color-text-muted)] max-w-xl">
+            <p class="text-sm text-text-muted max-w-xl">
               Update how you appear in SoundRoom, adjust playback preferences, and keep your account secure.
             </p>
           </div>
-          <div class="flex items-center gap-3 rounded-full border border-border-subtle px-4 py-2 bg-[color-mix(in_srgb,var(--color-bg-surface)_85%,transparent)]">
-            <span class="text-xs uppercase tracking-wide text-[var(--color-text-muted)]">Plan</span>
+          <div class="flex items-center gap-3 rounded-full border border-border-subtle px-4 py-2 bg-surface-base/85">
+            <span class="text-xs uppercase tracking-wide text-text-muted">Plan</span>
             <span class="text-sm font-medium">{{ planLabel }}</span>
             <RouterLink v-if="tier.value === 'free'" :to="'/upgrade'" class="ml-2">
               <BaseButton type="button">
@@ -33,9 +33,9 @@
           v-if="planStatusMessage || planErrorMessage || isProcessingCheckout"
           class="rounded-xl border p-4"
           :class="[
-            isProcessingCheckout ? 'border-[var(--color-accent-soft)] bg-[rgba(var(--color-accent-rgb),0.12)] text-[var(--color-text-primary)]' : '',
-            planStatusMessage && !isProcessingCheckout ? 'border-[var(--color-success)] bg-[rgba(var(--color-success-rgb),0.12)] text-[var(--color-text-primary)]' : '',
-            planErrorMessage ? 'border-[var(--color-danger)] bg-[rgba(var(--color-danger-rgb),0.12)] text-[var(--color-text-primary)]' : '',
+            isProcessingCheckout ? 'border-accent-soft bg-accent/12 text-text-primary' : '',
+            planStatusMessage && !isProcessingCheckout ? 'border-status-success bg-status-success/12 text-text-primary' : '',
+            planErrorMessage ? 'border-status-danger bg-status-danger/12 text-text-primary' : '',
           ]"
         >
           <p v-if="isProcessingCheckout" class="text-sm font-medium">Processing your plan change…</p>
@@ -43,13 +43,13 @@
           <p v-else-if="planErrorMessage" class="text-sm font-medium">{{ planErrorMessage }}</p>
         </div>
 
-        <div class="rounded-2xl border border-border-subtle bg-[color-mix(in_srgb,var(--color-bg-surface)_85%,transparent)] p-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
+        <div class="rounded-2xl border border-border-subtle bg-surface-base/85 p-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
           <div>
-            <p class="text-sm text-[var(--color-text-muted)]">Signed in as</p>
+            <p class="text-sm text-text-muted">Signed in as</p>
             <p class="text-lg font-medium break-all">{{ userEmail }}</p>
           </div>
           <div class="flex items-center gap-4">
-            <div class="relative w-16 h-16 rounded-full bg-[var(--color-bg-elevated)] flex items-center justify-center overflow-hidden text-xl font-semibold border border-border-subtle">
+            <div class="relative w-16 h-16 rounded-full bg-surface-raised flex items-center justify-center overflow-hidden text-xl font-semibold border border-border-subtle">
               <img
                 v-if="avatarPreview && !avatarFailed"
                 :src="avatarPreview"
@@ -60,23 +60,23 @@
               <span v-else>{{ avatarInitial }}</span>
             </div>
             <div>
-              <p class="text-sm text-[var(--color-text-muted)]">Display name</p>
+              <p class="text-sm text-text-muted">Display name</p>
               <p class="text-base font-medium">{{ profileForm.displayName || '—' }}</p>
             </div>
           </div>
         </div>
       </section>
 
-      <section class="rounded-2xl border border-border-subtle bg-[color-mix(in_srgb,var(--color-bg-surface)_88%,transparent)] p-6 shadow-sm space-y-6">
+      <section class="rounded-2xl border border-border-subtle bg-surface-base/88 p-6 shadow-sm space-y-6">
         <header class="space-y-2">
           <h2 class="text-xl font-semibold">Profile</h2>
-          <p class="text-sm text-[var(--color-text-muted)]">Set how teammates and collaborators see you.</p>
+          <p class="text-sm text-text-muted">Set how teammates and collaborators see you.</p>
         </header>
 
         <div v-if="isFetchingProfile" class="space-y-4 animate-pulse">
-          <div class="h-4 bg-[var(--color-bg-elevated)] rounded"></div>
-          <div class="h-4 bg-[var(--color-bg-elevated)] rounded w-2/3"></div>
-          <div class="h-40 bg-[var(--color-bg-elevated)] rounded"></div>
+          <div class="h-4 bg-surface-raised rounded"></div>
+          <div class="h-4 bg-surface-raised rounded w-2/3"></div>
+          <div class="h-40 bg-surface-raised rounded"></div>
         </div>
 
         <form v-else @submit.prevent="saveProfile" class="space-y-8">
@@ -114,7 +114,7 @@
           <div class="flex flex-wrap items-center justify-end gap-3">
             <button
               type="button"
-              class="text-sm text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] transition"
+              class="text-sm text-text-muted hover:text-text-primary transition"
               @click="resetProfileForm"
               :disabled="profileSaving || !hasProfileChanges"
             >
@@ -136,34 +136,34 @@
 
       <ThemeSelector />
 
-      <section class="rounded-2xl border border-border-subtle bg-[color-mix(in_srgb,var(--color-bg-surface)_88%,transparent)] p-6 shadow-sm space-y-6">
+      <section class="rounded-2xl border border-border-subtle bg-surface-base/88 p-6 shadow-sm space-y-6">
         <header class="space-y-2">
           <h2 class="text-xl font-semibold">Playback Preferences</h2>
-          <p class="text-sm text-[var(--color-text-muted)]">These settings are stored locally in your browser.</p>
+          <p class="text-sm text-text-muted">These settings are stored locally in your browser.</p>
         </header>
 
         <div class="space-y-6">
           <div class="flex items-start justify-between gap-6">
             <div>
               <h3 class="text-base font-medium">Auto-resume sessions</h3>
-              <p class="text-sm text-[var(--color-text-muted)]">Automatically reload your last SoundRoom when you sign back in.</p>
+              <p class="text-sm text-text-muted">Automatically reload your last SoundRoom when you sign back in.</p>
             </div>
             <label class="relative inline-flex items-center cursor-pointer select-none">
               <input type="checkbox" class="sr-only peer" v-model="preferences.autoResumePlayback">
-              <span class="block w-12 h-6 rounded-full bg-[var(--color-border-subtle)] transition-colors peer-focus:outline peer-focus:outline-2 peer-focus:outline-[var(--color-focus-ring)] peer-checked:bg-[var(--color-accent-strong)]"></span>
-              <span class="absolute left-1 top-1 block w-4 h-4 rounded-full bg-[var(--color-text-inverse)] shadow transition-transform peer-checked:translate-x-6"></span>
+              <span class="block w-12 h-6 rounded-full bg-border-subtle transition-colors peer-focus:outline peer-focus:outline-2 peer-focus:outline-focus peer-checked:bg-accent-strong"></span>
+              <span class="absolute left-1 top-1 block w-4 h-4 rounded-full bg-text-inverse shadow transition-transform peer-checked:translate-x-6"></span>
             </label>
           </div>
 
           <div class="flex items-start justify-between gap-6">
             <div>
               <h3 class="text-base font-medium">Show interface tips</h3>
-              <p class="text-sm text-[var(--color-text-muted)]">Keep lightweight reminders visible for keyboard shortcuts and best practices.</p>
+              <p class="text-sm text-text-muted">Keep lightweight reminders visible for keyboard shortcuts and best practices.</p>
             </div>
             <label class="relative inline-flex items-center cursor-pointer select-none">
               <input type="checkbox" class="sr-only peer" v-model="preferences.showInterfaceTips">
-              <span class="block w-12 h-6 rounded-full bg-[var(--color-border-subtle)] transition-colors peer-focus:outline peer-focus:outline-2 peer-focus:outline-[var(--color-focus-ring)] peer-checked:bg-[var(--color-accent-strong)]"></span>
-              <span class="absolute left-1 top-1 block w-4 h-4 rounded-full bg-[var(--color-text-inverse)] shadow transition-transform peer-checked:translate-x-6"></span>
+              <span class="block w-12 h-6 rounded-full bg-border-subtle transition-colors peer-focus:outline peer-focus:outline-2 peer-focus:outline-focus peer-checked:bg-accent-strong"></span>
+              <span class="absolute left-1 top-1 block w-4 h-4 rounded-full bg-text-inverse shadow transition-transform peer-checked:translate-x-6"></span>
             </label>
           </div>
         </div>
@@ -171,7 +171,7 @@
         <div class="flex flex-wrap items-center justify-end gap-3">
           <button
             type="button"
-            class="text-sm text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] transition"
+            class="text-sm text-text-muted hover:text-text-primary transition"
             @click="resetPreferences"
             :disabled="!hasPreferenceChanges"
           >
@@ -188,17 +188,17 @@
         <p v-if="preferenceMessage" class="text-sm text-status-success">{{ preferenceMessage }}</p>
       </section>
 
-      <section class="rounded-2xl border border-border-subtle bg-[color-mix(in_srgb,var(--color-bg-surface)_88%,transparent)] p-6 shadow-sm space-y-6">
+      <section class="rounded-2xl border border-border-subtle bg-surface-base/88 p-6 shadow-sm space-y-6">
         <header class="space-y-2">
           <h2 class="text-xl font-semibold">Security</h2>
-          <p class="text-sm text-[var(--color-text-muted)]">Keep your account protected and up to date.</p>
+          <p class="text-sm text-text-muted">Keep your account protected and up to date.</p>
         </header>
 
         <div class="space-y-6">
           <div class="flex flex-wrap items-start justify-between gap-6">
             <div>
               <h3 class="text-base font-medium">Password</h3>
-              <p class="text-sm text-[var(--color-text-muted)]">Use a strong password to protect your SoundRoom sessions and purchases.</p>
+              <p class="text-sm text-text-muted">Use a strong password to protect your SoundRoom sessions and purchases.</p>
             </div>
             <RouterLink to="/update-password">
               <BaseButton type="button">Update password</BaseButton>
@@ -208,7 +208,7 @@
           <div class="flex flex-wrap items-start justify-between gap-6">
             <div>
               <h3 class="text-base font-medium">Sign out</h3>
-              <p class="text-sm text-[var(--color-text-muted)]">Need to switch devices? Sign out to end your session on this browser.</p>
+              <p class="text-sm text-text-muted">Need to switch devices? Sign out to end your session on this browser.</p>
             </div>
             <BaseButton type="button" @click="signOutCurrentSession">Sign out of this device</BaseButton>
           </div>

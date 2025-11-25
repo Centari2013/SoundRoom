@@ -78,12 +78,12 @@
       </p>
       <span class="h-5"></span>
       <!-- TOS agreement -->
-      <div class="flex justify-center space-x-2 text-xs text-[var(--color-text-muted)]">
+      <div class="flex justify-center space-x-2 text-xs text-text-muted">
         <BaseInput
           id="tos"
           type="checkbox"
           v-model="agreedToTOS"
-          class="accent-[var(--color-accent)]"
+          class="accent-accent"
           :disabled="loading"
         />
         <label for="tos" class="leading-snug">

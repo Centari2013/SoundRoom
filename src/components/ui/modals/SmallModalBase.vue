@@ -1,7 +1,7 @@
 <template>
   <div
     @click.self="canClickOutside && emit('close')"
-    class="fixed inset-0 bg-[color-mix(in_srgb,var(--color-bg-app)_70%,transparent)] backdrop-blur-sm z-50 flex items-center justify-center"
+    class="fixed inset-0 bg-surface-app/70 backdrop-blur-sm z-50 flex items-center justify-center"
     role="dialog"
     aria-modal="true"
     :aria-labelledby="'modal-title'"
@@ -13,7 +13,7 @@
     >
       <!-- Header -->
       <div
-        class="top-0 left-0 right-0 z-10 flex justify-between items-center px-4 py-3 bg-[color-mix(in_srgb,var(--color-bg-surface)_80%,transparent)] backdrop-blur-md border-b border-border-subtle"
+        class="top-0 left-0 right-0 z-10 flex justify-between items-center px-4 py-3 bg-surface-base/80 backdrop-blur-md border-b border-border-subtle"
       >
         <h2 id="modal-title" class="text-lg font-semibold tracking-tight">
           {{ title }}
@@ -21,7 +21,7 @@
         <BaseButton
           v-if="showCloseButton"
           @click="emit('close')"
-          class="text-sm hover:text-[var(--color-text-muted)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)]"
+          class="text-sm hover:text-text-muted focus:outline-none focus-visible:ring-2 focus-visible:ring-focus"
           aria-label="Close modal"
         >
           Close

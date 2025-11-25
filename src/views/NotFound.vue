@@ -1,5 +1,5 @@
 <template>
-  <div class="h-full w-full flex flex-col items-center justify-center text-center px-6 py-12 bg-[var(--color-bg-app)] text-text-primary">
+  <div class="h-full w-full flex flex-col items-center justify-center text-center px-6 py-12 bg-surface-app text-text-primary">
     <p class="text-sm uppercase tracking-[0.2em] text-status-danger mb-3">404</p>
     <h1 class="text-3xl font-semibold mb-3">Page not found</h1>
     <p class="max-w-md text-text-muted mb-8">

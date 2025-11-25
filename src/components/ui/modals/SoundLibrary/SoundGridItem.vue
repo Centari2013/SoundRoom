@@ -24,7 +24,7 @@
     />
 
     <BaseButton
-      class="load-BaseButton text-xs px-3 py-1 rounded transition-colors mt-2 bg-[var(--color-bg-elevated)] hover:bg-[var(--color-bg-surface)] text-[var(--color-text-primary)] border border-border-subtle"
+      class="load-BaseButton text-xs px-3 py-1 rounded transition-colors mt-2 bg-surface-raised hover:bg-surface-base text-text-primary border border-border-subtle"
       @click="handleToggle"
       :disabled="waiting || sound.send"
     >

@@ -1,5 +1,5 @@
 <template>
-  <div class="room-row p-4 border border-border-subtle rounded-lg shadow-sm hover:bg-[var(--color-bg-elevated)] transition bg-surface-base text-text-primary">
+  <div class="room-row p-4 border border-border-subtle rounded-lg shadow-sm hover:bg-surface-raised transition bg-surface-base text-text-primary">
     <img
       v-if="room.thumbnail"
       :src="room.thumbnail"

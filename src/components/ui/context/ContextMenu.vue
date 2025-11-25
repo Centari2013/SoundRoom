@@ -15,7 +15,7 @@
       <li
         v-for="(f, i) in functionList"
         :key="f.label"
-        class="px-2 py-1 rounded cursor-pointer hover:bg-[color-mix(in_srgb,var(--color-bg-surface)_85%,transparent)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)]"
+        class="px-2 py-1 rounded cursor-pointer hover:bg-surface-base/85 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-focus"
         tabindex="0"
         role="menuitem"
         @click="() => handleClick(f.function)"

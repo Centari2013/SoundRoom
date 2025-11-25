@@ -26,7 +26,7 @@
       <BaseButton
         @click="showSaveConfirm = true"
         :disabled="isSaving || !isRoomSaveable"
-        class="px-3 py-2 rounded bg-[var(--color-bg-surface)] hover:bg-[var(--color-bg-elevated)] text-[var(--color-text-primary)] border border-[var(--color-border-subtle)] transition focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)]"
+        class="px-3 py-2 rounded bg-surface-base hover:bg-surface-raised text-text-primary border border-border-subtle transition focus:outline-none focus-visible:ring-2 focus-visible:ring-focus"
         type="button"
         aria-label="Open save room confirmation"
       >
@@ -36,7 +36,7 @@
       <BaseButton
         @click="showNewRoomConfirm = true"
         :disabled="isSaving || isRoomEmpty"
-        class="px-3 py-2 rounded bg-[var(--color-bg-surface)] hover:bg-[var(--color-bg-elevated)] text-[var(--color-text-primary)] border border-[var(--color-border-subtle)] transition focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)]"
+        class="px-3 py-2 rounded bg-surface-base hover:bg-surface-raised text-text-primary border border-border-subtle transition focus:outline-none focus-visible:ring-2 focus-visible:ring-focus"
         type="button"
         aria-label="Open new room confirmation"
       >

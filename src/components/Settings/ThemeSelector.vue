@@ -1,8 +1,8 @@
 <template>
-  <section class="rounded-2xl border border-border-subtle bg-[color-mix(in_srgb,var(--color-bg-surface)_90%,transparent)] p-6 shadow-sm space-y-6">
+  <section class="rounded-2xl border border-border-subtle bg-surface-base/90 p-6 shadow-sm space-y-6">
     <header class="space-y-2">
       <h2 class="text-xl font-semibold">Appearance</h2>
-      <p class="text-sm text-[var(--color-text-muted)]">Pick a theme and preview its palette.</p>
+      <p class="text-sm text-text-muted">Pick a theme and preview its palette.</p>
     </header>
 
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -13,9 +13,9 @@
         class="relative flex flex-col gap-3 rounded-xl border p-4 text-left transition duration-200"
         :class="[
           activeTheme === theme.name
-            ? 'border-[var(--color-accent-soft)] ring-2 ring-[color-mix(in_srgb,var(--color-accent)_65%,transparent)] shadow-md'
-            : 'border-border-subtle hover:border-[var(--color-border-strong)] hover:shadow-sm',
-          'bg-[color-mix(in_srgb,var(--color-bg-elevated)_86%,transparent)] hover:-translate-y-0.5 hover:scale-[1.01]'
+            ? 'border-accent-soft ring-2 ring-[color-mix(in_srgb,var(--color-accent)_65%,transparent)] shadow-md'
+            : 'border-border-subtle hover:border-border-strong hover:shadow-sm',
+          'bg-surface-raised/86 hover:-translate-y-0.5 hover:scale-[1.01]'
         ]"
         :style="previewStyle(theme.name)"
         @click="selectTheme(theme.name)"
@@ -23,11 +23,11 @@
         <div class="flex items-center justify-between">
           <div class="space-y-1">
             <p class="text-sm font-semibold">{{ theme.label }}</p>
-            <p class="text-xs text-[var(--color-text-muted)]">Preview.</p>
+            <p class="text-xs text-text-muted">Preview.</p>
           </div>
           <span
             v-if="activeTheme === theme.name"
-            class="text-[11px] font-medium rounded-full px-2 py-1 bg-[color-mix(in_srgb,var(--color-accent)_16%,transparent)] text-[var(--color-text-primary)]"
+            class="text-[11px] font-medium rounded-full px-2 py-1 bg-accent/16 text-text-primary"
           >
             Active
           </span>
