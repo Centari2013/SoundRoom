@@ -1,6 +1,3 @@
-// tailwind.config.js
-const withAlpha = (variable) => `rgb(var(${variable}) / <alpha-value>)`
-
 module.exports = {
   darkMode: ['class', '[data-theme="dark"]'],
   important: true,
@@ -9,35 +6,35 @@ module.exports = {
       colors: {
         transparent: 'transparent',
         current: 'currentColor',
-        white: withAlpha('--base-white-rgb'),
-        black: withAlpha('--base-black-rgb'),
+        white: 'var(--base-white)',
+        black: 'var(--base-black)',
         surface: {
-          app: withAlpha('--color-bg-app-rgb'),
-          base: withAlpha('--color-bg-surface-rgb'),
-          raised: withAlpha('--color-bg-elevated-rgb'),
+          app: 'var(--color-bg-app)',
+          base: 'var(--color-bg-surface)',
+          raised: 'var(--color-bg-elevated)',
         },
         border: {
-          subtle: withAlpha('--color-border-subtle-rgb'),
-          strong: withAlpha('--color-border-strong-rgb'),
+          subtle: 'var(--color-border-subtle)',
+          strong: 'var(--color-border-strong)',
         },
         text: {
-          primary: withAlpha('--color-text-primary-rgb'),
-          secondary: withAlpha('--color-text-secondary-rgb'),
-          muted: withAlpha('--color-text-muted-rgb'),
-          inverse: withAlpha('--color-text-inverse-rgb'),
+          primary: 'var(--color-text-primary)',
+          secondary: 'var(--color-text-secondary)',
+          muted: 'var(--color-text-muted)',
+          inverse: 'var(--color-text-inverse)',
         },
         accent: {
-          soft: withAlpha('--color-accent-soft-rgb'),
-          DEFAULT: withAlpha('--color-accent-rgb'),
-          strong: withAlpha('--color-accent-strong-rgb'),
+          soft: 'var(--color-accent-soft)',
+          DEFAULT: 'var(--color-accent)',
+          strong: 'var(--color-accent-strong)',
         },
         status: {
-          success: withAlpha('--color-success-rgb'),
-          warning: withAlpha('--color-warning-rgb'),
-          danger: withAlpha('--color-danger-rgb'),
+          success: 'var(--color-success)',
+          warning: 'var(--color-warning)',
+          danger: 'var(--color-danger)',
         },
-        panel: withAlpha('--color-panel-rgb'),
-        input: withAlpha('--color-input-rgb'),
+        panel: 'var(--color-panel)',
+        input: 'var(--color-input)',
       },
       boxShadow: {
         soft: 'var(--color-shadow-soft)',
