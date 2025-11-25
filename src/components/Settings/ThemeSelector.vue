@@ -23,7 +23,7 @@
         <div class="flex items-center justify-between">
           <div class="space-y-1">
             <p class="text-sm font-semibold">{{ theme.label }}</p>
-            <p class="text-xs text-[var(--color-text-muted)]">Live preview from theme tokens.</p>
+            <p class="text-xs text-[var(--color-text-muted)]">Preview.</p>
           </div>
           <span
             v-if="activeTheme === theme.name"
