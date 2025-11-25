@@ -13,33 +13,14 @@ function goHome() {
 </script>
 
 <template>
-  <div class="auth-error">
+  <div class="flex flex-col items-center justify-center h-[100dvh] text-center space-y-3 text-text-primary">
     <h1>Login Failed</h1>
     <p>Something went wrong during login. Please try again.</p>
-    <button @click="goHome">Back to Home</button>
+    <button
+      class="mt-4 px-5 py-2 font-bold rounded bg-surface-muted text-text-primary hover:bg-surface-raised transition-colors"
+      @click="goHome"
+    >
+      Back to Home
+    </button>
   </div>
 </template>
-
-<style scoped>
-.auth-error {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 100dvh;
-  text-align: center;
-}
-button {
-  margin-top: 1rem;
-  padding: 0.5rem 1.2rem;
-  font-weight: bold;
-  border: none;
-  border-radius: 4px;
-  background-color: var(--color-surface-muted);
-  color: var(--color-text-primary);
-  cursor: pointer;
-}
-button:hover {
-  background-color: color-mix(in srgb, var(--color-bg-elevated) 90%, transparent);
-}
-</style>

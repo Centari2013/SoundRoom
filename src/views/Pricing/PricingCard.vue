@@ -5,7 +5,7 @@
     <div>
       <h2 class="text-xl font-bold mb-2">{{ title }}</h2>
       <p class="text-2xl font-semibold">{{ price }}</p>
-      <p v-if="tagline" class="mt-2 text-sm text-[var(--color-text-muted)]">{{ tagline }}</p>
+      <p v-if="tagline" class="mt-2 text-sm text-text-muted">{{ tagline }}</p>
       <div v-if="highlightItems.length" class="mt-5 flex flex-col gap-2 justify-center items-center pb-3">
         <span
           v-for="(feature, index) in highlightItems"
@@ -37,16 +37,16 @@ import { getPlanTheme } from '@/constants/planThemes'
 
 const STATUS_STYLES = {
   included: {
-    chip: 'border-[var(--color-success)] bg-[rgba(var(--color-success-rgb),0.15)] text-[var(--color-success)]',
+    chip: 'border-status-success bg-[rgba(var(--color-success-rgb),0.15)] text-status-success',
     dot: 'bg-status-success'
   },
   limited: {
-    chip: 'border-[var(--color-warning)] bg-[rgba(var(--color-warning-rgb),0.15)] text-[var(--color-warning)]',
-    dot: 'bg-[var(--color-warning)]'
+    chip: 'border-status-warning bg-[rgba(var(--color-warning-rgb),0.15)] text-status-warning',
+    dot: 'bg-status-warning'
   },
   unavailable: {
-    chip: 'border-border-subtle bg-[var(--color-bg-elevated)] text-[var(--color-text-muted)]',
-    dot: 'bg-[var(--color-text-muted)]'
+    chip: 'border-border-subtle bg-surface-raised text-text-muted',
+    dot: 'bg-text-muted'
   }
 }
 
@@ -85,7 +85,7 @@ const props = defineProps({
   }
 })
 
-const BASE_CARD_CLASS = 'group rounded-sm p-6 shadow-md transition-all duration-200 ease-out transform flex flex-col justify-between bg-surface-base text-text-primary hover:bg-[var(--color-bg-elevated)] hover:shadow-xl hover:-translate-y-1 hover:scale-[1.03] focus-within:shadow-xl focus-within:-translate-y-1 focus-within:scale-[1.03]'
+const BASE_CARD_CLASS = 'group rounded-sm p-6 shadow-md transition-all duration-200 ease-out transform flex flex-col justify-between bg-surface-base text-text-primary hover:bg-surface-raised hover:shadow-xl hover:-translate-y-1 hover:scale-[1.03] focus-within:shadow-xl focus-within:-translate-y-1 focus-within:scale-[1.03]'
 
 const BASE_CTA_CLASS = 'w-full py-2 rounded-xl font-semibold transition border border-transparent disabled:opacity-50 disabled:cursor-not-allowed'
 

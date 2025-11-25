@@ -7,7 +7,7 @@
       </div>
           <div class="flex-1 overflow-hidden">
             <div class="h-full overflow-y-auto px-10 pt-24 pb-10 space-y-8">
-          <p class="text-sm text-[var(--color-text-muted)] max-w-2xl mx-auto text-center pt-4">
+          <p class="text-sm text-text-muted max-w-2xl mx-auto text-center pt-4">
             Pick the tier that matches how you build, perform, or collaborate inside SoundRoom.
           </p>
           <div class="grid gap-6 mx-auto max-w-6xl justify-items-center md:grid-cols-2 xl:grid-cols-3">
@@ -34,7 +34,7 @@
             {{ checkoutError }}
           </p>
           <div class="max-w-5xl mx-auto rounded-md border border-border-subtle bg-surface-base p-4 text-left shadow-sm" data-testid="pricing-feature-comparison">
-            <div class="text-sm font-semibold text-[var(--color-text-primary)]">Full feature comparison</div>
+            <div class="text-sm font-semibold text-text-primary">Full feature comparison</div>
             <PlanComparisonTable class="mt-4" :plans="basePlans" :features="FEATURE_DEFINITIONS" />
           </div>
         </div>

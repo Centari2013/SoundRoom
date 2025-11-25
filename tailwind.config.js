@@ -11,10 +11,18 @@ module.exports = {
         current: 'currentColor',
         white: withAlpha('--base-white-rgb'),
         black: withAlpha('--base-black-rgb'),
+        focus: {
+          ring: withAlpha('--color-focus-ring-rgb'),
+        },
+        disabled: {
+          bg: 'var(--color-disabled-bg)',
+          text: 'var(--color-disabled-text)',
+        },
         surface: {
           app: withAlpha('--color-bg-app-rgb'),
           base: withAlpha('--color-bg-surface-rgb'),
           raised: withAlpha('--color-bg-elevated-rgb'),
+          muted: 'var(--color-surface-muted)',
         },
         border: {
           subtle: withAlpha('--color-border-subtle-rgb'),

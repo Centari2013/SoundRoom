@@ -1,28 +1,28 @@
 <template>
-  <div class="flex items-center justify-between p-3 border-[var(--color-border-subtle)] bg-[var(--color-bg-elevated)] space-x-10 w-full shadow-[var(--color-shadow-soft)] text-[var(--color-text-primary)]">
+  <div class="flex items-center justify-between p-3 border-border-subtle bg-surface-raised space-x-10 w-full shadow-soft text-text-primary">
           
     <div class="flex space-x-2 w-1/3">
       <BaseButton
       :disabled="audioEngine.soundSources.value.length === 0"
       @click="isPlaying ? audioEngine.pauseAll() : audioEngine.playAll()"
-      class="px-3 py-1 rounded text-sm bg-[var(--color-bg-surface)] hover:bg-[var(--color-bg-elevated)] text-[var(--color-text-primary)]"
+      class="px-3 py-1 rounded text-sm bg-surface-base hover:bg-surface-raised text-text-primary"
       > 
         
-        <component :is="isPlaying ? Pause : Play" class="h-4 w-4 fill-[var(--color-text-primary)]" />
+        <component :is="isPlaying ? Pause : Play" class="h-4 w-4 fill-text-primary" />
       </BaseButton>
       <BaseButton
         :disabled="actionStackEmpty || waiting"
         @click="actionManager.undoLastAction"
-        class="px-3 py-1 rounded text-sm bg-[var(--color-bg-surface)] hover:bg-[var(--color-bg-elevated)] text-[var(--color-text-primary)]"
+        class="px-3 py-1 rounded text-sm bg-surface-base hover:bg-surface-raised text-text-primary"
       >
-        <UndoRedo class="h-4 w-4 fill-[var(--color-text-primary)]"/>
+        <UndoRedo class="h-4 w-4 fill-text-primary"/>
       </BaseButton>
       <BaseButton
         :disabled="redoStackEmpty || waiting"
         @click="actionManager.redoLastAction"
-        class="px-3 py-1 rounded text-sm bg-[var(--color-bg-surface)] hover:bg-[var(--color-bg-elevated)] text-[var(--color-text-primary)]"
+        class="px-3 py-1 rounded text-sm bg-surface-base hover:bg-surface-raised text-text-primary"
       >
-        <UndoRedo class="h-4 w-4 scale-x-[-1] fill-[var(--color-text-primary)]"/>
+        <UndoRedo class="h-4 w-4 scale-x-[-1] fill-text-primary"/>
       </BaseButton>
     </div>
     <EditableRoomName
@@ -34,7 +34,7 @@
     />
     <div class="flex items-center justify-center space-x-2 w-1/3">
      
-      <span class="text-xs text-[var(--color-text-muted)]">Master</span>
+      <span class="text-xs text-text-muted">Master</span>
       <VueSlider 
         v-model="audioEngine.masterVolume.value"
         :min="0" 

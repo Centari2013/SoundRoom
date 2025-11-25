@@ -1,89 +1,83 @@
 @import "tailwindcss";
 @import "./styles/theme-tokens.css";
 
-:root {
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
-  color: var(--color-text-primary);
-  background-color: var(--color-bg-app);
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
+@layer base {
+  :root {
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+    line-height: 1.5;
+    font-weight: 400;
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    @apply text-text-primary bg-surface-app;
+  }
 
-a {
-  font-weight: 500;
-  color: var(--color-accent);
-  text-decoration: inherit;
-}
-a:hover {
-  color: var(--color-accent-soft);
-}
+  a {
+    @apply font-medium text-accent no-underline;
+  }
 
-body {
-  margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
-  color: var(--color-text-primary);
-  background: var(--color-bg-app);
-}
+  a:hover {
+    @apply text-accent-soft;
+  }
 
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
-}
+  body {
+    margin: 0;
+    display: flex;
+    place-items: center;
+    min-width: 320px;
+    min-height: 100vh;
+    @apply text-text-primary bg-surface-app;
+  }
 
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  cursor: pointer;
-  transition: border-color 0.25s, box-shadow 0.25s;
-  @apply bg-[var(--color-bg-surface)] text-[var(--color-text-primary)];
-}
-button:hover {
-  border-color: var(--color-border-subtle);
-  background-color: var(--color-bg-elevated);
-}
-button:focus,
-button:focus-visible {
-  outline: 2px solid var(--color-focus-ring);
-  outline-offset: 2px;
-  box-shadow: 0 0 0 4px rgba(var(--color-focus-ring-rgb), 0.25);
-}
+  h1 {
+    font-size: 3.2em;
+    line-height: 1.1;
+  }
 
-.card {
-  padding: 2em;
-}
+  button {
+    border-radius: 8px;
+    border: 1px solid transparent;
+    padding: 0.6em 1.2em;
+    font-size: 1em;
+    font-weight: 500;
+    font-family: inherit;
+    cursor: pointer;
+    transition: border-color 0.25s, box-shadow 0.25s;
+    @apply bg-surface-base text-text-primary;
+  }
 
-#app {
-  margin: 0 auto;
-  text-align: center;
-}
+  button:hover {
+    @apply border-border-subtle bg-surface-raised;
+  }
 
-button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-  pointer-events: none;
-  background-color: var(--color-disabled-bg);
-  color: var(--color-disabled-text);
-}
+  button:focus,
+  button:focus-visible {
+    @apply outline-none ring-2 ring-focus-ring ring-offset-2 ring-offset-surface-base;
+  }
 
-input[type="text"],
-input[type="email"],
-input[type="password"] {
-  @apply w-full p-3 border border-[var(--color-border-subtle)] rounded-lg bg-[var(--color-bg-elevated)] text-[var(--color-text-primary)];
-}
+  .card {
+    padding: 2em;
+  }
 
-input:disabled {
-  @apply opacity-50 cursor-not-allowed bg-[var(--color-disabled-bg)] text-[var(--color-disabled-text)];
+  #app {
+    margin: 0 auto;
+    text-align: center;
+  }
+
+  button:disabled {
+    @apply opacity-50 cursor-not-allowed pointer-events-none bg-disabled-bg text-disabled-text;
+  }
+
+  input[type="text"],
+  input[type="email"],
+  input[type="password"] {
+    @apply w-full p-3 border border-border-subtle rounded-lg bg-surface-raised text-text-primary;
+  }
+
+  input:disabled {
+    @apply opacity-50 cursor-not-allowed bg-disabled-bg text-disabled-text;
+  }
 }
 
 .modal-backdrop {
@@ -91,13 +85,13 @@ input:disabled {
 }
 
 .modal-panel {
-  @apply bg-[var(--color-bg-app)] rounded-2xl w-[80vw] h-[80vh] shadow-[var(--color-shadow-soft)] border border-[var(--color-border-subtle)] overflow-hidden;
+  @apply bg-surface-app rounded-2xl w-[80vw] h-[80vh] shadow-soft border border-border-subtle overflow-hidden;
 }
 
 .modal-header-float {
-  @apply absolute top-0 left-0 right-0 z-10 flex justify-between items-center px-6 py-4 bg-[color-mix(in_srgb,var(--color-bg-app)_85%,transparent)] backdrop-blur-md border-b border-[var(--color-border-subtle)];
+  @apply absolute top-0 left-0 right-0 z-10 flex justify-between items-center px-6 py-4 bg-[color-mix(in_srgb,var(--color-bg-app)_85%,transparent)] backdrop-blur-md border-b border-border-subtle;
 }
 
 .modal-header {
-  @apply top-0 left-0 right-0 z-10 flex justify-between items-center px-6 py-4 bg-[color-mix(in_srgb,var(--color-bg-app)_85%,transparent)] backdrop-blur-md border-b border-[var(--color-border-subtle)];
+  @apply top-0 left-0 right-0 z-10 flex justify-between items-center px-6 py-4 bg-[color-mix(in_srgb,var(--color-bg-app)_85%,transparent)] backdrop-blur-md border-b border-border-subtle;
 }

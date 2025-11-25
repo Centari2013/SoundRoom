@@ -41,7 +41,7 @@
       Continue with Google
     </BaseButton>
 
-    <p v-if="mode !== 'reset' && !hideGoogleButton" class="text-xs text-[var(--color-text-muted)] text-center">
+    <p v-if="mode !== 'reset' && !hideGoogleButton" class="text-xs text-text-muted text-center">
       By continuing, you agree to our
       <a href="/terms" target="_blank" class="underline">Terms</a> and
       <a href="/privacy" target="_blank" class="underline">Privacy Policy</a>.
@@ -58,7 +58,7 @@
       v-if="mode !== 'reset' && !signUpSuccess"
       :to="mode === 'login' ? '/signup' : '/login'"
       @click="emit('mode', mode === 'login' ? 'signup' : 'login')"
-      class="text-sm text-accent cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)]"
+      class="text-sm text-accent cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring"
     >
       {{ mode === 'login' ? 'Don\'t have an account? Sign Up' : 'Have an account? Sign In' }}
     </RouterLink>
@@ -67,7 +67,7 @@
       v-if="mode === 'login'"
       to="/reset"
       @click="$emit('mode', 'reset')"
-      class="text-sm text-accent cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)]"
+      class="text-sm text-accent cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring"
     >
       Forgot Password?
     </RouterLink>

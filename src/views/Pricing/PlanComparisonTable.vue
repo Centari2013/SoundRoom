@@ -1,31 +1,31 @@
 <template>
   <div class="overflow-x-auto">
-    <table class="min-w-full divide-y divide-[var(--color-border-subtle)] text-sm">
+    <table class="min-w-full divide-y divide-border-subtle text-sm">
       <thead class="bg-[color-mix(in_srgb,var(--color-bg-surface)_85%,transparent)]">
         <tr>
-          <th class="py-3 pl-4 pr-3 text-left font-semibold text-[var(--color-text-primary)]">Feature</th>
+          <th class="py-3 pl-4 pr-3 text-left font-semibold text-text-primary">Feature</th>
           <th
             v-for="plan in tablePlans"
             :key="plan.id"
-            class="py-3 px-3 text-left font-semibold text-[var(--color-text-primary)]"
+            class="py-3 px-3 text-left font-semibold text-text-primary"
           >
             {{ plan.name }}
           </th>
         </tr>
       </thead>
-      <tbody class="divide-y divide-[var(--color-border-subtle)] bg-surface-base">
+      <tbody class="divide-y divide-border-subtle bg-surface-base">
         <tr v-for="feature in features" :key="feature.key" class="align-top">
-          <th class="py-4 pl-4 pr-3 text-left font-medium text-[var(--color-text-primary)]">{{ feature.label }}</th>
+          <th class="py-4 pl-4 pr-3 text-left font-medium text-text-primary">{{ feature.label }}</th>
           <td
             v-for="plan in tablePlans"
             :key="plan.id"
-            class="py-4 px-3 text-[var(--color-text-secondary)]"
+            class="py-4 px-3 text-text-secondary"
           >
             <div class="space-y-1">
               <span :class="STATUS_TEXT_CLASSES[getStatus(plan, feature.key)]" class="font-medium">
                 {{ STATUS_LABELS[getStatus(plan, feature.key)] }}
               </span>
-              <p v-if="getDetail(plan, feature.key)" class="text-xs text-[var(--color-text-muted)]">
+              <p v-if="getDetail(plan, feature.key)" class="text-xs text-text-muted">
                 {{ getDetail(plan, feature.key) }}
               </p>
             </div>
@@ -47,8 +47,8 @@ const STATUS_LABELS = {
 
 const STATUS_TEXT_CLASSES = {
   included: 'text-status-success',
-  limited: 'text-[var(--color-warning)]',
-  unavailable: 'text-[var(--color-text-muted)]'
+  limited: 'text-status-warning',
+  unavailable: 'text-text-muted'
 }
 
 const props = defineProps({

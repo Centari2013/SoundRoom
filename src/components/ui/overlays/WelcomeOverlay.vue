@@ -12,7 +12,7 @@
         </h1>
         <p
           v-if="subtext"
-          class="text-lg text-[var(--color-text-muted)] opacity-80"
+          class="text-lg text-text-muted opacity-80"
         >
           {{ subtext }}
         </p>

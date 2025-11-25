@@ -3,7 +3,7 @@
     <div class="modal-panel max-w-3xl mx-auto p-6 bg-surface-base text-text-primary rounded-xl shadow-lg overflow-y-auto max-h-[90vh] border border-border-subtle">
       <h2 class="text-xl font-bold mb-4">Upload Your Sounds</h2>
 
-      <div class="border border-dashed border-[var(--color-border-subtle)] rounded-lg p-6 text-center mb-6 bg-[color-mix(in_srgb,var(--color-bg-surface)_80%,transparent)]">
+      <div class="border border-dashed border-border-subtle rounded-lg p-6 text-center mb-6 bg-[color-mix(in_srgb,var(--color-bg-surface)_80%,transparent)]">
         <input
           type="file"
           accept="audio/*"
@@ -17,11 +17,11 @@
       </div>
 
       <div v-if="files.length > 0" class="space-y-4">
-        <div v-for="file in files" :key="file.id" class="bg-[var(--color-bg-surface)] rounded-md p-4 flex flex-col gap-2 border border-border-subtle">
+        <div v-for="file in files" :key="file.id" class="bg-surface-base rounded-md p-4 flex flex-col gap-2 border border-border-subtle">
           <div class="flex justify-between items-center">
             <input
               v-model="file.name"
-              class="flex-1 p-1 text-base border border-[var(--color-border-subtle)] rounded-md bg-[var(--color-bg-elevated)] text-[var(--color-text-primary)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-bg-elevated)]"
+              class="flex-1 p-1 text-base border border-border-subtle rounded-md bg-surface-raised text-text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-2 focus-visible:ring-offset-surface-raised"
             />
             <BaseButton class="ml-2" @click="autoTag(file)" :disabled="file.tagging">
               <template v-if="file.tagging">
@@ -37,7 +37,7 @@
           <div class="flex items-center gap-2">
             <audio :src="file.previewUrl" controls class="w-full" />
           </div>
-          <div class="h-2 bg-[var(--color-border-subtle)] rounded overflow-hidden" v-if="uploading">
+          <div class="h-2 bg-border-subtle rounded overflow-hidden" v-if="uploading">
             <div
               class="h-full bg-status-success transition-all duration-300"
               :style="{ width: `${file.progress}%` }"
@@ -48,7 +48,7 @@
           <span
             v-for="(tag, index) in file.tags"
             :key="tag"
-            class="flex items-center bg-[var(--color-bg-elevated)] text-xs px-2 rounded text-[var(--color-text-primary)] border border-border-subtle"
+            class="flex items-center bg-surface-raised text-xs px-2 rounded text-text-primary border border-border-subtle"
           >
             {{ tag }}
             <label
@@ -69,7 +69,7 @@
             @keydown="','"
             @blur="addTag(file)"
             placeholder="Add tag..."
-            class="text-sm p-1 rounded border border-[var(--color-border-subtle)] bg-[var(--color-bg-elevated)] text-[var(--color-text-primary)] w-25 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-bg-elevated)]"
+            class="text-sm p-1 rounded border border-border-subtle bg-surface-raised text-text-primary w-25 focus:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-2 focus-visible:ring-offset-surface-raised"
           />
         </div>
 
