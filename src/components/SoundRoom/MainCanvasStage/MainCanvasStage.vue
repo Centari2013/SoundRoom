@@ -120,10 +120,10 @@ const soundNodeTitleCoords = computed(() => {
 /* Grid spacing and line opacity can be tuned here to adjust density/visibility */
 .canvas-grid {
   background-size: 40px 40px; /* Adjust spacing between grid lines */
-  background-color: var(--lm-bg-1);
+  background-color: var(--color-bg-surface);
   background-image:
-    linear-gradient(to right, var(--lm-grid-line) 1px, transparent 1px),
-    linear-gradient(to bottom, var(--lm-grid-line) 1px, transparent 1px); /* Adjust line opacity */
+    linear-gradient(to right, var(--color-grid-line) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--color-grid-line) 1px, transparent 1px); /* Adjust line opacity */
 }
 
 [data-theme="dark"] .canvas-grid {

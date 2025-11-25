@@ -1,5 +1,5 @@
-@import "tailwindcss";
 @import "./styles/theme-tokens.css";
+@import "tailwindcss";
 
 :root {
   font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
@@ -46,7 +46,8 @@ button {
   font-family: inherit;
   cursor: pointer;
   transition: border-color 0.25s, box-shadow 0.25s;
-  @apply bg-[var(--color-bg-surface)] text-[var(--color-text-primary)];
+  background-color: var(--color-bg-surface);
+  color: var(--color-text-primary);
 }
 button:hover {
   border-color: var(--color-border-subtle);
@@ -79,25 +80,38 @@ button:disabled {
 input[type="text"],
 input[type="email"],
 input[type="password"] {
-  @apply w-full p-3 border border-[var(--color-border-subtle)] rounded-lg bg-[var(--color-bg-elevated)] text-[var(--color-text-primary)];
+  @apply w-full p-3 border rounded-lg;
+  border-color: var(--color-border-subtle);
+  background-color: var(--color-bg-elevated);
+  color: var(--color-text-primary);
 }
 
 input:disabled {
-  @apply opacity-50 cursor-not-allowed bg-[var(--color-disabled-bg)] text-[var(--color-disabled-text)];
+  @apply opacity-50 cursor-not-allowed;
+  background-color: var(--color-disabled-bg);
+  color: var(--color-disabled-text);
 }
 
 .modal-backdrop {
-  @apply fixed inset-0 bg-[color-mix(in_srgb,var(--color-text-inverse)_60%,transparent)] backdrop-blur-sm z-50 flex items-center justify-center;
+  @apply fixed inset-0 backdrop-blur-sm z-50 flex items-center justify-center;
+  background: color-mix(in srgb, var(--color-text-inverse) 60%, transparent);
 }
 
 .modal-panel {
-  @apply bg-[var(--color-bg-app)] rounded-2xl w-[80vw] h-[80vh] shadow-[var(--color-shadow-soft)] border border-[var(--color-border-subtle)] overflow-hidden;
+  @apply rounded-2xl w-[80vw] h-[80vh] border overflow-hidden;
+  background-color: var(--color-bg-app);
+  border-color: var(--color-border-subtle);
+  box-shadow: var(--color-shadow-soft);
 }
 
 .modal-header-float {
-  @apply absolute top-0 left-0 right-0 z-10 flex justify-between items-center px-6 py-4 bg-[color-mix(in_srgb,var(--color-bg-app)_85%,transparent)] backdrop-blur-md border-b border-[var(--color-border-subtle)];
+  @apply absolute top-0 left-0 right-0 z-10 flex justify-between items-center px-6 py-4 backdrop-blur-md border-b;
+  background: color-mix(in srgb, var(--color-bg-app) 85%, transparent);
+  border-color: var(--color-border-subtle);
 }
 
 .modal-header {
-  @apply top-0 left-0 right-0 z-10 flex justify-between items-center px-6 py-4 bg-[color-mix(in_srgb,var(--color-bg-app)_85%,transparent)] backdrop-blur-md border-b border-[var(--color-border-subtle)];
+  @apply top-0 left-0 right-0 z-10 flex justify-between items-center px-6 py-4 backdrop-blur-md border-b;
+  background: color-mix(in srgb, var(--color-bg-app) 85%, transparent);
+  border-color: var(--color-border-subtle);
 }

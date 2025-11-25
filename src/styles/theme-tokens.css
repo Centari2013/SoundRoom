@@ -125,32 +125,6 @@
   --color-body-stroke-rgb: 60, 70, 85;
   --color-detail-fill-rgb: 70, 80, 95;
   --color-detail-gradient-rgb: 140, 150, 165;
-
-  /* -----------------------------------------
-     LEGACY ALIASES (for safety)
-     ----------------------------------------- */
-  --lm-bg-0: var(--color-bg-app);
-  --lm-bg-1: var(--color-bg-surface);
-  --lm-bg-2: var(--color-bg-elevated);
-  --lm-border: var(--color-border-subtle);
-  --lm-text-0: var(--color-text-primary);
-  --lm-text-1: var(--color-text-muted);
-  --lm-grid-line: var(--color-grid-line);
-
-  --sr-white: var(--base-white);
-  --sr-white-rgb: var(--base-white-rgb);
-  --sr-black: var(--base-black);
-  --sr-black-rgb: var(--base-black-rgb);
-
-  --sr-primary: var(--color-accent);
-  --sr-accent-danger: var(--color-danger);
-  --sr-surface-muted: var(--color-surface-muted);
-  --sr-text-muted: var(--color-text-muted);
-  --sr-text-strong: var(--color-text-primary);
-  --sr-node-red: var(--color-node-red);
-  --sr-node-blue: var(--color-node-blue);
-  --sr-outline-strong: var(--color-border-strong);
-  --sr-outline-contrast: var(--color-outline-contrast);
 }
 
 /* -----------------------------------------------------------
@@ -169,29 +143,44 @@
 
   /* Backgrounds */
   --color-bg-app: #f6f6f8;
+  --color-bg-app-rgb: 246, 246, 248;
   --color-bg-surface: #efeff2;
+  --color-bg-surface-rgb: 239, 239, 242;
   --color-bg-elevated: #e5e5ea;
+  --color-bg-elevated-rgb: 229, 229, 234;
 
   /* Borders */
   --color-border-subtle: #d3d3da;
+  --color-border-subtle-rgb: 211, 211, 218;
   --color-border-strong: #b9b9c3;
+  --color-border-strong-rgb: 185, 185, 195;
 
   /* Text */
   --color-text-primary: #1c1c20;
+  --color-text-primary-rgb: 28, 28, 32;
   --color-text-secondary: #34343d;
+  --color-text-secondary-rgb: 52, 52, 61;
   --color-text-muted: #595965;
+  --color-text-muted-rgb: 89, 89, 101;
 
   --color-text-inverse: #ffffff;
+  --color-text-inverse-rgb: 255, 255, 255;
 
   /* Accent — cobalt values stay consistent */
   --color-accent: #2f6dfd;
+  --color-accent-rgb: 47, 109, 253;
   --color-accent-soft: #6fa2ff;
+  --color-accent-soft-rgb: 111, 162, 255;
   --color-accent-strong: #1f4fc6;
+  --color-accent-strong-rgb: 31, 79, 198;
 
   /* Status */
   --color-success: #238c6c;
+  --color-success-rgb: 35, 140, 108;
   --color-warning: #bb812a;
+  --color-warning-rgb: 187, 129, 42;
   --color-danger: #c44545;
+  --color-danger-rgb: 196, 69, 69;
 
   /* Shadows */
   --color-shadow-soft: 0 8px 24px rgba(0, 0, 0, 0.16);
@@ -201,7 +190,9 @@
   --color-grid-line: rgba(0, 0, 0, 0.08);
 
   --color-node-blue: #3f73e8;
+  --color-node-blue-rgb: 63, 115, 232;
   --color-node-red: #d86b6b;
+  --color-node-red-rgb: 216, 107, 107;
 
   --color-node-highlight: rgba(47, 109, 253, 0.12);
   --color-selection-strong: #2f6dfd;
@@ -210,11 +201,21 @@
   --color-surface-muted: #e6ebf3;
 
   --color-panel: #ffffff;
+  --color-panel-rgb: 255, 255, 255;
   --color-input: #ffffff;
+  --color-input-rgb: 255, 255, 255;
 
   --color-disabled-bg: #e3e7ee;
   --color-disabled-text: #9aa6ba;
 
   --color-outline-strong: #3a4860;
   --color-detail-stroke: #334155;
+
+  --color-outline-contrast: #131317;
+  --color-outline-contrast-rgb: 19, 19, 23;
+
+  --color-body-fill-rgb: 150, 165, 185;
+  --color-body-stroke-rgb: 60, 70, 85;
+  --color-detail-fill-rgb: 70, 80, 95;
+  --color-detail-gradient-rgb: 140, 150, 165;
 }

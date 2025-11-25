@@ -61,7 +61,6 @@ const fallbackColor = computed(() => {
   const styles = getComputedStyle(document.documentElement)
   return (
     styles.getPropertyValue('--color-accent-strong')?.trim() ||
-    styles.getPropertyValue('--sr-primary')?.trim() ||
     `rgb(${styles.getPropertyValue('--color-accent-strong-rgb')?.trim() || 'var(--color-accent-strong-rgb)'})`
   )
 })
