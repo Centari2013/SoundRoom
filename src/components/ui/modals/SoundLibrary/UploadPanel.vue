@@ -209,7 +209,7 @@ async function uploadAll() {
 .modal-backdrop {
   position: fixed;
   inset: 0;
-  background-color: rgba(var(--sr-black-rgb), 0.5);
+  background-color: rgba(var(--base-black-rgb), 0.5);
   display: flex;
   align-items: center;
   justify-content: center;

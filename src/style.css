@@ -46,7 +46,7 @@ button {
   font-family: inherit;
   cursor: pointer;
   transition: border-color 0.25s, box-shadow 0.25s;
-  @apply bg-[var(--lm-bg-1)] text-[var(--lm-text-0)];
+  @apply bg-[var(--color-bg-surface)] text-[var(--color-text-primary)];
 }
 button:hover {
   border-color: var(--color-border-subtle);
@@ -79,7 +79,7 @@ button:disabled {
 input[type="text"],
 input[type="email"],
 input[type="password"] {
-  @apply w-full p-3 border border-[var(--lm-border)] rounded-lg bg-[var(--lm-bg-2)] text-[var(--lm-text-0)];
+  @apply w-full p-3 border border-[var(--color-border-subtle)] rounded-lg bg-[var(--color-bg-elevated)] text-[var(--color-text-primary)];
 }
 
 input:disabled {
@@ -91,13 +91,13 @@ input:disabled {
 }
 
 .modal-panel {
-  @apply bg-[var(--lm-bg-0)] rounded-2xl w-[80vw] h-[80vh] shadow-[var(--lm-shadow)] border border-[var(--lm-border)] overflow-hidden;
+  @apply bg-[var(--color-bg-app)] rounded-2xl w-[80vw] h-[80vh] shadow-[var(--color-shadow-soft)] border border-[var(--color-border-subtle)] overflow-hidden;
 }
 
 .modal-header-float {
-  @apply absolute top-0 left-0 right-0 z-10 flex justify-between items-center px-6 py-4 bg-[color-mix(in_srgb,var(--lm-bg-0)_85%,transparent)] backdrop-blur-md border-b border-[var(--lm-border)];
+  @apply absolute top-0 left-0 right-0 z-10 flex justify-between items-center px-6 py-4 bg-[color-mix(in_srgb,var(--color-bg-app)_85%,transparent)] backdrop-blur-md border-b border-[var(--color-border-subtle)];
 }
 
 .modal-header {
-  @apply top-0 left-0 right-0 z-10 flex justify-between items-center px-6 py-4 bg-[color-mix(in_srgb,var(--lm-bg-0)_85%,transparent)] backdrop-blur-md border-b border-[var(--lm-border)];
+  @apply top-0 left-0 right-0 z-10 flex justify-between items-center px-6 py-4 bg-[color-mix(in_srgb,var(--color-bg-app)_85%,transparent)] backdrop-blur-md border-b border-[var(--color-border-subtle)];
 }
