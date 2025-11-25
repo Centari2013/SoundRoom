@@ -105,6 +105,7 @@
   --color-selection-soft: rgba(47, 109, 253, 0.18);
 
   --color-surface-muted: #202024;
+  --color-surface-muted-rgb: 32, 32, 36;
 
   --color-panel: #0f0f12;
   --color-panel-rgb: 15, 15, 18;
@@ -113,7 +114,9 @@
   --color-input-rgb: 20, 20, 24;
 
   --color-disabled-bg: #2a2a2e;
+  --color-disabled-bg-rgb: 42, 42, 46;
   --color-disabled-text: #7b7b85;
+  --color-disabled-text-rgb: 123, 123, 133;
 
   --color-outline-strong: #303035;
   --color-outline-contrast: #131317;
@@ -208,12 +211,17 @@
   --color-selection-soft: rgba(47, 109, 253, 0.16);
 
   --color-surface-muted: #e6ebf3;
+  --color-surface-muted-rgb: 230, 235, 243;
 
   --color-panel: #ffffff;
+  --color-panel-rgb: 255, 255, 255;
   --color-input: #ffffff;
+  --color-input-rgb: 255, 255, 255;
 
   --color-disabled-bg: #e3e7ee;
+  --color-disabled-bg-rgb: 227, 231, 238;
   --color-disabled-text: #9aa6ba;
+  --color-disabled-text-rgb: 154, 166, 186;
 
   --color-outline-strong: #3a4860;
   --color-detail-stroke: #334155;
