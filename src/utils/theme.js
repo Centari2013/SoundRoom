@@ -21,7 +21,6 @@ function applyTheme(theme) {
   const normalized = SUPPORTED_THEMES.includes(theme) ? theme : DEFAULT_THEME
   const root = document.documentElement
   root.dataset.theme = normalized
-  root.classList.toggle('dark', normalized === 'dark')
   localStorage.setItem(THEME_KEY, normalized)
   return normalized
 }

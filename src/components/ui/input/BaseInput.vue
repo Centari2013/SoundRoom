@@ -3,7 +3,7 @@
     <label
       v-if="label"
       :for="id"
-      class="text-sm font-medium text-[var(--color-text-secondary)]"
+      class="text-sm font-medium text-text-secondary"
     >
       {{ label }}
     </label>
@@ -16,10 +16,10 @@
       :autocomplete="autocomplete"
       :disabled="disabled"
       :class="[
-        'px-3 py-2 rounded border w-full text-sm focus:outline-none bg-[var(--color-bg-surface)] text-[var(--color-text-primary)] border-[var(--color-border-subtle)] focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-bg-surface)]',
+        'px-3 py-2 rounded border w-full text-sm focus:outline-none bg-surface-base text-text-primary border-border-subtle focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface-base',
         props.class,
         error
-          ? 'border-[var(--color-danger)] text-[var(--color-danger)] bg-[rgba(var(--color-danger-rgb),0.12)]'
+          ? 'border-status-danger text-status-danger bg-status-danger/20'
           : '',
       ]"
       v-model="internalValue"
@@ -31,7 +31,7 @@
     <p
       v-if="error"
       :id="errorId"
-      class="text-sm text-[var(--color-danger)]"
+      class="text-sm text-status-danger"
       role="alert"
       aria-live="assertive"
     >

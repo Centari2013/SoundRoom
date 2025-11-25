@@ -46,7 +46,7 @@ button {
   font-family: inherit;
   cursor: pointer;
   transition: border-color 0.25s, box-shadow 0.25s;
-  @apply bg-[var(--color-bg-surface)] text-[var(--color-text-primary)];
+  @apply bg-surface-base text-text-primary;
 }
 button:hover {
   border-color: var(--color-border-subtle);
@@ -79,25 +79,25 @@ button:disabled {
 input[type="text"],
 input[type="email"],
 input[type="password"] {
-  @apply w-full p-3 border border-[var(--color-border-subtle)] rounded-lg bg-[var(--color-bg-elevated)] text-[var(--color-text-primary)];
+  @apply w-full p-3 border border-border-subtle rounded-lg bg-surface-raised text-text-primary;
 }
 
 input:disabled {
-  @apply opacity-50 cursor-not-allowed bg-[var(--color-disabled-bg)] text-[var(--color-disabled-text)];
+  @apply opacity-50 cursor-not-allowed bg-disabled-bg text-disabled-text;
 }
 
 .modal-backdrop {
-  @apply fixed inset-0 bg-[color-mix(in_srgb,var(--color-text-inverse)_60%,transparent)] backdrop-blur-sm z-50 flex items-center justify-center;
+  @apply fixed inset-0 bg-surface-app/80 backdrop-blur-sm z-50 flex items-center justify-center;
 }
 
 .modal-panel {
-  @apply bg-[var(--color-bg-app)] rounded-2xl w-[80vw] h-[80vh] shadow-[var(--color-shadow-soft)] border border-[var(--color-border-subtle)] overflow-hidden;
+  @apply bg-surface-app rounded-2xl w-[80vw] h-[80vh] shadow-soft border border-border-subtle overflow-hidden;
 }
 
 .modal-header-float {
-  @apply absolute top-0 left-0 right-0 z-10 flex justify-between items-center px-6 py-4 bg-[color-mix(in_srgb,var(--color-bg-app)_85%,transparent)] backdrop-blur-md border-b border-[var(--color-border-subtle)];
+  @apply absolute top-0 left-0 right-0 z-10 flex justify-between items-center px-6 py-4 bg-surface-app/85 backdrop-blur-md border-b border-border-subtle;
 }
 
 .modal-header {
-  @apply top-0 left-0 right-0 z-10 flex justify-between items-center px-6 py-4 bg-[color-mix(in_srgb,var(--color-bg-app)_85%,transparent)] backdrop-blur-md border-b border-[var(--color-border-subtle)];
+  @apply top-0 left-0 right-0 z-10 flex justify-between items-center px-6 py-4 bg-surface-app/85 backdrop-blur-md border-b border-border-subtle;
 }

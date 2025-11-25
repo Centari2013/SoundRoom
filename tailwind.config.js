@@ -31,6 +31,7 @@ module.exports = {
           DEFAULT: withAlpha('--color-accent-rgb'),
           strong: withAlpha('--color-accent-strong-rgb'),
         },
+        focus: withAlpha('--color-focus-ring-rgb'),
         status: {
           success: withAlpha('--color-success-rgb'),
           warning: withAlpha('--color-warning-rgb'),
@@ -38,6 +39,10 @@ module.exports = {
         },
         panel: withAlpha('--color-panel-rgb'),
         input: withAlpha('--color-input-rgb'),
+        disabled: {
+          bg: withAlpha('--color-disabled-bg-rgb'),
+          text: withAlpha('--color-disabled-text-rgb'),
+        },
       },
       boxShadow: {
         soft: 'var(--color-shadow-soft)',

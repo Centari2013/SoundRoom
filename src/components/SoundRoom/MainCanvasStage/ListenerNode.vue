@@ -130,7 +130,7 @@ const syncTheme = () => {
 onMounted(() => {
   syncTheme()
   themeObserver = new MutationObserver(syncTheme)
-  themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme', 'class'] })
+  themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] })
 })
 
 onBeforeUnmount(() => themeObserver?.disconnect())

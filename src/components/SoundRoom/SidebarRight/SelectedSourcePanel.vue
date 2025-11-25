@@ -1,12 +1,12 @@
 <template>
-  <section class="text-[var(--color-text-primary)]">
-    <h5 class="text-sm font-semibold uppercase text-[var(--color-text-muted)] mb-2">
+  <section class="text-text-primary">
+    <h5 class="text-sm font-semibold uppercase text-text-muted mb-2">
       Selected Source
     </h5>
 
     <div v-if="selectedSource" class="space-y-6 flex flex-col items-center">
       <!-- Readouts -->
-      <div class="space-y-1 text-xs text-[var(--color-text-muted)]">
+      <div class="space-y-1 text-xs text-text-muted">
         <h4>{{ selectedSource.name }}</h4>
         <p>X: {{ cleanSourceXY.x }}</p>
         <p>Y: {{ cleanSourceXY.y }}</p>
@@ -33,22 +33,22 @@
       <div class="w-full space-y-2">
         <button
           @click="playPauseSource"
-          class="w-full bg-[var(--color-bg-surface)] text-xs rounded hover:bg-[var(--color-bg-elevated)] border border-[var(--color-border-subtle)] text-[var(--color-text-primary)]"
+          class="w-full bg-surface-base text-xs rounded hover:bg-surface-raised border border-border-subtle text-text-primary"
         >
           {{ playPauseLabel }}
         </button>
         <button
           @click="deleteSource"
-          class="w-full bg-[var(--color-bg-surface)] text-xs rounded hover:bg-[var(--color-bg-elevated)] border border-[var(--color-border-subtle)] text-[var(--color-text-primary)]"
+          class="w-full bg-surface-base text-xs rounded hover:bg-surface-raised border border-border-subtle text-text-primary"
         >
           Delete
         </button>
       </div>
 
-      <hr class="w-full border-[var(--color-border-subtle)]" />
+      <hr class="w-full border-border-subtle" />
 
       <!-- Scheduling Toggle -->
-      <div class="w-full flex items-center space-x-2 text-left px-1 text-[var(--color-text-muted)]">
+      <div class="w-full flex items-center space-x-2 text-left px-1 text-text-muted">
         <input
           type="checkbox"
           :checked="schedulingEnabled"
@@ -60,7 +60,7 @@
       </div>
       <p
         v-if="!canUseTimedLoops"
-        class="w-full px-1 text-left text-xs text-[var(--color-warning)]"
+        class="w-full px-1 text-left text-xs text-status-warning"
       >
         Upgrade to unlock timed loops for automated playback.
       </p>
@@ -68,7 +68,7 @@
       <!-- Scheduling Settings -->
       <div
         v-if="schedulingEnabled && canUseTimedLoops"
-        class="space-y-4 w-full text-xs text-[var(--color-text-muted)] px-1"
+        class="space-y-4 w-full text-xs text-text-muted px-1"
       >
         <!-- Mode -->
         <div class="flex flex-col space-y-1">
@@ -77,7 +77,7 @@
             :value="schedule.mode"
             @change="handleScheduleModeChange"
             @blur="commitScheduleEdit"
-            class="px-2 py-1 rounded border border-[var(--color-border-subtle)] bg-[var(--color-bg-elevated)]">
+            class="px-2 py-1 rounded border border-border-subtle bg-surface-raised">
             <option value="interval">Interval</option>
             <option v-if="canUseAdvancedScheduling" value="count">Count</option>
             <option v-if="canUseAdvancedScheduling" value="interval+count">Interval + Count</option>
@@ -99,7 +99,7 @@
               }"
               @keyup.enter="commitScheduleEdit"
               @blur="commitScheduleEdit"
-              class="px-2 py-1 rounded border border-[var(--color-border-subtle)] bg-[var(--color-bg-elevated)]"
+              class="px-2 py-1 rounded border border-border-subtle bg-surface-raised"
             />
           </div>
           <div class="flex flex-col space-y-1">
@@ -116,9 +116,9 @@
               }"
               @keyup.enter="commitScheduleEdit"
               @blur="commitScheduleEdit"
-              class="px-2 py-1 rounded border border-[var(--color-border-subtle)] bg-[var(--color-bg-elevated)]"
+              class="px-2 py-1 rounded border border-border-subtle bg-surface-raised"
             />
-            <p v-if="schedule.gapMax < schedule.gapMin" class="text-[var(--color-danger)] text-xs">
+            <p v-if="schedule.gapMax < schedule.gapMin" class="text-status-danger text-xs">
               Gap Max cannot be smaller than Gap Min
             </p>
           </div>
@@ -140,7 +140,7 @@
               @keyup.enter="commitScheduleEdit"
               @blur="commitScheduleEdit"
               placeholder="Unlimited"
-              class="px-2 py-1 rounded border border-[var(--color-border-subtle)] bg-[var(--color-bg-elevated)]"
+              class="px-2 py-1 rounded border border-border-subtle bg-surface-raised"
             />
           </div>
           <div class="flex flex-col space-y-1">
@@ -156,7 +156,7 @@
               }"
               @keyup.enter="commitScheduleEdit"
               @blur="commitScheduleEdit"
-              class="px-2 py-1 rounded border border-[var(--color-border-subtle)] bg-[var(--color-bg-elevated)]"
+              class="px-2 py-1 rounded border border-border-subtle bg-surface-raised"
             />
           </div>
           <div class="flex flex-col space-y-1">
@@ -171,7 +171,7 @@
               }"
               @keyup.enter="commitScheduleEdit"
               @blur="commitScheduleEdit"
-              class="px-2 py-1 rounded border border-[var(--color-border-subtle)] bg-[var(--color-bg-elevated)]"
+              class="px-2 py-1 rounded border border-border-subtle bg-surface-raised"
             />
           </div>
         </div>

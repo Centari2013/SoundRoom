@@ -1,5 +1,5 @@
 <template>
-  <div class="auth-callback w-full bg-[var(--color-bg-app)] text-[var(--color-text-primary)]">
+  <div class="auth-callback w-full bg-surface-app text-text-primary">
   </div>
 </template>
 

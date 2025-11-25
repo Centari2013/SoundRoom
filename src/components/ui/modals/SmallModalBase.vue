@@ -21,7 +21,7 @@
         <BaseButton
           v-if="showCloseButton"
           @click="emit('close')"
-          class="text-sm hover:text-[var(--color-text-muted)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)]"
+          class="text-sm hover:text-text-muted focus:outline-none focus-visible:ring-2 focus-visible:ring-focus"
           aria-label="Close modal"
         >
           Close

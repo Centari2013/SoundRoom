@@ -4,7 +4,7 @@
     role="application"
     tabindex="0"
     aria-label="SoundRoom 2D audio environment. Use keyboard or mouse to interact with sound nodes."
-    class="canvas-grid relative border border-[var(--color-border-subtle)] dark:border-2 flex items-center justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] shadow-[var(--color-shadow-soft)]"
+    class="canvas-grid relative border border-border-subtle dark:border-2 flex items-center justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-focus shadow-soft"
     :class="`w-[${room.width}px] h-[${room.height}px]`"
     @dragover.prevent
     @drop="handleDrop"

@@ -113,7 +113,9 @@
   --color-input-rgb: 20, 20, 24;
 
   --color-disabled-bg: #2a2a2e;
+  --color-disabled-bg-rgb: 42, 42, 46;
   --color-disabled-text: #7b7b85;
+  --color-disabled-text-rgb: 123, 123, 133;
 
   --color-outline-strong: #303035;
   --color-outline-contrast: #131317;

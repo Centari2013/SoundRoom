@@ -5,7 +5,7 @@
       class="absolute inset-0 flex items-center justify-center backdrop-blur-sm bg-[color-mix(in_srgb,var(--color-bg-app)_70%,transparent)] z-50"
     >
       <div
-        class="text-xl font-medium tracking-wide text-[var(--color-text-primary)] animate-pulse"
+        class="text-xl font-medium tracking-wide text-text-primary animate-pulse"
       >
         {{ text }}
       </div>

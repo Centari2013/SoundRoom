@@ -13,7 +13,7 @@
       :id="`modal-desc-save`"
     >
       <p
-        class="text-lg font-medium text-[var(--color-text-primary)]"
+        class="text-lg font-medium text-text-primary"
         :id="`modal-title-save`"
       >
         {{ message }}

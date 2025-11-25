@@ -6,7 +6,7 @@
       :class="[props.class]"
     >
       <div
-        class="text-xl font-medium tracking-wide text-[var(--color-text-primary)] animate-pulse"
+        class="text-xl font-medium tracking-wide text-text-primary animate-pulse"
       >
         {{ text }}
       </div>

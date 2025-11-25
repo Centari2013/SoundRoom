@@ -9,11 +9,11 @@
 
       <!-- Body -->
       <div class="p-6 space-y-6 text-sm leading-relaxed">
-        <p class="text-[var(--color-text-secondary)]">
+        <p class="text-text-secondary">
           You’re all set. SoundRoom is your canvas for immersive 3D sound. Place audio sources, move your listener, and create rich soundscapes that evolve around you.
         </p>
 
-        <ul class="list-disc list-inside space-y-1 text-[var(--color-text-muted)]">
+        <ul class="list-disc list-inside space-y-1 text-text-muted">
           <li>Use <strong>+ Add Source</strong> to begin layering sounds.</li>
           <li>Drag and drop sounds onto the canvas.</li>
           <li>Move the listener with <strong>WASD</strong> or arrow keys.</li>
@@ -21,14 +21,14 @@
           <li>Undo/redo with <strong>U</strong> / <strong>R</strong>.</li>
         </ul>
 
-        <div class="rounded p-4 text-[var(--color-accent-strong)] border border-[rgba(var(--color-accent-rgb),0.35)] bg-[rgba(var(--color-accent-rgb),0.08)]">
+        <div class="rounded p-4 text-accent-strong border border-accent/35 bg-accent/8">
           <strong>Pro tip:</strong> You can layer ambience, nature, music, and directional audio for maximum effect.
         </div>
       </div>
 
       <!-- Footer -->
       <div class="flex justify-end p-4 border-t border-border-subtle">
-        <BaseButton @click="router.push('/')" class="text-sm px-4 py-2 font-medium rounded hover:text-[var(--color-text-muted)]">
+        <BaseButton @click="router.push('/')" class="text-sm px-4 py-2 font-medium rounded hover:text-text-muted">
           Let's Go
         </BaseButton>
       </div>
