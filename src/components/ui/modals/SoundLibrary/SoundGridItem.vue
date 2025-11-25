@@ -1,7 +1,7 @@
 <template>
   <div
     :class="[
-      'relative aspect-square flex flex-col items-center justify-between p-4 rounded-xl bg-[var(--color-surface-muted)] text-text-primary shadow-strong border-border-strong border transition-shadow duration-200',
+      'relative aspect-square flex flex-col items-center justify-between p-4 rounded-xl bg-[var(--color-bg-surface)] text-text-primary shadow-[var(--color-shadow-soft)] border border-[var(--color-border-subtle)] hover:border-[var(--color-border-strong)] focus-within:border-[var(--color-border-strong)] focus-within:ring-2 focus-within:ring-[var(--color-focus-ring)] focus-within:ring-offset-2 focus-within:ring-offset-[var(--color-bg-elevated)] transition-shadow duration-200',
       highlightClass
     ]"
   >
@@ -24,7 +24,7 @@
     />
 
     <BaseButton
-      class="load-BaseButton text-xs px-3 py-1 rounded transition-colors mt-2 bg-accent text-[var(--color-text-inverse)] hover:bg-accent-strong border border-border-strong shadow-soft"
+      class="load-BaseButton text-xs px-3 py-1 rounded transition-colors mt-2 bg-[var(--color-accent)] text-[var(--color-text-inverse)] hover:bg-[var(--color-accent-strong)] border border-[var(--color-accent)] shadow-soft focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-bg-elevated)]"
       @click="handleToggle"
       :disabled="waiting || sound.send"
     >

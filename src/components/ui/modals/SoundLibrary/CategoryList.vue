@@ -1,5 +1,5 @@
 <template>
-  <aside class="w-60 bg-[var(--color-panel)] text-text-primary border-r border-border-strong p-4 space-y-3 overflow-y-auto shadow-strong">
+  <aside class="w-60 bg-[var(--color-bg-elevated)] text-text-primary border-r border-border-strong p-4 space-y-3 overflow-y-auto shadow-strong">
     <h2 class="font-bold text-sm mb-2">Categories</h2>
     <BaseButton
       v-if="isAuthenticated"
@@ -60,21 +60,28 @@ function handleSelectYourSounds() {
   text-align: left;
   padding: 0.5rem 0.75rem;
   font-size: 0.875rem;
-  border-radius: 0.375rem;
+  border-radius: 0.5rem;
   color: var(--color-text-primary);
-  background-color: var(--color-surface-muted);
-  border: 1px solid var(--color-border-strong);
-  transition: background-color 0.2s, border-color 0.2s, color 0.2s;
+  background-color: var(--color-bg-surface);
+  border: 1px solid var(--color-border-subtle);
+  box-shadow: var(--color-shadow-soft);
+  transition: background-color 0.2s, border-color 0.2s, color 0.2s, box-shadow 0.2s;
 }
 .sound-lib-button:hover {
   background-color: var(--color-bg-elevated);
   border: 1px solid var(--color-border-strong);
+  box-shadow: var(--color-shadow-soft);
+}
+.sound-lib-button:focus-visible {
+  outline: 2px solid var(--color-focus-ring);
+  outline-offset: 2px;
 }
 .sound-lib-button.active {
-  font-weight: 600;
-  background-color: var(--color-bg-elevated);
+  font-weight: 700;
+  background-color: var(--color-accent-soft);
   border: 1px solid var(--color-accent);
-  color: var(--color-text-primary);
+  color: var(--color-text-inverse);
+  box-shadow: 0 0 0 3px rgba(var(--color-accent-rgb), 0.22);
 }
 
 .sound-lib-button.locked {

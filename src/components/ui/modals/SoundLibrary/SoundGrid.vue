@@ -1,8 +1,8 @@
 <template>
   <div class="flex-1 relative overflow-hidden">
-    <div class="absolute top-0 left-0 right-0 z-10 flex justify-between items-center px-6 py-4 bg-[var(--color-panel)] border-b border-border-strong text-text-primary shadow-strong">
+    <div class="absolute top-0 left-0 right-0 z-10 flex justify-between items-center px-6 py-4 bg-[var(--color-bg-elevated)] border-b border-border-strong text-text-primary shadow-strong">
       <h2 class="text-2xl font-bold">SoundLibrary</h2>
-      <BaseButton class="text-sm" @click="$emit('close')">Close</BaseButton>
+      <BaseButton class="text-sm bg-[var(--color-bg-surface)] text-[var(--color-text-primary)] border border-[var(--color-border-strong)] hover:bg-[var(--color-bg-elevated)] shadow-[var(--color-shadow-soft)]" @click="$emit('close')">Close</BaseButton>
     </div>
     <div ref="gridScroll" class="mt-5 place-content-start p-6 pt-20 overflow-y-auto h-full grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
       <SoundGridItem
@@ -25,7 +25,7 @@
     </div>
      <div
         v-if="isAuthenticated && activeCategory === 'your-sounds'"
-        class="absolute bottom-0 left-0 right-0 p-4 bg-[var(--color-panel)] border-t border-border-strong text-text-primary shadow-strong"
+        class="absolute bottom-0 left-0 right-0 p-4 bg-[var(--color-bg-elevated)] border-t border-border-strong text-text-primary shadow-strong"
       >
         <div class="flex items-center justify-between gap-3">
           <button
