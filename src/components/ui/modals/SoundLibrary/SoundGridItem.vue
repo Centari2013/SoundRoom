@@ -1,7 +1,7 @@
 <template>
   <div
     :class="[
-      'relative aspect-square flex flex-col items-center justify-between p-4 rounded-xl bg-surface-raised text-text-primary shadow-soft border-border-strong border transition-shadow duration-200',
+      'relative aspect-square flex flex-col items-center justify-between p-4 rounded-xl bg-[var(--color-surface-muted)] text-text-primary shadow-strong border-border-strong border transition-shadow duration-200',
       highlightClass
     ]"
   >

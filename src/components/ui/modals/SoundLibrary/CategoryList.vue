@@ -1,5 +1,5 @@
 <template>
-  <aside class="w-60 bg-surface-raised text-text-primary border-r border-border-strong p-4 space-y-3 overflow-y-auto shadow-soft">
+  <aside class="w-60 bg-[var(--color-panel)] text-text-primary border-r border-border-strong p-4 space-y-3 overflow-y-auto shadow-strong">
     <h2 class="font-bold text-sm mb-2">Categories</h2>
     <BaseButton
       v-if="isAuthenticated"
@@ -62,18 +62,18 @@ function handleSelectYourSounds() {
   font-size: 0.875rem;
   border-radius: 0.375rem;
   color: var(--color-text-primary);
-  background-color: var(--color-bg-surface);
-  border: 1px solid var(--color-border-subtle);
+  background-color: var(--color-surface-muted);
+  border: 1px solid var(--color-border-strong);
   transition: background-color 0.2s, border-color 0.2s, color 0.2s;
 }
 .sound-lib-button:hover {
-  background-color: var(--color-bg-surface);
+  background-color: var(--color-bg-elevated);
   border: 1px solid var(--color-border-strong);
 }
 .sound-lib-button.active {
   font-weight: 600;
   background-color: var(--color-bg-elevated);
-  border: 1px solid var(--color-border-strong);
+  border: 1px solid var(--color-accent);
   color: var(--color-text-primary);
 }
 
