@@ -1,7 +1,7 @@
 <template>
   <div
     :class="[
-      'relative aspect-square flex flex-col items-center justify-between p-4 rounded-xl bg-surface-base text-text-primary shadow border-border-subtle border transition-shadow duration-200',
+      'relative aspect-square flex flex-col items-center justify-between p-4 rounded-xl bg-surface-raised text-text-primary shadow-[var(--color-shadow-soft)] border border-border-strong transition-shadow duration-200',
       highlightClass
     ]"
   >
@@ -24,7 +24,7 @@
     />
 
     <BaseButton
-      class="load-BaseButton text-xs px-3 py-1 rounded transition-colors mt-2 bg-[var(--color-bg-elevated)] hover:bg-[var(--color-bg-surface)] text-[var(--color-text-primary)] border border-border-subtle"
+      class="load-BaseButton text-xs px-3 py-1 rounded transition-colors mt-2 bg-[var(--color-accent)] hover:bg-[var(--color-accent-strong)] text-[var(--color-text-inverse)] border border-border-strong shadow-[var(--color-shadow-soft)]"
       @click="handleToggle"
       :disabled="waiting || sound.send"
     >
