@@ -137,7 +137,7 @@ onBeforeUnmount(() => themeObserver?.disconnect())
 
 const anchorGlowFill = computed(() => isDarkMode.value
   ? rgbaFromVar('--color-accent-strong-rgb', 0.08, 'rgba(var(--color-accent-strong-rgb), 0.08)')
-  : rgbaFromVar('--base-black-rgb', 0.06, 'rgba(var(--base-black-rgb), 0.06)')))
+  : rgbaFromVar('--base-black-rgb', 0.06, 'rgba(var(--base-black-rgb), 0.06)'))
 const anchorShadowColor = computed(() => isDarkMode.value
   ? rgbaFromVar('--color-accent-strong-rgb', 0.3, 'rgba(var(--color-accent-strong-rgb), 0.3)')
   : rgbaFromVar('--base-black-rgb', 0.1, 'rgba(var(--base-black-rgb), 0.1)'))
