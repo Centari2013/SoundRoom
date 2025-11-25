@@ -109,47 +109,91 @@ const { listener } = storeToRefs(useListenerStore())
 const { actionManager } = storeToRefs(useActionManagerStore())
 const { room } = storeToRefs(useRoomStore())
 
-const prefersDark = window.matchMedia('(prefers-color-scheme: dark)')
-const isDarkMode = ref(prefersDark.matches)
-
-const syncTheme = (event) => {
-  isDarkMode.value = event.matches
+const isDarkMode = ref(document.documentElement.dataset.theme !== 'light')
+let themeObserver = null
+const rootStyles = computed(() => {
+  // re-evaluate when theme changes
+  // eslint-disable-next-line no-unused-expressions
+  isDarkMode.value
+  return typeof window !== 'undefined' ? getComputedStyle(document.documentElement) : null
+})
+const getVar = (name, fallback) => rootStyles.value?.getPropertyValue(name)?.trim() || fallback
+const rgbaFromVar = (name, alpha, fallback) => {
+  const rgbValue = rootStyles.value?.getPropertyValue(name)?.trim()
+  return rgbValue ? `rgba(${rgbValue}, ${alpha})` : fallback
 }
 
-onMounted(() => prefersDark.addEventListener('change', syncTheme))
-onBeforeUnmount(() => prefersDark.removeEventListener('change', syncTheme))
+const syncTheme = () => {
+  isDarkMode.value = document.documentElement.dataset.theme !== 'light'
+}
 
-const anchorGlowFill = computed(() => isDarkMode.value ? 'rgba(59, 130, 246, 0.08)' : 'rgba(0, 0, 0, 0.06)')
-const anchorShadowColor = computed(() => isDarkMode.value ? 'rgba(59, 130, 246, 0.3)' : 'rgba(0, 0, 0, 0.1)')
+onMounted(() => {
+  syncTheme()
+  themeObserver = new MutationObserver(syncTheme)
+  themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme', 'class'] })
+})
+
+onBeforeUnmount(() => themeObserver?.disconnect())
+
+const anchorGlowFill = computed(() => isDarkMode.value
+  ? rgbaFromVar('--color-accent-strong-rgb', 0.08, 'rgba(var(--color-accent-strong-rgb), 0.08)')
+  : rgbaFromVar('--base-black-rgb', 0.06, 'rgba(var(--base-black-rgb), 0.06)'))
+const anchorShadowColor = computed(() => isDarkMode.value
+  ? rgbaFromVar('--color-accent-strong-rgb', 0.3, 'rgba(var(--color-accent-strong-rgb), 0.3)')
+  : rgbaFromVar('--base-black-rgb', 0.1, 'rgba(var(--base-black-rgb), 0.1)'))
 const anchorShadowBlur = computed(() => isDarkMode.value ? 18 : 10)
 const anchorShadowOpacity = computed(() => isDarkMode.value ? 0.35 : 0.18)
 
-const bodyFill = computed(() => isDarkMode.value ? 'rgba(59, 130, 246, 0.15)' : 'rgba(150, 165, 185, 0.35)')
-const bodyStroke = computed(() => isDarkMode.value ? 'rgba(96, 165, 250, 0.9)' : '#2f3a4a')
-const bodyShadowColor = computed(() => isDarkMode.value ? 'rgba(0, 0, 0, 0.2)' : 'rgba(0, 0, 0, 0.08)')
+const bodyFill = computed(() => isDarkMode.value
+  ? rgbaFromVar('--color-accent-strong-rgb', 0.15, 'rgba(var(--color-accent-strong-rgb), 0.15)')
+  : rgbaFromVar('--color-body-fill-rgb', 0.35, 'rgba(var(--color-body-fill-rgb), 0.35)'))
+const bodyStroke = computed(() => isDarkMode.value
+  ? rgbaFromVar('--color-accent-soft-rgb', 0.9, 'rgba(var(--color-accent-soft-rgb), 0.9)')
+  : getVar('--color-detail-stroke', 'var(--color-detail-stroke)'))
+const bodyShadowColor = computed(() => isDarkMode.value
+  ? rgbaFromVar('--base-black-rgb', 0.2, 'rgba(var(--base-black-rgb), 0.2)')
+  : rgbaFromVar('--base-black-rgb', 0.08, 'rgba(var(--base-black-rgb), 0.08)'))
 const bodyShadowBlur = computed(() => isDarkMode.value ? 10 : 8)
 const bodyShadowOpacity = computed(() => isDarkMode.value ? 0.55 : 0.18)
 
-const detailFill = computed(() => isDarkMode.value ? 'rgba(15, 23, 42, 0.9)' : 'rgba(70, 80, 95, 0.85)')
-const detailStroke = computed(() => isDarkMode.value ? 'rgba(191, 219, 254, 0.85)' : 'rgba(60, 70, 85, 0.6)')
+const detailFill = computed(() => isDarkMode.value
+  ? rgbaFromVar('--color-outline-contrast-rgb', 0.9, 'rgba(var(--color-outline-contrast-rgb), 0.9)')
+  : rgbaFromVar('--color-detail-fill-rgb', 0.85, 'rgba(var(--color-detail-fill-rgb), 0.85)'))
+const detailStroke = computed(() => isDarkMode.value
+  ? rgbaFromVar('--color-accent-soft-rgb', 0.85, 'rgba(var(--color-accent-soft-rgb), 0.85)')
+  : rgbaFromVar('--color-body-stroke-rgb', 0.6, 'rgba(var(--color-body-stroke-rgb), 0.6)'))
 
-const detailShadowColor = computed(() => isDarkMode.value ? 'rgba(59, 130, 246, 0.35)' : 'rgba(0, 0, 0, 0.08)')
+const detailShadowColor = computed(() => isDarkMode.value
+  ? rgbaFromVar('--color-accent-strong-rgb', 0.35, 'rgba(var(--color-accent-strong-rgb), 0.35)')
+  : rgbaFromVar('--base-black-rgb', 0.08, 'rgba(var(--base-black-rgb), 0.08)'))
 const detailShadowBlur = computed(() => isDarkMode.value ? 8 : 6)
 const detailShadowOpacity = computed(() => isDarkMode.value ? 0.45 : 0.2)
 
-const centerHighlightFill = computed(() => isDarkMode.value ? 'rgba(255, 255, 255, 0.75)' : 'rgba(255, 255, 255, 0.6)')
-const centerHighlightStroke = computed(() => isDarkMode.value ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.08)')
-const highlightShadowColor = computed(() => isDarkMode.value ? 'rgba(255, 255, 255, 0.35)' : 'rgba(0, 0, 0, 0.06)')
+const centerHighlightFill = computed(() => isDarkMode.value
+  ? rgbaFromVar('--base-white-rgb', 0.75, 'rgba(var(--base-white-rgb), 0.75)')
+  : rgbaFromVar('--base-white-rgb', 0.6, 'rgba(var(--base-white-rgb), 0.6)'))
+const centerHighlightStroke = computed(() => isDarkMode.value
+  ? rgbaFromVar('--base-white-rgb', 0.2, 'rgba(var(--base-white-rgb), 0.2)')
+  : rgbaFromVar('--base-black-rgb', 0.08, 'rgba(var(--base-black-rgb), 0.08)'))
+const highlightShadowColor = computed(() => isDarkMode.value
+  ? rgbaFromVar('--base-white-rgb', 0.35, 'rgba(var(--base-white-rgb), 0.35)')
+  : rgbaFromVar('--base-black-rgb', 0.06, 'rgba(var(--base-black-rgb), 0.06)'))
 const highlightShadowOpacity = computed(() => isDarkMode.value ? 0.5 : 0.28)
 
 const directionGradientStops = computed(() => isDarkMode.value
-  ? [0, 'rgba(191, 219, 254, 0.18)', 1, 'rgba(59, 130, 246, 0.85)']
-  : [0, 'rgba(140, 150, 165, 0.2)', 1, 'rgba(60, 70, 85, 0.8)']
+  ? [0, rgbaFromVar('--color-accent-soft-rgb', 0.18, 'rgba(var(--color-accent-soft-rgb), 0.18)'), 1, rgbaFromVar('--color-accent-strong-rgb', 0.85, 'rgba(var(--color-accent-strong-rgb), 0.85)')]
+  : [0, rgbaFromVar('--color-detail-gradient-rgb', 0.2, 'rgba(var(--color-detail-gradient-rgb), 0.2)'), 1, rgbaFromVar('--color-body-stroke-rgb', 0.8, 'rgba(var(--color-body-stroke-rgb), 0.8)')]
 )
-const directionStroke = computed(() => isDarkMode.value ? 'rgba(15, 23, 42, 0.85)' : '#222222')
-const directionShadowColor = computed(() => isDarkMode.value ? 'rgba(59, 130, 246, 0.35)' : 'rgba(0, 0, 0, 0.1)')
+const directionStroke = computed(() => isDarkMode.value
+  ? rgbaFromVar('--color-outline-contrast-rgb', 0.85, 'rgba(var(--color-outline-contrast-rgb), 0.85)')
+  : getVar('--color-text-primary', 'var(--color-text-primary)'))
+const directionShadowColor = computed(() => isDarkMode.value
+  ? rgbaFromVar('--color-accent-strong-rgb', 0.35, 'rgba(var(--color-accent-strong-rgb), 0.35)')
+  : rgbaFromVar('--base-black-rgb', 0.1, 'rgba(var(--base-black-rgb), 0.1)'))
 
-const rotationHandleFill = computed(() => isDarkMode.value ? 'rgba(59, 130, 246, 0.1)' : 'rgba(0, 0, 0, 0.06)')
+const rotationHandleFill = computed(() => isDarkMode.value
+  ? rgbaFromVar('--color-accent-strong-rgb', 0.1, 'rgba(var(--color-accent-strong-rgb), 0.1)')
+  : rgbaFromVar('--base-black-rgb', 0.06, 'rgba(var(--base-black-rgb), 0.06)'))
 
 let moveListenerPayload = null
 let initialMouseAngle = null

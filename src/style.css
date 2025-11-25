@@ -1,26 +1,12 @@
 @import "tailwindcss";
+@import "./styles/theme-tokens.css";
+
 :root {
   font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
   line-height: 1.5;
   font-weight: 400;
-
-  color-scheme: light dark;
-  color: var(--lm-text-0);
-  background-color: var(--lm-bg-0);
-
-  --lm-bg-0: #f5f5f5;
-  --lm-bg-1: #ebebeb;
-  --lm-bg-2: #dcdcdc;
-  --lm-border: #c8c8c8;
-  --lm-text-0: #222222;
-  --lm-text-1: #555555;
-  --lm-grid-line: rgba(0, 0, 0, 0.08);
-  --lm-node-red: #d45a5a;
-  --lm-node-blue: #6c8edb;
-  --lm-cone-red: rgba(212, 90, 90, 0.1);
-  --lm-cone-blue: rgba(108, 142, 219, 0.12);
-  --lm-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
-
+  color: var(--color-text-primary);
+  background-color: var(--color-bg-app);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -29,11 +15,11 @@
 
 a {
   font-weight: 500;
-  color: var(--lm-text-0);
+  color: var(--color-accent);
   text-decoration: inherit;
 }
 a:hover {
-  color: var(--lm-text-1);
+  color: var(--color-accent-soft);
 }
 
 body {
@@ -42,8 +28,8 @@ body {
   place-items: center;
   min-width: 320px;
   min-height: 100vh;
-  color: var(--lm-text-0);
-  background: var(--lm-bg-0);
+  color: var(--color-text-primary);
+  background: var(--color-bg-app);
 }
 
 h1 {
@@ -58,18 +44,19 @@ button {
   font-size: 1em;
   font-weight: 500;
   font-family: inherit;
-
   cursor: pointer;
-  transition: border-color 0.25s;
-
-  @apply bg-[var(--lm-bg-1)] dark:bg-[#1a1a1a] text-[var(--lm-text-0)];
+  transition: border-color 0.25s, box-shadow 0.25s;
+  @apply bg-[var(--color-bg-surface)] text-[var(--color-text-primary)];
 }
 button:hover {
-  border-color: var(--lm-border);
+  border-color: var(--color-border-subtle);
+  background-color: var(--color-bg-elevated);
 }
 button:focus,
 button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
+  outline: 2px solid var(--color-focus-ring);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px rgba(var(--color-focus-ring-rgb), 0.25);
 }
 
 .card {
@@ -78,7 +65,6 @@ button:focus-visible {
 
 #app {
   margin: 0 auto;
-  
   text-align: center;
 }
 
@@ -86,73 +72,32 @@ button:disabled {
   opacity: 0.5;
   cursor: not-allowed;
   pointer-events: none;
-  background-color: #444; /* fallback for dark mode */
-  color: #ccc;
+  background-color: var(--color-disabled-bg);
+  color: var(--color-disabled-text);
 }
 
 input[type="text"],
 input[type="email"],
 input[type="password"] {
-  @apply w-full p-3 border border-[var(--lm-border)] rounded-lg dark:bg-[#333] bg-[var(--lm-bg-2)] dark:text-white text-[var(--lm-text-0)];
+  @apply w-full p-3 border border-[var(--color-border-subtle)] rounded-lg bg-[var(--color-bg-elevated)] text-[var(--color-text-primary)];
 }
 
 input:disabled {
-  @apply dark:bg-neutral-700 dark:text-neutral-400 opacity-50 cursor-not-allowed bg-[var(--lm-bg-2)] text-[var(--lm-text-1)];
+  @apply opacity-50 cursor-not-allowed bg-[var(--color-disabled-bg)] text-[var(--color-disabled-text)];
 }
 
-
 .modal-backdrop {
-  @apply fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center;
+  @apply fixed inset-0 bg-[color-mix(in_srgb,var(--color-text-inverse)_60%,transparent)] backdrop-blur-sm z-50 flex items-center justify-center;
 }
 
 .modal-panel {
-  @apply bg-[var(--lm-bg-0)] dark:bg-neutral-950 rounded-2xl w-[80vw] h-[80vh] shadow-[var(--lm-shadow)] dark:shadow-2xl border border-[var(--lm-border)] dark:border-neutral-800 overflow-hidden;
+  @apply bg-[var(--color-bg-app)] rounded-2xl w-[80vw] h-[80vh] shadow-[var(--color-shadow-soft)] border border-[var(--color-border-subtle)] overflow-hidden;
 }
 
 .modal-header-float {
-  @apply absolute top-0 left-0 right-0 z-10 flex justify-between items-center px-6 py-4
-         bg-[color-mix(in_srgb,var(--lm-bg-0)_85%,transparent)] dark:bg-neutral-950/50 backdrop-blur-md border-b border-[var(--lm-border)] dark:border-neutral-800;
+  @apply absolute top-0 left-0 right-0 z-10 flex justify-between items-center px-6 py-4 bg-[color-mix(in_srgb,var(--color-bg-app)_85%,transparent)] backdrop-blur-md border-b border-[var(--color-border-subtle)];
 }
 
 .modal-header {
-  @apply top-0 left-0 right-0 z-10 flex justify-between items-center px-6 py-4
-         bg-[color-mix(in_srgb,var(--lm-bg-0)_85%,transparent)] dark:bg-neutral-950/50 backdrop-blur-md border-b border-[var(--lm-border)] dark:border-neutral-800;
-}
-
-
-
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --lm-bg-0: #0b0b0f;
-    --lm-bg-1: #131317;
-    --lm-bg-2: #1c1c22;
-    --lm-border: #27272a;
-    --lm-text-0: #f5f5f5;
-    --lm-text-1: #a1a1aa;
-    --lm-grid-line: rgba(255, 255, 255, 0.06);
-    --lm-node-red: #f87171;
-    --lm-node-blue: #60a5fa;
-    --lm-cone-red: rgba(248, 113, 113, 0.12);
-    --lm-cone-blue: rgba(96, 165, 250, 0.14);
-    --lm-shadow: 0 8px 24px rgba(0, 0, 0, 0.55);
-
-    color: var(--lm-text-0);
-    background-color: var(--lm-bg-0);
-  }
-}
-
-@media (prefers-color-scheme: light) {
-  :root {
-    color: var(--lm-text-0);
-    background-color: var(--lm-bg-0);
-  }
-  a:hover {
-    color: var(--lm-text-1);
-  }
-
-  button:disabled {
-    background-color: var(--lm-bg-2);
-    color: var(--lm-text-1);
-  }
+  @apply top-0 left-0 right-0 z-10 flex justify-between items-center px-6 py-4 bg-[color-mix(in_srgb,var(--color-bg-app)_85%,transparent)] backdrop-blur-md border-b border-[var(--color-border-subtle)];
 }

@@ -132,63 +132,97 @@ const { room } = storeToRefs(useRoomStore())
 const { actionManager } = storeToRefs(useActionManagerStore())
 const emit = defineEmits(['select'])
 
-const prefersDark = window.matchMedia('(prefers-color-scheme: dark)')
-const isDarkMode = ref(prefersDark.matches)
-
-const syncTheme = (event) => {
-  isDarkMode.value = event.matches
+const isDarkMode = ref(document.documentElement.dataset.theme !== 'light')
+let themeObserver = null
+const rootStyles = computed(() => {
+  // eslint-disable-next-line no-unused-expressions
+  isDarkMode.value
+  return typeof window !== 'undefined' ? getComputedStyle(document.documentElement) : null
+})
+const getVar = (name, fallback) => rootStyles.value?.getPropertyValue(name)?.trim() || fallback
+const rgbaFromVar = (name, alpha, fallback) => {
+  const rgbValue = rootStyles.value?.getPropertyValue(name)?.trim()
+  return rgbValue ? `rgba(${rgbValue}, ${alpha})` : fallback
 }
 
-onMounted(() => prefersDark.addEventListener('change', syncTheme))
-onBeforeUnmount(() => prefersDark.removeEventListener('change', syncTheme))
+const syncTheme = () => {
+  isDarkMode.value = document.documentElement.dataset.theme !== 'light'
+}
+
+onMounted(() => {
+  syncTheme()
+  themeObserver = new MutationObserver(syncTheme)
+  themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme', 'class'] })
+})
+
+onBeforeUnmount(() => themeObserver?.disconnect())
 
 const sched = computed(() => props.source.instance.state.schedule)
 const isScheduled = computed(() => sched.value?.enabled)
 const isScheduledPlaying = computed(() => sched.value?.isPlaying)
 const sourceIsPlaying = computed(() => props.source.instance.playing);
 
-const lightPalette = computed(() => {
-  const styles = getComputedStyle(document.documentElement)
-  return {
-    bg2: styles.getPropertyValue('--lm-bg-2')?.trim() || '#dcdcdc',
-    nodeRed: styles.getPropertyValue('--lm-node-red')?.trim() || '#d45a5a',
-    nodeBlue: styles.getPropertyValue('--lm-node-blue')?.trim() || '#6c8edb',
-    coneRed: styles.getPropertyValue('--lm-cone-red')?.trim() || 'rgba(212, 90, 90, 0.1)',
-    coneBlue: styles.getPropertyValue('--lm-cone-blue')?.trim() || 'rgba(108, 142, 219, 0.12)'
-  }
-})
+const lightPalette = computed(() => ({
+  bg2: getVar('--color-bg-elevated', 'var(--color-bg-elevated)'),
+  nodeRed: getVar('--color-node-red', 'var(--color-node-red)'),
+  nodeBlue: getVar('--color-node-blue', 'var(--color-node-blue)'),
+  coneRed: 'rgba(var(--color-danger-rgb), 0.12)',
+  coneBlue: 'rgba(var(--color-accent-rgb), 0.14)',
+}))
+
+const themeTokens = computed(() => ({
+  primary: getVar('--color-accent', 'var(--color-accent)'),
+  danger: getVar('--color-danger', 'var(--color-danger)'),
+  selected: getVar('--color-selection-strong', 'var(--color-selection-strong)'),
+  selectionHighlight: getVar('--color-node-highlight', 'var(--color-node-highlight)'),
+  mutedStroke: getVar('--color-surface-muted', 'var(--color-surface-muted)'),
+  white: getVar('--base-white', '#ffffff'),
+}))
 
 const getFillColor = computed(() => {
   if (isDarkMode.value) {
-    if (props.selected) return '#ff0' // Yellow for selected node
-    return isScheduled.value ? '#2e90fa' : '#f44336' // Red for unscheduled/looping
+    if (props.selected) return themeTokens.value.selected
+    return isScheduled.value ? themeTokens.value.primary : themeTokens.value.danger
   }
   const colors = lightPalette.value
   if (props.selected) return colors.bg2
   return isScheduled.value ? colors.nodeBlue : colors.nodeRed
 })
 
-const dotStrokeColor = computed(() => (isDarkMode.value ? (props.selected ? '#ffffff' : 'rgba(255, 255, 255, 0.9)') : '#333333'))
-const selectionGlowColor = computed(() => (isDarkMode.value ? '#6fd7ff' : 'rgba(0, 0, 0, 0.05)'))
+const dotStrokeColor = computed(() => {
+  if (isDarkMode.value) return props.selected ? themeTokens.value.white : rgbaFromVar('--base-white-rgb', 0.9, 'rgba(var(--base-white-rgb), 0.9)')
+  return themeTokens.value.mutedStroke
+})
+const selectionGlowColor = computed(() => (isDarkMode.value
+  ? themeTokens.value.selectionHighlight
+  : rgbaFromVar('--base-black-rgb', 0.05, 'rgba(var(--base-black-rgb), 0.05)')))
 const selectedScale = computed(() => (props.selected ? 1.05 : 1))
 
 const outerConeFill = computed(() => {
-  if (isDarkMode.value) return 'rgba(255, 137, 137, 0.16)'
+  if (isDarkMode.value) return rgbaFromVar('--color-danger-rgb', 0.16, 'rgba(var(--color-danger-rgb), 0.16)')
   const colors = lightPalette.value
   return isScheduled.value ? colors.coneBlue : colors.coneRed
 })
 const outerConeStroke = computed(() => isDarkMode.value
-  ? 'rgba(255, 137, 137, 0.28)'
-  : (isScheduled.value ? 'rgba(108, 142, 219, 0.24)' : 'rgba(212, 90, 90, 0.2)'))
-const outerConeShadowColor = computed(() => isDarkMode.value ? 'rgba(255, 120, 120, 0.65)' : 'rgba(0, 0, 0, 0.12)')
+  ? rgbaFromVar('--color-danger-rgb', 0.28, 'rgba(var(--color-danger-rgb), 0.28)')
+  : (isScheduled.value
+    ? rgbaFromVar('--color-node-blue-rgb', 0.24, 'rgba(var(--color-node-blue-rgb), 0.24)')
+    : rgbaFromVar('--color-node-red-rgb', 0.2, 'rgba(var(--color-node-red-rgb), 0.2)')))
+const outerConeShadowColor = computed(() => isDarkMode.value
+  ? rgbaFromVar('--color-danger-rgb', 0.65, 'rgba(var(--color-danger-rgb), 0.65)')
+  : rgbaFromVar('--base-black-rgb', 0.12, 'rgba(var(--base-black-rgb), 0.12)'))
 const outerConeShadowBlur = computed(() => isDarkMode.value ? 18 : 10)
 
 const innerConeFill = computed(() => {
-  if (isDarkMode.value) return 'rgba(255, 180, 180, 0.18)'
+  if (isDarkMode.value) return rgbaFromVar('--color-danger-rgb', 0.18, 'rgba(var(--color-danger-rgb), 0.18)')
   const colors = lightPalette.value
-  return isScheduled.value ? 'rgba(108, 142, 219, 0.18)' : 'rgba(212, 90, 90, 0.16)'
+  return isScheduled.value
+    ? rgbaFromVar('--color-node-blue-rgb', 0.18, 'rgba(var(--color-node-blue-rgb), 0.18)')
+    : rgbaFromVar('--color-node-red-rgb', 0.16, 'rgba(var(--color-node-red-rgb), 0.16)')
 })
-const innerConeStroke = computed(() => isDarkMode.value ? 'rgba(255, 180, 180, 0.35)' : 'rgba(0, 0, 0, 0.18)')
+const innerConeStroke = computed(() => isDarkMode.value
+  ? rgbaFromVar('--color-danger-rgb', 0.35, 'rgba(var(--color-danger-rgb), 0.35)')
+  : rgbaFromVar('--base-black-rgb', 0.18, 'rgba(var(--base-black-rgb), 0.18)'))
 
 const selectionGlowOpacity = computed(() => isDarkMode.value ? 0.75 : 0.22)
 const selectionGlowBlur = computed(() => isDarkMode.value ? 14 : 8)
@@ -197,11 +231,15 @@ const nodeShadowBlur = computed(() => isDarkMode.value ? 10 : 6)
 const nodeShadowOpacity = computed(() => isDarkMode.value ? 0.65 : 0.08)
 
 const directionGradientStops = computed(() => isDarkMode.value
-  ? [0, 'rgba(255,255,255,0.95)', 1, 'rgba(255,255,255,0.65)']
-  : [0, 'rgba(255,255,255,0.7)', 1, 'rgba(0,0,0,0.12)']
+  ? [0, rgbaFromVar('--base-white-rgb', 0.95, 'rgba(var(--base-white-rgb),0.95)'), 1, rgbaFromVar('--base-white-rgb', 0.65, 'rgba(var(--base-white-rgb),0.65)')]
+  : [0, rgbaFromVar('--base-white-rgb', 0.7, 'rgba(var(--base-white-rgb),0.7)'), 1, rgbaFromVar('--base-black-rgb', 0.12, 'rgba(var(--base-black-rgb),0.12)')]
 )
-const directionStroke = computed(() => isDarkMode.value ? 'rgba(0, 0, 0, 0.6)' : '#333333')
-const directionShadowColor = computed(() => isDarkMode.value ? 'rgba(0,0,0,0.35)' : 'rgba(0,0,0,0.12)')
+const directionStroke = computed(() => isDarkMode.value
+  ? rgbaFromVar('--base-black-rgb', 0.6, 'rgba(var(--base-black-rgb), 0.6)')
+  : themeTokens.value.mutedStroke)
+const directionShadowColor = computed(() => isDarkMode.value
+  ? rgbaFromVar('--base-black-rgb', 0.35, 'rgba(var(--base-black-rgb),0.35)')
+  : rgbaFromVar('--base-black-rgb', 0.12, 'rgba(var(--base-black-rgb),0.12)'))
 
 
 
@@ -297,6 +335,11 @@ function onSourceDragMove(e) {
 
 // Source drop
 function onSourceMouseUp(e) {
+  const group = e.target?.getParent?.()
+  if (group?.draggable()) {
+    group.draggable(false)
+  }
+
   const to = {
     x: props.source.instance.state.x,
     y: props.source.instance.state.y
@@ -314,6 +357,12 @@ function onSourceMouseUp(e) {
 function onHandleMouseDown(e) {
   emit('select', props.index)
   e.evt.stopPropagation()
+
+  const group = e.target.getParent()
+  if (group?.draggable()) {
+    group.stopDrag()
+    group.draggable(false)
+  }
 
   initialSourceAngle = props.source.instance.state.angle
 

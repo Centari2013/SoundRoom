@@ -2,7 +2,7 @@
   <select
     v-model="selectedIR"
     @change="applyIR"
-    class="px-2 py-1 w-32 rounded border text-sm dark:bg-neutral-800 dark:border-neutral-700"
+    class="px-2 py-1 w-32 rounded border text-sm bg-[var(--color-bg-surface)] text-[var(--color-text-primary)] border-[var(--color-border-subtle)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-bg-surface)]"
   >
     <option v-for="ir in irOptions" :key="ir.value" :value="ir.value">
       {{ ir.label }}

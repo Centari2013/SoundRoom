@@ -239,7 +239,7 @@ async function listUserSounds() {
 
 @media (prefers-color-scheme: light) {
   .load-button {
-    background-color: #ffffff;
+    background-color: var(--color-panel);
   }
 }
 

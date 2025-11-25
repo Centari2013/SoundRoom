@@ -1,6 +1,6 @@
 <template>
-  <div class="flex flex-col items-center justify-center min-h-screen px-4 py-12 bg-white text-black dark:bg-black dark:text-white transition-colors">
-    <div class="w-full max-w-sm space-y-6 bg-[#f8f8f8] dark:bg-[#111] rounded-2xl shadow-xl p-6 border border-gray-200 dark:border-neutral-800 transition-colors">
+  <div class="flex flex-col items-center justify-center min-h-screen px-4 py-12 bg-[var(--color-bg-app)] text-text-primary transition-colors">
+    <div class="w-full max-w-sm space-y-6 bg-[var(--color-bg-surface)] rounded-2xl shadow-xl p-6 border border-border-subtle transition-colors">
       <h2 class="text-2xl font-semibold text-center tracking-wide">Reset Your Password</h2>
 
       <PasswordInput
@@ -15,8 +15,8 @@
         {{ loading ? 'Updating...' : 'Update Password' }}
       </BaseButton>
 
-      <p v-if="error" class="text-red-600 dark:text-red-400 text-sm text-center">{{ error }}</p>
-      <p v-if="success" class="text-green-700 dark:text-green-400 text-sm text-center">
+      <p v-if="error" class="text-status-danger text-sm text-center">{{ error }}</p>
+      <p v-if="success" class="text-status-success text-sm text-center">
         Password updated. You can now sign in.
       </p>
     </div>

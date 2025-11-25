@@ -16,7 +16,7 @@
   <span class="h-3"></span>
   <p
     v-if="email && !validEmail"
-    class="text-red-500 text-sm"
+    class="text-status-danger text-sm"
     id="reset-error"
     role="alert"
     aria-live="assertive"
@@ -36,7 +36,7 @@
 
   <p
     v-if="sent"
-    class="text-green-500 text-sm"
+    class="text-status-success text-sm"
     role="alert"
     aria-live="polite"
   >
@@ -44,7 +44,7 @@
   </p>
   <p
     v-if="errorMessage"
-    class="text-red-500 text-sm"
+    class="text-status-danger text-sm"
     role="alert"
     aria-live="assertive"
   >

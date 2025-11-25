@@ -1,5 +1,5 @@
 <template>
-  <div class="auth-callback w-full dark:bg-black bg-white">
+  <div class="auth-callback w-full bg-[var(--color-bg-app)] text-[var(--color-text-primary)]">
   </div>
 </template>
 
@@ -54,6 +54,6 @@ onMounted(async () => {
   align-items: center;
   height: 100dvh;
   font-size: 1.2rem;
-  color: #666;
+  color: var(--color-text-muted);
 }
 </style>

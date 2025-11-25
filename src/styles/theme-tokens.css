@@ -1,0 +1,220 @@
+/* ===========================================================
+   SOUNDROOM THEME SYSTEM
+   - Default: DARK MODE
+   - Optional: LIGHT MODE (via data-theme="light")
+   - Accent family: COBALT (premium blue)
+   ========================================================== */
+
+/* -----------------------------------------------------------
+   ROOT = DARK THEME DEFAULTS
+   ----------------------------------------------------------- */
+:root {
+  color-scheme: dark;
+
+  /* -----------------------------------------
+     BASE PRIMITIVES (rarely change)
+     ----------------------------------------- */
+  --base-white: #ffffff;
+  --base-white-rgb: 255, 255, 255;
+  --base-black: #05070d;
+  --base-black-rgb: 5, 7, 13;
+
+  /* -----------------------------------------
+     BACKGROUNDS (dark mode)
+     ----------------------------------------- */
+  --color-bg-app: #0a0a0c;
+  --color-bg-app-rgb: 10, 10, 12;
+
+  --color-bg-surface: #111114;
+  --color-bg-surface-rgb: 17, 17, 20;
+
+  --color-bg-elevated: #18181c;
+  --color-bg-elevated-rgb: 24, 24, 28;
+
+  /* -----------------------------------------
+     BORDERS
+     ----------------------------------------- */
+  --color-border-subtle: #232326;
+  --color-border-subtle-rgb: 35, 35, 38;
+
+  --color-border-strong: #303035;
+  --color-border-strong-rgb: 48, 48, 53;
+
+  /* -----------------------------------------
+     TEXT COLORS
+     ----------------------------------------- */
+  --color-text-primary: #f2f2f3;
+  --color-text-primary-rgb: 242, 242, 243;
+
+  --color-text-secondary: #c7c7cb;
+  --color-text-secondary-rgb: 199, 199, 203;
+
+  --color-text-muted: #8d8d94;
+  --color-text-muted-rgb: 141, 141, 148;
+
+  --color-text-inverse: #0a0a0c;
+  --color-text-inverse-rgb: 10, 10, 12;
+
+  /* -----------------------------------------
+     ACCENT — COBALT
+     ----------------------------------------- */
+  --color-accent: #2f6dfd;
+  --color-accent-rgb: 47, 109, 253;
+
+  --color-accent-soft: #6fa2ff;
+  --color-accent-soft-rgb: 111, 162, 255;
+
+  --color-accent-strong: #1f4fc6;
+  --color-accent-strong-rgb: 31, 79, 198;
+
+  /* -----------------------------------------
+     STATUS
+     ----------------------------------------- */
+  --color-success: #2ebd94;
+  --color-success-rgb: 46, 189, 148;
+
+  --color-warning: #e3b04a;
+  --color-warning-rgb: 227, 176, 74;
+
+  --color-danger: #e85a5a;
+  --color-danger-rgb: 232, 90, 90;
+
+  /* -----------------------------------------
+     SHADOWS / FOCUS
+     ----------------------------------------- */
+  --color-shadow-soft: 0 10px 30px rgba(0, 0, 0, 0.5);
+  --color-shadow-strong: 0 18px 60px rgba(0, 0, 0, 0.7);
+
+  --color-focus-ring: #2f6dfd;
+  --color-focus-ring-rgb: 47, 109, 253;
+
+  /* -----------------------------------------
+     UI-SPECIFIC TOKENS
+     ----------------------------------------- */
+  --color-grid-line: rgba(255, 255, 255, 0.06);
+
+  --color-node-red: #e85a5a;
+  --color-node-red-rgb: 232, 90, 90;
+
+  --color-node-blue: #5a8cff;
+  --color-node-blue-rgb: 90, 140, 255;
+
+  --color-node-highlight: rgba(var(--color-accent-rgb), 0.14);
+
+  --color-selection-strong: #2f6dfd;
+  --color-selection-soft: rgba(47, 109, 253, 0.18);
+
+  --color-surface-muted: #202024;
+
+  --color-panel: #0f0f12;
+  --color-panel-rgb: 15, 15, 18;
+
+  --color-input: #141418;
+  --color-input-rgb: 20, 20, 24;
+
+  --color-disabled-bg: #2a2a2e;
+  --color-disabled-text: #7b7b85;
+
+  --color-outline-strong: #303035;
+  --color-outline-contrast: #131317;
+  --color-outline-contrast-rgb: 19, 19, 23;
+
+  --color-detail-stroke: #2f3a4a;
+
+  --color-body-fill-rgb: 150, 165, 185;
+  --color-body-stroke-rgb: 60, 70, 85;
+  --color-detail-fill-rgb: 70, 80, 95;
+  --color-detail-gradient-rgb: 140, 150, 165;
+
+  /* -----------------------------------------
+     LEGACY ALIASES (for safety)
+     ----------------------------------------- */
+  --lm-bg-0: var(--color-bg-app);
+  --lm-bg-1: var(--color-bg-surface);
+  --lm-bg-2: var(--color-bg-elevated);
+  --lm-border: var(--color-border-subtle);
+  --lm-text-0: var(--color-text-primary);
+  --lm-text-1: var(--color-text-muted);
+  --lm-grid-line: var(--color-grid-line);
+
+  --sr-white: var(--base-white);
+  --sr-white-rgb: var(--base-white-rgb);
+  --sr-black: var(--base-black);
+  --sr-black-rgb: var(--base-black-rgb);
+
+  --sr-primary: var(--color-accent);
+  --sr-accent-danger: var(--color-danger);
+  --sr-surface-muted: var(--color-surface-muted);
+  --sr-text-muted: var(--color-text-muted);
+  --sr-text-strong: var(--color-text-primary);
+  --sr-node-red: var(--color-node-red);
+  --sr-node-blue: var(--color-node-blue);
+  --sr-outline-strong: var(--color-border-strong);
+  --sr-outline-contrast: var(--color-outline-contrast);
+}
+
+/* -----------------------------------------------------------
+   DARK THEME OVERRIDES (OPTIONAL)
+   ----------------------------------------------------------- */
+[data-theme="dark"] {
+  color-scheme: dark;
+  /* no overrides needed — dark = default */
+}
+
+/* -----------------------------------------------------------
+   LIGHT THEME OVERRIDES
+   ----------------------------------------------------------- */
+[data-theme="light"] {
+  color-scheme: light;
+
+  /* Backgrounds */
+  --color-bg-app: #f6f6f8;
+  --color-bg-surface: #efeff2;
+  --color-bg-elevated: #e5e5ea;
+
+  /* Borders */
+  --color-border-subtle: #d3d3da;
+  --color-border-strong: #b9b9c3;
+
+  /* Text */
+  --color-text-primary: #1c1c20;
+  --color-text-secondary: #34343d;
+  --color-text-muted: #595965;
+
+  --color-text-inverse: #ffffff;
+
+  /* Accent — cobalt values stay consistent */
+  --color-accent: #2f6dfd;
+  --color-accent-soft: #6fa2ff;
+  --color-accent-strong: #1f4fc6;
+
+  /* Status */
+  --color-success: #238c6c;
+  --color-warning: #bb812a;
+  --color-danger: #c44545;
+
+  /* Shadows */
+  --color-shadow-soft: 0 8px 24px rgba(0, 0, 0, 0.16);
+  --color-shadow-strong: 0 16px 42px rgba(0, 0, 0, 0.22);
+
+  /* UI specifics */
+  --color-grid-line: rgba(0, 0, 0, 0.08);
+
+  --color-node-blue: #3f73e8;
+  --color-node-red: #d86b6b;
+
+  --color-node-highlight: rgba(47, 109, 253, 0.12);
+  --color-selection-strong: #2f6dfd;
+  --color-selection-soft: rgba(47, 109, 253, 0.16);
+
+  --color-surface-muted: #e6ebf3;
+
+  --color-panel: #ffffff;
+  --color-input: #ffffff;
+
+  --color-disabled-bg: #e3e7ee;
+  --color-disabled-text: #9aa6ba;
+
+  --color-outline-strong: #3a4860;
+  --color-detail-stroke: #334155;
+}

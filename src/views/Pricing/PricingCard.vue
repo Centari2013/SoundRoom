@@ -5,7 +5,7 @@
     <div>
       <h2 class="text-xl font-bold mb-2">{{ title }}</h2>
       <p class="text-2xl font-semibold">{{ price }}</p>
-      <p v-if="tagline" class="mt-2 text-sm text-neutral-600 dark:text-neutral-300">{{ tagline }}</p>
+      <p v-if="tagline" class="mt-2 text-sm text-[var(--color-text-muted)]">{{ tagline }}</p>
       <div v-if="highlightItems.length" class="mt-5 flex flex-col gap-2 justify-center items-center pb-3">
         <span
           v-for="(feature, index) in highlightItems"
@@ -37,16 +37,16 @@ import { getPlanTheme } from '@/constants/planThemes'
 
 const STATUS_STYLES = {
   included: {
-    chip: 'border-green-200 bg-green-50 text-green-700 dark:border-green-900 dark:bg-green-950/60 dark:text-green-300',
-    dot: 'bg-green-500 dark:bg-green-300'
+    chip: 'border-[var(--color-success)] bg-[rgba(var(--color-success-rgb),0.15)] text-[var(--color-success)]',
+    dot: 'bg-status-success'
   },
   limited: {
-    chip: 'border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-900 dark:bg-amber-950/60 dark:text-amber-300',
-    dot: 'bg-amber-500 dark:bg-amber-300'
+    chip: 'border-[var(--color-warning)] bg-[rgba(var(--color-warning-rgb),0.15)] text-[var(--color-warning)]',
+    dot: 'bg-[var(--color-warning)]'
   },
   unavailable: {
-    chip: 'border-neutral-200 bg-neutral-100 text-neutral-500 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-400',
-    dot: 'bg-neutral-400 dark:bg-neutral-500'
+    chip: 'border-border-subtle bg-[var(--color-bg-elevated)] text-[var(--color-text-muted)]',
+    dot: 'bg-[var(--color-text-muted)]'
   }
 }
 
@@ -85,9 +85,9 @@ const props = defineProps({
   }
 })
 
-const BASE_CARD_CLASS = 'group rounded-sm p-6 shadow-md transition-all duration-200 ease-out transform flex flex-col justify-between bg-white dark:bg-neutral-950 text-neutral-900 dark:text-white hover:shadow-xl hover:-translate-y-1 hover:scale-[1.03] focus-within:shadow-xl focus-within:-translate-y-1 focus-within:scale-[1.03]'
+const BASE_CARD_CLASS = 'group rounded-sm p-6 shadow-md transition-all duration-200 ease-out transform flex flex-col justify-between bg-surface-base text-text-primary hover:bg-[var(--color-bg-elevated)] hover:shadow-xl hover:-translate-y-1 hover:scale-[1.03] focus-within:shadow-xl focus-within:-translate-y-1 focus-within:scale-[1.03]'
 
-const BASE_CTA_CLASS = 'w-full py-2 rounded-xl font-semibold transition border border-transparent disabled:opacity-50 disabled:cursor-not-allowed disabled:dark:bg-neutral-700'
+const BASE_CTA_CLASS = 'w-full py-2 rounded-xl font-semibold transition border border-transparent disabled:opacity-50 disabled:cursor-not-allowed'
 
 const planTheme = computed(() => getPlanTheme(props.planId))
 

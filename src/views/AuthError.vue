@@ -35,11 +35,11 @@ button {
   font-weight: bold;
   border: none;
   border-radius: 4px;
-  background-color: #333;
-  color: white;
+  background-color: var(--color-surface-muted);
+  color: var(--color-text-primary);
   cursor: pointer;
 }
 button:hover {
-  background-color: #555;
+  background-color: color-mix(in srgb, var(--color-bg-elevated) 90%, transparent);
 }
 </style>

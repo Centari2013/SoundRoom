@@ -22,10 +22,10 @@
          
       </div>
 
-      <p v-if="email && !validEmail" class="text-red-500 text-sm">
+      <p v-if="email && !validEmail" class="text-status-danger text-sm">
         Please enter a valid email address.
       </p>
-      <p v-if="password && !validPassword" class="text-red-500 text-sm">
+      <p v-if="password && !validPassword" class="text-status-danger text-sm">
         Password must be at least 8 characters and include an uppercase letter, a lowercase letter, a number, and a symbol.
       </p>
       <span class="h-3"></span>
@@ -39,7 +39,7 @@
 
     </template>
     <template v-else-if="signUpSuccess">
-      <p class="text-green-500 text-sm">Sign up successful! Please check your email to verify your account.</p>
+      <p class="text-status-success text-sm">Sign up successful! Please check your email to verify your account.</p>
     </template>
     <template v-if="pageNumber === 1 && !signUpSuccess">
       <!-- Page 2: Edit + TOS + more fields -->
@@ -60,7 +60,7 @@
       </div>
   
 
-      <div class="flex-grow border-t border-gray-300 mt-3 mb-6"></div>
+      <div class="flex-grow border-t border-border-subtle mt-3 mb-6"></div>
 
 
       <BaseInput
@@ -73,17 +73,17 @@
         autocomplete="nickname"
       />
 
-      <p v-if="errorMessage" class="text-red-500 text-sm">
+      <p v-if="errorMessage" class="text-status-danger text-sm">
         {{ errorMessage }}
       </p>
       <span class="h-5"></span>
       <!-- TOS agreement -->
-      <div class="flex justify-center space-x-2 text-xs text-neutral-400">
+      <div class="flex justify-center space-x-2 text-xs text-[var(--color-text-muted)]">
         <BaseInput
           id="tos"
           type="checkbox"
           v-model="agreedToTOS"
-          class=" accent-white"
+          class="accent-[var(--color-accent)]"
           :disabled="loading"
         />
         <label for="tos" class="leading-snug">
