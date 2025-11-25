@@ -1,13 +1,13 @@
 const THEME_KEY = 'theme'
 const DEFAULT_THEME = 'dark'
 
-const supportedThemes = ['dark', 'light']
+export const SUPPORTED_THEMES = ['dark', 'light']
 
 function resolveInitialTheme() {
   if (typeof window === 'undefined') return DEFAULT_THEME
 
   const stored = localStorage.getItem(THEME_KEY)
-  if (supportedThemes.includes(stored)) return stored
+  if (SUPPORTED_THEMES.includes(stored)) return stored
 
   const prefersDark = window.matchMedia?.('(prefers-color-scheme: dark)').matches
   if (typeof prefersDark === 'boolean') {
@@ -18,7 +18,7 @@ function resolveInitialTheme() {
 }
 
 function applyTheme(theme) {
-  const normalized = supportedThemes.includes(theme) ? theme : DEFAULT_THEME
+  const normalized = SUPPORTED_THEMES.includes(theme) ? theme : DEFAULT_THEME
   const root = document.documentElement
   root.dataset.theme = normalized
   root.classList.toggle('dark', normalized === 'dark')
@@ -42,4 +42,8 @@ export function setTheme(theme) {
 
 export function getTheme() {
   return document.documentElement.dataset.theme || DEFAULT_THEME
+}
+
+export function getAvailableThemes() {
+  return [...SUPPORTED_THEMES]
 }

@@ -44,13 +44,11 @@ import { ref, watch, computed, onMounted, onBeforeUnmount } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useAuth } from '@/composables/useAuth';
 import { supabase } from '@/utils/supabase';
-import { getTheme, toggleTheme } from '@/utils/theme.js';
 import PulsingOverlay from '@/components/ui/overlays/PulsingOverlay.vue';
 import HamburgerIcon from '@/assets/icons/hamburger.svg';
 const menuPanel = ref(null)
 const menuButton = ref(null)
 const isMenuOpen = ref(false)
-const activeTheme = ref(getTheme())
 
 const { isAuthenticated, tier } = useAuth();
 const route = useRoute()
@@ -67,10 +65,6 @@ const authMode = ref('signup'); // 'login' | 'signup' | 'reset
 
 const toggleMenu = () => {
   isMenuOpen.value = !isMenuOpen.value
-}
-
-const handleToggleTheme = () => {
-  activeTheme.value = toggleTheme()
 }
 
 const closeMenu = () => {
@@ -124,8 +118,8 @@ async function handleSignOut() {
 
 const headerButtons = computed(() => [
   {
-    label: activeTheme.value === 'dark' ? 'Switch to Light Theme' : 'Switch to Dark Theme',
-    action: handleToggleTheme,
+    label: 'Switch Themes',
+    action: () => router.push('/settings'),
     shouldShow: true,
   },
   {
