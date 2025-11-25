@@ -52,7 +52,7 @@
         to="/room-manager"
         aria-label="Open Room Manager"
       >
-        <BaseButton class="w-full">
+        <BaseButton class="w-full border border-border-strong shadow-strong">
           RoomManager
         </BaseButton>
       </RouterLink>

@@ -1,6 +1,6 @@
 <template>
   <div class="flex-1 relative overflow-hidden">
-    <div class="absolute top-0 left-0 right-0 z-10 flex justify-between items-center px-6 py-4 bg-[color-mix(in_srgb,var(--color-bg-surface)_70%,transparent)] backdrop-blur-md border-b border-border-subtle text-text-primary">
+    <div class="absolute top-0 left-0 right-0 z-10 flex justify-between items-center px-6 py-4 bg-surface-raised border-b border-border-strong text-text-primary shadow-soft">
       <h2 class="text-2xl font-bold">SoundLibrary</h2>
       <BaseButton class="text-sm" @click="$emit('close')">Close</BaseButton>
     </div>
@@ -25,7 +25,7 @@
     </div>
      <div
         v-if="isAuthenticated && activeCategory === 'your-sounds'"
-        class="absolute bottom-0 left-0 right-0 p-4 bg-surface-base border-t border-border-subtle text-text-primary"
+        class="absolute bottom-0 left-0 right-0 p-4 bg-surface-raised border-t border-border-strong text-text-primary shadow-soft"
       >
         <div class="flex items-center justify-between gap-3">
           <button

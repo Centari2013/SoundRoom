@@ -1,10 +1,11 @@
 <template>
-  <aside class="w-60 bg-surface-base text-text-primary border-r border-border-subtle p-4 space-y-3 overflow-y-auto">
+  <aside class="w-60 bg-surface-raised text-text-primary border-r border-border-strong p-4 space-y-3 overflow-y-auto shadow-soft">
     <h2 class="font-bold text-sm mb-2">Categories</h2>
     <BaseButton
       v-if="isAuthenticated"
       :key="'your-sounds'"
       @click="handleSelectYourSounds"
+      variant="naked"
       :class="['sound-lib-button', { active: active === 'your-sounds', locked: !canUpload }]"
     >
       <span class="button-inner">
@@ -17,6 +18,7 @@
       v-for="cat in categories"
       :key="cat.id"
       @click="$emit('update:active', cat.id)"
+      variant="naked"
       :class="['sound-lib-button', { active: active === cat.id }]"
     >
       {{ cat.label }}
@@ -59,12 +61,20 @@ function handleSelectYourSounds() {
   padding: 0.5rem 0.75rem;
   font-size: 0.875rem;
   border-radius: 0.375rem;
-  transition: background-color 0.2s;
+  color: var(--color-text-primary);
+  background-color: var(--color-bg-surface);
+  border: 1px solid var(--color-border-subtle);
+  transition: background-color 0.2s, border-color 0.2s, color 0.2s;
 }
-.sound-lib-button:hover { background-color: color-mix(in srgb, var(--color-bg-surface) 85%, transparent); }
+.sound-lib-button:hover {
+  background-color: var(--color-bg-surface);
+  border: 1px solid var(--color-border-strong);
+}
 .sound-lib-button.active {
   font-weight: 600;
-  background-color: color-mix(in srgb, var(--color-bg-elevated) 80%, transparent);
+  background-color: var(--color-bg-elevated);
+  border: 1px solid var(--color-border-strong);
+  color: var(--color-text-primary);
 }
 
 .sound-lib-button.locked {
