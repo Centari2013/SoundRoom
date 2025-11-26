@@ -4,7 +4,7 @@
   :disabled="disabled"
   :class="[
     'transition focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-bg-surface)] disabled:opacity-50 disabled:cursor-not-allowed',
-    variant === 'default' && 'px-4 py-2 rounded text-sm font-medium bg-[var(--color-accent)] hover:bg-[var(--color-accent-strong)] text-[var(--color-text-inverse)] shadow-[var(--color-shadow-soft)]',
+    variant === 'default' && 'px-4 py-2 rounded text-sm font-medium bg-[var(--color-accent)] hover:bg-[var(--color-accent-strong)] text-[var(--color-text-inverse)]',
     variant === 'naked' && 'bg-transparent text-[var(--color-text-primary)] hover:text-[var(--color-accent-soft)]'
   ]"
   @click="(e) => $emit('click', e)"

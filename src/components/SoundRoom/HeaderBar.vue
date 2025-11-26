@@ -7,7 +7,7 @@
       <button
         ref="menuButton"
         type="button"
-        @click="toggleMenu"
+        @click.stop="toggleMenu"
         class="flex items-center justify-center w-12 h-12 !p-1 !bg-transparent text-[var(--color-text-primary)]"
         :aria-expanded="isMenuOpen"
         aria-haspopup="true"
@@ -43,6 +43,7 @@
 import { ref, watch, computed, onMounted, onBeforeUnmount } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useAuth } from '@/composables/useAuth';
+import { toggleTheme } from '@/utils/theme';
 import { supabase } from '@/utils/supabase';
 import PulsingOverlay from '@/components/ui/overlays/PulsingOverlay.vue';
 import HamburgerIcon from '@/assets/icons/hamburger.svg';
@@ -64,6 +65,7 @@ const isLoggingOut = ref(false); // Track if logging out
 const authMode = ref('signup'); // 'login' | 'signup' | 'reset
 
 const toggleMenu = () => {
+  if (!visibleButtons.value.length) return
   isMenuOpen.value = !isMenuOpen.value
 }
 
@@ -116,41 +118,44 @@ async function handleSignOut() {
 
 }
 
-const headerButtons = computed(() => [
-  {
-    label: 'Switch Themes',
-    action: () => router.push('/settings'),
-    shouldShow: true,
-  },
-  {
-    label: 'Help',
-    action: () => router.push('/help'),
-    shouldShow: true
-  },
-  {
-    label: 'Sign In',
-    action: () => router.push('/login'),
-    shouldShow: !isAuthenticated.value
-  },
-  {
-    label: 'Upgrade',
-    action: () => router.push('/upgrade'),
-    shouldShow: isAuthenticated.value && tier.value === 'free'
-  },
-  {
-    label: 'Settings',
-    action: () => router.push('/settings'),
-    shouldShow: isAuthenticated.value
-  },
-  {
-    label: 'Sign Out',
-    action: () => handleSignOut(),
-    shouldShow: isAuthenticated.value
-  },
+const visibleButtons = computed(() => {
+  const authed = isAuthenticated.value
 
-])
+  const buttons = [
+    {
+      label: 'Switch Themes',
+      action: () => toggleTheme(),
+      shouldShow: !authed,
+    },
+    {
+      label: 'Help',
+      action: () => router.push('/help'),
+      shouldShow: true
+    },
+    {
+      label: 'Sign In',
+      action: () => router.push('/login'),
+      shouldShow: !authed
+    },
+    {
+      label: 'Upgrade',
+      action: () => router.push('/upgrade'),
+      shouldShow: authed && tier.value === 'free'
+    },
+    {
+      label: 'Settings',
+      action: () => router.push('/settings'),
+      shouldShow: authed
+    },
+    {
+      label: 'Sign Out',
+      action: () => handleSignOut(),
+      shouldShow: authed
+    },
+  ]
 
-const visibleButtons = computed(() => headerButtons.value.filter(button => button.shouldShow))
+  return buttons.filter(button => button.shouldShow)
+})
 
 watch(() => route.path, (val) => {
   showAuthModal.value = ['/login', '/signup', '/reset'].includes(val)
