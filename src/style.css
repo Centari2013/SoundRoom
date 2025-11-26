@@ -22,6 +22,8 @@
   --color-status-warning: var(--color-warning);
   --color-status-danger: var(--color-danger);
 
+  --color-focus-ring: var(--color-focus-ring);
+
   --color-panel: var(--color-panel);
   --color-input: var(--color-input);
 }
@@ -71,7 +73,7 @@ button {
   font-family: inherit;
   cursor: pointer;
   transition: border-color 0.25s, box-shadow 0.25s;
-  @apply bg-[var(--color-bg-surface)] text-[var(--color-text-primary)];
+  @apply bg-surface-base text-text-primary;
 }
 button:hover {
   border-color: var(--color-border-subtle);
@@ -104,7 +106,7 @@ button:disabled {
 input[type="text"],
 input[type="email"],
 input[type="password"] {
-  @apply w-full p-3 border border-[var(--color-border-subtle)] rounded-lg bg-[var(--color-bg-elevated)] text-[var(--color-text-primary)];
+  @apply w-full p-3 border border-border-subtle rounded-lg bg-surface-raised text-text-primary;
 }
 
 input:disabled {
@@ -116,7 +118,7 @@ input:disabled {
 }
 
 .modal-panel {
-  @apply bg-[var(--color-bg-app)] rounded-2xl w-[80vw] h-[80vh] shadow-[var(--color-shadow-soft)] border border-[var(--color-border-subtle)] overflow-hidden;
+  @apply bg-surface-app rounded-2xl w-[80vw] h-[80vh] shadow-[var(--color-shadow-soft)] border border-border-subtle overflow-hidden;
 }
 
 .modal-header-float {
