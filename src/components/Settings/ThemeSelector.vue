@@ -111,7 +111,7 @@
 <script setup>
 import { computed, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
 import BaseButton from '@/components/ui/input/BaseButton.vue'
-import { applyThemeVars, clearThemeVars, getTheme, setTheme } from '@/utils/theme'
+import { applyThemeVars, clearThemeVars, getTheme, setTheme, previewThemeBase, restorePersistentTheme } from '@/utils/theme'
 import { fetchAllThemes, fetchUserTheme, saveUserTheme } from '@/utils/themeApi'
 import { compareTiers, formatTierLabel } from '@/utils/tierUtils'
 import { useAuth } from '@/composables/useAuth'
@@ -247,8 +247,9 @@ const selectTheme = (theme) => {
   selectedTheme.value = theme
 
   if (theme.type === 'builtin') {
-    activeBaseTheme.value = setTheme(theme.name, { clearOverrides: true })
+    activeBaseTheme.value = previewThemeBase(theme.name)
     clearThemeVars()
+
   } else {
     activeBaseTheme.value = setTheme(theme.theme_base || 'dark', { clearOverrides: true })
     applyThemeVars(theme.css_vars || {})
@@ -393,8 +394,11 @@ watch(
   }
 )
 
+
 onBeforeUnmount(() => {
   observer?.disconnect()
   window.removeEventListener('storage', handleStorage)
+  restorePersistentTheme()
+  clearThemeVars()
 })
 </script>

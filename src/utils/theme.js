@@ -38,6 +38,22 @@ export function initTheme() {
   return applyTheme(initial)
 }
 
+export function previewThemeBase(theme) {
+  const normalized = SUPPORTED_THEMES.includes(theme) ? theme : DEFAULT_THEME
+
+  const root = document.documentElement
+  // temporary only — do NOT persist, do NOT clear overrides unless needed
+  root.dataset.theme = normalized
+  root.classList.toggle('dark', normalized === 'dark')
+
+  return normalized
+}
+export function restorePersistentTheme() {
+  const stored = localStorage.getItem(THEME_KEY)
+  const normalized = SUPPORTED_THEMES.includes(stored) ? stored : DEFAULT_THEME
+  applyTheme(normalized, { persist: false })
+}
+
 export function toggleTheme() {
   const next = document.documentElement.dataset.theme === 'light' ? 'dark' : 'light'
   return applyTheme(next)
