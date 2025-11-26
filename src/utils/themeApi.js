@@ -3,7 +3,7 @@ import { supabase } from '@/utils/supabase'
 export async function fetchAllThemes() {
   const { data, error } = await supabase
     .from('themes')
-    .select('id, name, required_plan, css_vars')
+    .select('id, name, required_plan, theme_base, css_vars')
     .order('name', { ascending: true })
 
   if (error) throw error
@@ -18,7 +18,7 @@ export async function fetchUserTheme() {
 
   const { data, error } = await supabase
     .from('users')
-    .select('theme_id, theme:theme_id ( id, name, required_plan, css_vars )')
+    .select('theme_id, theme:theme_id ( id, name, required_plan, theme_base, css_vars )')
     .eq('id', userId)
     .single()
 

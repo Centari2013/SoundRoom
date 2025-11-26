@@ -119,8 +119,24 @@ import { useAuth } from '@/composables/useAuth'
 const { tier, isAuthenticated, user } = useAuth()
 
 const BUILTIN_THEMES = [
-  { id: 'builtin-dark', name: 'dark', label: 'Dark', type: 'builtin', required_plan: 'free', css_vars: {} },
-  { id: 'builtin-light', name: 'light', label: 'Light', type: 'builtin', required_plan: 'free', css_vars: {} }
+  {
+    id: 'builtin-dark',
+    name: 'dark',
+    label: 'Dark',
+    type: 'builtin',
+    required_plan: 'free',
+    theme_base: 'dark',
+    css_vars: {}
+  },
+  {
+    id: 'builtin-light',
+    name: 'light',
+    label: 'Light',
+    type: 'builtin',
+    required_plan: 'free',
+    theme_base: 'light',
+    css_vars: {}
+  }
 ]
 
 const availableThemes = ref([...BUILTIN_THEMES])
@@ -140,7 +156,8 @@ const formatLabel = (theme) => theme
 const normalizeTheme = (theme) => ({
   ...theme,
   label: theme.label || formatLabel(theme.name),
-  type: theme.type || 'database'
+  type: theme.type || 'database',
+  theme_base: theme.theme_base || theme.name || 'dark'
 })
 
 const themeKey = (theme) => (theme?.type === 'builtin' ? theme?.name : theme?.id)
@@ -190,7 +207,8 @@ const previewStyle = (theme) => {
 const readPalette = (theme) => {
   if (typeof document === 'undefined' || !theme) return null
   const probe = document.createElement('div')
-  probe.dataset.theme = theme.type === 'builtin' ? theme.name : activeBaseTheme.value
+  const baseTheme = theme.type === 'builtin' ? theme.name : theme.theme_base || 'dark'
+  probe.dataset.theme = baseTheme
   probe.style.position = 'absolute'
   probe.style.opacity = '0'
   probe.style.pointerEvents = 'none'
@@ -232,6 +250,7 @@ const selectTheme = (theme) => {
     activeBaseTheme.value = setTheme(theme.name, { clearOverrides: true })
     clearThemeVars()
   } else {
+    activeBaseTheme.value = setTheme(theme.theme_base || 'dark', { clearOverrides: true })
     applyThemeVars(theme.css_vars || {})
   }
 }
