@@ -166,8 +166,6 @@ const lightPalette = computed(() => ({
   bg2: getVar('--color-bg-elevated', 'var(--color-bg-elevated)'),
   nodeRed: getVar('--color-node-red', 'var(--color-node-red)'),
   nodeBlue: getVar('--color-node-blue', 'var(--color-node-blue)'),
-  coneRed: 'rgba(var(--color-danger-rgb), 0.12)',
-  coneBlue: 'rgba(var(--color-accent-rgb), 0.14)',
 }))
 
 const themeTokens = computed(() => ({
@@ -200,8 +198,9 @@ const selectedScale = computed(() => (props.selected ? 1.05 : 1))
 
 const outerConeFill = computed(() => {
   if (isDarkMode.value) return rgbaFromVar('--color-danger-rgb', 0.16, 'rgba(var(--color-danger-rgb), 0.16)')
-  const colors = lightPalette.value
-  return isScheduled.value ? colors.coneBlue : colors.coneRed
+  return isScheduled.value
+    ? rgbaFromVar('--color-node-blue-rgb', 0.14, 'rgba(var(--color-node-blue-rgb), 0.14)')
+    : rgbaFromVar('--color-node-red-rgb', 0.12, 'rgba(var(--color-node-red-rgb), 0.12)')
 })
 const outerConeStroke = computed(() => isDarkMode.value
   ? rgbaFromVar('--color-danger-rgb', 0.28, 'rgba(var(--color-danger-rgb), 0.28)')
