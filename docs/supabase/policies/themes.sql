@@ -3,6 +3,11 @@ alter table if exists public.themes enable row level security;
 create policy "Authenticated users can read themes" on public.themes
   for select using (auth.role() = 'authenticated');
 
+-- Seed palettes should include at least:
+--   * default-dark (required_plan = 'free')
+--   * default-light (required_plan = 'free')
+-- with full css_vars JSON objects so the app can apply themes end-to-end.
+
 -- Users may only save a theme if their tier meets or exceeds the requirement
 alter table if exists public.users enable row level security;
 create policy "Users can save eligible themes" on public.users

@@ -7,7 +7,7 @@
 
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
       <button
-        v-for="theme in themes"
+        v-for="theme in displayThemes"
         :key="themeKey(theme)"
         type="button"
         class="relative flex flex-col gap-3 rounded-xl border p-4 text-left transition duration-200"
@@ -24,10 +24,10 @@
           <div class="space-y-1">
             <p class="text-sm font-semibold">{{ theme.label }}</p>
             <p class="text-xs text-[var(--color-text-muted)]">
-              {{ theme.type === 'builtin' ? 'Built-in base mode' : `${formatTierLabel(theme.required_plan)} theme palette` }}
+              {{ `${formatTierLabel(theme.required_plan)} theme palette` }}
             </p>
             <p
-              v-if="theme.type === 'database' && isLocked(theme)"
+              v-if="isLocked(theme)"
               class="text-[11px] text-[var(--color-danger)]"
             >
               Preview only
@@ -75,8 +75,7 @@
         </div>
 
         <div class="mt-1 flex items-center justify-between text-[11px] text-[var(--color-text-muted)]">
-          <span v-if="theme.type === 'database'">{{ formatTierLabel(theme.required_plan) }} Theme</span>
-          <span v-else>Base mode</span>
+          <span>{{ formatTierLabel(theme.required_plan) }} Theme</span>
           <span v-if="savedThemeKey === themeKey(theme)" class="text-[var(--color-accent)] font-medium">Saved</span>
         </div>
       </button>
@@ -109,275 +108,121 @@
 </template>
 
 <script setup>
-import { computed, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import BaseButton from '@/components/ui/input/BaseButton.vue'
-import { applyThemeVars, clearThemeVars, getTheme, setTheme, BUILTIN_THEME_NAMES } from '@/utils/theme'
-import { fetchAllThemes, fetchUserTheme, saveUserTheme } from '@/utils/themeApi'
-import { compareTiers, formatTierLabel } from '@/utils/tierUtils'
+import { formatTierLabel } from '@/utils/tierUtils'
 import { useAuth } from '@/composables/useAuth'
+import { useThemeManager } from '@/composables/useThemeManager'
 
-const { tier, isAuthenticated, user } = useAuth()
+const { isAuthenticated } = useAuth()
 
-const BUILTIN_THEMES = [
-  { id: 'builtin-dark', name: 'dark', label: 'Dark', type: 'builtin', required_plan: 'free', css_vars: {} },
-  { id: 'builtin-light', name: 'light', label: 'Light', type: 'builtin', required_plan: 'free', css_vars: {} }
-]
+const {
+  themes,
+  selectedTheme,
+  savedThemeId,
+  previewTheme,
+  resetToSaved,
+  saveSelectedTheme,
+  bootstrap,
+  isThemeLocked,
+  canSaveSelected,
+  loading,
+  error,
+} = useThemeManager()
 
-const availableThemes = ref([...BUILTIN_THEMES])
-const activeBaseTheme = ref(getTheme())
-const selectedTheme = ref(BUILTIN_THEMES.find((theme) => theme.name === activeBaseTheme.value) || BUILTIN_THEMES[0])
-const savedThemeId = ref(null)
 const saving = ref(false)
 const message = ref('')
 const errorMessage = ref('')
-const previews = reactive({})
 
-const formatLabel = (theme) => theme
-  .split('-')
-  .map(segment => segment.charAt(0).toUpperCase() + segment.slice(1))
-  .join(' ')
+const formatLabel = (name = '') =>
+  name
+    .split('-')
+    .map((segment) => segment.charAt(0).toUpperCase() + segment.slice(1))
+    .join(' ')
 
-const normalizeTheme = (theme) => ({
-  ...theme,
-  label: theme.label || formatLabel(theme.name),
-  type: theme.type || 'database'
-})
+const themeKey = (theme) => theme?.id || theme?.name
 
-const themeKey = (theme) => (theme?.type === 'builtin' ? theme?.name : theme?.id)
+const displayThemes = computed(() =>
+  (themes?.value || []).map((theme) => ({
+    ...theme,
+    label: theme.label || formatLabel(theme.name),
+  }))
+)
 
-const themes = computed(() => availableThemes.value)
 const activeThemeKey = computed(() => themeKey(selectedTheme.value))
 const savedThemeKey = computed(() => savedThemeId.value)
-
 const previewFrameStyle = {
-  borderColor: 'var(--preview-border)'
+  borderColor: 'var(--preview-border)',
 }
-
-const isLocked = (theme) => compareTiers(tier.value, theme.required_plan) < 0
-
-const saveDisabled = computed(() => {
-  if (!selectedTheme.value) return true
-  if (selectedTheme.value.type === 'builtin') return false
-  if (!isAuthenticated.value) return true
-  return isLocked(selectedTheme.value)
-})
 
 const selectionStatus = computed(() => {
   if (!selectedTheme.value) return 'Select a theme to preview.'
 
-  if (selectedTheme.value.type === 'database') {
-    if (isLocked(selectedTheme.value)) {
-      return `Requires ${formatTierLabel(selectedTheme.value.required_plan)} plan to use. You can still preview it.`
-    }
-    if (!isAuthenticated.value) return 'Sign in to save this premium palette.'
-    return 'Previewing premium palette. Save to keep it across sessions.'
+  if (!isAuthenticated.value) return 'Sign in to save this theme.'
+  if (isThemeLocked(selectedTheme.value)) {
+    return `Requires ${formatTierLabel(selectedTheme.value.required_plan)} plan to use. You can still preview it.`
+  }
+  if (selectedTheme.value?.required_plan && selectedTheme.value.required_plan !== 'free') {
+    return 'Previewing a premium palette. Save to keep it across sessions.'
   }
 
-  return 'Using a built-in mode. Save to clear any premium overrides.'
+  return 'Previewing theme. Save to keep it across sessions.'
+})
+
+const saveDisabled = computed(() => {
+  if (!selectedTheme.value) return true
+  if (saving.value || loading.value) return true
+  if (!isAuthenticated.value) return true
+  return !canSaveSelected.value
 })
 
 const previewStyle = (theme) => {
-  const palette = previews[themeKey(theme)] || {}
+  const palette = theme?.css_vars || {}
   return {
-    '--preview-bg': palette.background || 'var(--color-bg-app)',
-    '--preview-surface': palette.surface || 'var(--color-bg-surface)',
-    '--preview-border': palette.border || 'var(--color-border-subtle)',
-    '--preview-text': palette.text || 'var(--color-text-primary)',
-    '--preview-accent': palette.accent || 'var(--color-accent)'
+    '--preview-bg': palette['--color-bg-app'] || 'var(--color-bg-app)',
+    '--preview-surface': palette['--color-bg-surface'] || 'var(--color-bg-surface)',
+    '--preview-border': palette['--color-border-subtle'] || 'var(--color-border-subtle)',
+    '--preview-text': palette['--color-text-primary'] || 'var(--color-text-primary)',
+    '--preview-accent': palette['--color-accent'] || 'var(--color-accent)',
   }
-}
-
-const readPalette = (theme) => {
-  if (typeof document === 'undefined' || !theme) return null
-  const probe = document.createElement('div')
-  probe.dataset.theme = theme.type === 'builtin' ? theme.name : activeBaseTheme.value
-  probe.style.position = 'absolute'
-  probe.style.opacity = '0'
-  probe.style.pointerEvents = 'none'
-  probe.style.inset = '0'
-
-  Object.entries(theme.css_vars || {}).forEach(([key, value]) => {
-    probe.style.setProperty(key, value)
-  })
-
-  document.body.appendChild(probe)
-
-  const styles = getComputedStyle(probe)
-  const palette = {
-    background: styles.getPropertyValue('--color-bg-app').trim(),
-    surface: styles.getPropertyValue('--color-bg-surface').trim(),
-    border: styles.getPropertyValue('--color-border-subtle').trim(),
-    text: styles.getPropertyValue('--color-text-primary').trim(),
-    accent: styles.getPropertyValue('--color-accent').trim()
-  }
-
-  document.body.removeChild(probe)
-  return palette
-}
-
-const hydratePreviews = () => {
-  themes.value.forEach((theme) => {
-    const palette = readPalette(theme)
-    if (palette) previews[themeKey(theme)] = palette
-  })
 }
 
 const selectTheme = (theme) => {
   if (!theme) return
   errorMessage.value = ''
   message.value = ''
-  selectedTheme.value = theme
-
-  if (theme.type === 'builtin') {
-    activeBaseTheme.value = setTheme(theme.name, { clearOverrides: true })
-    clearThemeVars()
-  } else {
-    applyThemeVars(theme.css_vars || {})
-  }
+  previewTheme(themeKey(theme))
 }
 
 const resetPreview = () => {
-  if (savedThemeId.value) {
-    const saved = themes.value.find((theme) => themeKey(theme) === savedThemeId.value)
-    if (saved) selectTheme(saved)
-  } else {
-    const base = BUILTIN_THEMES.find((theme) => theme.name === activeBaseTheme.value) || BUILTIN_THEMES[0]
-    selectTheme(base)
-  }
+  message.value = ''
+  errorMessage.value = ''
+  resetToSaved()
 }
 
 const saveSelection = async () => {
   if (!selectedTheme.value) return
   errorMessage.value = ''
   message.value = ''
-
-  if (selectedTheme.value.type === 'builtin') {
-    try {
-      if (isAuthenticated.value && savedThemeId.value) {
-        await saveUserTheme(null)
-        savedThemeId.value = null
-      }
-      message.value = 'Base mode applied.'
-    } catch (error) {
-      errorMessage.value = error.message || 'Unable to update theme.'
-    }
-    return
-  }
-
-  if (!isAuthenticated.value) {
-    errorMessage.value = 'Sign in to save this premium theme.'
-    return
-  }
-
-  if (isLocked(selectedTheme.value)) {
-    errorMessage.value = `Requires ${formatTierLabel(selectedTheme.value.required_plan)} plan to use. You can still preview it.`
-    return
-  }
-
   saving.value = true
   try {
-    await saveUserTheme(selectedTheme.value.id)
-    savedThemeId.value = selectedTheme.value.id
+    await saveSelectedTheme()
     message.value = 'Theme saved successfully.'
-  } catch (error) {
-    errorMessage.value = error.message || 'Unable to save theme.'
+  } catch (err) {
+    errorMessage.value = err.message || 'Unable to save theme.'
   } finally {
     saving.value = false
   }
 }
 
-const upsertTheme = (theme) => {
-  const normalized = normalizeTheme(theme)
-  const existingIndex = availableThemes.value.findIndex((entry) => themeKey(entry) === themeKey(normalized))
-  if (existingIndex >= 0) {
-    availableThemes.value.splice(existingIndex, 1, normalized)
-  } else {
-    availableThemes.value.push(normalized)
-  }
-  return normalized
-}
-
-const loadThemes = async () => {
-  if (!isAuthenticated.value) {
-    availableThemes.value = [...BUILTIN_THEMES]
-    hydratePreviews()
-    return
-  }
-  try {
-    errorMessage.value = ''
-    const data = await fetchAllThemes()
-    const filtered = (data || []).filter((theme) => !BUILTIN_THEME_NAMES.has(theme.name))
-    const mapped = filtered.map((theme) => normalizeTheme({ ...theme, type: 'database' }))
-    availableThemes.value = [...BUILTIN_THEMES, ...mapped]
-    hydratePreviews()
-  } catch (error) {
-    errorMessage.value = error.message || 'Unable to load themes.'
-  }
-}
-
-const loadUserTheme = async () => {
-  if (!isAuthenticated.value) {
-    savedThemeId.value = null
-    clearThemeVars()
-    const base = BUILTIN_THEMES.find((entry) => entry.name === activeBaseTheme.value) || BUILTIN_THEMES[0]
-    selectTheme(base)
-    return
-  }
-  try {
-    errorMessage.value = ''
-    const theme = await fetchUserTheme()
-    const isBuiltinName = theme && BUILTIN_THEME_NAMES.has(theme.name)
-    savedThemeId.value = isBuiltinName ? null : theme?.id || null
-
-    if (theme && !isBuiltinName) {
-      const normalized = upsertTheme({ ...theme, type: 'database' })
-      hydratePreviews()
-      selectTheme(normalized)
-    } else {
-      clearThemeVars()
-      const base = BUILTIN_THEMES.find((entry) => entry.name === activeBaseTheme.value) || BUILTIN_THEMES[0]
-      selectTheme(base)
-    }
-  } catch (error) {
-    errorMessage.value = error.message || 'Unable to load saved theme.'
-  }
-}
-
-const syncActiveTheme = () => {
-  activeBaseTheme.value = getTheme()
-  if (selectedTheme.value?.type === 'builtin') {
-    selectedTheme.value = BUILTIN_THEMES.find((theme) => theme.name === activeBaseTheme.value) || selectedTheme.value
-  }
-  hydratePreviews()
-}
-
-let observer
-const handleStorage = (event) => {
-  if (event.key === 'theme') {
-    syncActiveTheme()
-  }
-}
-
-onMounted(async () => {
-  syncActiveTheme()
-  await loadThemes()
-  await loadUserTheme()
-
-  observer = new MutationObserver(syncActiveTheme)
-  observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] })
-  window.addEventListener('storage', handleStorage)
+onMounted(() => {
+  void bootstrap()
 })
 
 watch(
-  () => user.value?.id,
-  () => {
-    void loadThemes()
-    void loadUserTheme()
+  () => error?.value,
+  (val) => {
+    if (val) errorMessage.value = val
   }
 )
-
-onBeforeUnmount(() => {
-  observer?.disconnect()
-  window.removeEventListener('storage', handleStorage)
-})
 </script>

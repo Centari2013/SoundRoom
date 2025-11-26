@@ -43,7 +43,7 @@
 import { ref, watch, computed, onMounted, onBeforeUnmount } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useAuth } from '@/composables/useAuth';
-import { toggleTheme } from '@/utils/theme';
+import { useThemeManager } from '@/composables/useThemeManager';
 import { supabase } from '@/utils/supabase';
 import PulsingOverlay from '@/components/ui/overlays/PulsingOverlay.vue';
 import HamburgerIcon from '@/assets/icons/hamburger.svg';
@@ -52,6 +52,7 @@ const menuButton = ref(null)
 const isMenuOpen = ref(false)
 
 const { isAuthenticated, tier } = useAuth();
+const { cycleDefaultThemes } = useThemeManager();
 const route = useRoute()
 const router = useRouter()
 const showAuthModal = ref(false);
@@ -124,7 +125,7 @@ const visibleButtons = computed(() => {
   const buttons = [
     {
       label: 'Switch Themes',
-      action: () => toggleTheme(),
+      action: () => cycleDefaultThemes(),
       shouldShow: !authed,
     },
     {

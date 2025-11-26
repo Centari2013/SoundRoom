@@ -202,18 +202,12 @@ onUnmounted(() => {
 
 <style scoped>
 .canvas-vignette {
-  --vignette-inner: rgba(var(--color-text-inverse-rgb), 0.06);
-  --vignette-middle: rgba(var(--color-text-inverse-rgb), 0.04);
-  --vignette-outer: rgba(var(--color-text-inverse-rgb), 0.08);
-  --vignette-shadow: inset 0 0 70px rgba(var(--color-text-inverse-rgb), 0.12);
+  --vignette-inner: rgba(var(--color-text-primary-rgb), 0.1);
+  --vignette-middle: rgba(var(--color-text-primary-rgb), 0.06);
+  --vignette-outer: rgba(var(--color-text-inverse-rgb), 0.18);
+  --vignette-shadow: inset 0 0 120px rgba(var(--color-text-inverse-rgb), 0.24);
 
   background: radial-gradient(circle at center, var(--vignette-inner) 0%, var(--vignette-middle) 38%, var(--vignette-outer) 100%);
   box-shadow: var(--vignette-shadow);
-}
-[data-theme="dark"] .canvas-vignette {
-  --vignette-inner: rgba(var(--color-text-primary-rgb), 0.1);
-  --vignette-middle: rgba(var(--color-text-primary-rgb), 0.06);
-  --vignette-outer: rgba(var(--color-text-inverse-rgb), 0.48);
-  --vignette-shadow: inset 0 0 140px rgba(var(--color-text-inverse-rgb), 0.42);
 }
 </style>

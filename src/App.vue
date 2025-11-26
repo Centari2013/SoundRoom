@@ -64,7 +64,7 @@ import { isMobileBrowser } from '@/utils/device'
 import EntitlementUpsellModal from '@/components/ui/modals/EntitlementUpsellModal.vue'
 import BaseButton from '@/components/ui/input/BaseButton.vue'
 import ErrorBoundary from '@/components/ErrorBoundary.vue'
-import { useThemeBootstrap } from '@/composables/useThemeBootstrap'
+import { useThemeManager } from '@/composables/useThemeManager'
 
 const isMobile = isMobileBrowser()
 const globalError = ref(null)
@@ -73,7 +73,8 @@ const route = useRoute()
 const routeKey = computed(() => route.matched[0]?.path ?? route.fullPath)
 const keepAliveViews = ['SoundRoomRoot']
 
-useThemeBootstrap()
+const { bootstrap: bootstrapThemeManager } = useThemeManager()
+void bootstrapThemeManager()
 
 router.onError((error, to) => {
   console.error('Router navigation error:', error)

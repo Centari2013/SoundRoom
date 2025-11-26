@@ -1,6 +1,5 @@
 import { createApp } from 'vue'
 import '@/style.css'
-import { initTheme } from '@/utils/theme.js'
 import App from '@/App.vue'
 import VueKonva from 'vue-konva';
 import PortalVue from 'portal-vue'
@@ -8,8 +7,6 @@ import { createPinia } from 'pinia';
 import router from '@/utils/router.js'
 import '@/composables/useAuth.js' // Ensure auth is initialized before app mounts
 import * as Sentry from "@sentry/vue";
-
-initTheme()
 
 const app = createApp(App);
 
