@@ -1,5 +1,5 @@
 <template>
-  <div class="flex items-center justify-between p-3 border-[var(--color-border-subtle)] bg-[var(--color-bg-elevated)] space-x-10 w-full shadow-[var(--color-shadow-soft)] text-[var(--color-text-primary)]">
+  <div class="flex items-center justify-between p-3 sr-border-subtle bg-[var(--color-bg-elevated)] space-x-10 w-full shadow-[var(--color-shadow-soft)] text-[var(--color-text-primary)]">
           
     <div class="flex space-x-2 w-1/3">
       <BaseButton

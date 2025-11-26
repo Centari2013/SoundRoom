@@ -21,7 +21,7 @@
           <li>Undo/redo with <strong>U</strong> / <strong>R</strong>.</li>
         </ul>
 
-        <div class="rounded p-4 text-[var(--color-accent-strong)] border border-[rgba(var(--color-accent-rgb),0.35)] bg-[rgba(var(--color-accent-rgb),0.08)]">
+        <div class="rounded p-4 text-[var(--color-accent-strong)] sr-border border-accent bg-[rgba(var(--color-accent-rgb),0.08)]">
           <strong>Pro tip:</strong> You can layer ambience, nature, music, and directional audio for maximum effect.
         </div>
       </div>

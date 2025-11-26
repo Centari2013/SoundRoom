@@ -9,7 +9,7 @@
               Update how you appear in SoundRoom, adjust playback preferences, and keep your account secure.
             </p>
           </div>
-          <div class="flex items-center gap-3 rounded-full border border-border-subtle px-4 py-2 bg-[color-mix(in_srgb,var(--color-bg-surface)_85%,transparent)]">
+          <div class="flex items-center gap-3 rounded-full sr-border sr-border-subtle px-4 py-2 bg-[color-mix(in_srgb,var(--color-bg-surface)_85%,transparent)]">
             <span class="text-xs uppercase tracking-wide text-[var(--color-text-muted)]">Plan</span>
             <span class="text-sm font-medium">{{ planLabel }}</span>
             <RouterLink v-if="tier.value === 'free'" :to="'/upgrade'" class="ml-2">
@@ -31,11 +31,11 @@
 
         <div
           v-if="planStatusMessage || planErrorMessage || isProcessingCheckout"
-          class="rounded-xl border p-4"
+          class="rounded-xl sr-border sr-border-subtle p-4"
           :class="[
-            isProcessingCheckout ? 'border-[var(--color-accent-soft)] bg-[rgba(var(--color-accent-rgb),0.12)] text-[var(--color-text-primary)]' : '',
-            planStatusMessage && !isProcessingCheckout ? 'border-[var(--color-success)] bg-[rgba(var(--color-success-rgb),0.12)] text-[var(--color-text-primary)]' : '',
-            planErrorMessage ? 'border-[var(--color-danger)] bg-[rgba(var(--color-danger-rgb),0.12)] text-[var(--color-text-primary)]' : '',
+            isProcessingCheckout ? 'border-accent-soft bg-[rgba(var(--color-accent-rgb),0.12)] text-[var(--color-text-primary)]' : '',
+            planStatusMessage && !isProcessingCheckout ? 'border-status-success bg-[rgba(var(--color-success-rgb),0.12)] text-[var(--color-text-primary)]' : '',
+            planErrorMessage ? 'border-status-danger bg-[rgba(var(--color-danger-rgb),0.12)] text-[var(--color-text-primary)]' : '',
           ]"
         >
           <p v-if="isProcessingCheckout" class="text-sm font-medium">Processing your plan change…</p>
@@ -43,13 +43,13 @@
           <p v-else-if="planErrorMessage" class="text-sm font-medium">{{ planErrorMessage }}</p>
         </div>
 
-        <div class="rounded-2xl border border-border-subtle bg-[color-mix(in_srgb,var(--color-bg-surface)_85%,transparent)] p-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
+        <div class="rounded-2xl sr-border sr-border-subtle bg-[color-mix(in_srgb,var(--color-bg-surface)_85%,transparent)] p-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
           <div>
             <p class="text-sm text-[var(--color-text-muted)]">Signed in as</p>
             <p class="text-lg font-medium break-all">{{ userEmail }}</p>
           </div>
           <div class="flex items-center gap-4">
-            <div class="relative w-16 h-16 rounded-full bg-[var(--color-bg-elevated)] flex items-center justify-center overflow-hidden text-xl font-semibold border border-border-subtle">
+            <div class="relative w-16 h-16 rounded-full bg-[var(--color-bg-elevated)] flex items-center justify-center overflow-hidden text-xl font-semibold sr-border sr-border-subtle">
               <img
                 v-if="avatarPreview && !avatarFailed"
                 :src="avatarPreview"
@@ -67,7 +67,7 @@
         </div>
       </section>
 
-      <section class="rounded-2xl border border-border-subtle bg-[color-mix(in_srgb,var(--color-bg-surface)_88%,transparent)] p-6 shadow-sm space-y-6">
+      <section class="rounded-2xl sr-border sr-border-subtle bg-[color-mix(in_srgb,var(--color-bg-surface)_88%,transparent)] p-6 shadow-sm space-y-6">
         <header class="space-y-2">
           <h2 class="text-xl font-semibold">Profile</h2>
           <p class="text-sm text-[var(--color-text-muted)]">Set how teammates and collaborators see you.</p>
@@ -136,7 +136,7 @@
 
       <ThemeSelector />
 
-      <section class="rounded-2xl border border-border-subtle bg-[color-mix(in_srgb,var(--color-bg-surface)_88%,transparent)] p-6 shadow-sm space-y-6">
+      <section class="rounded-2xl sr-border sr-border-subtle bg-[color-mix(in_srgb,var(--color-bg-surface)_88%,transparent)] p-6 shadow-sm space-y-6">
         <header class="space-y-2">
           <h2 class="text-xl font-semibold">Playback Preferences</h2>
           <p class="text-sm text-[var(--color-text-muted)]">These settings are stored locally in your browser.</p>
@@ -188,7 +188,7 @@
         <p v-if="preferenceMessage" class="text-sm text-status-success">{{ preferenceMessage }}</p>
       </section>
 
-      <section class="rounded-2xl border border-border-subtle bg-[color-mix(in_srgb,var(--color-bg-surface)_88%,transparent)] p-6 shadow-sm space-y-6">
+      <section class="rounded-2xl sr-border sr-border-subtle bg-[color-mix(in_srgb,var(--color-bg-surface)_88%,transparent)] p-6 shadow-sm space-y-6">
         <header class="space-y-2">
           <h2 class="text-xl font-semibold">Security</h2>
           <p class="text-sm text-[var(--color-text-muted)]">Keep your account protected and up to date.</p>

@@ -1,5 +1,5 @@
 <template>
-  <section class="rounded-2xl border border-border-subtle bg-[color-mix(in_srgb,var(--color-bg-surface)_90%,transparent)] p-6 shadow-sm space-y-6">
+  <section class="rounded-2xl sr-border sr-border-subtle bg-[color-mix(in_srgb,var(--color-bg-surface)_90%,transparent)] p-6 shadow-sm space-y-6">
     <header class="space-y-2">
       <h2 class="text-xl font-semibold">Appearance</h2>
       <p class="text-sm text-[var(--color-text-muted)]">Pick a theme and preview its palette.</p>
@@ -10,11 +10,11 @@
         v-for="theme in themes"
         :key="theme.name"
         type="button"
-        class="relative flex flex-col gap-3 rounded-xl border p-4 text-left transition duration-200"
+        class="relative flex flex-col gap-3 rounded-xl sr-border p-4 text-left transition duration-200"
         :class="[
           activeTheme === theme.name
-            ? 'border-[var(--color-accent-soft)] ring-2 ring-[color-mix(in_srgb,var(--color-accent)_65%,transparent)] shadow-md'
-            : 'border-border-subtle hover:border-[var(--color-border-strong)] hover:shadow-sm',
+            ? 'border-accent-soft ring-2 ring-[color-mix(in_srgb,var(--color-accent)_65%,transparent)] shadow-md'
+            : 'sr-border-subtle hover:sr-border-strong hover:shadow-sm',
           'bg-[color-mix(in_srgb,var(--color-bg-elevated)_86%,transparent)] hover:-translate-y-0.5 hover:scale-[1.01]'
         ]"
         :style="previewStyle(theme.name)"
@@ -33,10 +33,10 @@
           </span>
         </div>
 
-        <div class="relative h-20 w-full overflow-hidden rounded-xl border" :style="previewFrameStyle">
+        <div class="relative h-20 w-full overflow-hidden rounded-xl sr-border" :style="previewFrameStyle">
           <div class="absolute inset-0" :style="{ background: 'var(--preview-bg)' }"></div>
           <div
-            class="absolute inset-[12px] rounded-lg border"
+            class="absolute inset-[12px] rounded-lg sr-border"
             :style="{ background: 'var(--preview-surface)', borderColor: 'color-mix(in srgb, var(--preview-border) 70%, transparent)' }"
           ></div>
           <div class="absolute left-5 top-5 flex items-center gap-2">

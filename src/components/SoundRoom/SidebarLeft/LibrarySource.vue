@@ -1,6 +1,6 @@
 <template>
   <li
-    class="cursor-move bg-surface-raised text-text-primary border border-border-subtle p-1 rounded text-center"
+    class="cursor-move bg-surface-raised text-text-primary sr-border sr-border-subtle p-1 rounded text-center"
     draggable="true"
   >
     {{ librarySource.name }}

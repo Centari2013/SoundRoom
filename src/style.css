@@ -80,8 +80,7 @@ button:disabled {
 input[type="text"],
 input[type="email"],
 input[type="password"] {
-  @apply w-full p-3 border rounded-lg;
-  border-color: var(--color-border-subtle);
+  @apply w-full p-3 sr-border sr-border-subtle rounded-lg;
   background-color: var(--color-bg-elevated);
   color: var(--color-text-primary);
 }
@@ -98,20 +97,17 @@ input:disabled {
 }
 
 .modal-panel {
-  @apply rounded-2xl w-[80vw] h-[80vh] border overflow-hidden;
+  @apply rounded-2xl w-[80vw] h-[80vh] sr-border sr-border-subtle overflow-hidden;
   background-color: var(--color-bg-app);
-  border-color: var(--color-border-subtle);
   box-shadow: var(--color-shadow-soft);
 }
 
 .modal-header-float {
-  @apply absolute top-0 left-0 right-0 z-10 flex justify-between items-center px-6 py-4 backdrop-blur-md border-b;
+  @apply absolute top-0 left-0 right-0 z-10 flex justify-between items-center px-6 py-4 backdrop-blur-md sr-border-b sr-border-subtle;
   background: color-mix(in srgb, var(--color-bg-app) 85%, transparent);
-  border-color: var(--color-border-subtle);
 }
 
 .modal-header {
-  @apply top-0 left-0 right-0 z-10 flex justify-between items-center px-6 py-4 backdrop-blur-md border-b;
+  @apply top-0 left-0 right-0 z-10 flex justify-between items-center px-6 py-4 backdrop-blur-md sr-border-b sr-border-subtle;
   background: color-mix(in srgb, var(--color-bg-app) 85%, transparent);
-  border-color: var(--color-border-subtle);
 }

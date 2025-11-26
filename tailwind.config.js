@@ -1,8 +1,13 @@
+const plugin = require('tailwindcss/plugin')
+
 const resolveVar = (token) => () => `var(${token})`
 
 module.exports = {
   darkMode: ['class', '[data-theme="dark"]'],
   important: false,
+  corePlugins: {
+    borderWidth: false,
+  },
   theme: {
     colors: {
       transparent: 'transparent',
@@ -45,4 +50,19 @@ module.exports = {
       },
     },
   },
+  plugins: [
+    plugin(({ addUtilities }) => {
+      addUtilities({
+        '.sr-border': { borderWidth: '1px', borderStyle: 'solid' },
+        '.sr-border-2': { borderWidth: '2px', borderStyle: 'solid' },
+        '.sr-border-none': { borderWidth: '0' },
+        '.sr-border-t': { borderTopWidth: '1px', borderStyle: 'solid' },
+        '.sr-border-r': { borderRightWidth: '1px', borderStyle: 'solid' },
+        '.sr-border-b': { borderBottomWidth: '1px', borderStyle: 'solid' },
+        '.sr-border-l': { borderLeftWidth: '1px', borderStyle: 'solid' },
+        '.sr-border-subtle': { borderColor: 'rgb(var(--color-border-subtle-rgb) / 1)' },
+        '.sr-border-strong': { borderColor: 'rgb(var(--color-border-strong-rgb) / 1)' },
+      })
+    }),
+  ],
 }

@@ -20,7 +20,7 @@
   <button
     :disabled="soundLibrarySources.length == MAX_SOURCES"
     @click="() => { router.push('/sound-library') }"
-    class="w-full mt-4 bg-[var(--color-bg-surface)] text-xs rounded hover:bg-[var(--color-bg-elevated)] border border-[var(--color-border-subtle)] text-[var(--color-text-primary)]"
+    class="w-full mt-4 bg-[var(--color-bg-surface)] text-xs rounded hover:bg-[var(--color-bg-elevated)] sr-border sr-border-subtle text-[var(--color-text-primary)]"
   >
     + Add Source
   </button>

@@ -17,7 +17,7 @@
         <Toolbar/>
 
         <!-- Canvas Area -->
-        <div class="flex-1 relative overflow-hidden bg-[var(--color-bg-surface)] flex items-center justify-center border-t border-[var(--color-border-subtle)]">
+        <div class="flex-1 relative overflow-hidden bg-[var(--color-bg-surface)] flex items-center justify-center sr-border-t sr-border-subtle">
           <div class="pointer-events-none absolute inset-0 canvas-vignette" aria-hidden="true"></div>
           <MainCanvasStage
             v-bind="{

@@ -1,6 +1,6 @@
 <template>
   <PulsingOverlay v-if="isLoggingOut" :duration="2000" :text="'Logging out...'" @done="isLoggingOut = false" />
-  <header class="px-6 py-4 border-b border-[var(--color-border-subtle)] bg-[var(--color-bg-surface)] text-[var(--color-text-primary)] flex items-center justify-between relative">
+  <header class="px-6 py-4 border-b sr-border-subtle bg-[var(--color-bg-surface)] text-[var(--color-text-primary)] flex items-center justify-between relative">
     <h1 class="text-xl font-bold tracking-wide text-[var(--color-text-primary)]"><RouterLink to="/" style="text-decoration: none; color: inherit;">SoundRoom</RouterLink></h1>
     
     <div v-if="shouldShowNavButtons" class="relative">
@@ -21,7 +21,7 @@
           v-if="isMenuOpen"
           @mouseleave="closeMenu"
           ref="menuPanel"
-          class="absolute right-0 mt-2 w-44 rounded-lg shadow-lg border border-[var(--color-border-subtle)] bg-[var(--color-bg-elevated)] text-[var(--color-text-primary)] py-2 z-50 flex flex-col divide-y divide-[var(--color-border-subtle)] overflow-hidden"
+          class="absolute right-0 mt-2 w-44 rounded-lg shadow-lg sr-border sr-border-subtle bg-[var(--color-bg-elevated)] text-[var(--color-text-primary)] py-2 z-50 flex flex-col divide-y divide-[var(--color-border-subtle)] overflow-hidden"
         >
           <template v-for="button in visibleButtons" :key="button.label">
             <button

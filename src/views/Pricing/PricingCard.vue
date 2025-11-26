@@ -10,7 +10,7 @@
         <span
           v-for="(feature, index) in highlightItems"
           :key="index"
-          class="inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-semibold"
+          class="inline-flex items-center gap-2 rounded-full sr-border px-3 py-1 text-xs font-semibold"
           :class="STATUS_STYLES[feature.status]?.chip"
         >
           <span class="h-2 w-2 rounded-full" :class="STATUS_STYLES[feature.status]?.dot"></span>
@@ -37,15 +37,15 @@ import { getPlanTheme } from '@/constants/planThemes'
 
 const STATUS_STYLES = {
   included: {
-    chip: 'border-[var(--color-success)] bg-[rgba(var(--color-success-rgb),0.15)] text-[var(--color-success)]',
+    chip: 'border-status-success bg-[rgba(var(--color-success-rgb),0.15)] text-status-success',
     dot: 'bg-status-success'
   },
   limited: {
-    chip: 'border-[var(--color-warning)] bg-[rgba(var(--color-warning-rgb),0.15)] text-[var(--color-warning)]',
-    dot: 'bg-[var(--color-warning)]'
+    chip: 'border-status-warning bg-[rgba(var(--color-warning-rgb),0.15)] text-[var(--color-warning)]',
+    dot: 'bg-status-warning'
   },
   unavailable: {
-    chip: 'border-border-subtle bg-[var(--color-bg-elevated)] text-[var(--color-text-muted)]',
+    chip: 'sr-border-subtle bg-[var(--color-bg-elevated)] text-[var(--color-text-muted)]',
     dot: 'bg-[var(--color-text-muted)]'
   }
 }
@@ -87,7 +87,7 @@ const props = defineProps({
 
 const BASE_CARD_CLASS = 'group rounded-sm p-6 shadow-md transition-all duration-200 ease-out transform flex flex-col justify-between bg-surface-base text-text-primary hover:bg-[var(--color-bg-elevated)] hover:shadow-xl hover:-translate-y-1 hover:scale-[1.03] focus-within:shadow-xl focus-within:-translate-y-1 focus-within:scale-[1.03]'
 
-const BASE_CTA_CLASS = 'w-full py-2 rounded-xl font-semibold transition border border-transparent disabled:opacity-50 disabled:cursor-not-allowed'
+const BASE_CTA_CLASS = 'w-full py-2 rounded-xl font-semibold transition sr-border border-transparent disabled:opacity-50 disabled:cursor-not-allowed'
 
 const planTheme = computed(() => getPlanTheme(props.planId))
 

@@ -33,7 +33,7 @@
           >
             {{ checkoutError }}
           </p>
-          <div class="max-w-5xl mx-auto rounded-md border border-border-subtle bg-surface-base p-4 text-left shadow-sm" data-testid="pricing-feature-comparison">
+          <div class="max-w-5xl mx-auto rounded-md sr-border sr-border-subtle bg-surface-base p-4 text-left shadow-sm" data-testid="pricing-feature-comparison">
             <div class="text-sm font-semibold text-[var(--color-text-primary)]">Full feature comparison</div>
             <PlanComparisonTable class="mt-4" :plans="basePlans" :features="FEATURE_DEFINITIONS" />
           </div>

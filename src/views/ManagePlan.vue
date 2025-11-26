@@ -4,11 +4,11 @@
       <section class="space-y-4">
         <div
           v-if="checkoutStatusMessage || checkoutErrorMessage || isProcessingCheckout"
-          class="rounded-xl border p-4"
+          class="rounded-xl sr-border sr-border-subtle p-4"
           :class="[
-            isProcessingCheckout ? 'border-[var(--color-accent-soft)] bg-[rgba(var(--color-accent-rgb),0.12)] text-[var(--color-text-primary)]' : '',
-            checkoutStatusMessage && !isProcessingCheckout ? 'border-[var(--color-success)] bg-[rgba(var(--color-success-rgb),0.12)] text-[var(--color-text-primary)]' : '',
-            checkoutErrorMessage ? 'border-[var(--color-danger)] bg-[rgba(var(--color-danger-rgb),0.12)] text-[var(--color-text-primary)]' : '',
+            isProcessingCheckout ? 'border-accent-soft bg-[rgba(var(--color-accent-rgb),0.12)] text-[var(--color-text-primary)]' : '',
+            checkoutStatusMessage && !isProcessingCheckout ? 'border-status-success bg-[rgba(var(--color-success-rgb),0.12)] text-[var(--color-text-primary)]' : '',
+            checkoutErrorMessage ? 'border-status-danger bg-[rgba(var(--color-danger-rgb),0.12)] text-[var(--color-text-primary)]' : '',
           ]"
         >
           <p v-if="isProcessingCheckout" class="text-sm font-medium">Processing your plan change…</p>
@@ -32,7 +32,7 @@
         </div>
 
         <div
-          class="rounded-2xl p-6 shadow-sm border bg-[color-mix(in_srgb,var(--color-bg-surface)_90%,transparent)]"
+          class="rounded-2xl p-6 shadow-sm sr-border sr-border-subtle bg-[color-mix(in_srgb,var(--color-bg-surface)_90%,transparent)]"
           :class="planTheme.card"
         >
           <header class="flex flex-wrap items-center justify-between gap-4">
@@ -80,7 +80,7 @@
         </div>
       </section>
 
-      <section class="rounded-2xl border border-border-subtle bg-[color-mix(in_srgb,var(--color-bg-surface)_90%,transparent)] p-6 shadow-sm space-y-6">
+      <section class="rounded-2xl sr-border sr-border-subtle bg-[color-mix(in_srgb,var(--color-bg-surface)_90%,transparent)] p-6 shadow-sm space-y-6">
         <header class="space-y-1">
           <h2 class="text-xl font-semibold">Billing & Receipts</h2>
           <p class="text-sm text-[var(--color-text-muted)]">
@@ -88,7 +88,7 @@
           </p>
         </header>
 
-        <div class="rounded-xl border border-dashed border-border-subtle bg-[color-mix(in_srgb,var(--color-bg-surface)_90%,transparent)] px-5 py-6 text-sm text-[var(--color-text-secondary)]">
+        <div class="rounded-xl sr-border border-dashed sr-border-subtle bg-[color-mix(in_srgb,var(--color-bg-surface)_90%,transparent)] px-5 py-6 text-sm text-[var(--color-text-secondary)]">
           <p>Need an invoice, tax receipt, or want to change your payment method?</p>
           <p class="mt-3">Email <a class="underline" :href="supportEmailHref">{{ SUPPORT_EMAIL }}</a> and include the email tied to your SoundRoom account.</p>
         </div>
@@ -111,14 +111,14 @@
         </div>
       </section>
 
-      <section class="rounded-2xl border border-border-subtle bg-[color-mix(in_srgb,var(--color-bg-surface)_90%,transparent)] p-6 shadow-sm space-y-6">
+      <section class="rounded-2xl sr-border sr-border-subtle bg-[color-mix(in_srgb,var(--color-bg-surface)_90%,transparent)] p-6 shadow-sm space-y-6">
         <header class="space-y-1">
           <h2 class="text-xl font-semibold">Upcoming Features</h2>
           <p class="text-sm text-[var(--color-text-muted)]">We are actively building deeper collaboration and scheduling tools. Here is what is landing next for paying members.</p>
         </header>
 
         <ul class="grid gap-4 md:grid-cols-2">
-          <li v-for="item in roadmapHighlights" :key="item.title" class="rounded-xl border border-border-subtle bg-[color-mix(in_srgb,var(--color-bg-surface)_92%,transparent)] p-5 space-y-2">
+          <li v-for="item in roadmapHighlights" :key="item.title" class="rounded-xl sr-border sr-border-subtle bg-[color-mix(in_srgb,var(--color-bg-surface)_92%,transparent)] p-5 space-y-2">
             <p class="text-sm uppercase tracking-wide text-[var(--color-text-muted)]">{{ item.badge }}</p>
             <h3 class="text-lg font-medium">{{ item.title }}</h3>
             <p class="text-sm text-[var(--color-text-muted)]">{{ item.copy }}</p>

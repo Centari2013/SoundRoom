@@ -1,6 +1,6 @@
 <template>
   <div @click.self="handleClose" class="modal-backdrop">
-    <div class="bg-surface-base text-text-primary rounded-2xl w-[80vw] h-[80vh] relative flex flex-col overflow-hidden shadow-2xl border border-border-subtle">
+    <div class="bg-surface-base text-text-primary rounded-2xl w-[80vw] h-[80vh] relative flex flex-col overflow-hidden shadow-2xl sr-border sr-border-subtle">
       
       <!-- Absolute Floating Header -->
       <div class="modal-header-float">
@@ -85,7 +85,7 @@
           </section>
 
           <section>
-            <h2 class="text-lg font-semibold mb-4 border-b border-border-subtle pb-1">FAQ</h2>
+            <h2 class="text-lg font-semibold mb-4 sr-border-b sr-border-subtle pb-1">FAQ</h2>
             <ul>
               <li
                 v-for="(faq, i) in faqs"
@@ -133,7 +133,7 @@
                     v-model="form.name"
                     required
                     autocomplete="name"
-                    class="w-full px-3 py-2 border border-[var(--color-border-subtle)] rounded bg-[var(--color-bg-surface)] text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-focus-ring)] focus:ring-offset-2 focus:ring-offset-[var(--color-bg-surface)] text-sm"
+                    class="w-full px-3 py-2 sr-border sr-border-subtle rounded bg-[var(--color-bg-surface)] text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-focus-ring)] focus:ring-offset-2 focus:ring-offset-[var(--color-bg-surface)] text-sm"
                   />
                 </div>
 
@@ -145,7 +145,7 @@
                     v-model="form.email"
                     required
                     autocomplete="email"
-                    class="w-full px-3 py-2 border border-[var(--color-border-subtle)] rounded bg-[var(--color-bg-surface)] text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-focus-ring)] focus:ring-offset-2 focus:ring-offset-[var(--color-bg-surface)] text-sm"
+                    class="w-full px-3 py-2 sr-border sr-border-subtle rounded bg-[var(--color-bg-surface)] text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-focus-ring)] focus:ring-offset-2 focus:ring-offset-[var(--color-bg-surface)] text-sm"
                   />
                 </div>
               </div>
@@ -157,7 +157,7 @@
                     id="topic"
                     v-model="form.topic"
                     required
-                    class="w-full px-3 py-2 border border-[var(--color-border-subtle)] rounded bg-[var(--color-bg-surface)] text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-focus-ring)] focus:ring-offset-2 focus:ring-offset-[var(--color-bg-surface)] text-sm"
+                    class="w-full px-3 py-2 sr-border sr-border-subtle rounded bg-[var(--color-bg-surface)] text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-focus-ring)] focus:ring-offset-2 focus:ring-offset-[var(--color-bg-surface)] text-sm"
                   >
                     <option v-for="item in topicOptions" :key="item.value" :value="item.value">{{ item.label }}</option>
                   </select>
@@ -168,7 +168,7 @@
                   <select
                     id="plan"
                     v-model="form.plan"
-                    class="w-full px-3 py-2 border border-[var(--color-border-subtle)] rounded bg-[var(--color-bg-surface)] text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-focus-ring)] focus:ring-offset-2 focus:ring-offset-[var(--color-bg-surface)] text-sm"
+                    class="w-full px-3 py-2 sr-border sr-border-subtle rounded bg-[var(--color-bg-surface)] text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-focus-ring)] focus:ring-offset-2 focus:ring-offset-[var(--color-bg-surface)] text-sm"
                   >
                     <option value="">Select your plan</option>
                     <option v-for="option in planOptions" :key="option" :value="option">{{ PLAN_LABELS[option] }}</option>
@@ -184,7 +184,7 @@
                   id="roomLink"
                   v-model="form.roomLink"
                   placeholder="Paste a RoomManager link or card ID"
-                  class="w-full px-3 py-2 border border-[var(--color-border-subtle)] rounded bg-[var(--color-bg-surface)] text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-focus-ring)] focus:ring-offset-2 focus:ring-offset-[var(--color-bg-surface)] text-sm"
+                  class="w-full px-3 py-2 sr-border sr-border-subtle rounded bg-[var(--color-bg-surface)] text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-focus-ring)] focus:ring-offset-2 focus:ring-offset-[var(--color-bg-surface)] text-sm"
                 />
               </div>
 
@@ -196,7 +196,7 @@
                   rows="4"
                   required
                   placeholder="Tell us what you were working on and what you expected to happen."
-                  class="w-full px-3 py-2 border border-[var(--color-border-subtle)] rounded bg-[var(--color-bg-surface)] text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-focus-ring)] focus:ring-offset-2 focus:ring-offset-[var(--color-bg-surface)] text-sm"
+                  class="w-full px-3 py-2 sr-border sr-border-subtle rounded bg-[var(--color-bg-surface)] text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-focus-ring)] focus:ring-offset-2 focus:ring-offset-[var(--color-bg-surface)] text-sm"
                 ></textarea>
               </div>
 
@@ -207,7 +207,7 @@
                   v-model="form.reproSteps"
                   rows="3"
                   placeholder="Step-by-step details help us debug much faster."
-                  class="w-full px-3 py-2 border border-[var(--color-border-subtle)] rounded bg-[var(--color-bg-surface)] text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-focus-ring)] focus:ring-offset-2 focus:ring-offset-[var(--color-bg-surface)] text-sm"
+                  class="w-full px-3 py-2 sr-border sr-border-subtle rounded bg-[var(--color-bg-surface)] text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-focus-ring)] focus:ring-offset-2 focus:ring-offset-[var(--color-bg-surface)] text-sm"
                 ></textarea>
               </div>
 

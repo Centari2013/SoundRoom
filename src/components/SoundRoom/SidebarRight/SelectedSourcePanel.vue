@@ -33,19 +33,19 @@
       <div class="w-full space-y-2">
         <button
           @click="playPauseSource"
-          class="w-full bg-[var(--color-bg-surface)] text-xs rounded hover:bg-[var(--color-bg-elevated)] border border-[var(--color-border-subtle)] text-[var(--color-text-primary)]"
+          class="w-full bg-[var(--color-bg-surface)] text-xs rounded hover:bg-[var(--color-bg-elevated)] sr-border sr-border-subtle text-[var(--color-text-primary)]"
         >
           {{ playPauseLabel }}
         </button>
         <button
           @click="deleteSource"
-          class="w-full bg-[var(--color-bg-surface)] text-xs rounded hover:bg-[var(--color-bg-elevated)] border border-[var(--color-border-subtle)] text-[var(--color-text-primary)]"
+          class="w-full bg-[var(--color-bg-surface)] text-xs rounded hover:bg-[var(--color-bg-elevated)] sr-border sr-border-subtle text-[var(--color-text-primary)]"
         >
           Delete
         </button>
       </div>
 
-      <hr class="w-full border-[var(--color-border-subtle)]" />
+      <hr class="w-full sr-border sr-border-subtle" />
 
       <!-- Scheduling Toggle -->
       <div class="w-full flex items-center space-x-2 text-left px-1 text-[var(--color-text-muted)]">
@@ -77,7 +77,7 @@
             :value="schedule.mode"
             @change="handleScheduleModeChange"
             @blur="commitScheduleEdit"
-            class="px-2 py-1 rounded border border-[var(--color-border-subtle)] bg-[var(--color-bg-elevated)]">
+            class="px-2 py-1 rounded sr-border sr-border-subtle bg-[var(--color-bg-elevated)]">
             <option value="interval">Interval</option>
             <option v-if="canUseAdvancedScheduling" value="count">Count</option>
             <option v-if="canUseAdvancedScheduling" value="interval+count">Interval + Count</option>
@@ -99,7 +99,7 @@
               }"
               @keyup.enter="commitScheduleEdit"
               @blur="commitScheduleEdit"
-              class="px-2 py-1 rounded border border-[var(--color-border-subtle)] bg-[var(--color-bg-elevated)]"
+              class="px-2 py-1 rounded sr-border sr-border-subtle bg-[var(--color-bg-elevated)]"
             />
           </div>
           <div class="flex flex-col space-y-1">
@@ -116,7 +116,7 @@
               }"
               @keyup.enter="commitScheduleEdit"
               @blur="commitScheduleEdit"
-              class="px-2 py-1 rounded border border-[var(--color-border-subtle)] bg-[var(--color-bg-elevated)]"
+              class="px-2 py-1 rounded sr-border sr-border-subtle bg-[var(--color-bg-elevated)]"
             />
             <p v-if="schedule.gapMax < schedule.gapMin" class="text-[var(--color-danger)] text-xs">
               Gap Max cannot be smaller than Gap Min
@@ -140,7 +140,7 @@
               @keyup.enter="commitScheduleEdit"
               @blur="commitScheduleEdit"
               placeholder="Unlimited"
-              class="px-2 py-1 rounded border border-[var(--color-border-subtle)] bg-[var(--color-bg-elevated)]"
+              class="px-2 py-1 rounded sr-border sr-border-subtle bg-[var(--color-bg-elevated)]"
             />
           </div>
           <div class="flex flex-col space-y-1">
@@ -156,7 +156,7 @@
               }"
               @keyup.enter="commitScheduleEdit"
               @blur="commitScheduleEdit"
-              class="px-2 py-1 rounded border border-[var(--color-border-subtle)] bg-[var(--color-bg-elevated)]"
+              class="px-2 py-1 rounded sr-border sr-border-subtle bg-[var(--color-bg-elevated)]"
             />
           </div>
           <div class="flex flex-col space-y-1">
@@ -171,7 +171,7 @@
               }"
               @keyup.enter="commitScheduleEdit"
               @blur="commitScheduleEdit"
-              class="px-2 py-1 rounded border border-[var(--color-border-subtle)] bg-[var(--color-bg-elevated)]"
+              class="px-2 py-1 rounded sr-border sr-border-subtle bg-[var(--color-bg-elevated)]"
             />
           </div>
         </div>

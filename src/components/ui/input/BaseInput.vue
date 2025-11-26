@@ -16,10 +16,10 @@
       :autocomplete="autocomplete"
       :disabled="disabled"
       :class="[
-        'px-3 py-2 rounded border w-full text-sm focus:outline-none bg-[var(--color-bg-surface)] text-[var(--color-text-primary)] border-[var(--color-border-subtle)] focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-bg-surface)]',
+        'px-3 py-2 rounded sr-border sr-border-subtle w-full text-sm focus:outline-none bg-[var(--color-bg-surface)] text-[var(--color-text-primary)] focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-bg-surface)]',
         props.class,
         error
-          ? 'border-[var(--color-danger)] text-[var(--color-danger)] bg-[rgba(var(--color-danger-rgb),0.12)]'
+          ? 'border-status-danger text-[var(--color-danger)] bg-[rgba(var(--color-danger-rgb),0.12)]'
           : '',
       ]"
       v-model="internalValue"
