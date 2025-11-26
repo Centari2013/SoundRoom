@@ -167,8 +167,8 @@
 
   /* RGB helpers for light theme */
   --color-danger-rgb: 187, 74, 74;
-  --color-node-blue-rgb: 63, 115, 232;
-  --color-node-red-rgb: 210, 90, 90;
+  --color-node-blue-rgb: 90, 140, 255;
+  --color-node-red-rgb: 232, 90, 90;
 
   /* Borders */
   --color-border-subtle: #c9ced6;
@@ -198,8 +198,8 @@
   /* UI specifics */
   --color-grid-line: rgba(0, 0, 0, 0.07);
 
-  --color-node-blue: #3f73e8;
-  --color-node-red: #d25a5a;
+  --color-node-blue: #5a8cff;
+  --color-node-red: #e85a5a;
 
   --color-node-highlight: rgba(47, 109, 253, 0.12);
   --color-selection-strong: #2f6dfd;
