@@ -183,7 +183,7 @@ const getFillColor = computed(() => {
     return isScheduled.value ? themeTokens.value.primary : themeTokens.value.danger
   }
   const colors = lightPalette.value
-  if (props.selected) return colors.bg2
+  if (props.selected) return themeTokens.value.selectionHighlight
   return isScheduled.value ? colors.nodeBlue : colors.nodeRed
 })
 
