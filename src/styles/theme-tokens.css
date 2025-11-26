@@ -8,7 +8,8 @@
 /* -----------------------------------------------------------
    ROOT = DARK THEME DEFAULTS
    ----------------------------------------------------------- */
-:root {
+:root,
+[data-theme="dark"] {
   color-scheme: dark;
 
   /* -----------------------------------------
@@ -151,14 +152,6 @@
   --sr-node-blue: var(--color-node-blue);
   --sr-outline-strong: var(--color-border-strong);
   --sr-outline-contrast: var(--color-outline-contrast);
-}
-
-/* -----------------------------------------------------------
-   DARK THEME OVERRIDES (OPTIONAL)
-   ----------------------------------------------------------- */
-[data-theme="dark"] {
-  color-scheme: dark;
-  /* no overrides needed — dark = default */
 }
 
 /* -----------------------------------------------------------
