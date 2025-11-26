@@ -43,6 +43,7 @@
 import { ref, watch, computed, onMounted, onBeforeUnmount } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useAuth } from '@/composables/useAuth';
+import { toggleTheme } from '@/utils/theme';
 import { supabase } from '@/utils/supabase';
 import PulsingOverlay from '@/components/ui/overlays/PulsingOverlay.vue';
 import HamburgerIcon from '@/assets/icons/hamburger.svg';
@@ -119,8 +120,8 @@ async function handleSignOut() {
 const headerButtons = computed(() => [
   {
     label: 'Switch Themes',
-    action: () => router.push('/settings'),
-    shouldShow: true,
+    action: () => toggleTheme(),
+    shouldShow: !isAuthenticated.value,
   },
   {
     label: 'Help',
