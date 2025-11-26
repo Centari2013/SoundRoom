@@ -1,3 +1,5 @@
+const resolveVar = (token) => () => `var(${token})`
+
 module.exports = {
   darkMode: ['class', '[data-theme="dark"]'],
   important: false,
@@ -6,35 +8,35 @@ module.exports = {
       transparent: 'transparent',
       current: 'currentColor',
       inherit: 'inherit',
-      white: 'var(--base-white)',
-      black: 'var(--base-black)',
+      white: resolveVar('--base-white'),
+      black: resolveVar('--base-black'),
       surface: {
-        app: 'var(--color-bg-app)',
-        base: 'var(--color-bg-surface)',
-        raised: 'var(--color-bg-elevated)',
+        app: resolveVar('--color-bg-app'),
+        base: resolveVar('--color-bg-surface'),
+        raised: resolveVar('--color-bg-elevated'),
       },
       border: {
-        subtle: 'var(--color-border-subtle)',
-        strong: 'var(--color-border-strong)',
+        subtle: resolveVar('--color-border-subtle'),
+        strong: resolveVar('--color-border-strong'),
       },
       text: {
-        primary: 'var(--color-text-primary)',
-        secondary: 'var(--color-text-secondary)',
-        muted: 'var(--color-text-muted)',
-        inverse: 'var(--color-text-inverse)',
+        primary: resolveVar('--color-text-primary'),
+        secondary: resolveVar('--color-text-secondary'),
+        muted: resolveVar('--color-text-muted'),
+        inverse: resolveVar('--color-text-inverse'),
       },
       accent: {
-        soft: 'var(--color-accent-soft)',
-        DEFAULT: 'var(--color-accent)',
-        strong: 'var(--color-accent-strong)',
+        soft: resolveVar('--color-accent-soft'),
+        DEFAULT: resolveVar('--color-accent'),
+        strong: resolveVar('--color-accent-strong'),
       },
       status: {
-        success: 'var(--color-success)',
-        warning: 'var(--color-warning)',
-        danger: 'var(--color-danger)',
+        success: resolveVar('--color-success'),
+        warning: resolveVar('--color-warning'),
+        danger: resolveVar('--color-danger'),
       },
-      panel: 'var(--color-panel)',
-      input: 'var(--color-input)',
+      panel: resolveVar('--color-panel'),
+      input: resolveVar('--color-input'),
     },
     extend: {
       boxShadow: {
