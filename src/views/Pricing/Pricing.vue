@@ -93,7 +93,7 @@ const FEATURE_DEFINITIONS = [
     label: 'Timed Loop Controls',
     tiers: {
       free: { status: 'unavailable', detail: 'Basic unlocks timed loops' },
-      basic: { status: 'included', detail: 'Per-source loop timing' },
+      basic: { status: 'limited', detail: 'Per-source loop timing' },
       pro: { status: 'included', detail: 'Per-source loop timing & chaining' }
     }
   },
@@ -129,17 +129,17 @@ const FEATURE_DEFINITIONS = [
     label: 'Prebuilt Rooms (Coming Soon)',
     tiers: {
       free: { status: 'unavailable', detail: 'Coming soon with Pro' },
-      basic: { status: 'included', detail: 'Coming soon with Pro' },
+      basic: { status: 'unavailable', detail: 'Coming soon with Pro' },
       pro: { status: 'included', detail: 'Early access when it launches' }
     }
   },
   {
     key: 'theme-options',
-    label: 'Theme Options (Coming Soon)',
+    label: 'Theme Options',
     tiers: {
-      free: { status: 'unavailable', detail: 'System Light & Dark modes only' },
-      basic: { status: 'included', detail: 'Multiple Light & Dark mode options' },
-      pro: { status: 'included', detail: 'Multiple custom theme options' }
+      free: { status: 'unavailable', detail: 'Light & Dark modes only' },
+      basic: { status: 'limited', detail: 'Multiple Light & Dark mode options' },
+      pro: { status: 'included', detail: 'Multiple colorful theme options' }
     }
   }
 ]
