@@ -119,7 +119,8 @@ input:disabled {
 }
 
 .modal-panel {
-  @apply glass-panel w-[80vw] h-[80vh] overflow-hidden;
+  @apply bg-[var(--glass-bg)] border border-[var(--glass-border)] backdrop-blur-md shadow-[var(--color-shadow-soft)] rounded-2xl w-[80vw] h-[80vh] overflow-hidden;
+  background-color: color-mix(in srgb, var(--color-bg-surface) 72%, transparent);
 }
 
 .modal-header-float {
@@ -160,7 +161,8 @@ input:disabled {
   .glass-panel,
   .glass-frame,
   .glass-button,
-  .glass-button-ghost {
+  .glass-button-ghost,
+  .modal-panel {
     background-color: color-mix(in srgb, var(--color-bg-surface) 80%, transparent);
   }
 }
