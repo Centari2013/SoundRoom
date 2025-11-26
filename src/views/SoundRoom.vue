@@ -1,5 +1,5 @@
 <template>
-  <div class="h-full bg-[var(--color-bg-app)] text-[var(--color-text-primary)] flex flex-col">
+  <div class="h-full bg-surface-app text-text-primary flex flex-col">
     <!-- Main Layout -->
     <div class="flex flex-1 overflow-hidden">
 
