@@ -4,84 +4,81 @@
       <h2 class="text-xl font-semibold">Appearance</h2>
       <p class="text-sm text-[var(--color-text-muted)]">Pick a theme and preview its palette.</p>
     </header>
-
-    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-      <button
-        v-for="theme in themes"
-        :key="themeKey(theme)"
-        type="button"
-        class="relative flex flex-col gap-3 rounded-xl border p-4 text-left transition duration-200"
-        :class="[
-          activeThemeKey === themeKey(theme)
-            ? 'border-[var(--color-accent-soft)] ring-2 ring-[color-mix(in_srgb,var(--color-accent)_65%,transparent)] shadow-md'
-            : 'border-border-subtle hover:border-[var(--color-border-strong)] hover:shadow-sm',
-          'bg-[color-mix(in_srgb,var(--color-bg-elevated)_86%,transparent)] hover:-translate-y-0.5 hover:scale-[1.01]'
-        ]"
-        :style="previewStyle(theme)"
-        @click="selectTheme(theme)"
-      >
-        <div class="flex items-center justify-between">
-          <div class="space-y-1">
-            <p class="text-sm font-semibold">{{ theme.label }}</p>
-            <p class="text-xs text-[var(--color-text-muted)]">
-              {{ theme.type === 'builtin' ? 'Built-in base mode' : `${formatTierLabel(theme.required_plan)} theme palette` }}
-            </p>
-            <p
-              v-if="theme.type === 'database' && isLocked(theme)"
-              class="text-[11px] text-[var(--color-danger)]"
-            >
-              Preview only
-            </p>
-          </div>
-          <span
-            v-if="activeThemeKey === themeKey(theme)"
-            class="text-[11px] font-medium rounded-full px-2 py-1 bg-[color-mix(in_srgb,var(--color-accent)_16%,transparent)] text-[var(--color-text-primary)]"
-          >
-            Active
-          </span>
-          <span
-            v-else-if="isLocked(theme)"
-            class="text-[11px] font-medium rounded-full px-2 py-1 bg-[color-mix(in_srgb,var(--color-danger)_14%,transparent)] text-[var(--color-danger)]"
-          >
-            🔒 Locked
-          </span>
-        </div>
-
-        <div class="relative h-20 w-full overflow-hidden rounded-xl border" :style="previewFrameStyle">
-          <div class="absolute inset-0" :style="{ background: 'var(--preview-bg)' }"></div>
-          <div
-            class="absolute inset-[12px] rounded-lg border"
-            :style="{ background: 'var(--preview-surface)', borderColor: 'color-mix(in srgb, var(--preview-border) 70%, transparent)' }"
-          ></div>
-          <div class="absolute left-5 top-5 flex items-center gap-2">
+    <div class="max-h-[28rem] overflow-y-auto p-4">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <button
+          v-for="theme in themes"
+          :key="themeKey(theme)"
+          type="button"
+          class="relative flex flex-col gap-3 rounded-xl border p-4 text-left transition duration-200"
+          :class="[
+            activeThemeKey === themeKey(theme)
+              ? 'border-[var(--color-accent-soft)] ring-2 ring-[color-mix(in_srgb,var(--color-accent)_65%,transparent)] shadow-md'
+              : 'border-border-subtle hover:border-[var(--color-border-strong)] hover:shadow-sm',
+            'bg-[color-mix(in_srgb,var(--color-bg-elevated)_86%,transparent)] hover:-translate-y-0.5 hover:scale-[1.01]'
+          ]"
+          :style="previewStyle(theme)"
+          @click="selectTheme(theme)"
+        >
+          <div class="flex items-center justify-between">
+            <div class="space-y-1">
+              <p class="text-sm font-semibold">{{ theme.label }}</p>
+              <p class="text-xs text-[var(--color-text-muted)]">
+                {{ theme.type === 'builtin' ? 'Built-in' : `${formatTierLabel(theme.required_plan)} Theme` }}
+              </p>
+              <p
+                v-if="theme.type === 'database' && isLocked(theme)"
+                class="text-[11px] text-[var(--color-danger)]"
+              >
+                Preview only
+              </p>
+            </div>
             <span
-              class="inline-flex items-center gap-1 rounded-full px-2 py-[5px] text-[11px] font-medium"
-              :style="{ color: 'var(--preview-text)', background: 'color-mix(in srgb, var(--preview-surface) 82%, transparent)', border: '1px solid var(--preview-border)' }"
+              v-if="activeThemeKey === themeKey(theme)"
+              class="text-[11px] font-medium rounded-full px-2 py-1 bg-[color-mix(in_srgb,var(--color-accent)_16%,transparent)] text-[var(--color-text-primary)]"
             >
-              Aa
+              Active
             </span>
-            <span class="h-2.5 w-8 rounded-full" :style="{ background: 'var(--preview-border)' }"></span>
-          </div>
-          <div class="absolute right-5 bottom-4 flex items-center gap-2">
-            <span class="h-2 w-10 rounded-full" :style="{ background: 'var(--preview-text)' }"></span>
             <span
-              class="h-3 w-3 rounded-full"
-              :style="{
-                background: 'var(--preview-accent)',
-                boxShadow: '0 0 0 6px color-mix(in srgb, var(--preview-accent) 16%, transparent)'
-              }"
-            ></span>
+              v-else-if="isLocked(theme)"
+              class="text-[11px] font-medium rounded-full px-2 py-1 bg-[color-mix(in_srgb,var(--color-danger)_14%,transparent)] text-[var(--color-danger)]"
+            >
+              🔒 Locked
+            </span>
           </div>
-        </div>
 
-        <div class="mt-1 flex items-center justify-between text-[11px] text-[var(--color-text-muted)]">
-          <span v-if="theme.type === 'database'">{{ formatTierLabel(theme.required_plan) }} Theme</span>
-          <span v-else>Base mode</span>
-          <span v-if="savedThemeKey === themeKey(theme)" class="text-[var(--color-accent)] font-medium">Saved</span>
-        </div>
-      </button>
+          <div class="relative h-20 w-full overflow-hidden rounded-xl border" :style="previewFrameStyle">
+            <div class="absolute inset-0" :style="{ background: 'var(--preview-bg)' }"></div>
+            <div
+              class="absolute inset-[12px] rounded-lg border"
+              :style="{ background: 'var(--preview-surface)', borderColor: 'color-mix(in srgb, var(--preview-border) 70%, transparent)' }"
+            ></div>
+            <div class="absolute left-5 top-5 flex items-center gap-2">
+              <span
+                class="inline-flex items-center gap-1 rounded-full px-2 py-[5px] text-[11px] font-medium"
+                :style="{ color: 'var(--preview-text)', background: 'color-mix(in srgb, var(--preview-surface) 82%, transparent)', border: '1px solid var(--preview-border)' }"
+              >
+                Aa
+              </span>
+              <span class="h-2.5 w-8 rounded-full" :style="{ background: 'var(--preview-border)' }"></span>
+            </div>
+            <div class="absolute right-5 bottom-4 flex items-center gap-2">
+              <span class="h-2 w-10 rounded-full" :style="{ background: 'var(--preview-text)' }"></span>
+              <span
+                class="h-3 w-3 rounded-full"
+                :style="{
+                  background: 'var(--preview-accent)',
+                  boxShadow: '0 0 0 6px color-mix(in srgb, var(--preview-accent) 16%, transparent)'
+                }"
+              ></span>
+            </div>
+          </div>
+
+          
+        </button>
+      </div>
     </div>
-
+  
     <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
       <p class="text-sm text-[var(--color-text-muted)]">{{ selectionStatus }}</p>
       <div class="flex items-center gap-3">
