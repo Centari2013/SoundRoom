@@ -1,6 +1,6 @@
 <template>
   <PulsingOverlay v-if="isLoggingOut" :duration="2000" :text="'Logging out...'" @done="isLoggingOut = false" />
-  <header class="px-6 py-4 border-b border-[var(--color-border-subtle)] bg-[var(--color-bg-surface)] text-[var(--color-text-primary)] flex items-center justify-between relative">
+  <header class="glass-surface px-6 py-4 border-b text-[var(--color-text-primary)] flex items-center justify-between relative rounded-none">
     <h1 class="text-xl font-bold tracking-wide text-[var(--color-text-primary)]"><RouterLink to="/" style="text-decoration: none; color: inherit;">SoundRoom</RouterLink></h1>
     
     <div v-if="shouldShowNavButtons" class="relative">

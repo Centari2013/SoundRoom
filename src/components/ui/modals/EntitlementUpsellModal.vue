@@ -5,7 +5,7 @@
       class="modal-backdrop"
       @click.self="handleClose"
     >
-      <div class="modal-panel" role="dialog" aria-modal="true">
+      <div class="modal-panel glass-panel max-w-[min(480px,90vw)]" role="dialog" aria-modal="true">
         <h2 class="text-2xl font-semibold mb-3">{{ title }}</h2>
         <p class="text-[var(--color-text-muted)] mb-6">{{ message }}</p>
         <div class="flex flex-wrap gap-3">
@@ -39,21 +39,11 @@ function handleUpgrade() {
 
 <style scoped>
 .modal-backdrop {
-  position: fixed;
-  inset: 0;
-  background-color: rgba(var(--base-black-rgb), 0.45);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1100;
+  background-color: color-mix(in srgb, var(--glass-bg) 70%, rgba(var(--base-black-rgb), 0.35));
+  backdrop-filter: blur(14px);
 }
 
 .modal-panel {
-  width: min(480px, 90vw);
-  background-color: var(--color-bg-surface);
-  color: var(--color-text-primary);
-  border-radius: 16px;
-  padding: 32px;
-  box-shadow: var(--color-shadow-strong);
+  @apply w-full text-text-primary p-8 shadow-[var(--color-shadow-strong)];
 }
 </style>

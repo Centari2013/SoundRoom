@@ -1,20 +1,16 @@
 <template>
   <button
-  :type="type"
-  :disabled="disabled"
-  :class="[
-    'transition focus:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-2 focus-visible:ring-offset-surface-base disabled:opacity-50 disabled:cursor-not-allowed',
-    variant === 'default' && 'px-4 py-2 rounded text-sm font-medium bg-accent hover:bg-accent-strong text-text-inverse',
-    variant === 'naked' && 'bg-transparent text-text-primary hover:text-accent-soft'
-  ]"
-  @click="(e) => $emit('click', e)"
->
+    :type="type"
+    :disabled="disabled"
+    :class="computedClasses"
+    @click="(e) => $emit('click', e)"
+  >
     <span v-if="!loading">
       <slot />
     </span>
     <span v-else class="flex items-center justify-center space-x-2">
       <svg
-        class="w-4 h-4 animate-spin text-text-inverse"
+        class="w-4 h-4 animate-spin"
         fill="none"
         viewBox="0 0 24 24"
       >
@@ -38,7 +34,9 @@
 </template>
 
 <script setup>
-defineProps({
+import { computed } from 'vue'
+
+const props = defineProps({
   type: {
     type: String,
     default: 'button',
@@ -47,8 +45,22 @@ defineProps({
   loading: Boolean,
   variant: {
     type: String,
-    default: 'default', // or 'naked'
+    default: 'default', // 'naked' | 'secondary' | 'subtle' | 'ghost'
   },
 })
 defineEmits(['click'])
+
+const computedClasses = computed(() => {
+  const base = 'transition focus:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-2 focus-visible:ring-offset-surface-base disabled:opacity-50 disabled:cursor-not-allowed'
+
+  const variants = {
+    default: 'px-4 py-2 rounded text-sm font-medium bg-accent hover:bg-accent-strong text-text-inverse',
+    naked: 'bg-transparent text-text-primary hover:text-accent-soft',
+    secondary: 'glass-button text-sm font-medium',
+    subtle: 'glass-button text-sm font-medium text-text-muted hover:text-text-primary',
+    ghost: 'glass-button-ghost text-sm font-medium text-text-primary',
+  }
+
+  return [base, variants[props.variant] ?? variants.default]
+})
 </script>

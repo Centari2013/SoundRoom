@@ -21,12 +21,13 @@
   />
 
   <!-- Footer Buttons -->
-  <div class="relative flex items-center justify-between h-15 p-2">
+  <div class="glass-surface relative flex items-center justify-between h-15 p-2 rounded-none">
     <div class="flex space-x-3">
       <BaseButton
         @click="showSaveConfirm = true"
         :disabled="isSaving || !isRoomSaveable"
-        class="px-3 py-2 rounded bg-[var(--color-bg-surface)] hover:bg-[var(--color-bg-elevated)] text-[var(--color-text-primary)] border border-[var(--color-border-subtle)] transition focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)]"
+        variant="secondary"
+        class="px-3 py-2 text-sm"
         type="button"
         aria-label="Open save room confirmation"
       >
@@ -36,7 +37,8 @@
       <BaseButton
         @click="showNewRoomConfirm = true"
         :disabled="isSaving || isRoomEmpty"
-        class="px-3 py-2 rounded bg-[var(--color-bg-surface)] hover:bg-[var(--color-bg-elevated)] text-[var(--color-text-primary)] border border-[var(--color-border-subtle)] transition focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)]"
+        variant="secondary"
+        class="px-3 py-2 text-sm"
         type="button"
         aria-label="Open new room confirmation"
       >

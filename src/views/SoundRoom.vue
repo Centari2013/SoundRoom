@@ -17,7 +17,7 @@
         <Toolbar/>
 
         <!-- Canvas Area -->
-        <div class="flex-1 relative overflow-hidden bg-[var(--color-bg-surface)] flex items-center justify-center border-t border-[var(--color-border-subtle)]">
+        <div class="glass-surface flex-1 relative overflow-hidden flex items-center justify-center border-t rounded-none">
           <div class="pointer-events-none absolute inset-0 canvas-vignette" aria-hidden="true"></div>
           <MainCanvasStage
             v-bind="{

@@ -1,26 +1,29 @@
 <template>
-  <div class="flex items-center justify-between p-3 border-[var(--color-border-subtle)] bg-[var(--color-bg-elevated)] space-x-10 w-full shadow-[var(--color-shadow-soft)] text-[var(--color-text-primary)]">
+  <div class="glass-surface flex items-center justify-between p-3 space-x-10 w-full text-[var(--color-text-primary)] rounded-none">
           
     <div class="flex space-x-2 w-1/3">
       <BaseButton
       :disabled="audioEngine.soundSources.value.length === 0"
       @click="isPlaying ? audioEngine.pauseAll() : audioEngine.playAll()"
-      class="px-3 py-1 rounded text-sm bg-[var(--color-bg-surface)] hover:bg-[var(--color-bg-elevated)] text-[var(--color-text-primary)]"
-      > 
+      variant="secondary"
+      class="px-3 py-1 text-sm"
+      >
         
         <component :is="isPlaying ? Pause : Play" class="h-4 w-4 fill-[var(--color-text-primary)]" />
       </BaseButton>
       <BaseButton
         :disabled="actionStackEmpty || waiting"
         @click="actionManager.undoLastAction"
-        class="px-3 py-1 rounded text-sm bg-[var(--color-bg-surface)] hover:bg-[var(--color-bg-elevated)] text-[var(--color-text-primary)]"
+        variant="secondary"
+        class="px-3 py-1 text-sm"
       >
         <UndoRedo class="h-4 w-4 fill-[var(--color-text-primary)]"/>
       </BaseButton>
       <BaseButton
         :disabled="redoStackEmpty || waiting"
         @click="actionManager.redoLastAction"
-        class="px-3 py-1 rounded text-sm bg-[var(--color-bg-surface)] hover:bg-[var(--color-bg-elevated)] text-[var(--color-text-primary)]"
+        variant="secondary"
+        class="px-3 py-1 text-sm"
       >
         <UndoRedo class="h-4 w-4 scale-x-[-1] fill-[var(--color-text-primary)]"/>
       </BaseButton>

@@ -105,6 +105,12 @@
   --color-selection-strong: #2f6dfd;
   --color-selection-soft: rgba(47, 109, 253, 0.18);
 
+  /* -----------------------------------------
+     GLASS TOKENS (global)
+     ----------------------------------------- */
+  --glass-bg: rgba(var(--base-white-rgb), 0.06);
+  --glass-border: rgba(var(--color-border-subtle-rgb), 0.5);
+
   --color-surface-muted: #20232b;
 
   --color-panel: #0d0f15;
@@ -172,6 +178,7 @@
 
   /* Borders */
   --color-border-subtle: #c9ced6;
+  --color-border-subtle-rgb: 201, 206, 214;
   --color-border-strong: #b1b7c3;
 
   /* Text */
@@ -215,4 +222,8 @@
 
   --color-outline-strong: #3c4961;
   --color-detail-stroke: #354156;
+
+  /* Glass tokens */
+  --glass-bg: rgba(255, 255, 255, 0.45);
+  --glass-border: rgba(var(--color-border-subtle-rgb), 0.5);
 }

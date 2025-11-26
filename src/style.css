@@ -114,11 +114,12 @@ input:disabled {
 }
 
 .modal-backdrop {
-  @apply fixed inset-0 bg-[color-mix(in_srgb,var(--color-text-inverse)_60%,transparent)] backdrop-blur-sm z-50 flex items-center justify-center;
+  @apply fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md;
+  background: color-mix(in srgb, var(--glass-bg) 70%, rgba(var(--base-black-rgb), 0.35));
 }
 
 .modal-panel {
-  @apply bg-surface-app rounded-2xl w-[80vw] h-[80vh] shadow-[var(--color-shadow-soft)] border border-border-subtle overflow-hidden;
+  @apply glass-panel w-[80vw] h-[80vh] overflow-hidden;
 }
 
 .modal-header-float {
@@ -127,4 +128,39 @@ input:disabled {
 
 .modal-header {
   @apply top-0 left-0 right-0 z-10 flex justify-between items-center px-6 py-4 bg-[color-mix(in_srgb,var(--color-bg-app)_85%,transparent)] backdrop-blur-md border-b border-[var(--color-border-subtle)];
+}
+
+@layer components {
+  .glass-surface {
+    @apply bg-[var(--glass-bg)] border border-[var(--glass-border)] backdrop-blur-md shadow-[var(--color-shadow-soft)];
+    background-color: color-mix(in srgb, var(--color-bg-surface) 72%, transparent);
+  }
+
+  .glass-panel {
+    @apply glass-surface rounded-2xl;
+  }
+
+  .glass-frame {
+    @apply glass-surface rounded-xl;
+  }
+
+  .glass-button {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2 bg-[var(--glass-bg)] border border-[var(--glass-border)] backdrop-blur-md shadow-[var(--color-shadow-soft)] transition duration-200;
+    background-color: color-mix(in srgb, var(--color-bg-surface) 72%, transparent);
+  }
+
+  .glass-button-ghost {
+    @apply glass-button bg-transparent hover:bg-[var(--glass-bg)];
+    background-color: color-mix(in srgb, var(--color-bg-surface) 60%, transparent);
+  }
+}
+
+@supports not (backdrop-filter: blur(2px)) {
+  .glass-surface,
+  .glass-panel,
+  .glass-frame,
+  .glass-button,
+  .glass-button-ghost {
+    background-color: color-mix(in srgb, var(--color-bg-surface) 80%, transparent);
+  }
 }

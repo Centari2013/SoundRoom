@@ -32,7 +32,7 @@
         </div>
 
         <div
-          class="rounded-2xl p-6 shadow-sm border bg-[color-mix(in_srgb,var(--color-bg-surface)_90%,transparent)]"
+          class="glass-panel p-6 shadow-sm"
           :class="planTheme.card"
         >
           <header class="flex flex-wrap items-center justify-between gap-4">
@@ -80,7 +80,7 @@
         </div>
       </section>
 
-      <section class="rounded-2xl border border-border-subtle bg-[color-mix(in_srgb,var(--color-bg-surface)_90%,transparent)] p-6 shadow-sm space-y-6">
+      <section class="glass-panel p-6 shadow-sm space-y-6">
         <header class="space-y-1">
           <h2 class="text-xl font-semibold">Billing & Receipts</h2>
           <p class="text-sm text-text-muted">
@@ -88,7 +88,7 @@
           </p>
         </header>
 
-        <div class="rounded-xl border border-dashed border-border-subtle bg-[color-mix(in_srgb,var(--color-bg-surface)_90%,transparent)] px-5 py-6 text-sm text-text-secondary">
+        <div class="glass-surface rounded-xl border-dashed px-5 py-6 text-sm text-text-secondary">
           <p>Need an invoice, tax receipt, or want to change your payment method?</p>
           <p class="mt-3">Email <a class="underline" :href="supportEmailHref">{{ SUPPORT_EMAIL }}</a> and include the email tied to your SoundRoom account.</p>
         </div>
@@ -111,14 +111,14 @@
         </div>
       </section>
 
-      <section class="rounded-2xl border border-border-subtle bg-[color-mix(in_srgb,var(--color-bg-surface)_90%,transparent)] p-6 shadow-sm space-y-6">
+      <section class="glass-panel p-6 shadow-sm space-y-6">
         <header class="space-y-1">
           <h2 class="text-xl font-semibold">Upcoming Features</h2>
           <p class="text-sm text-text-muted">We are actively building deeper collaboration and scheduling tools. Here is what is landing next for paying members.</p>
         </header>
 
         <ul class="grid gap-4 md:grid-cols-2">
-          <li v-for="item in roadmapHighlights" :key="item.title" class="rounded-xl border border-border-subtle bg-[color-mix(in_srgb,var(--color-bg-surface)_92%,transparent)] p-5 space-y-2">
+          <li v-for="item in roadmapHighlights" :key="item.title" class="glass-surface rounded-xl p-5 space-y-2">
             <p class="text-sm uppercase tracking-wide text-text-muted">{{ item.badge }}</p>
             <h3 class="text-lg font-medium">{{ item.title }}</h3>
             <p class="text-sm text-text-muted">{{ item.copy }}</p>

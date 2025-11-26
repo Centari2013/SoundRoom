@@ -9,7 +9,7 @@
               Update how you appear in SoundRoom, adjust playback preferences, and keep your account secure.
             </p>
           </div>
-          <div class="flex items-center gap-3 rounded-full border border-border-subtle px-4 py-2 bg-[color-mix(in_srgb,var(--color-bg-surface)_85%,transparent)]">
+          <div class="glass-surface rounded-full flex items-center gap-3 px-4 py-2">
             <span class="text-xs uppercase tracking-wide text-text-muted">Plan</span>
             <span class="text-sm font-medium">{{ planLabel }}</span>
             <RouterLink v-if="tier.value === 'free'" :to="'/upgrade'" class="ml-2">
@@ -43,7 +43,7 @@
           <p v-else-if="planErrorMessage" class="text-sm font-medium">{{ planErrorMessage }}</p>
         </div>
 
-        <div class="rounded-2xl border border-border-subtle bg-[color-mix(in_srgb,var(--color-bg-surface)_85%,transparent)] p-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
+        <div class="glass-panel p-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
           <div>
             <p class="text-sm text-text-muted">Signed in as</p>
             <p class="text-lg font-medium break-all">{{ userEmail }}</p>
@@ -67,7 +67,7 @@
         </div>
       </section>
 
-      <section class="rounded-2xl border border-border-subtle bg-[color-mix(in_srgb,var(--color-bg-surface)_88%,transparent)] p-6 shadow-sm space-y-6">
+      <section class="glass-panel space-y-6 p-6">
         <header class="space-y-2">
           <h2 class="text-xl font-semibold">Profile</h2>
           <p class="text-sm text-text-muted">Set how teammates and collaborators see you.</p>
@@ -136,7 +136,7 @@
 
       <ThemeSelector />
 
-      <section class="rounded-2xl border border-border-subtle bg-[color-mix(in_srgb,var(--color-bg-surface)_88%,transparent)] p-6 shadow-sm space-y-6">
+      <section class="glass-panel space-y-6 p-6">
         <header class="space-y-2">
           <h2 class="text-xl font-semibold">Playback Preferences</h2>
           <p class="text-sm text-text-muted">These settings are stored locally in your browser.</p>
@@ -188,7 +188,7 @@
         <p v-if="preferenceMessage" class="text-sm text-status-success">{{ preferenceMessage }}</p>
       </section>
 
-      <section class="rounded-2xl border border-border-subtle bg-[color-mix(in_srgb,var(--color-bg-surface)_88%,transparent)] p-6 shadow-sm space-y-6">
+      <section class="glass-panel space-y-6 p-6">
         <header class="space-y-2">
           <h2 class="text-xl font-semibold">Security</h2>
           <p class="text-sm text-text-muted">Keep your account protected and up to date.</p>

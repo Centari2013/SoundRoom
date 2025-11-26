@@ -1,19 +1,19 @@
 <template>
   <div
     @click.self="canClickOutside && emit('close')"
-    class="fixed inset-0 bg-[color-mix(in_srgb,var(--color-bg-app)_70%,transparent)] backdrop-blur-sm z-50 flex items-center justify-center"
+    class="fixed inset-0 bg-[color-mix(in_srgb,var(--color-bg-app)_70%,transparent)] backdrop-blur-md z-50 flex items-center justify-center"
     role="dialog"
     aria-modal="true"
     :aria-labelledby="'modal-title'"
   >
     <div
       ref="modalContent"
-      class="bg-surface-base text-text-primary rounded-2xl w-[90vw] max-w-md h-auto max-h-[85vh] shadow-xl border border-border-subtle relative overflow-hidden"
+      class="glass-panel text-text-primary w-[90vw] max-w-md h-auto max-h-[85vh] relative overflow-hidden"
       tabindex="-1"
     >
       <!-- Header -->
       <div
-        class="top-0 left-0 right-0 z-10 flex justify-between items-center px-4 py-3 bg-[color-mix(in_srgb,var(--color-bg-surface)_80%,transparent)] backdrop-blur-md border-b border-border-subtle"
+        class="top-0 left-0 right-0 z-10 flex justify-between items-center px-4 py-3 glass-surface rounded-none border-b"
       >
         <h2 id="modal-title" class="text-lg font-semibold tracking-tight">
           {{ title }}

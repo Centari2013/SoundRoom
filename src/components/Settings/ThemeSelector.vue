@@ -1,5 +1,5 @@
 <template>
-  <section class="rounded-2xl border border-border-subtle bg-[color-mix(in_srgb,var(--color-bg-surface)_90%,transparent)] p-6 shadow-sm space-y-6">
+  <section class="glass-panel space-y-6 p-6">
     <header class="space-y-2">
       <h2 class="text-xl font-semibold">Appearance</h2>
       <p class="text-sm text-[var(--color-text-muted)]">Pick a theme and preview its palette.</p>
@@ -10,12 +10,12 @@
           v-for="theme in themes"
           :key="themeKey(theme)"
           type="button"
-          class="relative flex flex-col gap-3 rounded-xl border p-4 text-left transition duration-200"
+          class="relative flex flex-col gap-3 rounded-xl border p-4 text-left transition duration-200 glass-surface"
           :class="[
             activeThemeKey === themeKey(theme)
               ? 'border-[var(--color-accent-soft)] ring-2 ring-[color-mix(in_srgb,var(--color-accent)_65%,transparent)] shadow-md'
               : 'border-border-subtle hover:border-[var(--color-border-strong)] hover:shadow-sm',
-            'bg-[color-mix(in_srgb,var(--color-bg-elevated)_86%,transparent)] hover:-translate-y-0.5 hover:scale-[1.01]'
+            'hover:-translate-y-0.5 hover:scale-[1.01]'
           ]"
           :style="previewStyle(theme)"
           @click="selectTheme(theme)"
@@ -47,7 +47,7 @@
             </span>
           </div>
 
-          <div class="relative h-20 w-full overflow-hidden rounded-xl border" :style="previewFrameStyle">
+          <div class="relative h-20 w-full overflow-hidden rounded-xl border glass-frame" :style="previewFrameStyle">
             <div class="absolute inset-0" :style="{ background: 'var(--preview-bg)' }"></div>
             <div
               class="absolute inset-[12px] rounded-lg border"

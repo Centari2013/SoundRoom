@@ -1,6 +1,6 @@
 <template>
   <aside
-    class="flex flex-col h-full bg-[var(--color-bg-elevated)] border-l border-[var(--color-border-subtle)] p-4 space-y-4 text-[var(--color-text-primary)]"
+    class="glass-surface flex flex-col h-full border-l p-4 space-y-4 text-[var(--color-text-primary)] rounded-none"
     role="region"
     aria-labelledby="selected-sound-panel-label"
   >
