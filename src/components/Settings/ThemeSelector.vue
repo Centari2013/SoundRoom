@@ -111,7 +111,7 @@
 <script setup>
 import { computed, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
 import BaseButton from '@/components/ui/input/BaseButton.vue'
-import { applyThemeVars, clearThemeVars, getTheme, setTheme } from '@/utils/theme'
+import { applyThemeVars, clearThemeVars, getTheme, setTheme, BUILTIN_THEME_NAMES } from '@/utils/theme'
 import { fetchAllThemes, fetchUserTheme, saveUserTheme } from '@/utils/themeApi'
 import { compareTiers, formatTierLabel } from '@/utils/tierUtils'
 import { useAuth } from '@/composables/useAuth'
@@ -306,7 +306,8 @@ const loadThemes = async () => {
   try {
     errorMessage.value = ''
     const data = await fetchAllThemes()
-    const mapped = data.map((theme) => normalizeTheme({ ...theme, type: 'database' }))
+    const filtered = (data || []).filter((theme) => !BUILTIN_THEME_NAMES.has(theme.name))
+    const mapped = filtered.map((theme) => normalizeTheme({ ...theme, type: 'database' }))
     availableThemes.value = [...BUILTIN_THEMES, ...mapped]
     hydratePreviews()
   } catch (error) {
@@ -325,9 +326,10 @@ const loadUserTheme = async () => {
   try {
     errorMessage.value = ''
     const theme = await fetchUserTheme()
-    savedThemeId.value = theme?.id || null
+    const isBuiltinName = theme && BUILTIN_THEME_NAMES.has(theme.name)
+    savedThemeId.value = isBuiltinName ? null : theme?.id || null
 
-    if (theme) {
+    if (theme && !isBuiltinName) {
       const normalized = upsertTheme({ ...theme, type: 'database' })
       hydratePreviews()
       selectTheme(normalized)

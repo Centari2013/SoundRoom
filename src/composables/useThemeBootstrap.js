@@ -1,6 +1,6 @@
 import { onMounted, watch } from 'vue'
 import { fetchUserTheme } from '@/utils/themeApi'
-import { applyThemeVars, clearThemeVars } from '@/utils/theme'
+import { applyThemeVars, clearThemeVars, BUILTIN_THEME_NAMES } from '@/utils/theme'
 import { useAuth } from '@/composables/useAuth'
 
 export function useThemeBootstrap() {
@@ -14,7 +14,7 @@ export function useThemeBootstrap() {
       }
 
       const theme = await fetchUserTheme()
-      if (theme?.css_vars) {
+      if (theme?.css_vars && !BUILTIN_THEME_NAMES.has(theme.name)) {
         applyThemeVars(theme.css_vars)
       } else {
         clearThemeVars()

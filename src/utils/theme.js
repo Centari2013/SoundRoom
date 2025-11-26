@@ -2,6 +2,7 @@ const THEME_KEY = 'theme'
 const DEFAULT_THEME = 'dark'
 
 export const SUPPORTED_THEMES = ['dark', 'light']
+export const BUILTIN_THEME_NAMES = new Set(SUPPORTED_THEMES)
 
 const tieredOverrides = {
   active: {}
