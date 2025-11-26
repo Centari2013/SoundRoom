@@ -1,4 +1,4 @@
-const tierOrder = ['free', 'plus', 'pro']
+const tierOrder = ['free', 'basic', 'pro']
 
 export function compareTiers(userTier = 'free', requiredTier = 'free') {
   const currentIndex = tierOrder.indexOf(String(userTier).toLowerCase())
