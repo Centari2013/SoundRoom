@@ -70,7 +70,7 @@
       <section class="rounded-2xl border border-border-subtle bg-[color-mix(in_srgb,var(--color-bg-surface)_88%,transparent)] p-6 shadow-sm space-y-6">
         <header class="space-y-2">
           <h2 class="text-xl font-semibold">Profile</h2>
-          <p class="text-sm text-text-muted">Set how teammates and collaborators see you.</p>
+          <p class="text-sm text-text-muted">Set how collaborators (coming soon) see you.</p>
         </header>
 
         <div v-if="isFetchingProfile" class="space-y-4 animate-pulse">
@@ -94,7 +94,7 @@
               label="Avatar URL"
               placeholder="https://example.com/avatar.png"
               autocomplete="off"
-              :disabled="profileSaving"
+              :disabled="profileSaving || true"
               :error="profileErrors.avatarUrl"
             />
             <BaseInput
@@ -417,13 +417,51 @@ function resetPreferences() {
   preferenceMessage.value = ''
 }
 
-function savePreferences() {
+async function savePreferences() {
+  // save to local storage first
   localStorage.setItem(LOCAL_PREF_KEY, JSON.stringify(preferences))
   preferenceInitial.value = { ...preferences }
-  preferenceMessage.value = 'Preferences saved. Nice!'
-  setTimeout(() => {
-    preferenceMessage.value = ''
-  }, 4000)
+
+  // now sync to supabase
+  if (user.value?.id) {
+    try {
+      // fetch current settings
+      const { data, error: fetchError } = await supabase
+        .from('users')
+        .select('settings')
+        .eq('id', user.value.id)
+        .single()
+
+      if (fetchError) throw fetchError
+
+      const currentSettings = data?.settings ?? {}
+
+      const newSettings = {
+        ...currentSettings,
+        preferences: {
+          ...currentSettings.preferences,
+          ...preferences,
+        }
+      }
+
+      const { error: updateError } = await supabase
+        .from('users')
+        .update({ settings: newSettings })
+        .eq('id', user.value.id)
+
+      if (updateError) throw updateError
+
+      preferenceMessage.value = 'Preferences saved.'
+      setTimeout(() => (preferenceMessage.value = ''), 4000)
+
+    } catch (err) {
+      console.error('Failed to sync preferences', err)
+      preferenceMessage.value = 'Preferences saved locally (sync failed).'
+    }
+  } else {
+    // user not logged in
+    preferenceMessage.value = 'Preferences saved locally.'
+  }
 }
 
 async function fetchProfile() {
@@ -491,28 +529,17 @@ async function saveProfile() {
 
   try {
     const updates = {
-      id: user.value.id,
       display_name: trimmedName,
       avatar_url: trimmedAvatar || null
     }
 
     const { error } = await supabase
       .from('users')
-      .upsert(updates, { onConflict: 'id' })
+      .update(updates)
+      .eq('id', user.value.id)
 
     if (error) {
       throw error
-    }
-
-    const { error: authError } = await supabase.auth.updateUser({
-      data: {
-        full_name: trimmedName,
-        avatar_url: trimmedAvatar || null
-      }
-    })
-
-    if (authError) {
-      console.warn('Failed to update auth metadata', authError)
     }
 
     localStorage.setItem('userProfile', JSON.stringify({
