@@ -1,33 +1,71 @@
 <template>
-  <PulsingOverlay v-if="isLoggingOut" :duration="2000" :text="'Logging out...'" @done="isLoggingOut = false" />
-  <header class="px-6 py-4 border-b border-[var(--color-border-subtle)] bg-[var(--color-bg-surface)] text-[var(--color-text-primary)] flex items-center justify-between relative">
-    <h1 class="text-xl font-bold tracking-wide text-[var(--color-text-primary)]"><RouterLink to="/" style="text-decoration: none; color: inherit;">SoundRoom</RouterLink></h1>
-    
+  <PulsingOverlay
+    v-if="isLoggingOut"
+    :duration="2000"
+    text="Logging out..."
+    @done="isLoggingOut = false"
+  />
+
+  <header
+    class="px-6 py-4 border-b border-[var(--color-border-subtle)]
+           bg-[color-mix(in_srgb,var(--color-bg-surface)_95%,black_5%)]
+           backdrop-blur-sm
+           flex items-center justify-between sticky top-0 z-40
+           shadow-[0_4px_20px_rgba(0,0,0,0.25)]"
+  >
+    <!-- Left: Logo -->
+    <RouterLink
+      to="/"
+      class="text-4xl font-semibold tracking-tight hover:opacity-90 transition"
+    >
+      <span
+        class="bg-gradient-to-r from-[var(--color-accent)] to-[var(--color-success)]
+               bg-clip-text text-transparent
+               select-none"
+      >
+        SoundRoom
+      </span>
+    </RouterLink>
+
+    <!-- Right: Menu -->
     <div v-if="shouldShowNavButtons" class="relative">
       <button
         ref="menuButton"
         type="button"
         @click.stop="toggleMenu"
-        class="flex items-center justify-center w-12 h-12 !p-1 !bg-transparent text-[var(--color-text-primary)]"
+        class="flex items-center justify-center w-12 h-12 rounded-lg !p-1
+               hover:bg-[color-mix(in_srgb,var(--color-bg-surface)_85%,transparent)]
+               !bg-transparent !border-none
+               transition"
         :aria-expanded="isMenuOpen"
-        aria-haspopup="true"
       >
         <span class="sr-only">Open navigation menu</span>
-        <HamburgerIcon class="w-full h-full" />
-
+        <HamburgerIcon class="w-full h-full text-[var(--color-text-primary)]" />
       </button>
+
+      <!-- Menu panel -->
       <transition name="fade">
         <div
           v-if="isMenuOpen"
-          @mouseleave="closeMenu"
           ref="menuPanel"
-          class="absolute right-0 mt-2 w-44 rounded-lg shadow-lg border border-[var(--color-border-subtle)] bg-[var(--color-bg-elevated)] text-[var(--color-text-primary)] py-2 z-50 flex flex-col divide-y divide-[var(--color-border-subtle)] overflow-hidden"
+          @mouseleave="closeMenu"
+          class="absolute right-0 mt-2 w-48 rounded-xl overflow-hidden
+                 border border-[var(--color-border-subtle)]
+                 bg-[color-mix(in_srgb,var(--color-bg-elevated)_94%,black_6%)]
+                 shadow-[0_12px_30px_rgba(0,0,0,0.35)]
+                 backdrop-blur-md
+                 flex flex-col divide-y divide-[var(--color-border-subtle)]
+                 z-50"
         >
           <template v-for="button in visibleButtons" :key="button.label">
             <button
-              class="w-full px-4 py-2 text-left text-sm text-[var(--color-text-primary)] hover:bg-[color-mix(in_srgb,var(--color-bg-surface)_85%,transparent)] focus:outline-none !bg-transparent"
-              type="button"
+              class="px-4 py-3 text-left text-sm font-medium
+                    !bg-transparent
+                     text-[var(--color-text-primary)]
+                     hover:bg-[color-mix(in_srgb,var(--color-bg-surface)_85%,transparent)]
+                     transition"
               @click="runAction(button.action)"
+              type="button"
             >
               {{ button.label }}
             </button>
@@ -35,9 +73,9 @@
         </div>
       </transition>
     </div>
-
   </header>
 </template>
+
 
 <script setup>
 import { ref, watch, computed, onMounted, onBeforeUnmount } from 'vue';
