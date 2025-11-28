@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import SoundRoom from '@/views/SoundRoom.vue'
+import LandingPage from '@/views/LandingPage.vue'
 import { useAuth } from '@/composables/useAuth'
 import { watch } from 'vue'
 import { applySeo } from '@/utils/seo'
@@ -12,10 +13,20 @@ const router = createRouter({
   routes: [
     {
       path: '/',
+      component: LandingPage,
+      meta: {
+        seo: {
+          title: 'SoundRoom | Spatial audio playground',
+          description: 'Explore SoundRoom, a browser-based canvas for crafting immersive spatial audio rooms with drag-and-drop sources and real-time binaural mixing.',
+        },
+      },
+    },
+    {
+      path: '/app',
       component: SoundRoom,
       meta: {
         seo: {
-          title: 'SoundRoom',
+          title: 'SoundRoom Studio',
           description: 'Design and layer immersive spatial audio scenes in your browser. Drag directional sources, sculpt ambient mixes, and save custom rooms with SoundRoom.',
         },
       },
@@ -65,7 +76,7 @@ const router = createRouter({
           },
         },
         {
-          path: '/room-manager',
+          path: 'room-manager',
           component: () => import('@/components/ui/modals/ModalWrapper.vue'),
           props: { component: () => import('@/components/ui/modals/RoomManager/RoomManager.vue') },
           meta: {
@@ -77,7 +88,7 @@ const router = createRouter({
           },
         },
         {
-          path: '/sound-library',
+          path: 'sound-library',
           component: () => import('@/components/ui/modals/ModalWrapper.vue'),
           props: { component: () => import('@/components/ui/modals/SoundLibrary/SoundLibrary.vue') },
           meta: {
@@ -99,6 +110,34 @@ const router = createRouter({
           },
         },
       ],
+    },
+    {
+      path: '/login',
+      redirect: '/app/login',
+    },
+    {
+      path: '/signup',
+      redirect: '/app/signup',
+    },
+    {
+      path: '/reset',
+      redirect: '/app/reset',
+    },
+    {
+      path: '/help',
+      redirect: '/app/help',
+    },
+    {
+      path: '/room-manager',
+      redirect: '/app/room-manager',
+    },
+    {
+      path: '/sound-library',
+      redirect: '/app/sound-library',
+    },
+    {
+      path: '/upgrade',
+      redirect: '/app/upgrade',
     },
     {
       path: '/terms',
