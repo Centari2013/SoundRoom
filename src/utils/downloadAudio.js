@@ -109,19 +109,27 @@ export async function downloadMultipleAudio(
   populateAudio = false,
   stopPlayback = null
 ) {
-  const results = await Promise.all(
+  const successes = []
+  const failedIds = []
+
+  await Promise.all(
     sourcesList.map(async (src) => {
-      const result = await downloadAudio(
-        src.bucket,
-        src.path,
-        src.base,
-        populateAudio,
-        stopPlayback,
-        src.id
-      )
-      return result ? { id: src.id, audioPath: result.blobUrl } : null
+      try {
+        const result = await downloadAudio(
+          src.bucket,
+          src.path,
+          src.base,
+          populateAudio,
+          stopPlayback,
+          src.id
+        )
+        if (result) successes.push({ id: src.id, audioPath: result.blobUrl })
+      } catch (error) {
+        console.warn(`Failed to download sound ${src.id}:`, error)
+        failedIds.push(src.id)
+      }
     })
   )
 
-  return results.filter(Boolean) // filter out any failed downloads
+  return { successes, failedIds }
 }
