@@ -141,7 +141,7 @@ const BUILTIN_THEMES = [
 const availableThemes = ref([...BUILTIN_THEMES])
 const activeBaseTheme = computed({
   get: () => themeStore.activeTheme,
-  set: (value) => themeStore.setTheme(value, { clearOverrides: true })
+  set: (value) => themeStore.setTheme(value, { clearOverrides: false })
 })
 const selectedTheme = ref(BUILTIN_THEMES.find((theme) => theme.name === activeBaseTheme.value) || BUILTIN_THEMES[0])
 const savedThemeId = ref(null)
@@ -258,6 +258,8 @@ const selectTheme = (theme) => {
       clearOverrides: true,
       overrides: theme.css_vars || {},
     })
+    console.log("theme.css_vars for selection:", theme.css_vars)
+
   }
 }
 
@@ -270,6 +272,11 @@ const resetPreview = () => {
     selectTheme(base)
   }
 }
+
+watch(() => themeStore.activeTheme, (val) => {
+  console.log("[ThemeSelector] activeTheme changed ->", val)
+})
+
 
 const saveSelection = async () => {
   if (!selectedTheme.value) return
@@ -340,31 +347,35 @@ const loadThemes = async () => {
 }
 
 const loadUserTheme = async () => {
+  // User not logged in → don't touch the store, just sync UI
   if (!isAuthenticated.value) {
     savedThemeId.value = null
-    const base = BUILTIN_THEMES.find((entry) => entry.name === activeBaseTheme.value) || BUILTIN_THEMES[0]
-    themeStore.setTheme(base.name, { clearOverrides: true })
-    selectTheme(base)
+    const base = BUILTIN_THEMES.find((entry) => entry.name === themeStore.activeTheme) || BUILTIN_THEMES[0]
+    selectedTheme.value = base
     return
   }
+
   try {
     errorMessage.value = ''
     const theme = await fetchUserTheme()
     savedThemeId.value = theme?.id || null
 
     if (theme) {
+      // User has a saved DB theme → apply it
       const normalized = upsertTheme({ ...theme, type: 'database' })
       hydratePreviews()
       selectTheme(normalized)
     } else {
-      const base = BUILTIN_THEMES.find((entry) => entry.name === activeBaseTheme.value) || BUILTIN_THEMES[0]
-      themeStore.setTheme(base.name, { clearOverrides: true })
-      selectTheme(base)
+      // No saved theme in DB → keep whatever is already active in the store
+      const base = BUILTIN_THEMES.find((entry) => entry.name === themeStore.activeTheme) || BUILTIN_THEMES[0]
+      selectedTheme.value = base
+      // IMPORTANT: do NOT call themeStore.setTheme() here
     }
   } catch (error) {
     errorMessage.value = error.message || 'Unable to load saved theme.'
   }
 }
+
 
 const syncActiveTheme = () => {
   if (selectedTheme.value?.type === 'builtin') {

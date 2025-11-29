@@ -98,7 +98,7 @@
 </template>
 
 <script setup>
-import { computed, ref } from 'vue';
+import { computed, ref, onBeforeUnmount } from 'vue';
 import { useListenerStore } from '@/stores/useListenerStore';
 import { useActionManagerStore } from '@/stores/useActionManagerStore';
 import { useRoomStore } from '@/stores/useRoomStore';
