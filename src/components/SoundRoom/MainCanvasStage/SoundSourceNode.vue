@@ -1,5 +1,6 @@
 <template>
   <v-group
+    ref="sourceGroup"
     :x="source.instance.state.x"
     :y="source.instance.state.y"
     @dragmove="onSourceDragMove"
@@ -115,11 +116,13 @@
 </template>
 
 <script setup>
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
+import { computed, ref } from 'vue'
 import { useRoomStore } from '@/stores/useRoomStore'
 import { useActionManagerStore } from '@/stores/useActionManagerStore'
 import { storeToRefs } from 'pinia'
 import ScheduledPlayRing from '@/components/SoundRoom/MainCanvasStage/ScheduledPlayRing.vue'
+import { useKonvaThemeRedraw } from '@/composables/useKonvaTheme'
+import { useThemeStore } from '@/stores/useThemeStore'
 
 // Props and emits
 const props = defineProps({
@@ -131,12 +134,17 @@ const props = defineProps({
 const { room } = storeToRefs(useRoomStore())
 const { actionManager } = storeToRefs(useActionManagerStore())
 const emit = defineEmits(['select'])
+const themeStore = useThemeStore()
 
-const isDarkMode = ref(document.documentElement.dataset.theme !== 'light')
-let themeObserver = null
+const isDarkMode = computed(() => themeStore.activeTheme !== 'light')
+const sourceGroup = ref(null)
+const { themeVersion } = useKonvaThemeRedraw(() => {
+  const node = sourceGroup.value?.getNode()
+  node?.clearCache?.()
+  node?.getLayer?.()?.batchDraw()
+})
 const rootStyles = computed(() => {
-  // eslint-disable-next-line no-unused-expressions
-  isDarkMode.value
+  themeVersion.value
   return typeof window !== 'undefined' ? getComputedStyle(document.documentElement) : null
 })
 const getVar = (name, fallback) => rootStyles.value?.getPropertyValue(name)?.trim() || fallback
@@ -144,18 +152,6 @@ const rgbaFromVar = (name, alpha, fallback) => {
   const rgbValue = rootStyles.value?.getPropertyValue(name)?.trim()
   return rgbValue ? `rgba(${rgbValue}, ${alpha})` : fallback
 }
-
-const syncTheme = () => {
-  isDarkMode.value = document.documentElement.dataset.theme !== 'light'
-}
-
-onMounted(() => {
-  syncTheme()
-  themeObserver = new MutationObserver(syncTheme)
-  themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme', 'class'] })
-})
-
-onBeforeUnmount(() => themeObserver?.disconnect())
 
 const sched = computed(() => props.source.instance.state.schedule)
 const isScheduled = computed(() => sched.value?.enabled)

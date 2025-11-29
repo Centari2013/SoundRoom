@@ -106,13 +106,15 @@
 </template>
 
 <script setup>
-import { computed, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
+import { computed, onMounted, reactive, ref, watch } from 'vue'
 import BaseButton from '@/components/ui/input/BaseButton.vue'
-import { applyThemeVars, clearThemeVars, getTheme, setTheme, previewThemeBase, restorePersistentTheme } from '@/utils/theme'
+import { previewThemeBase } from '@/utils/theme'
 import { fetchAllThemes, fetchUserTheme, saveUserTheme } from '@/utils/themeApi'
 import { compareTiers, formatTierLabel } from '@/utils/tierUtils'
 import { useAuth } from '@/composables/useAuth'
+import { useThemeStore } from '@/stores/useThemeStore'
 
+const themeStore = useThemeStore()
 const { tier, isAuthenticated, user } = useAuth()
 
 const BUILTIN_THEMES = [
@@ -137,7 +139,10 @@ const BUILTIN_THEMES = [
 ]
 
 const availableThemes = ref([...BUILTIN_THEMES])
-const activeBaseTheme = ref(getTheme())
+const activeBaseTheme = computed({
+  get: () => themeStore.activeTheme,
+  set: (value) => themeStore.setTheme(value, { clearOverrides: false })
+})
 const selectedTheme = ref(BUILTIN_THEMES.find((theme) => theme.name === activeBaseTheme.value) || BUILTIN_THEMES[0])
 const savedThemeId = ref(null)
 const saving = ref(false)
@@ -245,11 +250,16 @@ const selectTheme = (theme) => {
 
   if (theme.type === 'builtin') {
     activeBaseTheme.value = previewThemeBase(theme.name)
-    clearThemeVars()
+    themeStore.setTheme(activeBaseTheme.value, { clearOverrides: true })
 
   } else {
-    activeBaseTheme.value = setTheme(theme.theme_base || 'dark', { clearOverrides: true })
-    applyThemeVars(theme.css_vars || {})
+    const base = theme.theme_base || 'dark'
+    activeBaseTheme.value = themeStore.setTheme(base, {
+      clearOverrides: true,
+      overrides: theme.css_vars || {},
+    })
+    console.log("theme.css_vars for selection:", theme.css_vars)
+
   }
 }
 
@@ -262,6 +272,11 @@ const resetPreview = () => {
     selectTheme(base)
   }
 }
+
+watch(() => themeStore.activeTheme, (val) => {
+  console.log("[ThemeSelector] activeTheme changed ->", val)
+})
+
 
 const saveSelection = async () => {
   if (!selectedTheme.value) return
@@ -332,55 +347,47 @@ const loadThemes = async () => {
 }
 
 const loadUserTheme = async () => {
+  // User not logged in → don't touch the store, just sync UI
   if (!isAuthenticated.value) {
     savedThemeId.value = null
-    clearThemeVars()
-    const base = BUILTIN_THEMES.find((entry) => entry.name === activeBaseTheme.value) || BUILTIN_THEMES[0]
-    selectTheme(base)
+    const base = BUILTIN_THEMES.find((entry) => entry.name === themeStore.activeTheme) || BUILTIN_THEMES[0]
+    selectedTheme.value = base
     return
   }
+
   try {
     errorMessage.value = ''
     const theme = await fetchUserTheme()
     savedThemeId.value = theme?.id || null
 
     if (theme) {
+      // User has a saved DB theme → apply it
       const normalized = upsertTheme({ ...theme, type: 'database' })
       hydratePreviews()
       selectTheme(normalized)
     } else {
-      clearThemeVars()
-      const base = BUILTIN_THEMES.find((entry) => entry.name === activeBaseTheme.value) || BUILTIN_THEMES[0]
-      selectTheme(base)
+      // No saved theme in DB → keep whatever is already active in the store
+      const base = BUILTIN_THEMES.find((entry) => entry.name === themeStore.activeTheme) || BUILTIN_THEMES[0]
+      selectedTheme.value = base
+      // IMPORTANT: do NOT call themeStore.setTheme() here
     }
   } catch (error) {
     errorMessage.value = error.message || 'Unable to load saved theme.'
   }
 }
 
+
 const syncActiveTheme = () => {
-  activeBaseTheme.value = getTheme()
   if (selectedTheme.value?.type === 'builtin') {
-    selectedTheme.value = BUILTIN_THEMES.find((theme) => theme.name === activeBaseTheme.value) || selectedTheme.value
+    selectedTheme.value = BUILTIN_THEMES.find((theme) => theme.name === themeStore.activeTheme) || selectedTheme.value
   }
   hydratePreviews()
-}
-
-let observer
-const handleStorage = (event) => {
-  if (event.key === 'theme') {
-    syncActiveTheme()
-  }
 }
 
 onMounted(async () => {
   syncActiveTheme()
   await loadThemes()
   await loadUserTheme()
-
-  observer = new MutationObserver(syncActiveTheme)
-  observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] })
-  window.addEventListener('storage', handleStorage)
 })
 
 watch(
@@ -391,11 +398,12 @@ watch(
   }
 )
 
+watch(
+  () => themeStore.signature,
+  () => {
+    syncActiveTheme()
+  }
+)
 
-onBeforeUnmount(() => {
-  observer?.disconnect()
-  window.removeEventListener('storage', handleStorage)
-  restorePersistentTheme()
-  clearThemeVars()
-})
+
 </script>

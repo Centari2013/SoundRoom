@@ -1,28 +1,13 @@
 import { onMounted, watch } from 'vue'
-import { fetchUserTheme } from '@/utils/themeApi'
-import { applyThemeVars, clearThemeVars, setTheme } from '@/utils/theme'
 import { useAuth } from '@/composables/useAuth'
+import { useThemeStore } from '@/stores/useThemeStore'
 
 export function useThemeBootstrap() {
   const { user } = useAuth()
+  const themeStore = useThemeStore()
 
   const loadUserTheme = async () => {
-    try {
-      if (!user.value) {
-        clearThemeVars()
-        return
-      }
-
-      const theme = await fetchUserTheme()
-      if (theme?.css_vars) {
-        setTheme(theme.theme_base || 'dark', { clearOverrides: true })
-        applyThemeVars(theme.css_vars)
-      } else {
-        clearThemeVars()
-      }
-    } catch (error) {
-      console.error('Failed to load user theme', error)
-    }
+    await themeStore.loadUserTheme()
   }
 
   onMounted(() => {

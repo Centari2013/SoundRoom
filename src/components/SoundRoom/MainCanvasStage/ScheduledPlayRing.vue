@@ -26,6 +26,7 @@
 
 <script setup>
 import { ref, watch, onMounted, onUnmounted, computed } from 'vue'
+import { useThemeStore } from '@/stores/useThemeStore'
 
 const props = defineProps({
   playing: Boolean,
@@ -55,8 +56,10 @@ const props = defineProps({
   },
 })
 
+const themeStore = useThemeStore()
 // compute default color AFTER setup
 const fallbackColor = computed(() => {
+  themeStore.signature // ensure recompute when theme changes
   if (typeof window === 'undefined') return 'rgb(var(--color-accent-strong-rgb))'
   const styles = getComputedStyle(document.documentElement)
   return (
