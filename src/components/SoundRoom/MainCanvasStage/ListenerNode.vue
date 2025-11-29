@@ -98,23 +98,29 @@
 </template>
 
 <script setup>
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
+import { computed, ref } from 'vue';
 import { useListenerStore } from '@/stores/useListenerStore';
 import { useActionManagerStore } from '@/stores/useActionManagerStore';
 import { useRoomStore } from '@/stores/useRoomStore';
 import { storeToRefs } from 'pinia';
+import { useKonvaThemeRedraw } from '@/composables/useKonvaTheme';
+import { useThemeStore } from '@/stores/useThemeStore';
 
 
 const { listener } = storeToRefs(useListenerStore())
 const { actionManager } = storeToRefs(useActionManagerStore())
 const { room } = storeToRefs(useRoomStore())
+const themeStore = useThemeStore()
 
-const isDarkMode = ref(document.documentElement.dataset.theme !== 'light')
-let themeObserver = null
+const isDarkMode = computed(() => themeStore.activeTheme !== 'light')
+const { themeVersion } = useKonvaThemeRedraw(() => {
+  const node = listenerGroup.value?.getNode()
+  node?.clearCache?.()
+  node?.getLayer?.()?.batchDraw()
+})
+
 const rootStyles = computed(() => {
-  // re-evaluate when theme changes
-  // eslint-disable-next-line no-unused-expressions
-  isDarkMode.value
+  themeVersion.value
   return typeof window !== 'undefined' ? getComputedStyle(document.documentElement) : null
 })
 const getVar = (name, fallback) => rootStyles.value?.getPropertyValue(name)?.trim() || fallback
@@ -122,18 +128,6 @@ const rgbaFromVar = (name, alpha, fallback) => {
   const rgbValue = rootStyles.value?.getPropertyValue(name)?.trim()
   return rgbValue ? `rgba(${rgbValue}, ${alpha})` : fallback
 }
-
-const syncTheme = () => {
-  isDarkMode.value = document.documentElement.dataset.theme !== 'light'
-}
-
-onMounted(() => {
-  syncTheme()
-  themeObserver = new MutationObserver(syncTheme)
-  themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme', 'class'] })
-})
-
-onBeforeUnmount(() => themeObserver?.disconnect())
 
 const anchorGlowFill = computed(() => isDarkMode.value
   ? rgbaFromVar('--color-accent-strong-rgb', 0.08, 'rgba(var(--color-accent-strong-rgb), 0.08)')
