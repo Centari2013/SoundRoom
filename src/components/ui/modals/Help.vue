@@ -1,7 +1,7 @@
 <template>
   <div @click.self="handleClose" class="modal-backdrop">
     <div class="bg-surface-base text-text-primary rounded-2xl w-[80vw] h-[80vh] relative flex flex-col overflow-hidden shadow-2xl border border-border-subtle">
-      
+
       <!-- Absolute Floating Header -->
       <div class="modal-header-float">
         <h1 class="text-2xl font-bold tracking-tight">Welcome to SoundRoom</h1>
@@ -9,110 +9,90 @@
       </div>
 
       <!-- Scrollable Content -->
-      <div class="flex-1 overflow-y-auto p-8 pt-24 space-y-8 text-left text-sm leading-relaxed">
-        
-        <!-- Help Sections (same as before) -->
-        <section>
-          <p class="mb-4">
-            SoundRoom is your spatial mixing playground. Drop curated samples (or your own uploads) onto the stage, fine-tune directionality, and save polished rooms to revisit later.
-          </p>
+      <div class="flex-1 overflow-y-auto p-8 pt-24 space-y-10 text-left text-sm leading-relaxed">
+
+        <section class="rounded-xl border border-border-subtle bg-surface-base/70 p-6 space-y-3">
+          <p>SoundRoom is a spatial audio canvas built with Vue 3, Konva, and the Web Audio API. Place directional sound sources, schedule loops, and save complete rooms for later.</p>
+          <p class="text-text-secondary">Use the sections below to learn workflows, limits, billing details, shortcuts, and troubleshooting tips.</p>
         </section>
-        
-        <section>
-            <h2 class="text-lg font-semibold mb-2">Getting Started</h2>
-            <ul class="list-disc list-inside space-y-1">
-              <li>Sign in to unlock scene saving, plan-specific features, and the RoomManager.</li>
-              <li>Use <strong>+ Add Source</strong> to open the SoundLibrary, then pick a category or <strong>Your Sounds</strong> for uploads.</li>
-              <li>Tap the preview ring on any tile to audition it; click <strong>Load</strong> to send it to your draggable source tray.</li>
-              <li>Drag a loaded sound from the tray onto the canvas to place it. Rooms support up to <strong>30</strong> active nodes.</li>
-              <li>Free plans can stage up to <strong>20</strong> library sources at once; Basic and Pro raise those limits and unlock more packs.</li>
-            </ul>
-          </section>
 
-          <section>
-            <h2 class="text-lg font-semibold mb-2">Sound Library & Uploads</h2>
-            <ul class="list-disc list-inside space-y-1">
-              <li>Browse themed collections (Nature, Human, Musical, Work & Focus, Atmospheric, Misc) curated from the Supabase library.</li>
-              <li><strong>Your Sounds</strong> lists anything you've uploaded. Pro members can upload multiple files at once.</li>
-              <li>Locked tiles show which plan is required. Selecting one prompts the upgrade modal instead of loading the sound.</li>
-              <li>Deleting a sound in <strong>Your Sounds</strong> removes it from your library and any rooms that reference it.</li>
+        <section class="grid gap-4 md:grid-cols-2">
+          <div class="rounded-xl border border-border-subtle bg-surface-base/70 p-5 space-y-3">
+            <h2 class="text-lg font-semibold">Fast Start</h2>
+            <ul class="list-disc list-inside space-y-2 text-text-secondary">
+              <li>Sign in to unlock saving, plan-specific packs, uploads (Pro), and RoomManager access.</li>
+              <li>Hit <strong>+ Add Source</strong> → pick a category → tap the preview ring to audition → <strong>Load</strong> to send tiles to the source tray.</li>
+              <li>Drag a tray tile onto the grid to place it. Rooms support up to <strong>30</strong> active nodes and <strong>20</strong> unique library sounds at once.</li>
+              <li>Move the listener with <strong>WASD/Arrows</strong>, rotate with <strong>Q/E</strong>, and adjust cones/volumes from the right sidebar.</li>
             </ul>
-          </section>
-
-          <section>
-            <h2 class="text-lg font-semibold mb-2">Moving the Listener</h2>
-            <ul class="list-disc list-inside space-y-1">
-              <li>Use <strong>WASD</strong> or the <strong>Arrow Keys</strong> to move the Listener.</li>
-              <li>Use <strong>Q</strong> and <strong>E</strong> to rotate the Listener's direction.</li>
-              <li>Press <strong>Tab</strong> to cycle focus across placed sources and the listener.</li>
+          </div>
+          <div class="rounded-xl border border-border-subtle bg-surface-base/70 p-5 space-y-3">
+            <h2 class="text-lg font-semibold">Plan Highlights</h2>
+            <ul class="list-disc list-inside space-y-2 text-text-secondary">
+              <li><strong>Free:</strong> 1 saved room, curated starter packs, no uploads, no scheduling.</li>
+              <li><strong>Basic:</strong> Up to 10 saved rooms, timed loops, full preset access, curated packs.</li>
+              <li><strong>Pro:</strong> Unlimited rooms, uploads, all packs/themes, scheduling with play counts and combined interval+count modes.</li>
             </ul>
-          </section>
+            <p class="text-xs text-text-muted">Plan badges on sounds enforce access; selecting a locked sound triggers the upgrade prompt.</p>
+          </div>
+        </section>
 
-          <section>
-            <h2 class="text-lg font-semibold mb-2">Controlling Sounds</h2>
-            <ul class="list-disc list-inside space-y-1">
-              <li>Select a node to see its live readouts, cone angles, and volume slider in the right sidebar.</li>
-              <li>Drag the node to reposition; use <strong>Z</strong>/<strong>C</strong> to rotate direction, or right-click to nudge via context actions.</li>
-              <li>Toggle <strong>Enable Scheduling</strong> to randomize loops, set play counts, or gate playback windows (timed loops require Basic, advanced counts need Pro).</li>
-            </ul>
-          </section>
+        <section class="space-y-4">
+          <h2 class="text-lg font-semibold">Feature Guides</h2>
+          <div class="grid gap-3 lg:grid-cols-2">
+            <details v-for="section in featureSections" :key="section.title" class="group rounded-xl border border-border-subtle bg-surface-base/70 px-5 py-4">
+              <summary class="flex items-center justify-between cursor-pointer text-sm font-semibold text-text-primary">{{ section.title }}<span class="text-xs text-text-muted">{{ section.caption }}</span></summary>
+              <div class="mt-3 space-y-2 text-text-secondary">
+                <p v-if="section.description">{{ section.description }}</p>
+                <ul class="list-disc list-inside space-y-2">
+                  <li v-for="item in section.points" :key="item" class="leading-snug">{{ item }}</li>
+                </ul>
+              </div>
+            </details>
+          </div>
+        </section>
 
-          <section>
-            <h2 class="text-lg font-semibold mb-2">Saving & Managing Rooms</h2>
-            <ul class="list-disc list-inside space-y-1">
-              <li>Use the footer buttons to <strong>Save Room</strong> or spin up a fresh canvas. Unsaved changes prompt you before loading another scene.</li>
-              <li>Open <strong>RoomManager</strong> (footer right) to load, duplicate, rename, or delete saved rooms. It also shows thumbnails and pagination.</li>
-              <li>Free plans keep <strong>1</strong> saved room, Basic stores up to <strong>10</strong>, and Pro offers unlimited saves.</li>
-            </ul>
-          </section>
-
-          <section>
-            <h2 class="text-lg font-semibold mb-2">Environment & Mastering</h2>
-            <ul class="list-disc list-inside space-y-1">
-              <li>Adjust the global <strong>Master</strong> slider in the toolbar whenever you need to rein in or boost the mix.</li>
-              <li>Select an impulse response (Cathedral or Forest) in the footer dropdown to swap the space’s reverb profile on the fly.</li>
-              <li>Need silence? Hit the play/pause button in the toolbar to stop every source at once.</li>
-            </ul>
-          </section>
-
-          <section>
-            <h2 class="text-lg font-semibold mb-2">Tips for Better Sound Design</h2>
-            <ul class="list-disc list-inside space-y-1">
-              <li>Layer contrasting textures (e.g., Nature + Tools) to build depth without crowding the spectrum.</li>
-              <li>Stagger playback with scheduling so loops breathe and never feel mechanical.</li>
-              <li>Rotate sources and tuck them behind the listener to create convincing movement.</li>
-            </ul>
-          </section>
-
-          <section>
-            <h2 class="text-lg font-semibold mb-4 border-b border-border-subtle pb-1">FAQ</h2>
-            <ul>
-              <li
-                v-for="(faq, i) in faqs"
-                :key="i"
-                class="py-1"
-              >
-                <BaseButton
-                  @click="faq.open = !faq.open"
-                  class="w-full text-left font-medium text-[var(--color-text-primary)] focus:outline-none transition-colors"
+        <section class="space-y-4">
+          <h2 class="text-lg font-semibold">FAQ & Troubleshooting</h2>
+          <div class="grid gap-4 lg:grid-cols-2">
+            <article
+              v-for="(group, groupIndex) in faqGroups"
+              :key="group.title"
+              class="rounded-xl border border-border-subtle bg-surface-base/70 p-4 space-y-2"
+            >
+              <header class="flex items-center justify-between">
+                <h3 class="text-sm font-semibold">{{ group.title }}</h3>
+                <span class="text-xs text-text-muted">{{ group.hint }}</span>
+              </header>
+              <ul class="divide-y divide-border-subtle/70">
+                <li
+                  v-for="(faq, i) in group.items"
+                  :key="i"
+                  class="py-2"
                 >
-                  {{ faq.question }}
-                </BaseButton>
-                <p
-                  v-if="faq.open"
-                  class="mt-2 text-sm text-[var(--color-text-muted)] leading-snug italic indent-3"
-                >
-                  <span
-                    v-if="faq.isHtml"
-                    v-html="faq.answer"
-                  ></span>
-                  <template v-else>
-                    {{ faq.answer }}
-                  </template>
-                </p>
-              </li>
-            </ul>
-          </section>
+                  <BaseButton
+                    @click="faq.open = !faq.open"
+                    class="w-full text-left font-medium text-[var(--color-text-primary)] focus:outline-none transition-colors"
+                  >
+                    {{ faq.question }}
+                  </BaseButton>
+                  <p
+                    v-if="faq.open"
+                    class="mt-2 text-xs text-[var(--color-text-muted)] leading-snug"
+                  >
+                    <span
+                      v-if="faq.isHtml"
+                      v-html="faq.answer"
+                    />
+                    <span v-else>
+                      {{ faq.answer }}
+                    </span>
+                  </p>
+                </li>
+              </ul>
+            </article>
+          </div>
+        </section>
 
 
         <!-- Contact Form or Thank You -->
@@ -263,6 +243,260 @@ const submitting = ref(false)
 const formError = ref('')
 const formSubmitted = ref(false)
 
+const featureSections = [
+  {
+    title: 'Sound Library & Uploads',
+    caption: 'Browse, preview, gate access',
+    description: 'Open the Sound Library via + Add Source. Categories include Nature, Human, Musical, Work & Focus, Atmospheric, Misc, plus Your Sounds for uploads (Pro).',
+    points: [
+      'Tap the preview ring on any tile to audition before loading.',
+      'Locked tiles show which plan is required. Attempting to load prompts an upgrade modal unless your tier already matches.',
+      'Your Sounds lists uploads you own. Deleting an upload removes it from RoomManager scenes that reference it.',
+      'Pro supports uploads; Basic/Free can still use shared packs and curated presets.',
+    ]
+  },
+  {
+    title: 'Canvas & Placement',
+    caption: '30 nodes, 20 unique sources',
+    description: 'Drag tray items onto the grid to create directional sources. Each node shows a cone for its facing direction.',
+    points: [
+      'Select a node to reveal volume, cone angles, coordinates, and schedule controls in the right sidebar.',
+      'Use Z/C to rotate a selected source; right-click for context nudge actions.',
+      'The listener (white avatar) moves with WASD/arrow keys and rotates with Q/E. Use Tab to cycle selection across sources and listener.',
+      'Delete removes the selected source. Undo/redo (U/R) reverses moves, rotations, and deletions.',
+    ]
+  },
+  {
+    title: 'Scheduling & Loops',
+    caption: 'Basic/Pro',
+    description: 'Scheduling is controlled per-source in the sidebar and uses randomized gaps between plays.',
+    points: [
+      'Toggle Enable Scheduling to start interval-based playback; Basic unlocks timed loops.',
+      'Pro adds play counts plus combined interval + count modes for more predictable bursts.',
+      'Scheduling pauses when you pause the room; resuming honors remaining gap time.',
+      'Use gap min/max to keep loops organic. Add play counts for finite stingers that stop themselves.',
+    ]
+  },
+  {
+    title: 'Volumes, Cones & Reverb',
+    caption: 'Mixing basics',
+    points: [
+      'Use the toolbar Master slider for global gain; adjust per-source volume in the sidebar.',
+      'Cone inner/outer angles affect how quickly a source falls off when you face away.',
+      'Switch impulse responses in the footer dropdown (Cathedral or Forest) to change the space. Master mute/pause silences all sources instantly.',
+      'Move the listener closer or behind sources to hear natural attenuation without clipping.',
+    ]
+  },
+  {
+    title: 'Saving & RoomManager',
+    caption: 'Footer controls',
+    points: [
+      'Save Room (footer) becomes active after any change. Unsaved scenes prompt before loading another room.',
+      'RoomManager lets you load, duplicate, rename, or delete saved rooms with pagination and thumbnails.',
+      'Free stores 1 room, Basic up to 10, Pro unlimited. Duplicating uses unique naming to prevent collisions.',
+    ]
+  },
+  {
+    title: 'Keyboard Shortcuts',
+    caption: 'Power navigation',
+    points: [
+      'Move listener: WASD or Arrow Keys. Rotate listener: Q/E.',
+      'Rotate selected source: Z/C. Cycle selection: Tab.',
+      'Undo/Redo: U/R. Delete selected: Delete or Backspace.',
+    ]
+  },
+  {
+    title: 'Billing & Plan Changes',
+    caption: 'Stripe-backed',
+    points: [
+      'Use Manage Plan to upgrade/downgrade. Upgrades redirect to Stripe Checkout; downgrades call the manage-plan API.',
+      'If you have billing history, open the Stripe customer portal to update payment methods or view invoices.',
+      'Plan state refreshes after returning from checkout. Contact billing if you need receipts tied to a different email.',
+    ]
+  },
+  {
+    title: 'Known Limitations',
+    caption: 'MVP notes',
+    points: [
+      'Maximum of 30 placed sources and 20 unique library sounds per session.',
+      'Uploads and scheduling are Pro features; Basic lacks uploads and advanced counts.',
+      'Mobile is currently redirected to a “Coming Soon” view; best experienced on desktop.',
+    ]
+  },
+]
+
+const faqGroups = ref([
+  {
+    title: 'Onboarding & Accounts',
+    hint: 'Access + login',
+    items: [
+      {
+        question: 'Do I need an account to build?',
+        answer: 'You can audition and place sounds on Free, but saving rooms, RoomManager, scheduling, and uploads all require signing in.',
+        open: false
+      },
+      {
+        question: 'Why am I seeing the mobile splash?',
+        answer: 'If you open SoundRoom on a small viewport or mobile browser we show a “Mobile Coming Soon” page. Resize or switch to desktop for the full canvas.',
+        open: false
+      },
+      {
+        question: 'The auth callback failed—what now?',
+        answer: 'Retry from the landing page, ensure pop-up blockers allow the redirect, and confirm your Supabase session is active. If problems persist, clear cookies or try an incognito window.',
+        open: false
+      }
+    ]
+  },
+  {
+    title: 'Sound Library',
+    hint: 'Packs, previews',
+    items: [
+      {
+        question: 'How do I load a sound onto the canvas?',
+        answer: 'Open + Add Source, pick a category, preview with the ring, then click Load. The tile moves to your source tray so you can drag it into the room.',
+        open: false
+      },
+      {
+        question: 'What happens if I delete an upload?',
+        answer: 'Deleting from Your Sounds removes it from your Supabase bucket and any rooms that referenced it. Rooms missing a file will skip playback until you replace it.',
+        open: false
+      },
+      {
+        question: 'Why is a tile locked?',
+        answer: 'Tiles show a badge for the required plan. Selecting them opens the upgrade modal unless you are already on Basic or Pro. Free cannot unlock gated packs.',
+        open: false
+      }
+    ]
+  },
+  {
+    title: 'Saving & Rooms',
+    hint: 'RoomManager',
+    items: [
+      {
+        question: 'Why is Save disabled?',
+        answer: 'The Save Room button lights up only when the scene differs from your last save. Move a node, tweak a cone, or change volume to enable it.',
+        open: false
+      },
+      {
+        question: 'How do I duplicate a room safely?',
+        answer: 'Open RoomManager, choose Duplicate. The app auto-generates a unique name so it will not overwrite an existing save.',
+        open: false
+      },
+      {
+        question: 'Will I lose changes when switching rooms?',
+        answer: 'If there are unsaved edits, you will be prompted before loading another room. Save first to avoid losing the current layout.',
+        open: false
+      }
+    ]
+  },
+  {
+    title: 'Scheduling & Playback',
+    hint: 'Intervals + counts',
+    items: [
+      {
+        question: 'How do timed loops work?',
+        answer: 'Select a source, open the sidebar, and toggle Enable Scheduling. Set min/max gaps to randomize the wait between replays. Basic enables this control.',
+        open: false
+      },
+      {
+        question: 'What is available on Pro scheduling?',
+        answer: 'Pro adds play counts and combined interval+count modes so you can fire a source a set number of times with natural spacing.',
+        open: false
+      },
+      {
+        question: 'My scheduled source stopped after pausing.',
+        answer: 'Pausing the room halts active playback and timers. Resume and the scheduler will honor any remaining gap time before the next loop.',
+        open: false
+      }
+    ]
+  },
+  {
+    title: 'Controls & Shortcuts',
+    hint: 'Power users',
+    items: [
+      {
+        question: 'What are the core shortcuts?',
+        answer: 'WASD/Arrows move the listener, Q/E rotate, Z/C rotate the selected source, Tab cycles selection, Delete/Backspace removes, and U/R undo-redo.',
+        open: false
+      },
+      {
+        question: 'How do I reset the mix quickly?',
+        answer: 'Use the toolbar master play/pause to stop everything, then adjust the Master gain slider before resuming.',
+        open: false
+      },
+      {
+        question: 'Can I right-click sources?',
+        answer: 'Yes—context actions let you nudge position without dragging, useful for fine alignment on crowded canvases.',
+        open: false
+      }
+    ]
+  },
+  {
+    title: 'Billing & Plans',
+    hint: 'Stripe-backed',
+    items: [
+      {
+        question: 'How do I change or cancel my plan?',
+        answer: 'Open Manage Plan. Upgrades redirect to Stripe Checkout; downgrades call the manage-plan endpoint to move you to Free.',
+        open: false
+      },
+      {
+        question: 'Where can I download invoices?',
+        answer: 'If you have billing history, use the Stripe billing portal link in Manage Plan. Otherwise, email support@soundroom.app with your account email.',
+        open: false,
+        isHtml: true
+      },
+      {
+        question: 'Why did I see an upgrade dialog in the library?',
+        answer: 'Library tiles with plan badges enforce entitlements. Tap View Plan FAQ or Manage Plan to upgrade and unlock the pack.',
+        open: false
+      }
+    ]
+  },
+  {
+    title: 'Troubleshooting Audio',
+    hint: 'No sound?',
+    items: [
+      {
+        question: 'I cannot hear previews.',
+        answer: 'Check your system output and make sure another preview is not already playing. Only one preview plays at a time; tap the ring again to stop.',
+        open: false
+      },
+      {
+        question: 'Sources are silent after loading a room.',
+        answer: 'Verify the Master slider is above zero and that the listener is within range and facing the cones. If an uploaded file was deleted, replace it from Your Sounds.',
+        open: false
+      },
+      {
+        question: 'Undo/redo is not working.',
+        answer: 'Undo (U) and Redo (R) work on moves, rotations, deletes, and adds. Some settings like master gain are global and do not record an action.',
+        open: false
+      }
+    ]
+  },
+  {
+    title: 'Power Users & Tips',
+    hint: 'Advanced moves',
+    items: [
+      {
+        question: 'How do I keep mixes from feeling repetitive?',
+        answer: 'Use scheduling gaps with wide min/max ranges, rotate sources periodically, and layer complementary packs (e.g., Atmospheric + Human).',
+        open: false
+      },
+      {
+        question: 'Can I audition rooms quickly?',
+        answer: 'Use RoomManager pagination to jump between saves. Unsaved edits prompt you first so you can capture the current state.',
+        open: false
+      },
+      {
+        question: 'Any experimental areas?',
+        answer: 'Uploads, pack gating, and scheduling are stable; more advanced search, occlusion, and collaboration are on the roadmap. Expect iterative updates.',
+        open: false
+      }
+    ]
+  }
+])
+
 const initialFormState = () => ({
   name: '',
   email: '',
@@ -281,48 +515,11 @@ watch(tier, (val) => {
   }
 })
 
-const faqs = ref([
-  {
-    question: 'How do I save or load my rooms?',
-    answer: 'Sign in, then use the footer Save Room button. Load, rename, or delete scenes from RoomManager (footer right). Free keeps 1 room, Basic stores 10, and Pro is unlimited.',
-    open: false
-  },
-  {
-    question: 'Why is the save button disabled?',
-    answer: 'SoundRoom only enables Save when the scene has changed since your last save. Make an edit—move a node, tweak volume, or add a source—and the button lights up.',
-    open: false
-  },
-  {
-    question: 'Can I upload my own sounds?',
-    answer: 'Yes. Open + Add Source, switch to Your Sounds, and click Upload. Uploading is a Pro feature only.',
-    open: false
-  },
-  {
-    question: 'What do the plan badges on sounds mean?',
-    answer: 'Some library tiles are gated to Basic or Pro packs. Selecting a locked tile opens an upgrade prompt unless your current plan already matches the badge.',
-    open: false
-  },
-  {
-    question: 'How do timed loops and scheduling work?',
-    answer: 'Pick a source, open the right sidebar, and toggle Enable Scheduling. Basic unlocks interval loops; Pro adds play counts and combined interval+count modes.',
-    open: false
-  },
-  {
-    question: 'Can I change the room acoustics?',
-    answer: 'Use the IR dropdown in the footer to swap impulse responses (Cathedral or Forest) and the Master slider in the toolbar to balance the global mix.',
-    open: false
-  },
-  {
-    question: 'How do I report a bug or request a feature?',
-    answer: 'Use the contact form below or email <a href="mailto:support@soundroom.live" class="text-accent hover:underline">support@soundroom.live</a>.str',
-    open: false,
-    isHtml: true
-  }
-])
-
 function resetFAQ() {
-  faqs.value.forEach(faq => {
-    faq.open = false
+  faqGroups.value.forEach(group => {
+    group.items.forEach(faq => {
+      faq.open = false
+    })
   })
 }
 
