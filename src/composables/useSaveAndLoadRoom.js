@@ -409,7 +409,7 @@ export function useSaveAndLoadRoom() {
       isLoadingRoom.value = false;
       return
     } else {
-      const roomData = JSON.parse(stored);
+      let roomData = JSON.parse(stored);
       const ids = roomData.soundLibrarySources.map(s => s.libraryId);
       const { accessible: dbSounds, lockedIds, missingIds } = await getSoundsFromDB(ids);
       const { successes: downloaded, failedIds } = await downloadMultipleAudio(dbSounds);
