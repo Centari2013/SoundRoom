@@ -23,6 +23,15 @@
 
 <script setup>
 import { onMounted, ref } from 'vue'
+const emit = defineEmits(['finished'])
+
+onMounted(() => {
+  setTimeout(() => {
+    visible.value = false
+    emit('finished')   // <-- tell parent we're done
+  }, 2500)
+})
+
 
 defineProps({
   text: {

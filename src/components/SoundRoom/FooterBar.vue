@@ -44,7 +44,7 @@
       </BaseButton>
     </div>
     <div class="absolute left-1/2 -translate-x-1/2">
-      <IRSelect />
+      <IRSelect v-if="false"/>
     </div>
 
     <div v-if="isAuthenticated" class="ml-auto">

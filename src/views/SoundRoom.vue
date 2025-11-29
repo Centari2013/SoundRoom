@@ -57,7 +57,9 @@
   <RouterView/>
   <WelcomeOverlay
     v-if="showWelcomeOverlay"
+    @finished="onWelcomeFinished"
   />
+
   <PulsingOverlay
     v-if="showInitOverlay"
     :text="'Initializing Your SoundRoom...'"
@@ -68,6 +70,7 @@
 
 <script setup>
 import Onboarding from '@/components/ui/context/Onboarding.vue'
+import { watch } from 'vue';
 
 defineOptions({
   name: 'SoundRoomRoot',
@@ -101,11 +104,12 @@ import { registerSoundRoomActions, unregisterSoundRoomActions, setMaxLibSources 
 import { useSaveAndLoadRoom } from '@/composables/useSaveAndLoadRoom';
 import { useAuth } from '@/composables/useAuth'
 import { storeToRefs } from 'pinia'
+import { useRoute } from 'vue-router'
 
 // State
 const selectedIndex = ref(null)
 const draggedSource = ref(null)
-
+const route = useRoute()
 const roomStore = useRoomStore()
 const listenerStore = useListenerStore()
 const engineStore = useAudioEngineStore()
@@ -138,6 +142,13 @@ function handleStageClick(e) {
     selectedIndex.value = null // deselect sound source node
   }
 }
+
+const welcomeDone = ref(false)
+
+function onWelcomeFinished() {
+  welcomeDone.value = true
+}
+
 
 
 // Composable Logic
@@ -195,18 +206,50 @@ onBeforeMount(async () => {
 })
 
 const startTour = ref(false);
-onMounted(() => {
-  // Start the tour when the component is mounted
-  if (localStorage.getItem('soundroom_onboarding_completed') !== 'true') {
-    showWelcomeOverlay.value = true;
-    setTimeout(() => {
-      startTour.value = true;
-    }, 3000); // 3 seconds to account for welcome overlay
-  }
+let routeUnwatch;
 
-});
+function waitForWelcome() {
+  return new Promise((resolve) => {
+    const stop = watch(welcomeDone, (done) => {
+      if (done) {
+        stop()
+        resolve()
+      }
+    })
+  })
+}
+
+onMounted(() => {
+  if (localStorage.getItem('soundroom_onboarding_completed') === 'true') return;
+
+  routeUnwatch = watch(
+    () => route.path,
+    async (newPath) => {
+
+      // Only start on /app
+      if (newPath !== '/app') {
+        startTour.value = false
+        return
+      }
+
+      // If welcome overlay exists, wait for it
+      if (showWelcomeOverlay.value && !welcomeDone.value) {
+        await waitForWelcome()
+      }
+
+      // Now it's safe to start
+      startTour.value = true
+    },
+    { immediate: true }
+  )
+})
+
+
 
 onUnmounted(() => {
+  if (routeUnwatch) {
+    routeUnwatch();
+  }
   unregisterSoundRoomActions()
   audioEngine.value.dispose()
   // Revoke object URLs to avoid memory leaks
