@@ -47,6 +47,29 @@
     }
   }
   </script>
+
+  <script>
+    (function applyPersistedTheme() {
+      if (typeof document === 'undefined') return
+      try {
+        const root = document.documentElement
+        const storedState = localStorage.getItem('theme:state')
+        const parsed = storedState ? JSON.parse(storedState) : null
+        const fallback = localStorage.getItem('theme') || 'dark'
+        const theme = parsed?.theme || fallback || 'dark'
+        const cssVars = parsed?.cssVars || {}
+
+        root.dataset.theme = theme
+        root.classList.toggle('dark', theme === 'dark')
+
+        Object.entries(cssVars).forEach(([key, value]) => {
+          root.style.setProperty(key, value)
+        })
+      } catch (error) {
+        console.warn('Unable to pre-apply persisted theme', error)
+      }
+    })()
+  </script>
 </head>
 
   <body>
