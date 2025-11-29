@@ -309,9 +309,8 @@ const featureSections = [
     title: 'Billing & Plan Changes',
     caption: 'Stripe-backed',
     points: [
-      'Use Manage Plan to upgrade/downgrade. Upgrades redirect to Stripe Checkout; downgrades call the manage-plan API.',
+      'Use Manage Plan to upgrade/downgrade.',
       'If you have billing history, open the Stripe customer portal to update payment methods or view invoices.',
-      'Plan state refreshes after returning from checkout. Contact billing if you need receipts tied to a different email.',
     ]
   },
   {
@@ -341,8 +340,8 @@ const faqGroups = ref([
         open: false
       },
       {
-        question: 'The auth callback failed—what now?',
-        answer: 'Retry from the landing page, ensure pop-up blockers allow the redirect, and confirm your Supabase session is active. If problems persist, clear cookies or try an incognito window.',
+        question: 'How do I reset my password?',
+        answer: 'Use the Forgot Password link on the sign-in page. An email with reset instructions will be sent to your account email.',
         open: false
       }
     ]
@@ -353,12 +352,12 @@ const faqGroups = ref([
     items: [
       {
         question: 'How do I load a sound onto the canvas?',
-        answer: 'Open + Add Source, pick a category, preview with the ring, then click Load. The tile moves to your source tray so you can drag it into the room.',
+        answer: 'Open + Add Source, pick a category, preview it if you\'d like, then click Load. The tile moves to your source tray so you can drag it into the room.',
         open: false
       },
       {
         question: 'What happens if I delete an upload?',
-        answer: 'Deleting from Your Sounds removes it from your Supabase bucket and any rooms that referenced it. Rooms missing a file will skip playback until you replace it.',
+        answer: 'Deleting from Your Sounds removes it from any rooms that reference it.',
         open: false
       },
       {
@@ -375,11 +374,6 @@ const faqGroups = ref([
       {
         question: 'Why is Save disabled?',
         answer: 'The Save Room button lights up only when the scene differs from your last save. Move a node, tweak a cone, or change volume to enable it.',
-        open: false
-      },
-      {
-        question: 'How do I duplicate a room safely?',
-        answer: 'Open RoomManager, choose Duplicate. The app auto-generates a unique name so it will not overwrite an existing save.',
         open: false
       },
       {
@@ -405,7 +399,7 @@ const faqGroups = ref([
       },
       {
         question: 'My scheduled source stopped after pausing.',
-        answer: 'Pausing the room halts active playback and timers. Resume and the scheduler will honor any remaining gap time before the next loop.',
+        answer: 'Pausing the room halts active playback and timers. Resume and the scheduler will honor any remaining gap time before the next loop. But more features are coming!',
         open: false
       }
     ]
@@ -448,7 +442,7 @@ const faqGroups = ref([
       },
       {
         question: 'Why did I see an upgrade dialog in the library?',
-        answer: 'Library tiles with plan badges enforce entitlements. Tap View Plan FAQ or Manage Plan to upgrade and unlock the pack.',
+        answer: 'Tap View Plan FAQ or Manage Plan to upgrade and unlock the pack.',
         open: false
       }
     ]
@@ -481,11 +475,6 @@ const faqGroups = ref([
       {
         question: 'How do I keep mixes from feeling repetitive?',
         answer: 'Use scheduling gaps with wide min/max ranges, rotate sources periodically, and layer complementary packs (e.g., Atmospheric + Human).',
-        open: false
-      },
-      {
-        question: 'Can I audition rooms quickly?',
-        answer: 'Use RoomManager pagination to jump between saves. Unsaved edits prompt you first so you can capture the current state.',
         open: false
       },
       {
