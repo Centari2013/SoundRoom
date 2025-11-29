@@ -239,6 +239,7 @@ onMounted(() => {
 
       // Now it's safe to start
       startTour.value = true
+      routeUnwatch() // only run once
     },
     { immediate: true }
   )
