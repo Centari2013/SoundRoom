@@ -226,7 +226,7 @@
 
           <div v-else class="p-4 rounded bg-[rgba(var(--color-success-rgb),0.12)] text-[var(--color-success)] space-y-2">
             <p class="font-semibold">Thanks for contacting SoundRoom Support!</p>
-            <p class="text-sm">We’ll reply from support@soundroom.live soon. Check for a subject line starting with [SUPPORT] in case it lands in spam.</p>
+            <p class="text-sm">We'll reply from support@soundroom.live soon. Check for a subject line starting with [SUPPORT] in case it lands in spam.</p>
             <BaseButton class="text-sm" @click="prepareAnotherMessage">Send another message</BaseButton>
           </div>
 
