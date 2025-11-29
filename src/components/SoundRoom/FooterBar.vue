@@ -110,7 +110,7 @@ async function handleSaveThenNewRoom() {
     const didSave = await props.onSave();
     if (didSave) {
       resetRoomState();
-      router.push('/');
+      router.push('/app');
     }
   } catch (error) {
     console.error('Error saving room before creating a new one:', error);
@@ -121,6 +121,6 @@ async function handleSaveThenNewRoom() {
 
 function handleSkipSaveThenNewRoom() {
   resetRoomState();
-  router.push('/');
+  router.push('/app');
 }
 </script>

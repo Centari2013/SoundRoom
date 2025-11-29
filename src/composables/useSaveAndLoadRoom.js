@@ -277,7 +277,6 @@ export function useSaveAndLoadRoom() {
         fileId: id ?? storageKey
       };
     }).filter(Boolean); // remove nulls if any
-
     soundLibrarySources.value = finalSources;
 
 
@@ -295,7 +294,7 @@ export function useSaveAndLoadRoom() {
       }
     });
     
-    resetRoomState();
+    //resetRoomState();
 
     roomStore.loadRoom(roomData.room);
     if (!room.value.id) {
