@@ -343,6 +343,11 @@ const faqGroups = ref([
         question: 'How do I reset my password?',
         answer: 'Use the Forgot Password link on the sign-in page. An email with reset instructions will be sent to your account email.',
         open: false
+      },
+      {
+        question: 'How do I delete my account?',
+        answer: 'Email support@soundroom.live to request account deletion. Include your email and any relevant details for verification.',
+        open: false
       }
     ]
   },
