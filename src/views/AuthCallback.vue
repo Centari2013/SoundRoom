@@ -36,12 +36,12 @@ onMounted(async () => {
     }
 
     localStorage.setItem('userProfile', JSON.stringify(finalProfile))
-    router.push('/app')
+    router.push({ name: 'app' })
 
 
   } else {
     console.error('Login failed:', error)
-    router.push('/auth/error')
+    router.push({ name: 'auth-error' })
   }
 })
 

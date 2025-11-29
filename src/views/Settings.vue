@@ -288,7 +288,7 @@ const planLabel = computed(() => {
 
 function handleManagePlan() {
   //router.push({ path: '/upgrade', query: { manage: '1' } })
-  router.push('/manage-plan')
+  router.push({ name: 'manage-plan'})
 }
 
 const PLAN_DISPLAY_NAME = {
@@ -575,7 +575,7 @@ async function signOutCurrentSession() {
   securityMessage.value = 'Signed out successfully. Redirecting to login…'
   localStorage.removeItem('userProfile')
   setTimeout(() => {
-    router.push('/login')
+    router.push({ name: 'login' })
   }, 800)
 }
 

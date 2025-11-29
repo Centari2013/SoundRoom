@@ -402,6 +402,6 @@ function contactBilling() {
 }
 
 function openFAQ() {
-  router.push('/help')
+  router.push({ name: 'help'})
 }
 </script>

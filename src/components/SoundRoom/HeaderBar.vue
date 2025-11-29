@@ -151,7 +151,7 @@ async function handleSignOut() {
  
 
   isLoggingOut.value = true;
-  router.push('/logged-out');
+  router.push({ name: 'logged-out' });
    // Reset logging out state
 
 }
@@ -167,22 +167,22 @@ const visibleButtons = computed(() => {
     },
     {
       label: 'Help',
-      action: () => router.push('/help'),
+      action: () => router.push({ name: 'help' }),
       shouldShow: true
     },
     {
       label: 'Sign In',
-      action: () => router.push('/login'),
+      action: () => router.push({ name: 'login' }),
       shouldShow: !authed
     },
     {
       label: 'Upgrade',
-      action: () => router.push('/upgrade'),
+      action: () => router.push({ name: 'upgrade' }),
       shouldShow: authed && tier.value === 'free'
     },
     {
       label: 'Settings',
-      action: () => router.push('/settings'),
+      action: () => router.push({ name: 'settings' }),
       shouldShow: authed
     },
     {

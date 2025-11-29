@@ -57,7 +57,7 @@ const router = useRouter()
 const { tier, isAuthenticated, user } = useAuth()
 
 const closeModal = () => {
-  router.push('/app')
+  router.push({name: 'app'})
 }
 
 const STATUS_DETAIL_FALLBACK = {
@@ -240,7 +240,7 @@ const handlePlanSelect = async (plan) => {
   checkoutError.value = ''
 
   if (!isAuthenticated.value) {
-    router.push({ path: '/signup', query: { redirect: '/upgrade', plan: plan.id } })
+    router.push({ name: 'signup', query: { redirect: '/upgrade', plan: plan.id } })
     return
   }
 

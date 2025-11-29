@@ -12,6 +12,7 @@ const router = createRouter({
   history: createWebHistory(),
   routes: [
     {
+      name: 'landing',
       path: '/',
       component: LandingPage,
       meta: {
@@ -22,6 +23,7 @@ const router = createRouter({
       },
     },
     {
+      name: 'app',
       path: '/app',
       component: SoundRoom,
       meta: {
@@ -32,6 +34,7 @@ const router = createRouter({
       },
       children: [
         {
+          name: 'login',
           path: 'login',
           component: () => import('@/components/ui/modals/ModalWrapper.vue'),
           props: { component: () => import('@/components/ui/modals/LoginSignup/AuthModal.vue') },
@@ -43,6 +46,7 @@ const router = createRouter({
           },
         },
         {
+          name: 'signup',
           path: 'signup',
           component: () => import('@/components/ui/modals/ModalWrapper.vue'),
           props: { component: () => import('@/components/ui/modals/LoginSignup/AuthModal.vue') },
@@ -54,6 +58,7 @@ const router = createRouter({
           },
         },
         {
+          name: 'reset',
           path: 'reset',
           component: () => import('@/components/ui/modals/ModalWrapper.vue'),
           props: { component: () => import('@/components/ui/modals/LoginSignup/AuthModal.vue') },
@@ -65,6 +70,7 @@ const router = createRouter({
           },
         },
         {
+          name: 'help',
           path: 'help',
           component: () => import('@/components/ui/modals/ModalWrapper.vue'),
           props: { component: () => import('@/components/ui/modals/Help.vue') },
@@ -76,6 +82,7 @@ const router = createRouter({
           },
         },
         {
+          name: 'room-manager',
           path: 'room-manager',
           component: () => import('@/components/ui/modals/ModalWrapper.vue'),
           props: { component: () => import('@/components/ui/modals/RoomManager/RoomManager.vue') },
@@ -88,6 +95,7 @@ const router = createRouter({
           },
         },
         {
+          name: 'sound-library',
           path: 'sound-library',
           component: () => import('@/components/ui/modals/ModalWrapper.vue'),
           props: { component: () => import('@/components/ui/modals/SoundLibrary/SoundLibrary.vue') },
@@ -99,6 +107,7 @@ const router = createRouter({
           },
         },
         {
+          name: 'upgrade',
           path: 'upgrade',
           component: () => import('@/components/ui/modals/ModalWrapper.vue'),
           props: { component: () => import('@/views/Pricing/Pricing.vue') },
@@ -140,6 +149,7 @@ const router = createRouter({
       redirect: '/app/upgrade',
     },
     {
+      name: 'terms',
       path: '/terms',
       component: () => import('@/views/TermsOfService.vue'),
       meta: {
@@ -150,6 +160,7 @@ const router = createRouter({
       },
     },
     {
+      name: 'privacy',
       path: '/privacy',
       component: () => import('@/views/PrivacyPolicy.vue'),
       meta: {
@@ -160,6 +171,7 @@ const router = createRouter({
       },
     },
     {
+      name: 'settings',
       path: '/settings',
       component: () => import('@/views/Settings.vue'),
       meta: {
@@ -171,6 +183,7 @@ const router = createRouter({
       },
     },
     {
+      name: 'manage-plan',
       path: '/manage-plan',
       component: () => import('@/views/ManagePlan.vue'),
       meta: {
@@ -182,6 +195,7 @@ const router = createRouter({
       },
     },
     {
+      name: 'update-password',
       path: '/update-password',
       component: () => import('@/views/UpdatePasswordPage.vue'),
       meta: {
@@ -192,6 +206,7 @@ const router = createRouter({
       },
     },
     {
+      name: 'auth-callback',
       path: '/auth/callback',
       component: () => import('@/views/AuthCallback.vue'),
       meta: {
@@ -202,6 +217,7 @@ const router = createRouter({
       },
     },
     {
+      name: 'auth-error',
       path: '/auth/error',
       component: () => import('@/views/AuthError.vue'),
       meta: {
@@ -212,6 +228,7 @@ const router = createRouter({
       },
     },
     {
+      name: 'welcome',
       path: '/welcome',
       component: () => import('@/components/ui/modals/Onboarding.vue'),
       meta: {
@@ -222,6 +239,7 @@ const router = createRouter({
       },
     },
     {
+      name: 'logged-out',
       path: '/logged-out',
       component: () => import('@/views/LoggedOut.vue'),
       meta: {

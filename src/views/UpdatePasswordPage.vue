@@ -63,7 +63,7 @@ async function submitNewPassword() {
   }
 
   success.value = true
-  setTimeout(() => router.push('/login'), 2500)
+  setTimeout(() => router.push({ name: 'login' }), 2500)
 }
 
 onMounted(async () => {

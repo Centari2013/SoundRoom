@@ -26,6 +26,6 @@ import BaseButton from '@/components/ui/input/BaseButton.vue'
 const router = useRouter()
 
 function goHome() {
-  void router.push('/')
+  void router.push({name: 'landing'})
 }
 </script>

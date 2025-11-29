@@ -4,7 +4,7 @@
   :title="title"
   :canClickOutside="false"
   :showCloseButton="true"
-  @close="router.push('/app')"
+  @close="router.push({ name: 'app' })"
   role="dialog"
   aria-modal="true"
   :aria-labelledby="'modal-title'"
@@ -50,7 +50,7 @@
       v-if="mode === 'reset'"
       v-bind="{ loading, sent, errorMessage }"
       @resetPassword="resetPassword"
-      @backToLogin="router.push('/login')"
+      @backToLogin="router.push({ name: 'login' })"
     />
 
     <!-- Mode Switch Links -->
@@ -204,7 +204,7 @@ async function signInWithEmail({ email, password }) {
   localStorage.setItem('userProfile', JSON.stringify(profile))
 
   // Example: redirect to auth callback
-  router.push('/auth/callback')
+  router.push({ name: 'auth-callback' })
   loading.value = false
 }
 
