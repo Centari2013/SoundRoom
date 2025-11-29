@@ -4,6 +4,7 @@ import { useAudioEngineStore } from '@/stores/useAudioEngineStore'
 import { useListenerStore } from '@/stores/useListenerStore'
 import { useAudioCacheStore } from '@/stores/useAudioCacheStore'
 import { storeToRefs } from 'pinia'
+import { isSoundAvailable } from '@/utils/soundIntegrity'
 
 let actionsRegistered = false
 let registeredActionManager = null
@@ -69,7 +70,15 @@ function registerCanvasActions() {
    *
    * @param {Object} payload - action payload
    */
-  const addSoundSource = (payload) => {
+  const addSoundSource = async (payload) => {
+    const libraryId = payload?.src?.libraryId
+    if (libraryId && !soundLibrarySources.value.find(s => s.libraryId === libraryId)) {
+      const available = await isSoundAvailable(libraryId)
+      if (!available) {
+        console.warn(`Skipping add for deleted sound ${libraryId}`)
+        return
+      }
+    }
     const libraryEntry = soundLibrarySources.value.find(s => s.libraryId === payload.src.libraryId)
     if (libraryEntry) {
       payload.src.audioPath = libraryEntry.audioPath
@@ -98,7 +107,7 @@ function registerCanvasActions() {
   }
 
   actionManager.value.registerActionHandlers('add_canvas_sound_source',
-    addSoundSource,
+    async payload => await addSoundSource(payload),
     deleteSoundSource
   )
 
@@ -192,6 +201,13 @@ function registerDraggableActions() {
    */
   const addDraggableSoundSource = async (payload) => {
     if (maxLibSourcesReached(soundLibrarySources)) return;
+    if (payload?.src?.libraryId) {
+      const available = await isSoundAvailable(payload.src.libraryId)
+      if (!available) {
+        console.warn(`Cannot restore deleted sound ${payload.src.libraryId}`)
+        return
+      }
+    }
     // download blob and re-instate draggable source
     const { blobUrl } = await downloadAudio(
       payload.src.bucket,

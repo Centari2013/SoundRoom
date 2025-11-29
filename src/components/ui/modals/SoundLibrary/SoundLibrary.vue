@@ -59,6 +59,8 @@ import { registerSoundRoomActions } from '@/composables/useSoundRoomActions'
 import { storeToRefs } from 'pinia'
 import deleteAudio from '@/utils/deleteAudio'
 import { annotateSoundAccess } from '@/utils/soundEntitlements'
+import { purgeSoundCache, removeDeletedSoundFromRooms } from '@/utils/soundIntegrity'
+import { buildStorageKey } from '@/utils/downloadAudio'
 
 
 const { user, isAuthenticated, tier } = useAuth()
@@ -180,11 +182,17 @@ async function doDeleteSound() {
   if (!soundToDelete.value) return
   const s = soundToDelete.value
   try {
+    const cacheEntry = soundLibrarySources.value.find(sound => sound.libraryId == s.libraryId)
     if (soundLibrarySources.value.find(sound => sound.libraryId == s.libraryId)) {
       await actionStore.deleteLibrarySoundSource(s)
     }
+    const storageKey = s.bucket && s.path ? buildStorageKey(s.plan_tier ?? 'users', s.bucket, s.path) : cacheEntry?.storageKey
     await deleteAudio(s.bucket, s.path, s.plan_tier ?? 'users')
     await supabase.from('sound_files').delete().eq('id', s.libraryId)
+    await purgeSoundCache(s.libraryId)
+    if (storageKey) await purgeSoundCache(storageKey)
+    if (cacheEntry?.audioPath) await purgeSoundCache(cacheEntry.audioPath)
+    await removeDeletedSoundFromRooms(s.libraryId)
     await refreshUserSounds()
   } catch (error) {
     console.error('Failed to delete user sound:', error)
