@@ -292,7 +292,7 @@ const featureSections = [
     caption: 'Footer controls',
     points: [
       'Save Room (footer) becomes active after any change. Unsaved scenes prompt before loading another room.',
-      'RoomManager lets you load, duplicate, rename, or delete saved rooms with pagination and thumbnails.',
+      'RoomManager lets you load, rename, or delete saved rooms with pagination and thumbnails.',
       'Free stores 1 room, Basic up to 10, Pro unlimited. Duplicating uses unique naming to prevent collisions.',
     ]
   },

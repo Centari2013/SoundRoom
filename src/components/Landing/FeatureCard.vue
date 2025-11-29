@@ -21,11 +21,12 @@
     </p>
 
     <div
-      class="h-24 rounded-lg border border-dashed border-[var(--color-border-subtle)] 
-             bg-surface-base/60 flex items-center justify-center 
-             text-xs text-text-muted"
+      class="h-24 rounded-lg 
+              flex items-center justify-center"
     >
-      Placeholder
+      <slot name="visual">
+        <span class="text-xs text-text-muted">Placeholder</span>
+      </slot>
     </div>
   </article>
 </template>
