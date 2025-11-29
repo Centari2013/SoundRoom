@@ -15,14 +15,14 @@ const props = defineProps({
   startTour: Boolean,
 });
 
-watch(
-  () => props.startTour,
-  (newVal) => {
-    if (newVal) {
-      vTour.value.startTour();
-    }
+const tourRunning = ref(false);
+
+watch(() => props.startTour, (v) => {
+  if (v) {
+    tourRunning.value = true;
+    vTour.value.startTour();
   }
-);
+});
 // Your onboarding steps
 const steps = [
   // STEP 1 — Welcome
@@ -81,11 +81,13 @@ const steps = [
       vTour.value.nextStep();
       return;
     }
-
-    // Otherwise watch for the route change
     const unwatch = watch(
       () => route.name,
       async (val) => {
+        if (!tourRunning.value) {
+          unwatch();
+          return;
+        }
         if (val === 'sound-library') {
           unwatch();
 
@@ -144,6 +146,10 @@ const steps = [
     const unwatch = watch(
       () => route.name,
       async (val) => {
+        if (!tourRunning.value) {
+          unwatch();
+          return;
+        }
         if (val === 'app') {
           unwatch();
 
@@ -233,8 +239,11 @@ function waitForDom(selector, attempts = 20) {
 }
 
 function finishTour() {
+  const btn = document.getElementById('add-source-btn');
+  if (btn) btn.disabled = false;
   vTour.value.endTour();
   localStorage.setItem('soundroom_onboarding_completed', 'true');
+  tourRunning.value = false;
 }
 
 </script>
