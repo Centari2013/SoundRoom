@@ -1,16 +1,16 @@
 <template>
-  <main class="flex-1 overflow-y-auto bg-[var(--color-bg-app)] text-[var(--color-text-primary)]">
+  <main class="flex-1 overflow-y-auto bg-surface-app text-text-primary">
     <div class="max-w-5xl mx-auto px-6 py-10 space-y-10">
       <section class="space-y-4">
         <div class="flex items-center justify-between gap-6 flex-wrap">
           <div class="space-y-2">
             <h1 class="text-3xl font-semibold tracking-tight">Settings</h1>
-            <p class="text-sm text-[var(--color-text-muted)] max-w-xl">
+            <p class="text-sm text-text-muted max-w-xl">
               Update how you appear in SoundRoom, adjust playback preferences, and keep your account secure.
             </p>
           </div>
           <div class="flex items-center gap-3 rounded-full border border-border-subtle px-4 py-2 bg-[color-mix(in_srgb,var(--color-bg-surface)_85%,transparent)]">
-            <span class="text-xs uppercase tracking-wide text-[var(--color-text-muted)]">Plan</span>
+            <span class="text-xs uppercase tracking-wide text-text-muted">Plan</span>
             <span class="text-sm font-medium">{{ planLabel }}</span>
             <RouterLink v-if="tier.value === 'free'" :to="'/upgrade'" class="ml-2">
               <BaseButton type="button">
@@ -33,9 +33,9 @@
           v-if="planStatusMessage || planErrorMessage || isProcessingCheckout"
           class="rounded-xl border p-4"
           :class="[
-            isProcessingCheckout ? 'border-[var(--color-accent-soft)] bg-[rgba(var(--color-accent-rgb),0.12)] text-[var(--color-text-primary)]' : '',
-            planStatusMessage && !isProcessingCheckout ? 'border-[var(--color-success)] bg-[rgba(var(--color-success-rgb),0.12)] text-[var(--color-text-primary)]' : '',
-            planErrorMessage ? 'border-[var(--color-danger)] bg-[rgba(var(--color-danger-rgb),0.12)] text-[var(--color-text-primary)]' : '',
+            isProcessingCheckout ? 'border-accent-soft bg-[rgba(var(--color-accent-rgb),0.12)] text-text-primary' : '',
+            planStatusMessage && !isProcessingCheckout ? 'border-status-success bg-[rgba(var(--color-success-rgb),0.12)] text-text-primary' : '',
+            planErrorMessage ? 'border-status-danger bg-[rgba(var(--color-danger-rgb),0.12)] text-text-primary' : '',
           ]"
         >
           <p v-if="isProcessingCheckout" class="text-sm font-medium">Processing your plan change…</p>
@@ -45,11 +45,11 @@
 
         <div class="rounded-2xl border border-border-subtle bg-[color-mix(in_srgb,var(--color-bg-surface)_85%,transparent)] p-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
           <div>
-            <p class="text-sm text-[var(--color-text-muted)]">Signed in as</p>
+            <p class="text-sm text-text-muted">Signed in as</p>
             <p class="text-lg font-medium break-all">{{ userEmail }}</p>
           </div>
           <div class="flex items-center gap-4">
-            <div class="relative w-16 h-16 rounded-full bg-[var(--color-bg-elevated)] flex items-center justify-center overflow-hidden text-xl font-semibold border border-border-subtle">
+            <div class="relative w-16 h-16 rounded-full bg-surface-raised flex items-center justify-center overflow-hidden text-xl font-semibold border border-border-subtle">
               <img
                 v-if="avatarPreview && !avatarFailed"
                 :src="avatarPreview"
@@ -60,7 +60,7 @@
               <span v-else>{{ avatarInitial }}</span>
             </div>
             <div>
-              <p class="text-sm text-[var(--color-text-muted)]">Display name</p>
+              <p class="text-sm text-text-muted">Display name</p>
               <p class="text-base font-medium">{{ profileForm.displayName || '—' }}</p>
             </div>
           </div>
@@ -70,7 +70,7 @@
       <section class="rounded-2xl border border-border-subtle bg-[color-mix(in_srgb,var(--color-bg-surface)_88%,transparent)] p-6 shadow-sm space-y-6">
         <header class="space-y-2">
           <h2 class="text-xl font-semibold">Profile</h2>
-          <p class="text-sm text-[var(--color-text-muted)]">Set how teammates and collaborators see you.</p>
+          <p class="text-sm text-text-muted">Set how collaborators (coming soon) see you.</p>
         </header>
 
         <div v-if="isFetchingProfile" class="space-y-4 animate-pulse">
@@ -94,7 +94,7 @@
               label="Avatar URL"
               placeholder="https://example.com/avatar.png"
               autocomplete="off"
-              :disabled="profileSaving"
+              :disabled="profileSaving || true"
               :error="profileErrors.avatarUrl"
             />
             <BaseInput
@@ -114,7 +114,7 @@
           <div class="flex flex-wrap items-center justify-end gap-3">
             <button
               type="button"
-              class="text-sm text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] transition"
+              class="text-sm text-text-muted hover:text-text-primary transition"
               @click="resetProfileForm"
               :disabled="profileSaving || !hasProfileChanges"
             >
@@ -139,31 +139,31 @@
       <section class="rounded-2xl border border-border-subtle bg-[color-mix(in_srgb,var(--color-bg-surface)_88%,transparent)] p-6 shadow-sm space-y-6">
         <header class="space-y-2">
           <h2 class="text-xl font-semibold">Playback Preferences</h2>
-          <p class="text-sm text-[var(--color-text-muted)]">These settings are stored locally in your browser.</p>
+          <p class="text-sm text-text-muted">These settings are stored locally in your browser.</p>
         </header>
 
         <div class="space-y-6">
           <div class="flex items-start justify-between gap-6">
             <div>
               <h3 class="text-base font-medium">Auto-resume sessions</h3>
-              <p class="text-sm text-[var(--color-text-muted)]">Automatically reload your last SoundRoom when you sign back in.</p>
+              <p class="text-sm text-text-muted">Automatically reload your last SoundRoom when you sign back in.</p>
             </div>
             <label class="relative inline-flex items-center cursor-pointer select-none">
               <input type="checkbox" class="sr-only peer" v-model="preferences.autoResumePlayback">
-              <span class="block w-12 h-6 rounded-full bg-[var(--color-border-subtle)] transition-colors peer-focus:outline peer-focus:outline-2 peer-focus:outline-[var(--color-focus-ring)] peer-checked:bg-[var(--color-accent-strong)]"></span>
-              <span class="absolute left-1 top-1 block w-4 h-4 rounded-full bg-[var(--color-text-inverse)] shadow transition-transform peer-checked:translate-x-6"></span>
+              <span class="block w-12 h-6 rounded-full bg-[var(--color-border-subtle)] transition-colors peer-focus:outline peer-focus:outline-2 peer-focus:outline-[var(--color-focus-ring)] peer-checked:bg-accent-strong"></span>
+              <span class="absolute left-1 top-1 block w-4 h-4 rounded-full bg-text-inverse shadow transition-transform peer-checked:translate-x-6"></span>
             </label>
           </div>
 
           <div class="flex items-start justify-between gap-6">
             <div>
               <h3 class="text-base font-medium">Show interface tips</h3>
-              <p class="text-sm text-[var(--color-text-muted)]">Keep lightweight reminders visible for keyboard shortcuts and best practices.</p>
+              <p class="text-sm text-text-muted">Keep lightweight reminders visible for keyboard shortcuts and best practices.</p>
             </div>
             <label class="relative inline-flex items-center cursor-pointer select-none">
               <input type="checkbox" class="sr-only peer" v-model="preferences.showInterfaceTips">
-              <span class="block w-12 h-6 rounded-full bg-[var(--color-border-subtle)] transition-colors peer-focus:outline peer-focus:outline-2 peer-focus:outline-[var(--color-focus-ring)] peer-checked:bg-[var(--color-accent-strong)]"></span>
-              <span class="absolute left-1 top-1 block w-4 h-4 rounded-full bg-[var(--color-text-inverse)] shadow transition-transform peer-checked:translate-x-6"></span>
+              <span class="block w-12 h-6 rounded-full bg-[var(--color-border-subtle)] transition-colors peer-focus:outline peer-focus:outline-2 peer-focus:outline-[var(--color-focus-ring)] peer-checked:bg-accent-strong"></span>
+              <span class="absolute left-1 top-1 block w-4 h-4 rounded-full bg-text-inverse shadow transition-transform peer-checked:translate-x-6"></span>
             </label>
           </div>
         </div>
@@ -171,7 +171,7 @@
         <div class="flex flex-wrap items-center justify-end gap-3">
           <button
             type="button"
-            class="text-sm text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] transition"
+            class="text-sm text-text-muted hover:text-text-primary transition"
             @click="resetPreferences"
             :disabled="!hasPreferenceChanges"
           >
@@ -191,14 +191,14 @@
       <section class="rounded-2xl border border-border-subtle bg-[color-mix(in_srgb,var(--color-bg-surface)_88%,transparent)] p-6 shadow-sm space-y-6">
         <header class="space-y-2">
           <h2 class="text-xl font-semibold">Security</h2>
-          <p class="text-sm text-[var(--color-text-muted)]">Keep your account protected and up to date.</p>
+          <p class="text-sm text-text-muted">Keep your account protected and up to date.</p>
         </header>
 
         <div class="space-y-6">
           <div class="flex flex-wrap items-start justify-between gap-6">
             <div>
               <h3 class="text-base font-medium">Password</h3>
-              <p class="text-sm text-[var(--color-text-muted)]">Use a strong password to protect your SoundRoom sessions and purchases.</p>
+              <p class="text-sm text-text-muted">Use a strong password to protect your SoundRoom sessions and purchases.</p>
             </div>
             <RouterLink to="/update-password">
               <BaseButton type="button">Update password</BaseButton>
@@ -208,7 +208,7 @@
           <div class="flex flex-wrap items-start justify-between gap-6">
             <div>
               <h3 class="text-base font-medium">Sign out</h3>
-              <p class="text-sm text-[var(--color-text-muted)]">Need to switch devices? Sign out to end your session on this browser.</p>
+              <p class="text-sm text-text-muted">Need to switch devices? Sign out to end your session on this browser.</p>
             </div>
             <BaseButton type="button" @click="signOutCurrentSession">Sign out of this device</BaseButton>
           </div>
@@ -288,7 +288,7 @@ const planLabel = computed(() => {
 
 function handleManagePlan() {
   //router.push({ path: '/upgrade', query: { manage: '1' } })
-  router.push('/manage-plan')
+  router.push({ name: 'manage-plan'})
 }
 
 const PLAN_DISPLAY_NAME = {
@@ -417,13 +417,51 @@ function resetPreferences() {
   preferenceMessage.value = ''
 }
 
-function savePreferences() {
+async function savePreferences() {
+  // save to local storage first
   localStorage.setItem(LOCAL_PREF_KEY, JSON.stringify(preferences))
   preferenceInitial.value = { ...preferences }
-  preferenceMessage.value = 'Preferences saved. Nice!'
-  setTimeout(() => {
-    preferenceMessage.value = ''
-  }, 4000)
+
+  // now sync to supabase
+  if (user.value?.id) {
+    try {
+      // fetch current settings
+      const { data, error: fetchError } = await supabase
+        .from('users')
+        .select('settings')
+        .eq('id', user.value.id)
+        .single()
+
+      if (fetchError) throw fetchError
+
+      const currentSettings = data?.settings ?? {}
+
+      const newSettings = {
+        ...currentSettings,
+        preferences: {
+          ...currentSettings.preferences,
+          ...preferences,
+        }
+      }
+
+      const { error: updateError } = await supabase
+        .from('users')
+        .update({ settings: newSettings })
+        .eq('id', user.value.id)
+
+      if (updateError) throw updateError
+
+      preferenceMessage.value = 'Preferences saved.'
+      setTimeout(() => (preferenceMessage.value = ''), 4000)
+
+    } catch (err) {
+      console.error('Failed to sync preferences', err)
+      preferenceMessage.value = 'Preferences saved locally (sync failed).'
+    }
+  } else {
+    // user not logged in
+    preferenceMessage.value = 'Preferences saved locally.'
+  }
 }
 
 async function fetchProfile() {
@@ -491,28 +529,17 @@ async function saveProfile() {
 
   try {
     const updates = {
-      id: user.value.id,
       display_name: trimmedName,
       avatar_url: trimmedAvatar || null
     }
 
     const { error } = await supabase
       .from('users')
-      .upsert(updates, { onConflict: 'id' })
+      .update(updates)
+      .eq('id', user.value.id)
 
     if (error) {
       throw error
-    }
-
-    const { error: authError } = await supabase.auth.updateUser({
-      data: {
-        full_name: trimmedName,
-        avatar_url: trimmedAvatar || null
-      }
-    })
-
-    if (authError) {
-      console.warn('Failed to update auth metadata', authError)
     }
 
     localStorage.setItem('userProfile', JSON.stringify({
@@ -548,7 +575,7 @@ async function signOutCurrentSession() {
   securityMessage.value = 'Signed out successfully. Redirecting to login…'
   localStorage.removeItem('userProfile')
   setTimeout(() => {
-    router.push('/login')
+    router.push({ name: 'login' })
   }, 800)
 }
 

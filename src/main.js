@@ -8,7 +8,7 @@ import { createPinia } from 'pinia';
 import router from '@/utils/router.js'
 import '@/composables/useAuth.js' // Ensure auth is initialized before app mounts
 import * as Sentry from "@sentry/vue";
-
+import '@globalhive/vuejs-tour/dist/style.css';
 initTheme()
 
 const app = createApp(App);

@@ -1,14 +1,14 @@
 <template>
-  <main class="flex-1 overflow-y-auto bg-[var(--color-bg-app)] text-[var(--color-text-primary)]">
+  <main class="flex-1 overflow-y-auto bg-surface-app text-text-primary">
     <div class="max-w-4xl mx-auto px-6 py-10 space-y-10">
       <section class="space-y-4">
         <div
           v-if="checkoutStatusMessage || checkoutErrorMessage || isProcessingCheckout"
           class="rounded-xl border p-4"
           :class="[
-            isProcessingCheckout ? 'border-[var(--color-accent-soft)] bg-[rgba(var(--color-accent-rgb),0.12)] text-[var(--color-text-primary)]' : '',
-            checkoutStatusMessage && !isProcessingCheckout ? 'border-[var(--color-success)] bg-[rgba(var(--color-success-rgb),0.12)] text-[var(--color-text-primary)]' : '',
-            checkoutErrorMessage ? 'border-[var(--color-danger)] bg-[rgba(var(--color-danger-rgb),0.12)] text-[var(--color-text-primary)]' : '',
+            isProcessingCheckout ? 'border-accent-soft bg-[rgba(var(--color-accent-rgb),0.12)] text-text-primary' : '',
+            checkoutStatusMessage && !isProcessingCheckout ? 'border-status-success bg-[rgba(var(--color-success-rgb),0.12)] text-text-primary' : '',
+            checkoutErrorMessage ? 'border-status-danger bg-[rgba(var(--color-danger-rgb),0.12)] text-text-primary' : '',
           ]"
         >
           <p v-if="isProcessingCheckout" class="text-sm font-medium">Processing your plan change…</p>
@@ -18,7 +18,7 @@
         <div class="flex items-center justify-between gap-6 flex-wrap">
           <div class="space-y-2 w-full">
             <h1 class="text-3xl font-semibold tracking-tight">Manage Plan</h1>
-            <p class="text-sm text-[var(--color-text-muted)] w-full">
+            <p class="text-sm text-text-muted w-full">
               Review what is included in your subscription, explore upgrade options, or reach out for billing support.
             </p>
           </div>
@@ -38,18 +38,18 @@
           <header class="flex flex-wrap items-center justify-between gap-4">
             <div class="space-y-1">
               <h2 class="text-2xl font-semibold">{{ currentPlan.name }}</h2>
-              <p class="text-sm text-[var(--color-text-muted)]">{{ currentPlan.tagline }}</p>
+              <p class="text-sm text-text-muted">{{ currentPlan.tagline }}</p>
             </div>
             <div class="text-right">
               <span class="text-lg font-semibold">{{ currentPlan.price }}</span>
-              <p class="text-xs text-[var(--color-text-muted)]">Billed monthly — cancel anytime.</p>
+              <p class="text-xs text-text-muted">Billed monthly — cancel anytime.</p>
             </div>
           </header>
 
           <div class="mt-6 grid gap-4 sm:grid-cols-2">
             <div v-for="feature in currentPlan.highlights" :key="feature" class="flex items-start gap-3">
-              <span class="mt-1 h-2 w-2 rounded-full bg-[var(--color-accent)]"></span>
-              <p class="text-sm text-[var(--color-text-secondary)]">{{ feature }}</p>
+              <span class="mt-1 h-2 w-2 rounded-full bg-accent"></span>
+              <p class="text-sm text-text-secondary">{{ feature }}</p>
             </div>
           </div>
 
@@ -83,12 +83,12 @@
       <section class="rounded-2xl border border-border-subtle bg-[color-mix(in_srgb,var(--color-bg-surface)_90%,transparent)] p-6 shadow-sm space-y-6">
         <header class="space-y-1">
           <h2 class="text-xl font-semibold">Billing & Receipts</h2>
-          <p class="text-sm text-[var(--color-text-muted)]">
+          <p class="text-sm text-text-muted">
             SoundRoom uses Stripe under the hood. Use the billing portal to view invoices, update payment details, or make changes to your plan anytime.
           </p>
         </header>
 
-        <div class="rounded-xl border border-dashed border-border-subtle bg-[color-mix(in_srgb,var(--color-bg-surface)_90%,transparent)] px-5 py-6 text-sm text-[var(--color-text-secondary)]">
+        <div class="rounded-xl border border-dashed border-border-subtle bg-[color-mix(in_srgb,var(--color-bg-surface)_90%,transparent)] px-5 py-6 text-sm text-text-secondary">
           <p>Need an invoice, tax receipt, or want to change your payment method?</p>
           <p class="mt-3">Email <a class="underline" :href="supportEmailHref">{{ SUPPORT_EMAIL }}</a> and include the email tied to your SoundRoom account.</p>
         </div>
@@ -105,7 +105,7 @@
           <BaseButton @click="contactBilling">
             Contact billing support
           </BaseButton>
-          <BaseButton variant="naked" class="text-sm text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]" @click="openFAQ">
+          <BaseButton variant="naked" class="text-sm text-text-muted hover:text-text-primary" @click="openFAQ">
             View plan FAQ
           </BaseButton>
         </div>
@@ -114,14 +114,14 @@
       <section class="rounded-2xl border border-border-subtle bg-[color-mix(in_srgb,var(--color-bg-surface)_90%,transparent)] p-6 shadow-sm space-y-6">
         <header class="space-y-1">
           <h2 class="text-xl font-semibold">Upcoming Features</h2>
-          <p class="text-sm text-[var(--color-text-muted)]">We are actively building deeper collaboration and scheduling tools. Here is what is landing next for paying members.</p>
+          <p class="text-sm text-text-muted">We are actively building deeper collaboration and scheduling tools. Here is what is landing next for paying members.</p>
         </header>
 
         <ul class="grid gap-4 md:grid-cols-2">
           <li v-for="item in roadmapHighlights" :key="item.title" class="rounded-xl border border-border-subtle bg-[color-mix(in_srgb,var(--color-bg-surface)_92%,transparent)] p-5 space-y-2">
-            <p class="text-sm uppercase tracking-wide text-[var(--color-text-muted)]">{{ item.badge }}</p>
+            <p class="text-sm uppercase tracking-wide text-text-muted">{{ item.badge }}</p>
             <h3 class="text-lg font-medium">{{ item.title }}</h3>
-            <p class="text-sm text-[var(--color-text-muted)]">{{ item.copy }}</p>
+            <p class="text-sm text-text-muted">{{ item.copy }}</p>
           </li>
         </ul>
       </section>
@@ -402,6 +402,6 @@ function contactBilling() {
 }
 
 function openFAQ() {
-  router.push('/help')
+  router.push({ name: 'help'})
 }
 </script>

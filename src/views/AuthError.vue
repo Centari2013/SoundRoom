@@ -8,7 +8,7 @@ const router = useRouter()
  * @returns {void}
  */
 function goHome() {
-  router.push('/')
+  router.push({ name: 'app' })
 }
 </script>
 

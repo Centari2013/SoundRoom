@@ -3,9 +3,9 @@
   :type="type"
   :disabled="disabled"
   :class="[
-    'transition focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-bg-surface)] disabled:opacity-50 disabled:cursor-not-allowed',
-    variant === 'default' && 'px-4 py-2 rounded text-sm font-medium bg-[var(--color-accent)] hover:bg-[var(--color-accent-strong)] text-[var(--color-text-inverse)] shadow-[var(--color-shadow-soft)]',
-    variant === 'naked' && 'bg-transparent text-[var(--color-text-primary)] hover:text-[var(--color-accent-soft)]'
+    'transition focus:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-2 focus-visible:ring-offset-surface-base disabled:opacity-50 disabled:cursor-not-allowed',
+    variant === 'default' && 'px-4 py-2 rounded text-sm font-medium bg-accent hover:bg-accent-strong text-text-inverse',
+    variant === 'naked' && 'bg-transparent text-text-primary hover:text-accent-soft'
   ]"
   @click="(e) => $emit('click', e)"
 >
@@ -14,7 +14,7 @@
     </span>
     <span v-else class="flex items-center justify-center space-x-2">
       <svg
-        class="w-4 h-4 animate-spin text-[var(--color-text-inverse)]"
+        class="w-4 h-4 animate-spin text-text-inverse"
         fill="none"
         viewBox="0 0 24 24"
       >

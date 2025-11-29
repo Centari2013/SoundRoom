@@ -1,5 +1,5 @@
 <template>
-  <div class="auth-callback w-full bg-[var(--color-bg-app)] text-[var(--color-text-primary)]">
+  <div class="auth-callback w-full bg-surface-app text-text-primary">
   </div>
 </template>
 
@@ -36,12 +36,12 @@ onMounted(async () => {
     }
 
     localStorage.setItem('userProfile', JSON.stringify(finalProfile))
-    router.push('/')
+    router.push({ name: 'app' })
 
 
   } else {
     console.error('Login failed:', error)
-    router.push('/auth/error')
+    router.push({ name: 'auth-error' })
   }
 })
 

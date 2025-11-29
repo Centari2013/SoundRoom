@@ -39,7 +39,7 @@
       :stroke="selectionGlowColor"
       :strokeWidth="3"
       :opacity="selectionGlowOpacity"
-      shadowForStrokeEnabled="true"
+      :shadowForStrokeEnabled="true"
       :shadowColor="selectionGlowColor"
       :shadowBlur="selectionGlowBlur"
       :listening="false"
@@ -52,7 +52,7 @@
       :shadowColor="getFillColor"
       :shadowBlur="nodeShadowBlur"
       :shadowOpacity="nodeShadowOpacity"
-      shadowForStrokeEnabled="false"
+      :shadowForStrokeEnabled="false"
       name="sound-node-part"
       @mousedown="onSourceMouseDown"
       @mouseup="onSourceMouseUp"
@@ -101,7 +101,7 @@
       :x="Math.cos(toRad(source.instance.state.angle)) * 7"
       :y="Math.sin(toRad(source.instance.state.angle)) * 7"
       :innerRadius="0"
-      :outerRadius="25"
+      :outerRadius="45"
       :angle="135"
       :rotation="source.instance.state.angle - 90 + 20"
       fill="transparent"
@@ -166,8 +166,6 @@ const lightPalette = computed(() => ({
   bg2: getVar('--color-bg-elevated', 'var(--color-bg-elevated)'),
   nodeRed: getVar('--color-node-red', 'var(--color-node-red)'),
   nodeBlue: getVar('--color-node-blue', 'var(--color-node-blue)'),
-  coneRed: 'rgba(var(--color-danger-rgb), 0.12)',
-  coneBlue: 'rgba(var(--color-accent-rgb), 0.14)',
 }))
 
 const themeTokens = computed(() => ({
@@ -185,7 +183,7 @@ const getFillColor = computed(() => {
     return isScheduled.value ? themeTokens.value.primary : themeTokens.value.danger
   }
   const colors = lightPalette.value
-  if (props.selected) return colors.bg2
+  if (props.selected) return themeTokens.value.selectionHighlight
   return isScheduled.value ? colors.nodeBlue : colors.nodeRed
 })
 
@@ -200,8 +198,9 @@ const selectedScale = computed(() => (props.selected ? 1.05 : 1))
 
 const outerConeFill = computed(() => {
   if (isDarkMode.value) return rgbaFromVar('--color-danger-rgb', 0.16, 'rgba(var(--color-danger-rgb), 0.16)')
-  const colors = lightPalette.value
-  return isScheduled.value ? colors.coneBlue : colors.coneRed
+  return isScheduled.value
+    ? rgbaFromVar('--color-node-blue-rgb', 0.14, 'rgba(var(--color-node-blue-rgb), 0.14)')
+    : rgbaFromVar('--color-node-red-rgb', 0.12, 'rgba(var(--color-node-red-rgb), 0.12)')
 })
 const outerConeStroke = computed(() => isDarkMode.value
   ? rgbaFromVar('--color-danger-rgb', 0.28, 'rgba(var(--color-danger-rgb), 0.28)')

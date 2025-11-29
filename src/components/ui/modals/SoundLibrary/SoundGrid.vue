@@ -2,7 +2,7 @@
   <div class="flex-1 relative overflow-hidden">
     <div class="absolute top-0 left-0 right-0 z-10 flex justify-between items-center px-6 py-4 bg-[color-mix(in_srgb,var(--color-bg-surface)_70%,transparent)] backdrop-blur-md border-b border-border-subtle text-text-primary">
       <h2 class="text-2xl font-bold">SoundLibrary</h2>
-      <BaseButton class="text-sm" @click="$emit('close')">Close</BaseButton>
+      <BaseButton id="close-lib-btn" class="text-sm" @click="$emit('close')">Close</BaseButton>
     </div>
     <div ref="gridScroll" class="mt-5 place-content-start p-6 pt-20 overflow-y-auto h-full grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
       <SoundGridItem

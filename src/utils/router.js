@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import SoundRoom from '@/views/SoundRoom.vue'
+import LandingPage from '@/views/LandingPage.vue'
 import { useAuth } from '@/composables/useAuth'
 import { watch } from 'vue'
 import { applySeo } from '@/utils/seo'
@@ -11,16 +12,29 @@ const router = createRouter({
   history: createWebHistory(),
   routes: [
     {
+      name: 'landing',
       path: '/',
+      component: LandingPage,
+      meta: {
+        seo: {
+          title: 'SoundRoom | Spatial audio playground',
+          description: 'Explore SoundRoom, a browser-based canvas for crafting immersive spatial audio rooms with drag-and-drop sources and real-time binaural mixing.',
+        },
+      },
+    },
+    {
+      name: 'app',
+      path: '/app',
       component: SoundRoom,
       meta: {
         seo: {
-          title: 'SoundRoom',
+          title: 'SoundRoom Studio',
           description: 'Design and layer immersive spatial audio scenes in your browser. Drag directional sources, sculpt ambient mixes, and save custom rooms with SoundRoom.',
         },
       },
       children: [
         {
+          name: 'login',
           path: 'login',
           component: () => import('@/components/ui/modals/ModalWrapper.vue'),
           props: { component: () => import('@/components/ui/modals/LoginSignup/AuthModal.vue') },
@@ -32,6 +46,7 @@ const router = createRouter({
           },
         },
         {
+          name: 'signup',
           path: 'signup',
           component: () => import('@/components/ui/modals/ModalWrapper.vue'),
           props: { component: () => import('@/components/ui/modals/LoginSignup/AuthModal.vue') },
@@ -43,6 +58,7 @@ const router = createRouter({
           },
         },
         {
+          name: 'reset',
           path: 'reset',
           component: () => import('@/components/ui/modals/ModalWrapper.vue'),
           props: { component: () => import('@/components/ui/modals/LoginSignup/AuthModal.vue') },
@@ -54,6 +70,7 @@ const router = createRouter({
           },
         },
         {
+          name: 'help',
           path: 'help',
           component: () => import('@/components/ui/modals/ModalWrapper.vue'),
           props: { component: () => import('@/components/ui/modals/Help.vue') },
@@ -65,7 +82,8 @@ const router = createRouter({
           },
         },
         {
-          path: '/room-manager',
+          name: 'room-manager',
+          path: 'room-manager',
           component: () => import('@/components/ui/modals/ModalWrapper.vue'),
           props: { component: () => import('@/components/ui/modals/RoomManager/RoomManager.vue') },
           meta: {
@@ -77,7 +95,8 @@ const router = createRouter({
           },
         },
         {
-          path: '/sound-library',
+          name: 'sound-library',
+          path: 'sound-library',
           component: () => import('@/components/ui/modals/ModalWrapper.vue'),
           props: { component: () => import('@/components/ui/modals/SoundLibrary/SoundLibrary.vue') },
           meta: {
@@ -88,6 +107,7 @@ const router = createRouter({
           },
         },
         {
+          name: 'upgrade',
           path: 'upgrade',
           component: () => import('@/components/ui/modals/ModalWrapper.vue'),
           props: { component: () => import('@/views/Pricing/Pricing.vue') },
@@ -101,6 +121,35 @@ const router = createRouter({
       ],
     },
     {
+      path: '/login',
+      redirect: '/app/login',
+    },
+    {
+      path: '/signup',
+      redirect: '/app/signup',
+    },
+    {
+      path: '/reset',
+      redirect: '/app/reset',
+    },
+    {
+      path: '/help',
+      redirect: '/app/help',
+    },
+    {
+      path: '/room-manager',
+      redirect: '/app/room-manager',
+    },
+    {
+      path: '/sound-library',
+      redirect: '/app/sound-library',
+    },
+    {
+      path: '/upgrade',
+      redirect: '/app/upgrade',
+    },
+    {
+      name: 'terms',
       path: '/terms',
       component: () => import('@/views/TermsOfService.vue'),
       meta: {
@@ -111,6 +160,7 @@ const router = createRouter({
       },
     },
     {
+      name: 'privacy',
       path: '/privacy',
       component: () => import('@/views/PrivacyPolicy.vue'),
       meta: {
@@ -121,6 +171,7 @@ const router = createRouter({
       },
     },
     {
+      name: 'settings',
       path: '/settings',
       component: () => import('@/views/Settings.vue'),
       meta: {
@@ -132,6 +183,7 @@ const router = createRouter({
       },
     },
     {
+      name: 'manage-plan',
       path: '/manage-plan',
       component: () => import('@/views/ManagePlan.vue'),
       meta: {
@@ -143,6 +195,7 @@ const router = createRouter({
       },
     },
     {
+      name: 'update-password',
       path: '/update-password',
       component: () => import('@/views/UpdatePasswordPage.vue'),
       meta: {
@@ -153,6 +206,7 @@ const router = createRouter({
       },
     },
     {
+      name: 'auth-callback',
       path: '/auth/callback',
       component: () => import('@/views/AuthCallback.vue'),
       meta: {
@@ -163,6 +217,7 @@ const router = createRouter({
       },
     },
     {
+      name: 'auth-error',
       path: '/auth/error',
       component: () => import('@/views/AuthError.vue'),
       meta: {
@@ -173,8 +228,9 @@ const router = createRouter({
       },
     },
     {
+      name: 'welcome',
       path: '/welcome',
-      component: () => import('@/components/ui/modals/Onboarding.vue'),
+      component: () => import('@/components/ui/context/Onboarding.vue'),
       meta: {
         seo: {
           title: 'Welcome to SoundRoom',
@@ -183,6 +239,7 @@ const router = createRouter({
       },
     },
     {
+      name: 'logged-out',
       path: '/logged-out',
       component: () => import('@/views/LoggedOut.vue'),
       meta: {

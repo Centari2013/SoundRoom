@@ -33,7 +33,7 @@ function handleClose() {
 
 function handleUpgrade() {
   entitlementStore.close()
-  router.push('/upgrade')
+  router.push({ name: 'upgrade' })
 }
 </script>
 

@@ -88,7 +88,7 @@ const showNewRoomConfirm = ref(false);
 async function handleSaveOnly() {
   if (!isAuthenticated.value) {
     showSaveConfirm.value = false;
-    router.push('/login');
+    router.push({name: 'login'});
     return;
   }
   try {
@@ -103,14 +103,14 @@ async function handleSaveOnly() {
 async function handleSaveThenNewRoom() {
   if (!isAuthenticated.value) {
     showNewRoomConfirm.value = false;
-    router.push('/login');
+    router.push({name: 'login'});
     return;
   }
   try {
     const didSave = await props.onSave();
     if (didSave) {
       resetRoomState();
-      router.push('/');
+      router.push({name: 'app'});
     }
   } catch (error) {
     console.error('Error saving room before creating a new one:', error);
@@ -121,6 +121,6 @@ async function handleSaveThenNewRoom() {
 
 function handleSkipSaveThenNewRoom() {
   resetRoomState();
-  router.push('/');
+  router.push({name: 'app'});
 }
 </script>

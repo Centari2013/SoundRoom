@@ -14,7 +14,7 @@
       :shadowColor="anchorShadowColor"
       :shadowBlur="anchorShadowBlur"
       :shadowOpacity="anchorShadowOpacity"
-      listening="false"
+      :listening="false"
     />
 
     <!-- Listener Body -->
@@ -50,9 +50,9 @@
       :stroke="centerHighlightStroke"
       :strokeWidth="0.5"
       :shadowColor="highlightShadowColor"
-      shadowBlur="6"
+      :shadowBlur="6"
       :shadowOpacity="highlightShadowOpacity"
-      listening="false"
+      :listening="false"
     />
 
     <!-- Directional Marker -->
@@ -72,8 +72,8 @@
       :stroke="directionStroke"
       :strokeWidth="1.25"
       :shadowColor="directionShadowColor"
-      shadowBlur="6"
-      opacity="0.96"
+      :shadowBlur="6"
+      :opacity="0.96"
       @mousedown="onListenerMouseDown"
       @mouseup="onListenerMouseUp"
       @mouseover="setCursor($event, 'pointer')"

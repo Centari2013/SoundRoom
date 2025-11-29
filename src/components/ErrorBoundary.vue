@@ -55,7 +55,7 @@ function reloadPage() {
 function goHome() {
   hasError.value = false
   errorMessage.value = DEFAULT_ERROR_MESSAGE
-  void router.push('/')
+  void router.push({ name: 'landing' })
 }
 
 onErrorCaptured((error) => {

@@ -107,19 +107,48 @@ function primeBillingHistory(value) {
   writeTierToCache(tier.value, value)
 }
 
-// Initial session check
-supabase.auth.getSession().then(({ data }) => {
+async function syncOnboardingStatus(userId) {
+  const localDone = localStorage.getItem('soundroom_onboarding_completed') === 'true'
+  if (!localDone) return
+
+  // Check DB
+  const { data } = await supabase
+    .from('users')
+    .select('onboarding_completed')
+    .eq('id', userId)
+    .maybeSingle()
+
+  if (!data || data.onboarding_completed === true) return
+
+  // Update DB one time
+  await supabase
+    .from('users')
+    .update({ onboarding_completed: true })
+    .eq('id', userId)
+}
+
+supabase.auth.getSession().then(async ({ data }) => {
   user.value = data.session?.user ?? null
   sessionLoaded.value = true
-  if (user.value?.id) refreshTier()
+
+  if (user.value?.id) {
+    refreshTier()
+    syncOnboardingStatus(user.value.id)   // <-- ADD THIS TOO
+  }
 })
 
-// Listen for login/logout and update user/tier accordingly
+
+
 supabase.auth.onAuthStateChange(async (_event, session) => {
   user.value = session?.user ?? null
   sessionLoaded.value = true
-  if (user.value?.id) refreshTier(true)
-  else tier.value = 'free'
+
+  if (user.value?.id) {
+    refreshTier(true)
+    syncOnboardingStatus(user.value.id)   // <-- ADD THIS
+  } else {
+    tier.value = 'free'
+  }
 })
 
 refreshTier(true) // Initial tier load

@@ -1,5 +1,5 @@
 <template>
-  <div class="flex flex-col items-center justify-center min-h-screen px-4 py-12 bg-[var(--color-bg-app)] text-text-primary transition-colors">
+  <div class="flex flex-col items-center justify-center min-h-screen px-4 py-12 bg-surface-app text-text-primary transition-colors">
     <div class="w-full max-w-sm space-y-6 bg-[var(--color-bg-surface)] rounded-2xl shadow-xl p-6 border border-border-subtle transition-colors">
       <h2 class="text-2xl font-semibold text-center tracking-wide">Reset Your Password</h2>
 
@@ -63,7 +63,7 @@ async function submitNewPassword() {
   }
 
   success.value = true
-  setTimeout(() => router.push('/login'), 2500)
+  setTimeout(() => router.push({ name: 'login' }), 2500)
 }
 
 onMounted(async () => {
