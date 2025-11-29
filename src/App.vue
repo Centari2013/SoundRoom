@@ -1,6 +1,6 @@
 <!-- App.vue -->
 <template>
-  <SpeedInsights />
+  <Analytics />
   <MobileComingSoon v-if="isMobile" />
   <div class="h-screen max-h-screen min-w-screen flex flex-col">
     <HeaderBar />
@@ -57,7 +57,6 @@
 <script setup>
 import { ref, watch, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { SpeedInsights } from '@vercel/speed-insights/vue'
 import HeaderBar from '@/components/SoundRoom/HeaderBar.vue'
 import MobileComingSoon from '@/views/MobileComingSoon.vue'
 import { isMobileBrowser } from '@/utils/device'
@@ -65,6 +64,7 @@ import EntitlementUpsellModal from '@/components/ui/modals/EntitlementUpsellModa
 import BaseButton from '@/components/ui/input/BaseButton.vue'
 import ErrorBoundary from '@/components/ErrorBoundary.vue'
 import { useThemeBootstrap } from '@/composables/useThemeBootstrap'
+import { Analytics } from '@vercel/analytics/vue';
 
 const isMobile = isMobileBrowser()
 const globalError = ref(null)
