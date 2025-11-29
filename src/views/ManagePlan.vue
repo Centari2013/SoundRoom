@@ -72,7 +72,7 @@
               variant="naked"
               class="text-sm text-accent hover:text-accent-soft"
               :disabled="isDowngradeBusy || isCreatingPortalSession"
-              @click="currentPlan.cancelAction.handler"
+              @click="showDowngradeConfirm = true"
             >
               {{ currentPlan.cancelAction.label }}
             </BaseButton>
@@ -126,6 +126,15 @@
         </ul>
       </section>
     </div>
+    <YesNoModal
+      v-if="showDowngradeConfirm"
+      :title="'Confirm Downgrade'"
+      :message="'Are you sure you want to cancel your subscription and downgrade to the Free plan? You will lose access to uploads, advanced scheduling, and unlimited rooms.'"
+      :yesFunction="confirmDowngrade"
+      :noFunction="() => {}"
+      @close="showDowngradeConfirm = false"
+    />
+
   </main>
 </template>
 
@@ -138,7 +147,12 @@ import { getPlanTheme, getPlanBadgeClass } from '@/constants/planThemes'
 import { supabase } from '@/utils/supabase'
 import { createBillingPortalSession } from '@/utils/billingPortal'
 
-const SUPPORT_EMAIL = 'support@soundroom.app'
+import YesNoModal from '@/components/ui/modals/YesNoModal.vue'
+
+const showDowngradeConfirm = ref(false)
+
+
+const SUPPORT_EMAIL = 'support@soundroom.live'
 
 const { tier, refreshTier, primeTier, hasBillingHistory, primeBillingHistory } = useAuth()
 const router = useRouter()
@@ -213,6 +227,12 @@ async function downgradeToFree() {
     isProcessingCheckout.value = false
   }
 }
+
+function confirmDowngrade() {
+  showDowngradeConfirm.value = false
+  downgradeToFree()
+}
+
 
 async function openBillingPortal() {
   if (isCreatingPortalSession.value) return

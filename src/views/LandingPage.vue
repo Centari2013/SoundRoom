@@ -28,15 +28,15 @@
             A browser-native canvas for placing, sculpting, and automating audio in 3D space.
             No installs. No friction. Just flow.
           </p>
-          <div class="flex flex-wrap gap-4">
-            <RouterLink to="/app">
+          <div class="flex flex-wrap gap-4 justify-center">
+            <RouterLink :to="{name: 'app'}">
               <button
                 class="px-6 py-3 rounded-full bg-[var(--color-accent)] text-white shadow-[0_12px_40px_rgba(0,0,0,0.35)] hover:translate-y-[-1px] transition"
               >
                 Launch the studio
               </button>
             </RouterLink>
-            <RouterLink to="/pricing">
+            <RouterLink :to="{name: 'upgrade'}">
               <button
                 class="px-6 py-3 rounded-full border border-[var(--color-border-subtle)] text-text-primary hover:bg-surface-raised transition"
               >
@@ -126,7 +126,7 @@
 
       <!-- CTA -->
       <section
-        class="rounded-2xl border border-[var(--color-border-strong)] 
+        class="rounded-2xl border border-[var(--color-border-strong)]  flex flex-col text-center items-center
                bg-[color-mix(in_srgb,var(--color-panel)_80%,black_20%)] 
                p-14 shadow-[0_20px_60px_rgba(0,0,0,0.35)] space-y-8"
       >
@@ -140,13 +140,13 @@
           </p>
         </div>
 
-        <div class="flex flex-wrap gap-4">
-          <RouterLink to="/app">
+        <div class="flex flex-wrap gap-4 justify-center">
+          <RouterLink :to="{name: 'app'}">
             <button class="px-6 py-3 rounded-full bg-[var(--color-accent)] text-white shadow-[0_12px_40px_rgba(0,0,0,0.25)] hover:translate-y-[-1px] transition">
               Launch the studio
             </button>
           </RouterLink>
-          <RouterLink to="/pricing">
+          <RouterLink :to="{name: 'upgrade'}">
             <button class="px-6 py-3 rounded-full border border-[var(--color-border-subtle)] text-text-primary hover:bg-surface-raised transition">
               Compare plans
             </button>
