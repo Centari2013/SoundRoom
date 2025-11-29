@@ -6,7 +6,7 @@
     Sound Sources
   </h5>
 
-  <ul class="overflow-y-auto space-y-2 text-sm text-[var(--color-text-primary)]"
+  <ul id="library-sound-list" class="overflow-y-auto space-y-2 text-sm text-[var(--color-text-primary)]"
   :class="{ 'flex-1 mt-4': soundLibrarySources.length > 0 }">
     <LibrarySource 
       v-for="s in soundLibrarySources"
@@ -20,6 +20,7 @@
   <button
     :disabled="soundLibrarySources.length == MAX_SOURCES"
     @click="() => { router.push({ name: 'sound-library' }) }"
+    id="add-source-btn"
     class="w-full mt-4 bg-[var(--color-bg-surface)] text-xs rounded hover:bg-[var(--color-bg-elevated)] border border-[var(--color-border-subtle)] text-[var(--color-text-primary)]"
   >
     + Add Source

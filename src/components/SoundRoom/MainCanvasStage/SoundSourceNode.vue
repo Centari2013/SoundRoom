@@ -101,7 +101,7 @@
       :x="Math.cos(toRad(source.instance.state.angle)) * 7"
       :y="Math.sin(toRad(source.instance.state.angle)) * 7"
       :innerRadius="0"
-      :outerRadius="25"
+      :outerRadius="45"
       :angle="135"
       :rotation="source.instance.state.angle - 90 + 20"
       fill="transparent"

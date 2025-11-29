@@ -1,5 +1,6 @@
 <template>
   <aside
+    id="sidebar-left"
     class="flex flex-col h-full bg-[var(--color-bg-elevated)] border-r border-[var(--color-border-subtle)] p-4 space-y-6 text-[var(--color-text-primary)]"
     role="region"
     aria-labelledby="library-panel-label"

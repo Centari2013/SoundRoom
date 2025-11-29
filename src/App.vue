@@ -55,7 +55,7 @@
 </template>
 
 <script setup>
-import { ref, watch, computed } from 'vue'
+import { ref, watch, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { SpeedInsights } from '@vercel/speed-insights/vue'
 import HeaderBar from '@/components/SoundRoom/HeaderBar.vue'
@@ -98,6 +98,8 @@ function retryGlobalError() {
 
 function returnHome() {
   globalError.value = null
-  void router.push('/')
+  void router.push({name: 'landing'})
 }
+
+
 </script>

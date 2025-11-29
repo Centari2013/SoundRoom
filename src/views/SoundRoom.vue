@@ -1,4 +1,6 @@
 <template>
+
+  <Onboarding :startTour="startTour" />
   <div class="h-full bg-surface-app text-text-primary flex flex-col">
     <!-- Main Layout -->
     <div class="flex flex-1 overflow-hidden">
@@ -65,10 +67,12 @@
 </template>
 
 <script setup>
+import Onboarding from '@/components/ui/context/Onboarding.vue'
+
 defineOptions({
   name: 'SoundRoomRoot',
 })
-import { ref, provide, onBeforeMount, onUnmounted } from 'vue'
+import { ref, provide, onBeforeMount, onUnmounted, onMounted } from 'vue'
 
 // Shared constants
 const SOUND_NODE_PART_NAME = 'sound-node-part'
@@ -189,6 +193,18 @@ onBeforeMount(async () => {
   roomStore.room.name.value = 'Untitled Room' // Default room name
   roomStore.getSaveSnapshot({ markAsInitial: true }) // Initialize stored snapshots for save/empty comparisons
 })
+
+const startTour = ref(false);
+onMounted(() => {
+  // Start the tour when the component is mounted
+  if (localStorage.getItem('soundroom_onboarding_completed') !== 'true') {
+    showWelcomeOverlay.value = true;
+    setTimeout(() => {
+      startTour.value = true;
+    }, 3000); // 3 seconds to account for welcome overlay
+  }
+
+});
 
 onUnmounted(() => {
   unregisterSoundRoomActions()

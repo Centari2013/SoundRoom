@@ -230,7 +230,7 @@ const router = createRouter({
     {
       name: 'welcome',
       path: '/welcome',
-      component: () => import('@/components/ui/modals/Onboarding.vue'),
+      component: () => import('@/components/ui/context/Onboarding.vue'),
       meta: {
         seo: {
           title: 'Welcome to SoundRoom',

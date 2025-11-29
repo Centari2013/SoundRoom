@@ -30,6 +30,7 @@
     <!-- Right: Menu -->
     <div v-if="shouldShowNavButtons" class="relative">
       <button
+        id="menu-btn"
         ref="menuButton"
         type="button"
         @click.stop="toggleMenu"
