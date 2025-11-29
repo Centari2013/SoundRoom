@@ -28,7 +28,7 @@
 
       <!-- Footer -->
       <div class="flex justify-end p-4 border-t border-border-subtle">
-        <BaseButton @click="router.push('/')" class="text-sm px-4 py-2 font-medium rounded hover:text-[var(--color-text-muted)]">
+        <BaseButton @click="router.push('/app')" class="text-sm px-4 py-2 font-medium rounded hover:text-[var(--color-text-muted)]">
           Let's Go
         </BaseButton>
       </div>

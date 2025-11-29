@@ -36,7 +36,7 @@ onMounted(async () => {
     }
 
     localStorage.setItem('userProfile', JSON.stringify(finalProfile))
-    router.push('/')
+    router.push('/app')
 
 
   } else {

@@ -4,7 +4,7 @@
   :title="title"
   :canClickOutside="false"
   :showCloseButton="true"
-  @close="router.push('/')"
+  @close="router.push('/app')"
   role="dialog"
   aria-modal="true"
   :aria-labelledby="'modal-title'"

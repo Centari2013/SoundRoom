@@ -1,6 +1,6 @@
 <template>
   <div
-    @click.self="router.push('/')"
+    @click.self="router.push('/app')"
     class="modal-backdrop"
   >
     <div class="modal-panel flex">
@@ -17,7 +17,7 @@
         :soundLibrarySources="soundLibrarySources"
         :currentlyPlayingId="currentlyPlayingId"
         :activeCategory="activeCategory"
-        @close="router.push('/')"
+        @close="router.push('/app')"
         @toggleSound="toggleAddSource"
         @updateCurrent="currentlyPlayingId = $event"
         @upload="showUploadPanel = true"

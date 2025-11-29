@@ -57,7 +57,7 @@ const router = useRouter()
 const { tier, isAuthenticated, user } = useAuth()
 
 const closeModal = () => {
-  router.push('/')
+  router.push('/app')
 }
 
 const STATUS_DETAIL_FALLBACK = {

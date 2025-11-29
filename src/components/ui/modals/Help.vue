@@ -335,7 +335,7 @@ function handleClose() {
   formSubmitted.value = false
   resetFormState()
   resetFAQ()
-  router.push('/')
+  router.push('/app')
   emit('close')
 }
 
