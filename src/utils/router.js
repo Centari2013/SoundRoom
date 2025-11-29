@@ -171,6 +171,17 @@ const router = createRouter({
       },
     },
     {
+      name: 'cookies',
+      path: '/cookies',
+      component: () => import('@/views/CookiePolicy.vue'),
+      meta: {
+        seo: {
+          title: 'Cookie Policy | SoundRoom',
+          description: 'Understand how SoundRoom handles your cookie data and tracking preferences.',
+        },
+      },
+    },
+    {
       name: 'settings',
       path: '/settings',
       component: () => import('@/views/Settings.vue'),
