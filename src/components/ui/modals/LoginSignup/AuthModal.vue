@@ -202,6 +202,7 @@ async function signInWithEmail({ email, password }) {
     .single()
 
   localStorage.setItem('userProfile', JSON.stringify(profile))
+  sessionStorage.setItem('justLoggedIn', 'true')
 
   // Example: redirect to auth callback
   router.push({ name: 'auth-callback' })
@@ -211,6 +212,7 @@ async function signInWithEmail({ email, password }) {
 
 async function handleGoogleAuth() {
   resetErrorMessage();
+
   await supabase.auth.signInWithOAuth({
     provider: 'google',
     options: {

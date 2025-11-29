@@ -90,7 +90,7 @@ const router = createRouter({
             requiresAuth: true,
             seo: {
               title: 'Room Manager | SoundRoom',
-              description: 'Load, duplicate, and organize your saved SoundRoom scenes to keep creative sessions flowing.',
+              description: 'Load and organize your saved SoundRoom scenes to keep creative sessions flowing.',
             },
           },
         },
