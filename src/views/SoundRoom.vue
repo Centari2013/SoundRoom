@@ -221,7 +221,7 @@ function waitForWelcome() {
 
 onMounted(() => {
   if (localStorage.getItem('soundroom_onboarding_completed') === 'true') return;
-
+  if (localStorage.getItem('soundroom_onboarding_started') === 'true') return;
   routeUnwatch = watch(
     () => route.path,
     async (newPath) => {
@@ -238,7 +238,9 @@ onMounted(() => {
       }
 
       // Now it's safe to start
+      localStorage.setItem('soundroom_onboarding_started', 'true');
       startTour.value = true
+      routeUnwatch() // only run once
     },
     { immediate: true }
   )
