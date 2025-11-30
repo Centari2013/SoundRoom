@@ -206,7 +206,6 @@ onBeforeMount(async () => {
 })
 
 const startTour = ref(false);
-let routeUnwatch;
 
 function waitForWelcome() {
   return new Promise((resolve) => {
@@ -219,10 +218,21 @@ function waitForWelcome() {
   })
 }
 
-onMounted(() => {
+onMounted(async() => {
+   // If welcome overlay exists, wait for it
+      if (showWelcomeOverlay.value && !welcomeDone.value) {
+        await waitForWelcome()
+      }
   if (localStorage.getItem('soundroom_onboarding_completed') === 'true') return;
   if (localStorage.getItem('soundroom_onboarding_started') === 'true') return;
-  routeUnwatch = watch(
+
+  if (route.path == '/app') {
+        startTour.value = true
+        localStorage.setItem('soundroom_onboarding_started', 'true');
+        return
+      }
+
+  const routeUnwatch = watch(
     () => route.path,
     async (newPath) => {
 
@@ -232,26 +242,18 @@ onMounted(() => {
         return
       }
 
-      // If welcome overlay exists, wait for it
-      if (showWelcomeOverlay.value && !welcomeDone.value) {
-        await waitForWelcome()
-      }
-
       // Now it's safe to start
       localStorage.setItem('soundroom_onboarding_started', 'true');
       startTour.value = true
       routeUnwatch() // only run once
-    },
-    { immediate: true }
+    }
   )
 })
 
 
 
 onUnmounted(() => {
-  if (routeUnwatch) {
-    routeUnwatch();
-  }
+
   unregisterSoundRoomActions()
   audioEngine.value.dispose()
   // Revoke object URLs to avoid memory leaks
