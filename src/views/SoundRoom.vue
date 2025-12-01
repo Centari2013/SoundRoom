@@ -189,7 +189,7 @@ const LOCAL_PREF_KEY = 'soundroom.userPreferences'
 const userPreferences = ref({ ...preferenceDefaults })
 const preferencesLoaded = ref(false)
 
-const showAudioResumeOverlay = ref(false)
+const showAudioResumeOverlay = ref(true)
 
 function resumeAudio() {
   try {
@@ -285,10 +285,19 @@ function waitForWelcome() {
   })
 }
 
+watch(showAudioResumeOverlay, (v) => {
+  console.log("AUDIO OVERLAY CHANGED TO:", v)
+}, { immediate: true }
+)
+
+
+
+
 onMounted(async() => {
   watch(
     () => route.path,
     async (newPath) => {
+
       // If we are leaving *any* /app route (including children)
       if (!newPath.startsWith('/app')) {
         resetRoomState()
@@ -308,8 +317,9 @@ onMounted(async() => {
             }
           }
         }
-
         showAudioResumeOverlay.value = audioEngine.value?.getAudioContext().state === 'suspended'
+       
+
       }
     },
     { immediate: true }
