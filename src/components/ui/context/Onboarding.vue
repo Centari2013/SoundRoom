@@ -116,6 +116,7 @@ const steps = [
       const unwatch = watch(
         () => soundLibrarySources.value.length,
         async (val) => {
+        if (val === 0) return;
           unwatch();
           vTour.value.nextStep();
           
@@ -178,7 +179,7 @@ const steps = [
       const unwatch = watch(
         () => audioEngine.value.soundSources.value.length,
         async (val) => {
-          
+          if (val === 0) return;
           unwatch();
           vTour.value.nextStep();
           
