@@ -296,9 +296,9 @@ onMounted(async() => {
         cacheStore.audioCacheManager.clearMemoryCache()
       } else if (newPath === '/app' && isAuthenticated.value) {
         const preferences = await hydrateUserPreferences({ forceLocal: true })
-        if (preferences.autoResumePlayback) {
-          loadMostRecentRoom()
-        }
+        if (!preferences.autoResumePlayback) return;
+        loadMostRecentRoom()
+        
 
         if (audioEngine.value?.getAudioContext().state === 'suspended') {
           showAudioResumeOverlay.value = true
