@@ -157,7 +157,7 @@
                 </div>
               </div>
 
-              <div>
+              <div v-if="false">
                 <label for="roomLink" class="block text-sm font-medium mb-1">Room link or ID <span class="text-xs text-[var(--color-text-muted)]">(optional)</span></label>
                 <input
                   type="text"
