@@ -392,23 +392,56 @@ function applyPreferences(source) {
   })
 }
 
-function loadPreferences() {
+function loadPreferencesFromLocal() {
   try {
     const stored = localStorage.getItem(LOCAL_PREF_KEY)
     if (!stored) {
       preferenceInitial.value = { ...preferenceDefaults }
       applyPreferences(preferenceDefaults)
-      return
+      return preferenceDefaults
     }
 
     const parsed = JSON.parse(stored)
     const merged = { ...preferenceDefaults, ...parsed }
     preferenceInitial.value = { ...merged }
     applyPreferences(merged)
+    return merged
   } catch (error) {
     console.warn('Failed to parse stored preferences', error)
     preferenceInitial.value = { ...preferenceDefaults }
     applyPreferences(preferenceDefaults)
+    return preferenceDefaults
+  }
+}
+
+async function loadPreferences() {
+  const localPreferences = loadPreferencesFromLocal()
+
+  if (!user.value?.id) {
+    return
+  }
+
+  try {
+    const { data, error } = await supabase
+      .from('users')
+      .select('settings')
+      .eq('id', user.value.id)
+      .maybeSingle()
+
+    if (error) throw error
+
+    const remotePreferences = {
+      ...preferenceDefaults,
+      ...(data?.settings?.preferences ?? {}),
+    }
+
+    preferenceInitial.value = { ...remotePreferences }
+    applyPreferences(remotePreferences)
+    localStorage.setItem(LOCAL_PREF_KEY, JSON.stringify(remotePreferences))
+  } catch (error) {
+    console.warn('Failed to load preferences from Supabase, keeping local copy', error)
+    preferenceInitial.value = { ...localPreferences }
+    applyPreferences(localPreferences)
   }
 }
 
