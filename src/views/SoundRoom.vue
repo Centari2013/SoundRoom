@@ -126,7 +126,7 @@ const listenerStore = useListenerStore()
 const engineStore = useAudioEngineStore()
 const cacheStore = useAudioCacheStore()
 const { listener } = storeToRefs(listenerStore)
-const { audioEngine } = storeToRefs(engineStore)
+const { audioEngine, isPlaying } = storeToRefs(engineStore)
 
 const MAX_LIB_SOURCES = 20
 const MAX_CANVAS_SOURCES = 30
@@ -190,6 +190,22 @@ const userPreferences = ref({ ...preferenceDefaults })
 const preferencesLoaded = ref(false)
 
 const showAudioResumeOverlay = ref(false)
+
+let removeAudioContextStateListener
+
+function attachAudioContextStateListener() {
+  const context = audioEngine.value?.getAudioContext()
+  if (!context) return
+
+  const handleStateChange = () => {
+    if (context.state === 'running') {
+      showAudioResumeOverlay.value = false
+    }
+  }
+
+  context.addEventListener('statechange', handleStateChange)
+  removeAudioContextStateListener = () => context.removeEventListener('statechange', handleStateChange)
+}
 
 function resumeAudio() {
   try {
@@ -266,6 +282,7 @@ onBeforeMount(async () => {
   }
   
   engineStore.setupAudioContext()
+  attachAudioContextStateListener()
   engineStore.loadIR('cathedral', '/impulses/1st_baptist_nashville_far_wide.wav') // Load the default impulse response
   roomStore.setExistingRoomNames() // Initialize with empty names
   roomStore.room.name.value = 'Untitled Room' // Default room name
@@ -297,11 +314,13 @@ onMounted(async() => {
       } else if (newPath === '/app' && isAuthenticated.value) {
         const preferences = await hydrateUserPreferences({ forceLocal: true })
         if (!preferences.autoResumePlayback) return;
-        loadMostRecentRoom()
-        
+        await loadMostRecentRoom()
 
-        if (audioEngine.value?.getAudioContext().state === 'suspended') {
+        const audioContext = audioEngine.value?.getAudioContext()
+        if (audioContext?.state === 'suspended' && !isPlaying.value) {
           showAudioResumeOverlay.value = true
+        } else {
+          showAudioResumeOverlay.value = false
         }
       }
     },
@@ -346,6 +365,7 @@ onUnmounted(() => {
   resetRoomState()
   unregisterSoundRoomActions()
   audioEngine.value.dispose()
+  removeAudioContextStateListener?.()
   // Revoke object URLs to avoid memory leaks
   cacheStore.audioCacheManager.clearMemoryCache()
   // Uncomment to also wipe IndexedDB cache if long-term storage isn't desired
