@@ -115,6 +115,7 @@ import { useAuth } from '@/composables/useAuth'
 import { storeToRefs } from 'pinia'
 import { useRoute } from 'vue-router'
 import { resetRoomState } from "@/utils/resetRoomState";
+import { supabase } from '@/utils/supabase'
 
 // State
 const selectedIndex = ref(null)
@@ -176,7 +177,17 @@ setMaxLibSources(MAX_LIB_SOURCES)
 
 const showWelcomeOverlay = ref(false)
 const showInitOverlay = ref(false)
-const { isAuthenticated } = useAuth()
+const { user, isAuthenticated } = useAuth()
+
+const preferenceDefaults = Object.freeze({
+  autoResumePlayback: false,
+  showInterfaceTips: true
+})
+
+const LOCAL_PREF_KEY = 'soundroom.userPreferences'
+
+const userPreferences = ref({ ...preferenceDefaults })
+const preferencesLoaded = ref(false)
 
 const showAudioResumeOverlay = ref(false)
 
@@ -187,6 +198,58 @@ function resumeAudio() {
   } catch (err) {
     console.warn("Failed to resume audio context:", err)
   }
+}
+
+function applyPreferences(source = {}) {
+  Object.entries(preferenceDefaults).forEach(([key, fallback]) => {
+    userPreferences.value[key] = source[key] ?? fallback
+  })
+}
+
+function loadCachedPreferences() {
+  try {
+    const stored = localStorage.getItem(LOCAL_PREF_KEY)
+    if (!stored) return false
+
+    const parsed = JSON.parse(stored)
+    applyPreferences(parsed)
+    return true
+  } catch (error) {
+    console.warn('Failed to parse cached preferences', error)
+    return false
+  }
+}
+
+async function hydrateUserPreferences({ forceLocal = false } = {}) {
+  if (preferencesLoaded.value) {
+    if (forceLocal) {
+      loadCachedPreferences()
+    }
+
+    return userPreferences.value
+  }
+
+  if (!loadCachedPreferences() && user.value?.id) {
+    try {
+      const { data, error } = await supabase
+        .from('users')
+        .select('settings')
+        .eq('id', user.value.id)
+        .maybeSingle()
+
+      if (error) throw error
+
+      const preferences = data?.settings?.preferences ?? {}
+      applyPreferences(preferences)
+      localStorage.setItem(LOCAL_PREF_KEY, JSON.stringify(userPreferences.value))
+    } catch (err) {
+      console.warn('Failed to load preferences from Supabase, using defaults', err)
+      applyPreferences(preferenceDefaults)
+    }
+  }
+
+  preferencesLoaded.value = true
+  return userPreferences.value
 }
 
 onBeforeMount(async () => {
@@ -224,21 +287,26 @@ function waitForWelcome() {
 
 onMounted(async() => {
   watch(
-  () => route.path,
-  (newPath) => {
-    // If we are leaving *any* /app route (including children)
-    if (!newPath.startsWith('/app')) {
-      resetRoomState()
-      audioEngine.value?.dispose()
-      cacheStore.audioCacheManager.clearMemoryCache()
-    }else if (newPath === '/app' && isAuthenticated.value) {
-      loadMostRecentRoom()
-      if (audioEngine.value?.getAudioContext().state === 'suspended') {
-        showAudioResumeOverlay.value = true
+    () => route.path,
+    async (newPath) => {
+      // If we are leaving *any* /app route (including children)
+      if (!newPath.startsWith('/app')) {
+        resetRoomState()
+        audioEngine.value?.dispose()
+        cacheStore.audioCacheManager.clearMemoryCache()
+      } else if (newPath === '/app' && isAuthenticated.value) {
+        const preferences = await hydrateUserPreferences({ forceLocal: true })
+        if (preferences.autoResumePlayback) {
+          loadMostRecentRoom()
+        }
+
+        if (audioEngine.value?.getAudioContext().state === 'suspended') {
+          showAudioResumeOverlay.value = true
+        }
       }
-    }
-      }, { immediate: true }
-    )
+    },
+    { immediate: true }
+  )
   
    // If welcome overlay exists, wait for it
       if (showWelcomeOverlay.value && !welcomeDone.value) {
