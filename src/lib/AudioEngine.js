@@ -81,6 +81,15 @@ export default class AudioEngine {
   }
 
   /**
+   * Resume the audio context if it is suspended.
+   */
+  resumeAudioContext() {
+    if (this.#audioContext && this.#audioContext.state === 'suspended') {
+      this.#audioContext.resume()
+    }
+  }
+
+  /**
    * Lazily create and return the shared `AudioContext` instance.
    *
    * @returns {AudioContext}
@@ -88,14 +97,14 @@ export default class AudioEngine {
   getAudioContext() {
     // Lazily create the audio context and master gain node on first use.
     // Subsequent calls return the same context.
-    if (!this.#audioContext) {
-      this.#audioContext = new (window.AudioContext || window.webkitAudioContext)()
+    if (this.#audioContext) return this.#audioContext;
+    this.#audioContext = new (window.AudioContext || window.webkitAudioContext)()
 
-      // Create master gain when context is created
-      this.#masterGain = this.#audioContext.createGain()
-      this.#masterGain.gain.value = this.masterVolume.value // default volume
-      this.#masterGain.connect(this.#audioContext.destination)
-    }
+    // Create master gain when context is created
+    this.#masterGain = this.#audioContext.createGain()
+    this.#masterGain.gain.value = this.masterVolume.value // default volume
+    this.#masterGain.connect(this.#audioContext.destination)
+    
     // Inside getAudioContext()
     const reverbChainContext = this.#convolver?.context
     const gainContext = this.#reverbGain?.context

@@ -65,6 +65,15 @@
     :text="'Initializing Your SoundRoom...'"
     @done="showInitOverlay = false"
   />
+  <!-- Audio Resume Overlay -->
+  <div
+    v-if="showAudioResumeOverlay"
+    class="absolute inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm text-white text-xl cursor-pointer"
+    @click="resumeAudio"
+  >
+    Click to enable audio
+  </div>
+
 
 </template>
 
@@ -105,6 +114,7 @@ import { useSaveAndLoadRoom } from '@/composables/useSaveAndLoadRoom';
 import { useAuth } from '@/composables/useAuth'
 import { storeToRefs } from 'pinia'
 import { useRoute } from 'vue-router'
+import { resetRoomState } from "@/utils/resetRoomState";
 
 // State
 const selectedIndex = ref(null)
@@ -166,9 +176,22 @@ setMaxLibSources(MAX_LIB_SOURCES)
 
 const showWelcomeOverlay = ref(false)
 const showInitOverlay = ref(false)
+const { isAuthenticated } = useAuth()
+
+const showAudioResumeOverlay = ref(false)
+
+function resumeAudio() {
+  try {
+    engineStore.resumeAudioContext()
+    showAudioResumeOverlay.value = false
+  } catch (err) {
+    console.warn("Failed to resume audio context:", err)
+  }
+}
+
 onBeforeMount(async () => {
   registerSoundRoomActions()
-  const { isAuthenticated } = useAuth()
+  
   if (sessionStorage.getItem('justLoggedIn') === 'true') {
     sessionStorage.removeItem('justLoggedIn')
     showWelcomeOverlay.value = true
@@ -176,26 +199,7 @@ onBeforeMount(async () => {
     if (tempSoundRoomData) {
       loadRoomLocal()
       saveRoom()
-    } else {
-      // auto-load most recent room if available
-      if (isAuthenticated.value) {
-        // leave commented out until resume lastplaying sources is implemented to combat:
-        //Uncaught (in promise) DOMException: The play method is not allowed by the user agent 
-        // or the platform in the current context, possibly because the user denied permission.
-
-        //loadMostRecentRoom()
-      }
-    }
-    //const router = useRouter()
-    //router.push('/welcome')
-  } else {
-    // auto-load most recent room if available
-    if (isAuthenticated.value) {
-      // leave commented out until resume lastplaying sources is implemented to combat:
-      //Uncaught (in promise) DOMException: The play method is not allowed by the user agent 
-      // or the platform in the current context, possibly because the user denied permission.
-      //loadMostRecentRoom()
-    }
+    } 
   }
   
   engineStore.setupAudioContext()
@@ -219,10 +223,28 @@ function waitForWelcome() {
 }
 
 onMounted(async() => {
+  watch(
+  () => route.path,
+  (newPath) => {
+    // If we are leaving *any* /app route (including children)
+    if (!newPath.startsWith('/app')) {
+      resetRoomState()
+      audioEngine.value?.dispose()
+      cacheStore.audioCacheManager.clearMemoryCache()
+    }else if (newPath === '/app' && isAuthenticated.value) {
+      loadMostRecentRoom()
+      if (audioEngine.value?.getAudioContext().state === 'suspended') {
+        showAudioResumeOverlay.value = true
+      }
+    }
+      }, { immediate: true }
+    )
+  
    // If welcome overlay exists, wait for it
       if (showWelcomeOverlay.value && !welcomeDone.value) {
         await waitForWelcome()
       }
+
   if (localStorage.getItem('soundroom_onboarding_completed') === 'true') return;
   if (localStorage.getItem('soundroom_onboarding_started') === 'true') return;
 
@@ -253,7 +275,7 @@ onMounted(async() => {
 
 
 onUnmounted(() => {
-
+  resetRoomState()
   unregisterSoundRoomActions()
   audioEngine.value.dispose()
   // Revoke object URLs to avoid memory leaks

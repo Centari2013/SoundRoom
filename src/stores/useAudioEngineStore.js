@@ -29,6 +29,15 @@ export const useAudioEngineStore = defineStore('audioEngine', () => {
   }
 
   /**
+   * Resume the audio context if it is suspended.
+   *
+   * @returns {void}
+   */
+  function resumeAudioContext() {
+    audioEngine.value.resumeAudioContext()
+  }
+
+  /**
    * Serialize the current audio engine state.
    *
    * @returns {Object}
@@ -109,6 +118,7 @@ export const useAudioEngineStore = defineStore('audioEngine', () => {
     audioEngine,
     loadAudioEngine,
     audioEngineToJSON,
+    resumeAudioContext,
     setMaxCanvasSources,
     setupAudioContext,
     resetAudioEngine,
