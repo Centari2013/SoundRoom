@@ -80,6 +80,7 @@
 
 <script setup>
 import { ref, watch, computed, onMounted, onBeforeUnmount } from 'vue';
+import { resetRoomState } from "@/utils/resetRoomState";
 import { useRoute, useRouter } from 'vue-router';
 import { useAuth } from '@/composables/useAuth';
 import { toggleTheme } from '@/utils/theme';
@@ -143,7 +144,7 @@ onBeforeUnmount(() => {
 
 async function handleSignOut() {
    // Set logging out state
-  
+  resetRoomState()
   const { error } = await supabase.auth.signOut();
   if (error) {
     console.error('Sign out error:', error);
