@@ -285,10 +285,6 @@ function waitForWelcome() {
   })
 }
 
-watch(showAudioResumeOverlay, (v) => {
-  console.log("AUDIO OVERLAY CHANGED TO:", v)
-}, { immediate: true }
-)
 
 
 
