@@ -301,7 +301,15 @@ onMounted(async() => {
         
 
         if (audioEngine.value?.getAudioContext().state === 'suspended') {
-          showAudioResumeOverlay.value = true
+          try {
+            await audioEngine.value.getAudioContext().resume()
+          } catch (error) {
+            console.warn('Failed to auto-resume audio context', error)
+          }
+
+          if (audioEngine.value?.getAudioContext().state === 'suspended') {
+            showAudioResumeOverlay.value = true
+          }
         }
       }
     },
