@@ -297,7 +297,7 @@ onMounted(async() => {
       } else if (newPath === '/app' && isAuthenticated.value) {
         const preferences = await hydrateUserPreferences({ forceLocal: true })
         if (!preferences.autoResumePlayback) return;
-        loadMostRecentRoom()
+        await loadMostRecentRoom()
         
 
         if (audioEngine.value?.getAudioContext().state === 'suspended') {
