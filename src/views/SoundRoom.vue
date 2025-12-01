@@ -126,7 +126,7 @@ const listenerStore = useListenerStore()
 const engineStore = useAudioEngineStore()
 const cacheStore = useAudioCacheStore()
 const { listener } = storeToRefs(listenerStore)
-const { audioEngine, isPlaying } = storeToRefs(engineStore)
+const { audioEngine } = storeToRefs(engineStore)
 
 const MAX_LIB_SOURCES = 20
 const MAX_CANVAS_SOURCES = 30
@@ -317,11 +317,7 @@ onMounted(async() => {
         await loadMostRecentRoom()
 
         const audioContext = audioEngine.value?.getAudioContext()
-        if (audioContext?.state === 'suspended' && !isPlaying.value) {
-          showAudioResumeOverlay.value = true
-        } else {
-          showAudioResumeOverlay.value = false
-        }
+        showAudioResumeOverlay.value = audioContext?.state === 'suspended'
       }
     },
     { immediate: true }
