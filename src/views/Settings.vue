@@ -3,11 +3,23 @@
     <div class="max-w-5xl mx-auto px-6 py-10 space-y-10">
       <section class="space-y-4">
         <div class="flex items-center justify-between gap-6 flex-wrap">
-          <div class="space-y-2">
-            <h1 class="text-3xl font-semibold tracking-tight">Settings</h1>
-            <p class="text-sm text-text-muted max-w-xl">
-              Update how you appear in SoundRoom, adjust playback preferences, and keep your account secure.
-            </p>
+          <div class="flex items-start gap-4 flex-wrap">
+            <RouterLink :to="{ name: 'app' }">
+              <BaseButton
+                type="button"
+                variant="naked"
+                class="flex items-center gap-2 text-text-muted hover:text-text-primary"
+              >
+                <span aria-hidden="true">←</span>
+                <span>Back</span>
+              </BaseButton>
+            </RouterLink>
+            <div class="space-y-2">
+              <h1 class="text-3xl font-semibold tracking-tight">Settings</h1>
+              <p class="text-sm text-text-muted max-w-xl">
+                Update how you appear in SoundRoom, adjust playback preferences, and keep your account secure.
+              </p>
+            </div>
           </div>
           <div class="flex items-center gap-3 rounded-full border border-border-subtle px-4 py-2 bg-[color-mix(in_srgb,var(--color-bg-surface)_85%,transparent)]">
             <span class="text-xs uppercase tracking-wide text-text-muted">Plan</span>
