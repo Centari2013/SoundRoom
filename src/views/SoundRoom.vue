@@ -314,8 +314,9 @@ onMounted(async() => {
           }
         }
         showAudioResumeOverlay.value = audioEngine.value?.getAudioContext().state === 'suspended'
-       
 
+      } else {
+        showAudioResumeOverlay.value = false
       }
     },
     { immediate: true }
