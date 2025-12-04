@@ -193,6 +193,7 @@ let moveListenerPayload = null
 let initialMouseAngle = null
 let initialListenerAngle = null
 let mouseMoveListener = null
+let rotationMouseUpListener = null
 
 
 let dragStartPos = null
@@ -294,11 +295,17 @@ function onHandleMouseDown(e) {
   initialMouseAngle = Math.atan2(dy, dx) * (180 / Math.PI)
 
   stage.on("mousemove.listenerRotate", onHandleMouseMove)
-  stage.on("mouseup.listenerRotate", () => {
+
+  rotationMouseUpListener = () => {
     onHandleMouseUp()
     stage.off("mousemove.listenerRotate")
     stage.off("mouseup.listenerRotate")
-  })
+    window.removeEventListener('mouseup', rotationMouseUpListener)
+    rotationMouseUpListener = null
+  }
+
+  stage.on("mouseup.listenerRotate", rotationMouseUpListener)
+  window.addEventListener('mouseup', rotationMouseUpListener)
 }
 
 function onHandleMouseMove(e) {
@@ -332,6 +339,11 @@ onBeforeUnmount(() => {
   if (mouseMoveListener) {
     window.removeEventListener('mousemove', mouseMoveListener)
     mouseMoveListener = null
+  }
+
+  if (rotationMouseUpListener) {
+    window.removeEventListener('mouseup', rotationMouseUpListener)
+    rotationMouseUpListener = null
   }
 })
 
