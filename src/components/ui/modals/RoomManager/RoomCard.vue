@@ -4,19 +4,26 @@
     :class="{ 'opacity-60': locked }"
     :title="locked ? lockTooltip : undefined"
   >
-    <img
-      v-if="room.thumbnail"
-      :src="room.thumbnail"
-      alt="Room preview"
-      class="rounded mb-3 w-full aspect-video object-cover border border-border-subtle"
-    />
+    <div v-if="room.thumbnail" class="relative mb-3">
+      <img
+        :src="room.thumbnail"
+        alt="Room preview"
+        class="rounded w-full aspect-video object-cover border border-border-subtle"
+      />
+      <div
+        v-if="locked"
+        class="absolute inset-0 flex items-center justify-center text-2xl"
+        aria-hidden="true"
+      >
+        🔒
+      </div>
+    </div>
     <div class="flex items-start justify-between gap-2">
       <EditableRoomName
         :roomId="room.id"
         :name="room.name"
         @updated="name => emit('update-name', name)"
       />
-      <span v-if="locked" class="text-sm" aria-hidden="true">🔒</span>
     </div>
     <div class="room-meta text-xs text-text-muted">{{ formatDate(room.updated_at) }}</div>
     <div class="room-actions mt-3 flex gap-2">
