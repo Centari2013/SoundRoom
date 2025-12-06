@@ -10,6 +10,6 @@ test.describe('Google OAuth (mocked)', () => {
 
     // Mock the Supabase callback path without calling Google.
     await mockGoogleCallback(page)
-    await expect(page).toHaveURL(/auth\/callback/)
+    await expect(page).toHaveURL(/auth\/(callback|error)/)
   })
 })

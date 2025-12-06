@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test'
-import { assertLoggedOut, loginAs, logout, users } from './helpers/login'
+import { assertLoggedOut, disableOnboarding, loginAs, logout, users } from './helpers/login'
 
 const INVALID_USER = { email: 'nope@soundroom.dev', password: 'WrongPassword!' }
 
@@ -12,6 +12,7 @@ test.describe('Authentication', () => {
   }
 
   test('shows validation on invalid credentials', async ({ page }) => {
+    await disableOnboarding(page)
     await page.goto('/app')
     await page.locator('[data-test="nav-menu-toggle"]').click()
     await page.locator('[data-test="nav-sign-in"]').click()

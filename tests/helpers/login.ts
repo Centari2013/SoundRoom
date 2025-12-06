@@ -8,7 +8,17 @@ export const users = {
   pro: { email: 'test_pro@soundroom.dev', password: 'SoundRoomTest123!' },
 } satisfies Record<string, UserCredential>
 
+export async function disableOnboarding(page: Page) {
+  await page.addInitScript(() => {
+    localStorage.setItem('soundroom_onboarding_completed', 'true')
+    localStorage.setItem('soundroom_onboarding_started', 'true')
+  })
+}
+
 async function openAuthModal(page: Page) {
+  // Suppress the onboarding tour that can intercept pointer events during navigation.
+  await disableOnboarding(page)
+
   await page.goto('/app', { waitUntil: 'networkidle' })
   await page.locator('[data-test="nav-menu-toggle"]').click()
   await page.locator('[data-test="nav-sign-in"]').click()
