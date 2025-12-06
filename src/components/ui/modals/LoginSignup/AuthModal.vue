@@ -37,6 +37,7 @@
       class="w-full"
       @click="handleGoogleAuth"
       :disabled="loading"
+      data-testid="google-oauth-button"
     >
       Continue with Google
     </BaseButton>

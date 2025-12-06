@@ -6,7 +6,8 @@
       class="w-full"
       v-model="email"
       type="email"
-      name="email" 
+      name="email"
+      data-testid="auth-email"
       placeholder="your@email.com"
       autocomplete="email"
       required
@@ -16,9 +17,10 @@
     <div class="relative w-full">
       <PasswordInput
         id="password"
-        name="password" 
+        name="password"
         v-model="password"
-        autocomplete="current-password" 
+        autocomplete="current-password"
+        data-testid="auth-password"
       />
     </div>
 
@@ -27,6 +29,7 @@
       class="w-full"
       @click="emit('signIn', { email, password })"
       :disabled="loading || !email || !password"
+      data-testid="auth-submit"
     >
       Sign In
     </BaseButton>
@@ -37,6 +40,7 @@
       class="text-status-danger text-sm"
       role="alert"
       aria-live="assertive"
+      data-testid="auth-error"
     >
       {{ errorMessage }}
     </span>

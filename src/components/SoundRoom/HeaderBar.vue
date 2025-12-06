@@ -28,7 +28,24 @@
     </RouterLink>
 
     <!-- Right: Menu -->
-    <div v-if="shouldShowNavButtons" class="relative">
+    <div v-if="shouldShowNavButtons" class="relative flex items-center gap-3">
+      <button
+        type="button"
+        class="px-3 py-2 rounded-lg border border-[var(--color-border-subtle)] bg-[var(--color-bg-surface)] text-sm font-medium hover:bg-[color-mix(in_srgb,var(--color-bg-elevated)_85%,transparent)] transition"
+        @click="toggleTheme"
+        data-testid="theme-toggle"
+      >
+        Toggle Theme
+      </button>
+
+      <span
+        v-if="isAuthenticated"
+        class="text-sm text-[var(--color-text-secondary)]"
+        data-testid="user-badge"
+      >
+        {{ tierLabel }}
+      </span>
+
       <button
         id="menu-btn"
         ref="menuButton"
@@ -38,6 +55,7 @@
                hover:bg-[color-mix(in_srgb,var(--color-bg-surface)_85%,transparent)]
                !bg-transparent !border-none
                transition"
+        :data-testid="isAuthenticated ? 'user-menu' : 'nav-menu'"
         :aria-expanded="isMenuOpen"
       >
         <span class="sr-only">Open navigation menu</span>
@@ -67,6 +85,7 @@
                      transition"
               @click="runAction(button.action)"
               type="button"
+              :data-testid="button.label === 'Sign In' ? 'nav-login' : button.label === 'Sign Out' ? 'logout-button' : undefined"
             >
               {{ button.label }}
             </button>
@@ -108,6 +127,11 @@ const toggleMenu = () => {
   if (!visibleButtons.value.length) return
   isMenuOpen.value = !isMenuOpen.value
 }
+
+const tierLabel = computed(() => {
+  const map = { free: 'Free', basic: 'Basic', pro: 'Pro' }
+  return map[tier.value] || 'Guest'
+})
 
 const closeMenu = () => {
   isMenuOpen.value = false
