@@ -88,6 +88,7 @@ onMounted(() => {
   window.addEventListener('resize', updateCoords)
   const canvasStore = useCanvasStore()
   canvasStore.setStageDivRef(stageDivRef.value)
+  canvasStore.setContextMenuRef(contextMenuRef.value)
   canvasStore.setVStageRef(vStageRef.value)
 })
 onUnmounted(() => {

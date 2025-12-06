@@ -36,7 +36,8 @@ export function useDragDropAudio({ draggedSource }) {
   function handleDrop(e) {
     if (!draggedSource.value) return
     const canvasStore = useCanvasStore()
-    const stageBounds = canvasStore.stageDivRef.getBoundingClientRect()
+    const stageBounds = canvasStore.stageDivRef.value?.getBoundingClientRect()
+    if (!stageBounds) return
     const dropX = e.clientX - stageBounds.left
     const dropY = e.clientY - stageBounds.top
   

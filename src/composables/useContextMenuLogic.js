@@ -26,7 +26,7 @@ export function useContextMenuLogic(selectedSource) {
     e.evt.preventDefault()
     e.evt.stopPropagation()
     if (e.target.getAttr('name') === SOUND_NODE_PART_NAME) { // if part of a konva SoundSourceNode.vue group
-      canvasStore.stageDivRef.contextMenuRef.show({ x: e.evt.clientX, y: e.evt.clientY }) // show context menu
+      canvasStore.contextMenuRef.value?.show({ x: e.evt.clientX, y: e.evt.clientY }) // show context menu
     }
   }
 
