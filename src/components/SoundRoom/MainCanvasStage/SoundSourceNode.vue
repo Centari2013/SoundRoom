@@ -6,6 +6,7 @@
     @dragmove="onSourceDragMove"
     :scaleX="selectedScale"
     :scaleY="selectedScale"
+    @contextmenu="onContextMenu"
   >
     <!-- Outer Cone -->
     <v-wedge
@@ -133,7 +134,7 @@ const props = defineProps({
 
 const { room } = storeToRefs(useRoomStore())
 const { actionManager } = storeToRefs(useActionManagerStore())
-const emit = defineEmits(['select'])
+const emit = defineEmits(['select', 'contextmenu'])
 const themeStore = useThemeStore()
 
 const isDarkMode = computed(() => themeStore.activeTheme !== 'light')
@@ -400,6 +401,10 @@ function onHandleMouseUp() {
   }
 
   initialSourceAngle = null
+}
+
+function onContextMenu(e) {
+  emit('contextmenu', e)
 }
 
 </script>
