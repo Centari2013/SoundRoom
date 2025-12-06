@@ -6,6 +6,8 @@
     @dragmove="onSourceDragMove"
     :scaleX="selectedScale"
     :scaleY="selectedScale"
+    :opacity="nodeOpacity"
+    :title="isLocked ? lockTooltip : undefined"
   >
     <!-- Outer Cone -->
     <v-wedge
@@ -59,6 +61,16 @@
       @mouseup="onSourceMouseUp"
       @mouseover="setCursor($event, 'pointer')"
       @mouseout="setCursor($event, 'default')"
+    />
+
+    <v-text
+      v-if="isLocked"
+      :text="'🔒'"
+      :fontSize="16"
+      :fill="themeTokens.white"
+      :offsetX="8"
+      :offsetY="10"
+      :listening="false"
     />
 
     <ScheduledPlayRing
@@ -183,6 +195,10 @@ const getFillColor = computed(() => {
   return isScheduled.value ? colors.nodeBlue : colors.nodeRed
 })
 
+const isLocked = computed(() => !!props.source?.locked)
+const nodeOpacity = computed(() => (isLocked.value ? 0.5 : 1))
+const lockTooltip = 'Available on Pro tier.'
+
 const dotStrokeColor = computed(() => {
   if (isDarkMode.value) return props.selected ? themeTokens.value.white : rgbaFromVar('--base-white-rgb', 0.9, 'rgba(var(--base-white-rgb), 0.9)')
   return themeTokens.value.mutedStroke
@@ -274,6 +290,11 @@ let initialSourceAngle = null
 
 // Source dragging
 function onSourceMouseDown(e) {
+  if (isLocked.value) {
+    emit('select', props.index)
+    e.evt?.stopPropagation?.()
+    return
+  }
   emit('select', props.index) // select current SoundSourceNode to display in SelectSourcePanel.vue
   e.evt.stopPropagation()
 
@@ -317,6 +338,10 @@ function onSourceMouseDown(e) {
 }
 
 function onSourceDragMove(e) {
+  if (isLocked.value) {
+    e.target?.draggable(false)
+    return
+  }
   const pos = e.target.position()
   const clampedX = room.value.clamp(pos.x, 0, room.value.width)
   const clampedY = room.value.clamp(pos.y, 0, room.value.height)
@@ -350,6 +375,11 @@ function onSourceMouseUp(e) {
 
 // Rotation interaction
 function onHandleMouseDown(e) {
+  if (isLocked.value) {
+    emit('select', props.index)
+    e.evt?.stopPropagation?.()
+    return
+  }
   emit('select', props.index)
   e.evt.stopPropagation()
 

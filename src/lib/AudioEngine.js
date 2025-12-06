@@ -211,11 +211,12 @@ export default class AudioEngine {
       return
     }
     const src = payload.src
-    
+
     src.index = payload.index ?? this.soundSources.value.length // for proper undo and redo
     const base = src.base ?? src.plan_tier ?? 'users'
     const storageKey = src.storageKey ?? (src.bucket && src.path ? buildStorageKey(base, src.bucket, src.path) : null)
     const fileId = src.fileId ?? src.libraryId ?? storageKey ?? src.audioPath ?? null
+    const isLocked = !!src.locked
 
     const instance = new SoundSource({
       audioContext: this.getAudioContext(),
@@ -236,6 +237,9 @@ export default class AudioEngine {
     this.connectToReverb(instance)
     instance.setRoom(this.#room)
 
+    src.locked = isLocked
+    instance.locked = isLocked
+
     src.instance = instance
     this.soundSources.value.splice(src.index, 0, src)
     // keep the stored indices aligned with the reactive array order
@@ -245,7 +249,14 @@ export default class AudioEngine {
     if (this.#audioContext?.state === 'suspended') {
       this.#audioContext.resume()
     }
-    
+
+    if (isLocked) {
+      const sched = instance.state.schedule
+      sched.paused = true
+      sched.enabled = false
+      return
+    }
+
     // Watch schedule changes to hook into the scheduler
     const sched = instance.state.schedule
     const enabledUnwatch = watch(
@@ -409,6 +420,11 @@ export default class AudioEngine {
       return
     }
 
+    if (src.locked || src.instance.locked) {
+      console.info('Sound source is locked for the current plan.')
+      return
+    }
+
     const schedId = src.instance.state.schedule.id
     if (this.#scheduler.pauseInfo.has(schedId) && this.#scheduler.pauseInfo.get(schedId).isPaused) {
       this.#scheduler.resumeSource(src.instance)
@@ -436,7 +452,7 @@ export default class AudioEngine {
     if (this.#audioContext?.state === 'suspended') {
       this.#audioContext.resume()
     }
-  
+
     this.soundSources.value.forEach(s => {
       this.playSoundSource(s) // play each source
     })
