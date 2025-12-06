@@ -16,6 +16,9 @@
       </BaseButton>
 
       <p v-if="error" class="text-status-danger text-sm text-center">{{ error }}</p>
+      <p v-if="newPassword && !validPassword" class="text-status-danger text-sm">
+        Password must be at least 8 characters and include an uppercase letter, a lowercase letter, a number, and a symbol.
+      </p>
       <p v-if="success" class="text-status-success text-sm text-center">
         Password updated. You can now sign in.
       </p>
