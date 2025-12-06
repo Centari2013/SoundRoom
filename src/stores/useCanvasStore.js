@@ -9,6 +9,7 @@ import { ref } from 'vue'
 export const useCanvasStore = defineStore('canvas', () => {
   const stageDivRef = ref(null)
   const vStageRef = ref(null)
+  const contextMenuRef = ref({ show: () => {} }) // default noop to avoid runtime errors
 
   /**
    * Save a reference to the outer div that hosts the canvas.
@@ -17,6 +18,15 @@ export const useCanvasStore = defineStore('canvas', () => {
    */
   function setStageDivRef(stageInstance) {
     stageDivRef.value = stageInstance
+  }
+
+  /**
+   * Save a reference to the context menu component so it can be shown safely.
+   *
+   * @param {Object|null} menuInstance - context menu component instance
+   */
+  function setContextMenuRef(menuInstance) {
+    contextMenuRef.value = menuInstance || { show: () => {} }
   }
 
   /**
@@ -55,7 +65,9 @@ export const useCanvasStore = defineStore('canvas', () => {
 
   return {
     stageDivRef,
+    contextMenuRef,
     setStageDivRef,
+    setContextMenuRef,
     vStageRef,
     setVStageRef,
     getThumbnailURI
