@@ -25,7 +25,11 @@ export function useContextMenuLogic(selectedSource) {
   function showContextMenu(e) {
     e.evt.preventDefault()
     e.evt.stopPropagation()
-    if (e.target.getAttr('name') === SOUND_NODE_PART_NAME) { // if part of a konva SoundSourceNode.vue group
+    const isSoundNodePart =
+      e.target?.hasName?.(SOUND_NODE_PART_NAME)
+      || Boolean(e.target?.findAncestor?.((node) => node?.hasName?.(SOUND_NODE_PART_NAME)))
+
+    if (isSoundNodePart) { // if part of a konva SoundSourceNode.vue group
       canvasStore.contextMenuRef?.value?.show({ x: e.evt.clientX, y: e.evt.clientY }) // show context menu
     }
   }
