@@ -4,6 +4,7 @@ import {
   applyTheme,
   applyThemeVars,
   applyThemeVarsFromRemote,
+  DEFAULT_THEME,
   readPersistedTheme,
   resolveInitialTheme,
 } from '@/utils/theme'
@@ -94,13 +95,27 @@ export const useThemeStore = defineStore('theme', () => {
   }
 
   function watchAuthTheme() {
-    const { user } = useAuth()
+    const { user, tier } = useAuth()
     watch(
       () => user.value?.id,
       () => {
         void loadUserTheme()
       },
       { immediate: true }
+    )
+
+    watch(
+      () => tier.value,
+      (nextTier, previousTier) => {
+        if (nextTier !== 'free' || previousTier === 'free') return
+
+        // Downgrade to free: drop premium overrides and return to default base theme
+        const hasOverrides = Object.keys(cssVars.value || {}).length > 0
+        if (!hasOverrides && activeTheme.value === DEFAULT_THEME) return
+
+        setTheme(DEFAULT_THEME || 'light', { clearOverrides: true })
+      },
+      { immediate: false }
     )
   }
 
