@@ -192,10 +192,11 @@ const rotationHandleFill = computed(() => isDarkMode.value
 let moveListenerPayload = null
 let initialMouseAngle = null
 let initialListenerAngle = null
-let mouseMoveListener = null
+let rotationMouseUpListener = null
 
 
 let dragStartPos = null
+let isDragging = false
 const listenerGroup = ref(null)
 
 // Utility functions
@@ -217,33 +218,41 @@ function onListenerMouseDown(e) {
   if (e.button === 2) return // if right click, do nothing
 
   const stage = e.target.getStage()
+  if (!stage) return
   dragStartPos = stage.getPointerPosition()
   moveListenerPayload = null
+  isDragging = false
 
   const group = listenerGroup.value?.getNode()
   if (!group) return
 
-  // Add global mousemove to detect drag
-  mouseMoveListener = (evt) => {
+  group.draggable(true)
+
+  stage.on("mousemove.listenerDragDetect", () => {
     const movePos = stage.getPointerPosition()
     const dx = movePos.x - dragStartPos.x
     const dy = movePos.y - dragStartPos.y
-    const distance = Math.sqrt(dx * dx + dy * dy)
 
-    if (distance > 4) {
-      group.draggable(true)
+    if (!isDragging && (Math.abs(dx) > 5 || Math.abs(dy) > 5)) {
+      isDragging = true
       group.startDrag()
 
       moveListenerPayload = {
         from: { x: listener.value.x, y: listener.value.y },
       }
-
-      window.removeEventListener('mousemove', mouseMoveListener)
-      mouseMoveListener = null
     }
-  }
+  })
 
-  window.addEventListener('mousemove', mouseMoveListener)
+  stage.on("mouseup.listenerDragDetect", () => {
+    stage.off("mousemove.listenerDragDetect")
+    stage.off("mouseup.listenerDragDetect")
+
+    if (!isDragging) {
+      group.draggable(false)
+    }
+
+    onListenerMouseUp(e)
+  })
 }
 
 
@@ -263,11 +272,6 @@ function onListenerMouseUp(e) {
   const group = listenerGroup.value?.getNode()
   if (group) group.draggable(false)
 
-  if (mouseMoveListener) {
-    window.removeEventListener('mousemove', mouseMoveListener)
-    mouseMoveListener = null
-  }
-
   if (moveListenerPayload) {
     const to = { x: listener.value.x, y: listener.value.y }
 
@@ -278,12 +282,19 @@ function onListenerMouseUp(e) {
   }
 
   moveListenerPayload = null
+  isDragging = false
 }
 
 
 // Rotation handling
 function onHandleMouseDown(e) {
   e.evt.stopPropagation()
+
+  const group = listenerGroup.value?.getNode()
+  if (group?.draggable()) {
+    group.stopDrag()
+    group.draggable(false)
+  }
 
   initialListenerAngle = listener.value.angle
 
@@ -294,11 +305,17 @@ function onHandleMouseDown(e) {
   initialMouseAngle = Math.atan2(dy, dx) * (180 / Math.PI)
 
   stage.on("mousemove.listenerRotate", onHandleMouseMove)
-  stage.on("mouseup.listenerRotate", () => {
+
+  rotationMouseUpListener = () => {
     onHandleMouseUp()
     stage.off("mousemove.listenerRotate")
     stage.off("mouseup.listenerRotate")
-  })
+    window.removeEventListener('mouseup', rotationMouseUpListener)
+    rotationMouseUpListener = null
+  }
+
+  stage.on("mouseup.listenerRotate", rotationMouseUpListener)
+  window.addEventListener('mouseup', rotationMouseUpListener)
 }
 
 function onHandleMouseMove(e) {
@@ -329,9 +346,9 @@ function onHandleMouseUp() {
 }
 
 onBeforeUnmount(() => {
-  if (mouseMoveListener) {
-    window.removeEventListener('mousemove', mouseMoveListener)
-    mouseMoveListener = null
+  if (rotationMouseUpListener) {
+    window.removeEventListener('mouseup', rotationMouseUpListener)
+    rotationMouseUpListener = null
   }
 })
 
