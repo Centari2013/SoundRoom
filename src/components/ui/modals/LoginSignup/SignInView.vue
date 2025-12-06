@@ -6,19 +6,21 @@
       class="w-full"
       v-model="email"
       type="email"
-      name="email" 
+      name="email"
       placeholder="your@email.com"
       autocomplete="email"
       required
+      data-test="login-email-input"
     />
 
     <label for="password" class="sr-only">Password</label>
     <div class="relative w-full">
       <PasswordInput
         id="password"
-        name="password" 
+        name="password"
         v-model="password"
-        autocomplete="current-password" 
+        autocomplete="current-password"
+        data-test="login-password-input"
       />
     </div>
 
@@ -27,6 +29,7 @@
       class="w-full"
       @click="emit('signIn', { email, password })"
       :disabled="loading || !email || !password"
+      data-test="login-submit-button"
     >
       Sign In
     </BaseButton>

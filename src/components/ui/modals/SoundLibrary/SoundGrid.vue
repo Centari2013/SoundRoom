@@ -32,6 +32,7 @@
             type="button"
             class="text-sm font-medium text-text-primary hover:underline"
             @click="handleUploadClick"
+            data-test="upload-sound-button"
           >
             {{ uploadCtaLabel }}
           </button>

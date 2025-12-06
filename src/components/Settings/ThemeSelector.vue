@@ -19,6 +19,7 @@
           ]"
           :style="previewStyle(theme)"
           @click="selectTheme(theme)"
+          :data-test="`theme-option-${themeKey(theme)}`"
         >
           <div class="flex items-center justify-between">
             <div class="space-y-1">
@@ -94,6 +95,7 @@
           :loading="saving"
           :disabled="saving || !selectedTheme || saveDisabled"
           @click="saveSelection"
+          data-test="save-theme-button"
         >
           Save theme
         </BaseButton>

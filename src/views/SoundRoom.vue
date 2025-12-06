@@ -70,6 +70,7 @@
     v-if="showAudioResumeOverlay"
     class="absolute inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm text-white text-xl cursor-pointer"
     @click="resumeAudio"
+    data-test="audio-resume-overlay"
   >
     Click to enable audio
   </div>

@@ -34,6 +34,7 @@
         ref="menuButton"
         type="button"
         @click.stop="toggleMenu"
+        data-test="nav-menu-toggle"
         class="flex items-center justify-center w-12 h-12 rounded-lg !p-1
                hover:bg-[color-mix(in_srgb,var(--color-bg-surface)_85%,transparent)]
                !bg-transparent !border-none
@@ -67,6 +68,7 @@
                      transition"
               @click="runAction(button.action)"
               type="button"
+              :data-test="button.dataTest"
             >
               {{ button.label }}
             </button>
@@ -164,31 +166,37 @@ const visibleButtons = computed(() => {
   const buttons = [
     {
       label: 'Switch Themes',
+      dataTest: 'nav-switch-themes',
       action: () => toggleTheme(),
       shouldShow: !authed,
     },
     {
       label: 'Help',
+      dataTest: 'nav-help',
       action: () => router.push({ name: 'help' }),
       shouldShow: true
     },
     {
       label: 'Sign In',
+      dataTest: 'nav-sign-in',
       action: () => router.push({ name: 'login' }),
       shouldShow: !authed
     },
     {
       label: 'Upgrade',
+      dataTest: 'nav-upgrade',
       action: () => router.push({ name: 'upgrade' }),
       shouldShow: authed && tier.value === 'free'
     },
     {
       label: 'Settings',
+      dataTest: 'nav-settings',
       action: () => router.push({ name: 'settings' }),
       shouldShow: authed
     },
     {
       label: 'Sign Out',
+      dataTest: 'nav-sign-out',
       action: () => handleSignOut(),
       shouldShow: authed
     },

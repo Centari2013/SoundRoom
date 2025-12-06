@@ -13,8 +13,8 @@
     />
     <div class="room-meta text-xs text-text-muted">{{ formatDate(room.updated_at) }}</div>
     <div class="room-actions mt-3 flex gap-2">
-      <BaseButton @click="emit('load', room.id)">Load</BaseButton>
-      <BaseButton @click="emit('delete', room.id)">Delete</BaseButton>
+      <BaseButton @click="emit('load', room.id)" data-test="room-card-load">Load</BaseButton>
+      <BaseButton @click="emit('delete', room.id)" data-test="room-card-delete">Delete</BaseButton>
     </div>
   </div>
 </template>

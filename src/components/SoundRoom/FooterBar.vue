@@ -29,6 +29,7 @@
         class="px-3 py-2 rounded bg-[var(--color-bg-surface)] hover:bg-[var(--color-bg-elevated)] text-[var(--color-text-primary)] border border-[var(--color-border-subtle)] transition focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)]"
         type="button"
         aria-label="Open save room confirmation"
+        data-test="save-room-button"
       >
         Save Room
       </BaseButton>
@@ -51,6 +52,7 @@
       <RouterLink
         to="/room-manager"
         aria-label="Open Room Manager"
+        data-test="room-manager-link"
       >
         <BaseButton class="w-full">
           RoomManager

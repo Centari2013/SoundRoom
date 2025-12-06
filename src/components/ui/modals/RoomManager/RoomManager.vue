@@ -56,7 +56,7 @@
           <div class="col-span-full text-center text-text-muted mt-32">
             <div class="text-xl font-semibold mb-2">No rooms yet</div>
             <div class="mb-4">Create your first ambient scene and it’ll show up here.</div>
-            <BaseButton @click="createNewRoom">+ Create New Room</BaseButton>
+            <BaseButton @click="createNewRoom" data-test="room-manager-create-button">+ Create New Room</BaseButton>
           </div>
         </template>
 
