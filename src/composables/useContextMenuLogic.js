@@ -40,8 +40,13 @@ export function useContextMenuLogic(selectedSource) {
         selectedSource.value?.instance.playing ? 'Pause' : 'Play'
       ),
       function: () => {
-        const src = selectedSource.value;
-        src.playing ? audioEngineStore.pauseSoundSource(src) : audioEngineStore.playSoundSource(src);
+        const src = selectedSource.value
+        if (!src) return // guard against missing source
+
+        const isPlaying = src.instance?.playing // use the instance playing flag for accuracy
+        isPlaying
+          ? audioEngineStore.pauseSoundSource(src)
+          : audioEngineStore.playSoundSource(src)
       },
     },
     {
