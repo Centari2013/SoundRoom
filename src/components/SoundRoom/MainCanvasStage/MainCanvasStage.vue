@@ -88,6 +88,7 @@ onMounted(() => {
   window.addEventListener('resize', updateCoords)
   const canvasStore = useCanvasStore()
   canvasStore.setStageDivRef(stageDivRef.value)
+  canvasStore.setContextMenuRef(contextMenuRef.value) // share context menu instance safely
   canvasStore.setVStageRef(vStageRef.value)
 })
 onUnmounted(() => {

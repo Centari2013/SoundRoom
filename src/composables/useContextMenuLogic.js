@@ -26,7 +26,11 @@ export function useContextMenuLogic(selectedSource) {
     e.evt.preventDefault()
     e.evt.stopPropagation()
     if (e.target.getAttr('name') === SOUND_NODE_PART_NAME) { // if part of a konva SoundSourceNode.vue group
-      canvasStore.stageDivRef.contextMenuRef.show({ x: e.evt.clientX, y: e.evt.clientY }) // show context menu
+      const menuRef = canvasStore.contextMenuRef?.value || canvasStore.contextMenuRef
+
+      if (!menuRef?.show) return // guard against missing context menu instance
+
+      menuRef.show({ x: e.evt.clientX, y: e.evt.clientY }) // show context menu safely
     }
   }
 
@@ -36,8 +40,13 @@ export function useContextMenuLogic(selectedSource) {
         selectedSource.value?.instance.playing ? 'Pause' : 'Play'
       ),
       function: () => {
-        const src = selectedSource.value;
-        src.playing ? audioEngineStore.pauseSoundSource(src) : audioEngineStore.playSoundSource(src);
+        const src = selectedSource.value
+        if (!src) return // guard against missing source
+
+        const isPlaying = src.instance?.playing // use the instance playing flag for accuracy
+        isPlaying
+          ? audioEngineStore.pauseSoundSource(src)
+          : audioEngineStore.playSoundSource(src)
       },
     },
     {
