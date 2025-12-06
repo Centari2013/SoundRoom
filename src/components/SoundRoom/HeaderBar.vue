@@ -28,24 +28,7 @@
     </RouterLink>
 
     <!-- Right: Menu -->
-    <div v-if="shouldShowNavButtons" class="relative flex items-center gap-3">
-      <button
-        type="button"
-        class="px-3 py-2 rounded-lg border border-[var(--color-border-subtle)] bg-[var(--color-bg-surface)] text-sm font-medium hover:bg-[color-mix(in_srgb,var(--color-bg-elevated)_85%,transparent)] transition"
-        @click="toggleTheme"
-        data-testid="theme-toggle"
-      >
-        Toggle Theme
-      </button>
-
-      <span
-        v-if="isAuthenticated"
-        class="text-sm text-[var(--color-text-secondary)]"
-        data-testid="user-badge"
-      >
-        {{ tierLabel }}
-      </span>
-
+    <div v-if="shouldShowNavButtons" class="relative">
       <button
         id="menu-btn"
         ref="menuButton"
@@ -85,14 +68,91 @@
                      transition"
               @click="runAction(button.action)"
               type="button"
-              :data-testid="button.label === 'Sign In' ? 'nav-login' : button.label === 'Sign Out' ? 'logout-button' : undefined"
+              :data-testid="
+                button.label === 'Switch Themes'
+                  ? 'theme-toggle'
+                  : button.label === 'Sign In'
+                    ? 'nav-login'
+                    : button.label === 'Sign Out'
+                      ? 'logout-button'
+                      : undefined
+              "
             >
               {{ button.label }}
             </button>
           </template>
+
+          <div class="px-4 py-3 space-y-3">
+            <button
+              type="button"
+              class="w-full text-left text-sm px-3 py-2 rounded-lg border border-[var(--color-border-subtle)]
+                     bg-[var(--color-bg-surface)] hover:bg-[color-mix(in_srgb,var(--color-bg-elevated)_85%,transparent)]
+                     transition flex items-center justify-between"
+              data-testid="theme-menu"
+              @click.stop="isThemeMenuOpen = !isThemeMenuOpen"
+            >
+              <span class="font-medium">Themes</span>
+              <span class="text-xs text-[var(--color-text-secondary)]">{{ isThemeMenuOpen ? 'Hide' : 'Show' }}</span>
+            </button>
+
+            <div v-if="isThemeMenuOpen" class="flex flex-col gap-2">
+              <button
+                v-for="option in themeOptions"
+                :key="option.id"
+                type="button"
+                class="w-full text-left text-sm px-3 py-2 rounded-lg border border-[var(--color-border-subtle)]
+                       bg-[var(--color-bg-surface)] hover:bg-[color-mix(in_srgb,var(--color-bg-elevated)_85%,transparent)]
+                       transition"
+                :data-testid="option.plan === 'pro' ? `theme-pro-${option.id}` : `theme-${option.id}`"
+                @click.stop="selectThemeOption(option)"
+              >
+                {{ option.label }}
+                <span v-if="option.plan === 'pro'" class="ml-2 text-[11px] text-[var(--color-danger)]">PRO</span>
+              </button>
+
+              <p class="text-xs text-[var(--color-text-muted)]" data-testid="theme-applied">
+                Active theme: {{ appliedThemeLabel }}
+              </p>
+            </div>
+          </div>
         </div>
       </transition>
     </div>
+
+    <span
+      v-if="isAuthenticated"
+      class="sr-only"
+      data-testid="user-badge"
+    >
+      {{ tierLabel }}
+    </span>
+
+  <teleport to="body">
+    <div
+      v-if="showUpgradePrompt"
+      class="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(0,0,0,0.45)]"
+      data-testid="upgrade-modal"
+      @click.self="showUpgradePrompt = false"
+    >
+      <div class="w-[320px] rounded-xl bg-[var(--color-bg-surface)] p-6 shadow-lg space-y-4">
+        <p class="text-lg font-semibold">Upgrade required</p>
+        <p class="text-sm text-[var(--color-text-muted)]">This theme is available on the Pro plan. Upgrade to continue.</p>
+        <div class="flex justify-end gap-3">
+          <button
+            type="button"
+            class="text-sm text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]"
+            data-testid="upgrade-modal-close"
+            @click="showUpgradePrompt = false"
+          >
+            Close
+          </button>
+          <RouterLink to="/upgrade">
+            <button type="button" class="text-sm font-medium text-[var(--color-accent)]">See plans</button>
+          </RouterLink>
+        </div>
+      </div>
+    </div>
+  </teleport>
   </header>
 </template>
 
@@ -102,13 +162,22 @@ import { ref, watch, computed, onMounted, onBeforeUnmount } from 'vue';
 import { resetRoomState } from "@/utils/resetRoomState";
 import { useRoute, useRouter } from 'vue-router';
 import { useAuth } from '@/composables/useAuth';
-import { toggleTheme } from '@/utils/theme';
+import { setTheme, toggleTheme } from '@/utils/theme';
 import { supabase } from '@/utils/supabase';
 import PulsingOverlay from '@/components/ui/overlays/PulsingOverlay.vue';
 import HamburgerIcon from '@/assets/icons/hamburger.svg';
 const menuPanel = ref(null)
 const menuButton = ref(null)
 const isMenuOpen = ref(false)
+const isThemeMenuOpen = ref(false)
+const showUpgradePrompt = ref(false)
+const appliedThemeLabel = ref('Light')
+
+const themeOptions = [
+  { id: 'light', label: 'Light', plan: 'free', value: 'light' },
+  { id: 'dark', label: 'Dark', plan: 'free', value: 'dark' },
+  { id: 'aurora', label: 'Aurora', plan: 'pro', value: 'dark' },
+]
 
 const { isAuthenticated, tier } = useAuth();
 const route = useRoute()
@@ -159,12 +228,27 @@ const handleEscape = (event) => {
 onMounted(() => {
   document.addEventListener('click', handleDocumentClick)
   document.addEventListener('keydown', handleEscape)
+
+  const initialTheme = document.documentElement?.dataset?.theme || 'dark'
+  const seeded = themeOptions.find((option) => option.value === initialTheme)
+  appliedThemeLabel.value = seeded?.label || 'Dark'
 })
 
 onBeforeUnmount(() => {
   document.removeEventListener('click', handleDocumentClick)
   document.removeEventListener('keydown', handleEscape)
 })
+
+const selectThemeOption = (option) => {
+  if (option.plan === 'pro' && tier.value !== 'pro') {
+    showUpgradePrompt.value = true
+    return
+  }
+
+  setTheme(option.value, { clearOverrides: true })
+  appliedThemeLabel.value = option.label
+  isThemeMenuOpen.value = false
+}
 
 async function handleSignOut() {
    // Set logging out state
@@ -189,7 +273,7 @@ const visibleButtons = computed(() => {
     {
       label: 'Switch Themes',
       action: () => toggleTheme(),
-      shouldShow: !authed,
+      shouldShow: true,
     },
     {
       label: 'Help',

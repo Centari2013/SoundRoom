@@ -33,6 +33,11 @@ export async function login(page: Page, tier: UserTier) {
   const { email, password, label } = credentials[tier];
 
   await page.goto('/');
+  const navMenu = page.getByTestId('nav-menu');
+  if (await navMenu.isVisible()) {
+    await navMenu.click();
+  }
+
   if (await page.getByTestId('nav-login').isVisible()) {
     await page.getByTestId('nav-login').click();
   }

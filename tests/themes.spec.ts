@@ -8,6 +8,8 @@ test.describe('Theme switching', () => {
 
   test('toggles between light and dark modes', async ({ page }) => {
     const body = page.locator('body');
+
+    await page.getByTestId('user-menu').click();
     const themeToggle = page.getByTestId('theme-toggle');
 
     await expect(body).toHaveAttribute('data-theme', /light|default/i);
@@ -23,6 +25,7 @@ test.describe('Theme switching', () => {
     const proPage = await context.newPage();
     await login(proPage, 'pro');
 
+    await proPage.getByTestId('user-menu').click();
     await proPage.getByTestId('theme-menu').click();
     await proPage.getByTestId('theme-pro-aurora').click();
 
@@ -31,6 +34,7 @@ test.describe('Theme switching', () => {
   });
 
   test('non-pro users are prompted to upgrade when selecting pro themes', async ({ page }) => {
+    await page.getByTestId('user-menu').click();
     await page.getByTestId('theme-menu').click();
     await page.getByTestId('theme-pro-aurora').click();
 
