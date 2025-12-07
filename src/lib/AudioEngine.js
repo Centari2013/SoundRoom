@@ -361,6 +361,7 @@ export default class AudioEngine {
       base: src.base,
       storageKey: src.storageKey,
       fileId: src.fileId,
+      locked: !!(src.locked ?? instance?.locked),
       volume: finalVolume
     }
   }

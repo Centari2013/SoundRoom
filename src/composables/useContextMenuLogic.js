@@ -35,59 +35,65 @@ export function useContextMenuLogic(selectedSource) {
     }
   }
 
-  const contextMenuActions = [
-    {
-      label: computed(() =>
-        selectedSource.value?.instance.playing ? 'Pause' : 'Play'
-      ),
-      function: () => {
-        const src = selectedSource.value
-        if (!src || isLocked.value) return // guard against missing source or locked state
+  const playPauseAction = {
+    label: computed(() =>
+      selectedSource.value?.instance.playing ? 'Pause' : 'Play'
+    ),
+    function: () => {
+      const src = selectedSource.value
+      if (!src || isLocked.value) return // guard against missing source or locked state
 
-        const isPlaying = src.instance?.playing // use the instance playing flag for accuracy
-        isPlaying
-          ? audioEngineStore.pauseSoundSource(src)
-          : audioEngineStore.playSoundSource(src)
-      },
+      const isPlaying = src.instance?.playing // use the instance playing flag for accuracy
+      isPlaying
+        ? audioEngineStore.pauseSoundSource(src)
+        : audioEngineStore.playSoundSource(src)
     },
-    {
-      label: 'Delete',
-      function: () => {
-        if (!selectedSource.value) return
-        actionManager.value.doAction('delete_canvas_sound_source', {
-          index: selectedSource.value.index,
-          src: selectedSource.value,
-          allowLocked: true
-        })
-      }
-    },
-    {
-      label: 'Duplicate',
-      function: () => {
-        if (!selectedSource.value || isLocked.value) return
-        const src = {
-          // shallow copy of simple fields
-          audioPath: selectedSource.value.audioPath,
-          name: selectedSource.value.name,
-          libraryId: selectedSource.value.libraryId,
-          locked: selectedSource.value.locked,
-          // copy reactive state manually
-          state: reactive({
-            x: selectedSource.value.state.x + 5,
-            y: selectedSource.value.state.y + 5,
-            angle: selectedSource.value.state.angle,
-            coneInner: selectedSource.value.state.coneInner,
-            coneOuter: selectedSource.value.state.coneOuter,
-          })
-        }
+  }
 
-        actionManager.value.doAction('add_canvas_sound_source', {
-          index: null,
-          src
-        })
-      }
+  const deleteAction = {
+    label: 'Delete',
+    function: () => {
+      if (!selectedSource.value) return
+      actionManager.value.doAction('delete_canvas_sound_source', {
+        index: selectedSource.value.index,
+        src: selectedSource.value,
+        allowLocked: true
+      })
     }
-  ]
+  }
+
+  const duplicateAction = {
+    label: 'Duplicate',
+    function: () => {
+      if (!selectedSource.value || isLocked.value) return
+      const src = {
+        // shallow copy of simple fields
+        audioPath: selectedSource.value.audioPath,
+        name: selectedSource.value.name,
+        libraryId: selectedSource.value.libraryId,
+        locked: selectedSource.value.locked,
+        // copy reactive state manually
+        state: reactive({
+          x: selectedSource.value.state.x + 5,
+          y: selectedSource.value.state.y + 5,
+          angle: selectedSource.value.state.angle,
+          coneInner: selectedSource.value.state.coneInner,
+          coneOuter: selectedSource.value.state.coneOuter,
+        })
+      }
+
+      actionManager.value.doAction('add_canvas_sound_source', {
+        index: null,
+        src
+      })
+    }
+  }
+
+  const contextMenuActions = computed(() =>
+    isLocked.value
+      ? [deleteAction]
+      : [playPauseAction, deleteAction, duplicateAction]
+  )
 
   return {
     showContextMenu,
