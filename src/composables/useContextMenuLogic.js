@@ -17,6 +17,7 @@ export function useContextMenuLogic(selectedSource) {
   const audioEngineStore = useAudioEngineStore()
   const { actionManager } = storeToRefs(actionStore)
   const canvasStore = useCanvasStore()
+  const isLocked = computed(() => !!selectedSource.value?.locked)
   /**
    * Display the context menu when the user right-clicks a sound node.
    *
@@ -41,7 +42,7 @@ export function useContextMenuLogic(selectedSource) {
       ),
       function: () => {
         const src = selectedSource.value
-        if (!src) return // guard against missing source
+        if (!src || isLocked.value) return // guard against missing source or locked state
 
         const isPlaying = src.instance?.playing // use the instance playing flag for accuracy
         isPlaying
@@ -52,20 +53,24 @@ export function useContextMenuLogic(selectedSource) {
     {
       label: 'Delete',
       function: () => {
+        if (!selectedSource.value) return
         actionManager.value.doAction('delete_canvas_sound_source', {
           index: selectedSource.value.index,
           src: selectedSource.value,
+          allowLocked: true
         })
       }
     },
     {
       label: 'Duplicate',
       function: () => {
+        if (!selectedSource.value || isLocked.value) return
         const src = {
           // shallow copy of simple fields
           audioPath: selectedSource.value.audioPath,
           name: selectedSource.value.name,
           libraryId: selectedSource.value.libraryId,
+          locked: selectedSource.value.locked,
           // copy reactive state manually
           state: reactive({
             x: selectedSource.value.state.x + 5,

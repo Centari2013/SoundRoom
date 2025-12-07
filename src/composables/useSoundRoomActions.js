@@ -60,6 +60,7 @@ function registerCanvasActions() {
    * @param {{x: number, y: number}} coords - new coordinates
    */
   const moveSoundSource = (src, coords) => {
+    if (src?.locked) return
     src.instance.state.x = coords.x
     src.instance.state.y = coords.y
     src.instance.updateAudio()
@@ -71,6 +72,10 @@ function registerCanvasActions() {
    * @param {Object} payload - action payload
    */
   const addSoundSource = async (payload) => {
+    if (payload?.src?.locked && !payload?.allowLocked) {
+      console.info('Sound source is locked for the current plan.')
+      return
+    }
     const libraryId = payload?.src?.libraryId
     if (libraryId && !soundLibrarySources.value.find(s => s.libraryId === libraryId)) {
       const available = await isSoundAvailable(libraryId)
@@ -103,6 +108,7 @@ function registerCanvasActions() {
    */
   const deleteSoundSource = (payload) => {
     payload.src = audioEngine.value.deleteSoundSource(payload)
+    payload.allowLocked = true
     listener.value.updateAudio()
   }
 
@@ -266,12 +272,14 @@ function registerSchedulingActions() {
   const { actionManager } = storeToRefs(useActionManagerStore())
 
   const applyScheduleChanges = (src, params) => {
+    if (src?.locked) return
     for (const key in params) {
       src.instance.state.schedule[key] = params[key];
     }
   };
 
   const updateSchedule = (payload) => {
+    if (payload?.src?.locked) return
     const { src, changedParameters } = payload;
     applyScheduleChanges(src, JSON.parse(JSON.stringify(changedParameters)));
   };
