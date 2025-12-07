@@ -346,7 +346,7 @@ onMounted(async() => {
     if (!onboardingStatusReady.value) return
     if (showWelcomeOverlay.value && !welcomeDone.value) return
 
-    if (route.path !== '/app') {
+    if (!route.path.startsWith('/app')) {
       startTour.value = false
       if (!onboardingIsCompleted()) {
         resetOnboardingStartFlag()
