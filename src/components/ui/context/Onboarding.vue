@@ -48,6 +48,11 @@ watch(() => props.startTour, (v) => {
   if (v) {
     tourRunning.value = true;
     vTour.value.startTour();
+  } else if (tourRunning.value) {
+    // FIX: Onboarding Cycle 1 – stop tour when parent disables start flag
+    vTour.value?.endTour();
+    localStorage.removeItem('soundroom_onboarding_started');
+    tourRunning.value = false;
   }
 });
 // Your onboarding steps

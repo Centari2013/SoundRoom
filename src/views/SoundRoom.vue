@@ -306,6 +306,8 @@ onMounted(async() => {
 
       // If we are leaving *any* /app route (including children)
       if (!newPath.startsWith('/app')) {
+        // FIX: Onboarding Cycle 1 – halt onboarding when leaving the app
+        startTour.value = false
         resetOnboardingStartFlag()
         resetRoomState()
         audioEngine.value?.dispose()
