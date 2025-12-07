@@ -32,8 +32,13 @@
             type="button"
             class="text-sm font-medium text-text-primary hover:underline"
             @click="handleUploadClick"
+            :disabled="!canUpload"
+            :title="!canUpload ? lockTooltip : undefined"
+            :class="{ 'opacity-60 cursor-not-allowed': !canUpload }"
           >
-            {{ uploadCtaLabel }}
+            <span class="inline-flex items-center gap-1">
+              <span>{{ uploadCtaLabel }}</span>
+            </span>
           </button>
         <span v-if="!canUpload" class="text-xs uppercase tracking-wide text-accent">Pro feature</span>
         </div>
@@ -70,6 +75,7 @@ const canUpload = computed(() => canAccess('canUpload'))
 const uploadCtaLabel = computed(() =>
   canUpload.value ? 'Upload your own sound' : 'Upgrade to upload your own sounds'
 )
+const lockTooltip = 'Available on Pro tier.'
 
 function handleUploadClick() {
   if (!requireEntitlement('canUpload')) return

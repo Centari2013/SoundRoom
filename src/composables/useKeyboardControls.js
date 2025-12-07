@@ -23,6 +23,7 @@ export function useKeyboardControls({selectedSource, selectedIndex}) {
   const rotationKeys = new Set()
   let listenerAngleStart = null
   let sourceAngleStart = null
+  const isSelectedSourceLocked = () => Boolean(selectedSource.value?.locked)
   
 
   actionManager.value.registerActionHandlers(
@@ -84,7 +85,7 @@ export function useKeyboardControls({selectedSource, selectedIndex}) {
       listenerAngleStart = listener.value.angle;
     }
 
-    if ((key == 'z' || key == 'c') && !rotationKeys.has(key)) {
+    if ((key == 'z' || key == 'c') && !rotationKeys.has(key) && !isSelectedSourceLocked()) {
       rotationKeys.add(key)
       sourceAngleStart = selectedSource.value.instance.state.angle;
     }
@@ -119,13 +120,13 @@ export function useKeyboardControls({selectedSource, selectedIndex}) {
         listenerChanged = true
         break
       case 'z':
-        if (selectedSource.value !== null) {
+        if (selectedSource.value !== null && !isSelectedSourceLocked()) {
           selectedSource.value.instance.state.angle -= rotationStep
           selectedSource.value.instance.updateAudio()
         }
         break
       case 'c':
-        if (selectedSource.value !== null) {
+        if (selectedSource.value !== null && !isSelectedSourceLocked()) {
           selectedSource.value.instance.state.angle += rotationStep
           selectedSource.value.instance.updateAudio()
         }

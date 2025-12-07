@@ -7,7 +7,8 @@ const PLAN_INDEX = PLANS.reduce((acc, plan, index) => {
 
 const SOUND_TIER_FEATURE = {
   basic: 'curatedPacks',
-  pro: 'allPacks'
+  pro: 'allPacks',
+  users: 'canUpload'
 }
 
 function normalizeSoundTier(rawTier) {
@@ -49,13 +50,16 @@ export function evaluateSoundAccess(sound, context = {}) {
   const ownerId = sound?.owner_id ?? null
   const currentUserId = context.userId ?? null
   const isOwner = Boolean(ownerId && currentUserId && ownerId === currentUserId)
+  const userCanUpload = Boolean(context.canUpload)
 
   let accessible = true
   let reason = null
 
   if (normalizedSoundTier === 'users') {
-    accessible = isOwner
-    reason = accessible ? null : 'ownership'
+    accessible = isOwner && userCanUpload
+    if (!accessible) {
+      reason = isOwner ? 'tier' : 'ownership'
+    }
   } else if (!isOwner) {
     const soundRank = getPlanRank(normalizedSoundTier)
     if (soundRank >= 0) {
@@ -65,7 +69,9 @@ export function evaluateSoundAccess(sound, context = {}) {
     }
   }
 
-  const requiredPlan = !accessible && reason === 'tier' ? normalizedSoundTier : null
+  const requiredPlan = !accessible && reason === 'tier'
+    ? (normalizedSoundTier === 'users' ? 'pro' : normalizedSoundTier)
+    : null
   const entitlementFeature = SOUND_TIER_FEATURE[normalizedSoundTier] ?? null
 
   return {

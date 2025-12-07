@@ -32,7 +32,17 @@ function buildObjectKey(soundId, displayName) {
 async function getSignedUploadUrl(key, userId) {
   const params = new URLSearchParams({ key });
   if (userId) params.set('userId', userId);
-  const res = await fetch(buildApiUrl(`/api/get-upload-url?${params.toString()}`));
+  const accessToken = await getAccessToken();
+
+  if (!accessToken) {
+    throw new Error('You must be signed in to upload audio.');
+  }
+
+  const res = await fetch(buildApiUrl(`/api/get-upload-url?${params.toString()}`), {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+  });
   if (!res.ok) {
     let message = 'Failed to get signed upload URL';
     const rawBody = await res.text().catch(() => '');

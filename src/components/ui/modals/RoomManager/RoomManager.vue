@@ -46,6 +46,8 @@
             v-for="room in paginatedItems"
             :key="room.id"
             :room="room"
+            :locked="room.locked"
+            :lock-tooltip="lockTooltip"
             @load="handleLoadRoom(room.id)"
             @delete="handleDeleteRoom(room.id)"
             @update-name="name => handleUpdateRoomName(room, name)"
@@ -109,6 +111,8 @@ import { useSaveAndLoadRoom } from '@/composables/useSaveAndLoadRoom'
 import { useRoomStore } from '@/stores/useRoomStore'
 import PulsingOverlay from '@/components/ui/overlays/PulsingOverlay.vue'
 import { resetRoomState } from '@/utils/resetRoomState'
+import { useEntitlements } from '@/composables/useEntitlements'
+import { limit as getPlanLimit } from '@/utils/permissions'
 
 const router = useRouter()
 const buttons = ref([
@@ -123,15 +127,28 @@ const currentPage = ref(0)
 const itemsPerPage = 12 // or 8, 16 depending on grid size
 
 const { loadRoom, deleteRoom, saveRoom, isSavingRoom, isLoadingRoom, updateRoomName } = useSaveAndLoadRoom()
+const { currentPlan } = useEntitlements()
 
 const deleteRoomModalVisible = ref(false)
 const saveRoomCheck = ref(false)
 const rooms = ref([])
 const loading = ref(true)
 let roomId = null
+const maxSavedRooms = computed(() => getPlanLimit(currentPlan.value, 'maxSavedRooms') ?? 1)
+const lockTooltip = 'Your plan allows 1 saved room. Upgrade to access older rooms.'
+
+function shouldLockRoom(index) {
+  if (!Number.isFinite(maxSavedRooms.value)) return false
+  return index >= maxSavedRooms.value
+}
+
+const roomsWithLocks = computed(() => rooms.value.map((room, index) => ({
+  ...room,
+  locked: shouldLockRoom(index)
+})))
 const paginatedItems = computed(() => {
   const start = (currentPage.value) * itemsPerPage
-  return rooms.value.slice(start, start + itemsPerPage)
+  return roomsWithLocks.value.slice(start, start + itemsPerPage)
 })
 
 const totalPages = computed(() =>
@@ -155,6 +172,9 @@ const handleUpdateRoomName = async (room, newName) => {
 }
 
 const handleLoadRoom = async (rId) => {
+  if (roomsWithLocks.value.find(r => r.id === rId)?.locked) {
+    return
+  }
   roomId = rId
   if (!roomStore.isRoomSaveable) {
     

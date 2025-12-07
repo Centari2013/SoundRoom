@@ -48,7 +48,7 @@ export function useSaveAndLoadRoom() {
   const { listener } = storeToRefs(listenerStore);
   const { audioEngine } = storeToRefs(audioEngineStore);
   const { soundLibrarySources } = storeToRefs(cacheStore);
-  const { requireWithinLimit } = useEntitlements()
+  const { requireWithinLimit, canAccess } = useEntitlements()
 
   /**
    * Persist the current room to Supabase. Handles insert or update logic
@@ -243,22 +243,28 @@ export function useSaveAndLoadRoom() {
     roomData.room.id = resolvedRoomId; // Set the room ID from the database
     roomData.room.name = data.name; // Set the room name from the database
     const ids = roomData?.soundLibrarySources?.map(s => s.libraryId) ?? [];
-    const { accessible: dbSounds, lockedIds, missingIds } = await getSoundsFromDB(ids);
-    const { successes: downloaded, failedIds } = await downloadMultipleAudio(dbSounds);
+    const { annotated: dbSounds, accessible: accessibleSounds, lockedIds, missingIds } = await getSoundsFromDB(ids);
+    const accessContext = {
+      userTier: tier.value,
+      userId: user.value?.id,
+      canUpload: canAccess('canUpload')
+    }
+    const { successes: downloaded, failedIds } = await downloadMultipleAudio(accessibleSounds);
 
     const downloadedMap = new Map(downloaded.map(entry => [entry.id, entry.audioPath]));
-    const availableIds = new Set(downloaded.map(entry => entry.id));
+    const availableIds = new Set([...downloaded.map(entry => entry.id), ...lockedIds]);
     const { roomData: cleanedRoom, removed } = filterRoomByAvailableSounds(roomData, availableIds)
     roomData = cleanedRoom
 
     const finalSources = roomData.soundLibrarySources.map(({ libraryId }) => {
-      const audioPath = downloadedMap.get(libraryId);
       const soundMatch = dbSounds.find(d => d.id === libraryId);
+      const annotatedAccess = soundMatch ? soundMatch : null
+      const audioPath = annotatedAccess?.locked ? null : downloadedMap.get(libraryId);
 
       const coneInner = roomData.audioEngine.soundSources.find(src => src.libraryId === libraryId)?.state?.coneInner ?? soundMatch?.coneInner ?? 60;
       const coneOuter = roomData.audioEngine.soundSources.find(src => src.libraryId === libraryId)?.state?.coneOuter ?? soundMatch?.coneOuter ?? 180;
 
-      if (!audioPath || !soundMatch) {
+      if ((!audioPath && !soundMatch?.locked) || !soundMatch) {
         console.warn(`Missing data for libraryId ${libraryId}`);
         return null; // or skip it entirely if you'd prefer
       }
@@ -269,7 +275,7 @@ export function useSaveAndLoadRoom() {
         ? buildStorageKey(base, soundMatch.bucket, soundMatch.path)
         : null
 
-      return {
+      const nextSource = {
         libraryId,
         audioPath,
         coneInner,
@@ -281,13 +287,17 @@ export function useSaveAndLoadRoom() {
         base,
         storageKey,
         fileId: libraryId ?? storageKey
-      };
+      }
+
+      applyAccessMetadata(nextSource, annotatedAccess, accessContext)
+
+      return nextSource
     }).filter(Boolean); // remove nulls if any
     soundLibrarySources.value = finalSources;
 
     const missingUploadCount = missingIds.length + failedIds.length
     if (lockedIds.length > 0) {
-      console.info(`Skipped ${lockedIds.length} locked sound(s) while loading room.`)
+      console.info(`Kept ${lockedIds.length} locked sound(s) visible while loading room.`)
     }
     if (removed > 0 && missingUploadCount === 0 && lockedIds.length === 0) {
       console.info(`Removed ${removed} unavailable sound source(s) while loading room.`)
@@ -298,7 +308,7 @@ export function useSaveAndLoadRoom() {
 
 
     roomData.audioEngine.soundSources.forEach(src => {
-      const match = finalSources.find(a => a.libraryId === src.libraryId);
+      const match = finalSources.find(a => String(a.libraryId) === String(src.libraryId));
       if (match) {
         src.audioPath = match.audioPath;
         src.name = match.name;
@@ -308,6 +318,9 @@ export function useSaveAndLoadRoom() {
         src.base = match.base;
         src.storageKey = match.storageKey;
         src.fileId = match.fileId;
+        applyAccessMetadata(src, match, accessContext)
+      } else {
+        applyAccessMetadata(src, null, accessContext)
       }
     });
     
@@ -357,7 +370,7 @@ export function useSaveAndLoadRoom() {
    * @returns {Promise<Array>} list of sound records
    */
   async function getSoundsFromDB(ids) {
-    if (!ids?.length) return { accessible: [], lockedIds: [], missingIds: [] }
+    if (!ids?.length) return { annotated: [], accessible: [], lockedIds: [], missingIds: [] }
 
     const { data, error } = await supabase
       .from("sound_files")
@@ -366,24 +379,36 @@ export function useSaveAndLoadRoom() {
 
     if (error) {
       console.warn("Failed to list files:", error);
-      return { accessible: [], lockedIds: [], missingIds: ids }
+      return { annotated: [], accessible: [], lockedIds: [], missingIds: ids }
     }
 
     const context = {
       userTier: tier.value,
-      userId: user.value?.id
+      userId: user.value?.id,
+      canUpload: canAccess('canUpload')
     }
 
     const annotated = (data ?? []).map(sound => annotateSoundAccess(sound, context))
-    const locked = annotated.filter(sound => sound.locked).map(sound => sound.id)
+    const lockedEntries = annotated.filter(sound => sound.locked)
     const accessible = annotated.filter(sound => !sound.locked)
     const missingIds = ids.filter(id => !annotated.find(sound => sound.id === id))
 
-    if (locked.length > 0) {
-      console.info(`Skipped ${locked.length} sound(s) due to plan entitlements.`)
+    if (lockedEntries.length > 0) {
+      console.info(`Preserved ${lockedEntries.length} locked sound(s) due to plan entitlements.`)
     }
 
-    return { accessible, lockedIds: locked, missingIds }
+    return { annotated, accessible, lockedIds: lockedEntries.map(sound => sound.id), missingIds }
+  }
+
+  function applyAccessMetadata(source, annotatedSound, context) {
+    const access = annotatedSound ? annotatedSound : annotateSoundAccess(source, context)
+
+    source.locked = !!access.locked
+    source.accessReason = access.accessReason
+    source.requiredPlan = access.requiredPlan
+    source.entitlementFeature = access.entitlementFeature
+    source.canUpgrade = access.canUpgrade
+    source.base = source.base ?? access.base ?? source.plan_tier ?? 'users'
   }
   /**
    * Persist the current room to browser localStorage for offline usage.
@@ -411,17 +436,23 @@ export function useSaveAndLoadRoom() {
     } else {
       let roomData = JSON.parse(stored);
       const ids = roomData.soundLibrarySources.map(s => s.libraryId);
-      const { accessible: dbSounds, lockedIds, missingIds } = await getSoundsFromDB(ids);
-      const { successes: downloaded, failedIds } = await downloadMultipleAudio(dbSounds);
+      const { annotated: dbSounds, accessible: accessibleSounds, lockedIds, missingIds } = await getSoundsFromDB(ids);
+      const accessContext = {
+        userTier: tier.value,
+        userId: user.value?.id,
+        canUpload: canAccess('canUpload')
+      }
+      const { successes: downloaded, failedIds } = await downloadMultipleAudio(accessibleSounds);
 
       const downloadedMap = new Map(downloaded.map(entry => [entry.id, entry.audioPath]));
-      const availableIds = new Set(downloaded.map(entry => entry.id));
+      const availableIds = new Set([...downloaded.map(entry => entry.id), ...lockedIds]);
       const { roomData: cleanedRoom, removed } = filterRoomByAvailableSounds(roomData, availableIds)
       roomData = cleanedRoom
 
       const finalSources = roomData.soundLibrarySources.map(({ libraryId }) => {
-        const audioPath = downloadedMap.get(libraryId);
         const soundMatch = dbSounds.find(d => d.id === libraryId);
+        const annotatedAccess = soundMatch ? soundMatch : null
+        const audioPath = annotatedAccess?.locked ? null : downloadedMap.get(libraryId);
         const name = soundMatch?.name;
         const bucket = soundMatch?.bucket;
         const path = soundMatch?.path;
@@ -430,16 +461,32 @@ export function useSaveAndLoadRoom() {
         const storageKey = bucket && path ? buildStorageKey(base, bucket, path) : null;
         const coneInner = roomData.audioEngine.soundSources.find(src => src.libraryId === libraryId)?.state?.coneInner ?? soundMatch?.coneInner ?? 60;
         const coneOuter = roomData.audioEngine.soundSources.find(src => src.libraryId === libraryId)?.state?.coneOuter ?? soundMatch?.coneOuter ?? 180;
-        if (!audioPath || !soundMatch) console.warn(`Missing audioPath for libraryId ${libraryId}`);
-        if (!audioPath || !soundMatch) return null
-        return { libraryId, audioPath, name, path, bucket, coneInner, coneOuter, plan_tier: planTier, base, storageKey, fileId: libraryId ?? storageKey };
+        if ((!audioPath && !soundMatch?.locked) || !soundMatch) console.warn(`Missing audioPath for libraryId ${libraryId}`);
+        if ((!audioPath && !soundMatch?.locked) || !soundMatch) return null
+        const nextSource = {
+          libraryId,
+          audioPath,
+          name,
+          path,
+          bucket,
+          coneInner,
+          coneOuter,
+          plan_tier: planTier,
+          base,
+          storageKey,
+          fileId: libraryId ?? storageKey,
+        }
+
+        applyAccessMetadata(nextSource, annotatedAccess, accessContext)
+
+        return nextSource;
       }).filter(Boolean);
 
       soundLibrarySources.value = finalSources;
 
       const missingUploadCount = missingIds.length + failedIds.length
       if (lockedIds.length > 0) {
-        console.info(`Skipped ${lockedIds.length} locked sound(s) while loading room.`)
+        console.info(`Kept ${lockedIds.length} locked sound(s) visible while loading room.`)
       }
       if (removed > 0 && missingUploadCount === 0 && lockedIds.length === 0) {
         console.info(`Removed ${removed} unavailable sound source(s) while loading room.`)
@@ -449,17 +496,20 @@ export function useSaveAndLoadRoom() {
       }
 
       roomData.audioEngine.soundSources.forEach(src => {
-        const match = finalSources.find(a => a.libraryId === src.libraryId);
-      if (match) {
-        src.audioPath = match.audioPath;
-        src.name = match.name;
-        src.bucket = match.bucket;
-        src.path = match.path;
-        src.plan_tier = match.plan_tier;
-        src.base = match.base;
-        src.storageKey = match.storageKey;
-        src.fileId = match.fileId;
-      }
+        const match = finalSources.find(a => String(a.libraryId) === String(src.libraryId));
+        if (match) {
+          src.audioPath = match.audioPath;
+          src.name = match.name;
+          src.bucket = match.bucket;
+          src.path = match.path;
+          src.plan_tier = match.plan_tier;
+          src.base = match.base;
+          src.storageKey = match.storageKey;
+          src.fileId = match.fileId;
+          applyAccessMetadata(src, match, accessContext)
+        } else {
+          applyAccessMetadata(src, null, accessContext)
+        }
       });
 
       resetRoomState();

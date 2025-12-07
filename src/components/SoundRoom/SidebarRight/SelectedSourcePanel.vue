@@ -5,6 +5,14 @@
     </h5>
 
     <div v-if="selectedSource" class="space-y-6 flex flex-col items-center">
+      <div
+        v-if="isLocked"
+        class="flex items-center gap-2 text-xs text-[var(--color-text-muted)]"
+        :title="lockTooltip"
+      >
+        <LockIcon aria-hidden="true" class="w-4 h-4" />
+        <span>Available on Pro tier.</span>
+      </div>
       <!-- Readouts -->
       <div class="space-y-1 text-xs text-[var(--color-text-muted)]">
         <h4>{{ selectedSource.name }}</h4>
@@ -26,6 +34,8 @@
           @drag-start="onStart"
           @change="onChange"
           @drag-end="onEnd"
+          :disabled="isLocked"
+          :class="{ 'opacity-60 cursor-not-allowed': isLocked }"
         />
       </div>
 
@@ -33,9 +43,12 @@
       <div class="w-full space-y-2">
         <button
           @click="playPauseSource"
-          class="w-full bg-[var(--color-bg-surface)] text-xs rounded hover:bg-[var(--color-bg-elevated)] border border-[var(--color-border-subtle)] text-[var(--color-text-primary)]"
+          class="w-full bg-[var(--color-bg-surface)] text-xs rounded hover:bg-[var(--color-bg-elevated)] border border-[var(--color-border-subtle)] text-[var(--color-text-primary)] items-center flex justify-center"
+          :disabled="isLocked"
+          :title="isLocked ? lockTooltip : undefined"
         >
           {{ playPauseLabel }}
+          <LockIcon v-if="isLocked" aria-hidden="true" class="w-4 h-4 inline-block ml-2" />
         </button>
         <button
           @click="deleteSource"
@@ -52,7 +65,7 @@
         <input
           type="checkbox"
           :checked="schedulingEnabled"
-          :disabled="!canUseTimedLoops"
+          :disabled="!canUseTimedLoops || isLocked"
           @change="handleSchedulingToggle"
           class="accent-blue-500 disabled:cursor-not-allowed disabled:opacity-60"
         />
@@ -77,7 +90,8 @@
             :value="schedule.mode"
             @change="handleScheduleModeChange"
             @blur="commitScheduleEdit"
-            class="px-2 py-1 rounded border border-[var(--color-border-subtle)] bg-[var(--color-bg-elevated)]">
+            class="px-2 py-1 rounded border border-[var(--color-border-subtle)] bg-[var(--color-bg-elevated)]"
+            :disabled="isLocked">
             <option value="interval">Interval</option>
             <option v-if="canUseAdvancedScheduling" value="count">Count</option>
             <option v-if="canUseAdvancedScheduling" value="interval+count">Interval + Count</option>
@@ -100,6 +114,7 @@
               @keyup.enter="commitScheduleEdit"
               @blur="commitScheduleEdit"
               class="px-2 py-1 rounded border border-[var(--color-border-subtle)] bg-[var(--color-bg-elevated)]"
+              :disabled="isLocked"
             />
           </div>
           <div class="flex flex-col space-y-1">
@@ -117,6 +132,7 @@
               @keyup.enter="commitScheduleEdit"
               @blur="commitScheduleEdit"
               class="px-2 py-1 rounded border border-[var(--color-border-subtle)] bg-[var(--color-bg-elevated)]"
+              :disabled="isLocked"
             />
             <p v-if="schedule.gapMax < schedule.gapMin" class="text-[var(--color-danger)] text-xs">
               Gap Max cannot be smaller than Gap Min
@@ -141,6 +157,7 @@
               @blur="commitScheduleEdit"
               placeholder="Unlimited"
               class="px-2 py-1 rounded border border-[var(--color-border-subtle)] bg-[var(--color-bg-elevated)]"
+              :disabled="isLocked"
             />
           </div>
           <div class="flex flex-col space-y-1">
@@ -157,6 +174,7 @@
               @keyup.enter="commitScheduleEdit"
               @blur="commitScheduleEdit"
               class="px-2 py-1 rounded border border-[var(--color-border-subtle)] bg-[var(--color-bg-elevated)]"
+              :disabled="isLocked"
             />
           </div>
           <div class="flex flex-col space-y-1">
@@ -172,6 +190,7 @@
               @keyup.enter="commitScheduleEdit"
               @blur="commitScheduleEdit"
               class="px-2 py-1 rounded border border-[var(--color-border-subtle)] bg-[var(--color-bg-elevated)]"
+              :disabled="isLocked"
             />
           </div>
         </div>
@@ -192,6 +211,7 @@ import { useActionManagerStore } from '@/stores/useActionManagerStore';
 import { useAudioEngineStore } from '@/stores/useAudioEngineStore';
 import { storeToRefs } from 'pinia';
 import { useEntitlements } from '@/composables/useEntitlements';
+import LockIcon from '@/assets/icons/lock.svg';
 
 const props = defineProps({
   selectedSource: Object
@@ -201,6 +221,8 @@ const selectedSource = inject('selectedSource');
 const { actionManager } = storeToRefs(useActionManagerStore());
 const audioEngineStore = useAudioEngineStore();
 const { canAccess, requireEntitlement } = useEntitlements();
+const isLocked = computed(() => !!selectedSource.value?.locked);
+const lockTooltip = 'Available on Pro tier.'
 
 const state = computed(() => selectedSource.value?.instance?.state ?? {});
 const schedule = computed(() => state.value?.schedule ?? {});
@@ -232,13 +254,26 @@ const getScheduleCopy = () => {
   enabled: schedule.value.enabled
 }
 }
-const { onStart, onChange, onEnd } = useVolumeSlider(selectedSource, actionManager);
+const volumeControls = useVolumeSlider(selectedSource, actionManager);
+const onStart = (...args) => {
+  if (isLocked.value) return
+  return volumeControls.onStart(...args)
+}
+const onChange = (...args) => {
+  if (isLocked.value) return
+  return volumeControls.onChange(...args)
+}
+const onEnd = (...args) => {
+  if (isLocked.value) return
+  return volumeControls.onEnd(...args)
+}
 
 const playPauseLabel = computed(() =>
   selectedSource.value.instance.playing ? "Pause" : "Play"
 );
 
 const playPauseSource = () => {
+  if (isLocked.value) return;
   const src = selectedSource.value;
   src.instance.playing ? audioEngineStore.pauseSoundSource(src) : audioEngineStore.playSoundSource(src);
 };
@@ -290,6 +325,7 @@ function commitSchedulePatch(patch) {
 }
 
 function handleSchedulingToggle(event) {
+  if (isLocked.value) return
   const nextEnabled = !!event.target.checked;
   if (nextEnabled && !requireEntitlement('timedLoops')) {
     event.target.checked = !!schedule.value.enabled;
@@ -299,6 +335,7 @@ function handleSchedulingToggle(event) {
 }
 
 function handleScheduleModeChange(event) {
+  if (isLocked.value) return
   const nextMode = event.target.value;
   if (!canUseAdvancedScheduling.value && nextMode !== 'interval') {
     event.target.value = schedule.value.mode ?? 'interval';
@@ -308,6 +345,7 @@ function handleScheduleModeChange(event) {
 }
 
 function commitScheduleEdit() {
+  if (isLocked.value) return
   const changedKeys = Object.keys(scheduleCopy.value).filter(key => {
   const scheduleVal = schedule.value[key]
   const copyVal = scheduleCopy.value[key];

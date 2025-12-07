@@ -41,9 +41,9 @@
             </span>
             <span
               v-else-if="isLocked(theme)"
-              class="text-[11px] font-medium rounded-full px-2 py-1 bg-[color-mix(in_srgb,var(--color-danger)_14%,transparent)] text-[var(--color-danger)]"
+              class="text-[11px] font-medium rounded-full px-2 py-1 bg-[color-mix(in_srgb,var(--color-danger)_14%,transparent)] text-[var(--color-danger)] items-center flex"
             >
-              🔒 Locked
+              <LockIcon class="h-4 w-4 inline-block mr-1" /> Locked
             </span>
           </div>
 
@@ -113,6 +113,7 @@ import { fetchAllThemes, fetchUserTheme, saveUserTheme } from '@/utils/themeApi'
 import { compareTiers, formatTierLabel } from '@/utils/tierUtils'
 import { useAuth } from '@/composables/useAuth'
 import { useThemeStore } from '@/stores/useThemeStore'
+import LockIcon from '@/assets/icons/lock.svg'
 
 const themeStore = useThemeStore()
 const { tier, isAuthenticated, user } = useAuth()

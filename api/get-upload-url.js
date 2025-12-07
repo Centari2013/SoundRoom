@@ -1,6 +1,8 @@
 import { getEnv } from "@vercel/functions";
 import { randomBytes, randomUUID } from "node:crypto";
 import { AwsClient } from "aws4fetch";
+import { authenticateRequest, resolveUserAccessContext } from './_utils/auth.js'
+import { HttpError } from './_utils/errors.js'
 
 function createRandomId() {
   if (typeof randomUUID === "function") {
@@ -82,6 +84,12 @@ export function OPTIONS() {
 
 export async function GET(request) {
   try {
+    const { user } = await authenticateRequest(request)
+    const userAccess = await resolveUserAccessContext(user.id)
+    if (!userAccess.entitlements?.canUpload) {
+      throw new HttpError(403, 'Uploads are unavailable on your plan')
+    }
+
     const { accessKeyId, secretAccessKey, bucketName, accountId } = getR2Config();
 
     if (!accessKeyId || !secretAccessKey || !bucketName || !accountId) {
@@ -134,6 +142,19 @@ export async function GET(request) {
       }
     );
   } catch (error) {
+    if (error instanceof HttpError) {
+      return new Response(
+        JSON.stringify({ error: error.message }),
+        {
+          status: error.status,
+          headers: {
+            ...corsHeaders,
+            "Content-Type": "application/json",
+          },
+        }
+      )
+    }
+
     console.error("💥 SIGNING ERROR:", error);
     return new Response(
       JSON.stringify({ error: "Internal Server Error", message: error.message }),

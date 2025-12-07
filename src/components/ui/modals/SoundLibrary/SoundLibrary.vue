@@ -64,7 +64,7 @@ import { buildStorageKey } from '@/utils/downloadAudio'
 
 
 const { user, isAuthenticated, tier } = useAuth()
-const { requireEntitlement } = useEntitlements()
+const { canAccess, requireEntitlement } = useEntitlements()
 
 const router = useRouter()
 const cacheStore = useAudioCacheStore()
@@ -133,7 +133,8 @@ const rawSounds = ref([])
 const filteredSounds = computed(() => {
   const userTier = tier.value
   const userId = user.value?.id
-  return rawSounds.value.map(sound => annotateSoundAccess(sound, { userTier, userId }))
+  const canUpload = canAccess('canUpload')
+  return rawSounds.value.map(sound => annotateSoundAccess(sound, { userTier, userId, canUpload }))
 })
 watch(
   activeCategory,

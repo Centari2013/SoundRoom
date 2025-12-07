@@ -6,6 +6,8 @@
     @dragmove="onSourceDragMove"
     :scaleX="selectedScale"
     :scaleY="selectedScale"
+    :opacity="nodeOpacity"
+    :title="isLocked ? lockTooltip : undefined"
   >
     <!-- Outer Cone -->
     <v-wedge
@@ -60,6 +62,7 @@
       @mouseover="setCursor($event, 'pointer')"
       @mouseout="setCursor($event, 'default')"
     />
+
 
     <ScheduledPlayRing
       v-if="true"
@@ -124,7 +127,6 @@ import ScheduledPlayRing from '@/components/SoundRoom/MainCanvasStage/ScheduledP
 import { useKonvaThemeRedraw } from '@/composables/useKonvaTheme'
 import { useThemeStore } from '@/stores/useThemeStore'
 
-// Props and emits
 const props = defineProps({
   source: Object,
   index: Number,
@@ -182,6 +184,10 @@ const getFillColor = computed(() => {
   if (props.selected) return themeTokens.value.selectionHighlight
   return isScheduled.value ? colors.nodeBlue : colors.nodeRed
 })
+
+const isLocked = computed(() => !!props.source?.locked)
+const nodeOpacity = computed(() => (isLocked.value ? 0.5 : 1))
+const lockTooltip = 'Available on Pro tier.'
 
 const dotStrokeColor = computed(() => {
   if (isDarkMode.value) return props.selected ? themeTokens.value.white : rgbaFromVar('--base-white-rgb', 0.9, 'rgba(var(--base-white-rgb), 0.9)')
@@ -274,6 +280,11 @@ let initialSourceAngle = null
 
 // Source dragging
 function onSourceMouseDown(e) {
+  if (isLocked.value) {
+    emit('select', props.index)
+    e.evt?.stopPropagation?.()
+    return
+  }
   emit('select', props.index) // select current SoundSourceNode to display in SelectSourcePanel.vue
   e.evt.stopPropagation()
 
@@ -317,6 +328,10 @@ function onSourceMouseDown(e) {
 }
 
 function onSourceDragMove(e) {
+  if (isLocked.value) {
+    e.target?.draggable(false)
+    return
+  }
   const pos = e.target.position()
   const clampedX = room.value.clamp(pos.x, 0, room.value.width)
   const clampedY = room.value.clamp(pos.y, 0, room.value.height)
@@ -350,6 +365,11 @@ function onSourceMouseUp(e) {
 
 // Rotation interaction
 function onHandleMouseDown(e) {
+  if (isLocked.value) {
+    emit('select', props.index)
+    e.evt?.stopPropagation?.()
+    return
+  }
   emit('select', props.index)
   e.evt.stopPropagation()
 
@@ -376,6 +396,7 @@ function onHandleMouseDown(e) {
 }
 
 function onHandleMouseMove(e) {
+  if (isLocked.value) return
   const stage = e.target.getStage()
   const mousePos = stage.getPointerPosition()
   const dx = mousePos.x - props.source.instance.state.x
