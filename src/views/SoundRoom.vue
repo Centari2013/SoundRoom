@@ -287,10 +287,10 @@ function waitForWelcome() {
 
 
 
-
+let routeUnwatcher = null;
 
 onMounted(async() => {
-  watch(
+  routeUnwatcher = watch(
     () => route.path,
     async (newPath) => {
 
@@ -353,6 +353,9 @@ onMounted(async() => {
 
 
 onUnmounted(() => {
+  if (routeUnwatcher) {
+    routeUnwatcher()
+  }
   resetRoomState()
   unregisterSoundRoomActions()
   audioEngine.value.dispose()
