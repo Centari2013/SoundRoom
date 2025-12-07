@@ -1,7 +1,12 @@
 <template>
   <li
-    class="cursor-move bg-surface-raised text-text-primary border border-border-subtle p-1 rounded text-center"
-    draggable="true"
+    class="bg-surface-raised text-text-primary border border-border-subtle p-1 rounded text-center"
+    :class="{
+      'cursor-move': !librarySource.locked,
+      'cursor-not-allowed opacity-60': librarySource.locked
+    }"
+    :draggable="!librarySource.locked"
+    :aria-disabled="librarySource.locked"
   >
     {{ librarySource.name }}
   </li>

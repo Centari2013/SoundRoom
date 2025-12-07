@@ -38,7 +38,6 @@
           >
             <span class="inline-flex items-center gap-1">
               <span>{{ uploadCtaLabel }}</span>
-              <span v-if="!canUpload" aria-hidden="true">🔒</span>
             </span>
           </button>
         <span v-if="!canUpload" class="text-xs uppercase tracking-wide text-accent">Pro feature</span>

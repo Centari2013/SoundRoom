@@ -121,7 +121,7 @@ export async function removeDeletedSoundFromRooms(soundId) {
       updated++
       const { error: updateError } = await supabase
         .from('rooms')
-        .update({ room_config: cleanedConfig, thumbnail: null })
+        .update({ room_config: cleanedConfig })
         .eq('id', room.id)
       if (updateError) {
         console.warn('Unable to update room after removing deleted sound:', updateError)
