@@ -295,46 +295,43 @@ onMounted(async() => {
     async (newPath) => {
 
       // If we are leaving *any* /app route (including children)
-      if (!newPath.startsWith('/app')) {
+      if (!newPath.startsWith('/app') || !newPath.includes('settings')) {
+        startTour.value = false;
         resetRoomState()
         audioEngine.value?.dispose()
         cacheStore.audioCacheManager.clearMemoryCache()
-      } else if (newPath === '/app' && isAuthenticated.value) {
-        const preferences = await hydrateUserPreferences({ forceLocal: true })
-        if (preferences.autoResumePlayback) {
-          await loadMostRecentRoom()
-
-
-          if (audioEngine.value?.getAudioContext().state === 'suspended') {
-            try {
-              await audioEngine.value.getAudioContext().resume()
-            } catch (error) {
-              console.warn('Failed to auto-resume audio context', error)
-            }
-          }
-        }
-        showAudioResumeOverlay.value = audioEngine.value?.getAudioContext().state === 'suspended'
-
-      } else {
-        showAudioResumeOverlay.value = false
       }
     },
     { immediate: true }
   )
-  
-   // If welcome overlay exists, wait for it
-      if (showWelcomeOverlay.value && !welcomeDone.value) {
-        await waitForWelcome()
+    
+    // If welcome overlay exists, wait for it
+    if (showWelcomeOverlay.value && !welcomeDone.value) {
+      await waitForWelcome()
+    }
+
+    const preferences = await hydrateUserPreferences({ forceLocal: true })
+    if (preferences.autoResumePlayback) {
+      await loadMostRecentRoom()
+
+      if (audioEngine.value?.getAudioContext().state === 'suspended') {
+        try {
+          await audioEngine.value.getAudioContext().resume()
+        } catch (error) {
+          console.warn('Failed to auto-resume audio context', error)
+        }
       }
+      showAudioResumeOverlay.value = audioEngine.value?.getAudioContext().state === 'suspended'
+    } else {
+      showAudioResumeOverlay.value = false;
+    }
 
   if (localStorage.getItem('soundroom_onboarding_completed') === 'true') return;
-  if (localStorage.getItem('soundroom_onboarding_started') === 'true') return;
 
   if (route.path == '/app') {
-        startTour.value = true
-        localStorage.setItem('soundroom_onboarding_started', 'true');
-        return
-      }
+    startTour.value = true
+    return
+  }
 
   const routeUnwatch = watch(
     () => route.path,
@@ -347,7 +344,6 @@ onMounted(async() => {
       }
 
       // Now it's safe to start
-      localStorage.setItem('soundroom_onboarding_started', 'true');
       startTour.value = true
       routeUnwatch() // only run once
     }

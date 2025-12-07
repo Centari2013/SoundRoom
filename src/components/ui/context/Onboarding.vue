@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { VTour } from '@globalhive/vuejs-tour';
-import { watch, ref, computed, h } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
+import { watch, ref } from 'vue';
+import { useRoute } from 'vue-router';
 import { useAudioCacheStore } from '@/stores/useAudioCacheStore';
 import { useAudioEngineStore } from '@/stores/useAudioEngineStore';
 import { storeToRefs } from 'pinia';
@@ -21,6 +21,8 @@ watch(() => props.startTour, (v) => {
   if (v) {
     tourRunning.value = true;
     vTour.value.startTour();
+  } else {
+    vTour.value.endTour();
   }
 });
 // Your onboarding steps
