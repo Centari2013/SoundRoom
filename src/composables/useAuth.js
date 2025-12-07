@@ -26,6 +26,10 @@ const CACHE_DURATION_MS = 1000 * 60 * 30 // 30 minutes
 
 const hasBillingHistory = ref(false)
 
+// FIX: Onboarding Cycle 3 – track DB onboarding state to sync with local storage
+const onboardingCompleted = ref(false)
+const onboardingStatusLoaded = ref(false)
+
 function writeTierToCache(newTier, billingHistory = hasBillingHistory.value) {
   const normalized = (newTier || 'free').toLowerCase()
   const normalizedBillingHistory = !!billingHistory
@@ -108,23 +112,39 @@ function primeBillingHistory(value) {
 }
 
 async function syncOnboardingStatus(userId) {
-  const localDone = localStorage.getItem('soundroom_onboarding_completed') === 'true'
-  if (!localDone) return
+  onboardingStatusLoaded.value = false
 
-  // Check DB
-  const { data } = await supabase
-    .from('users')
-    .select('onboarding_completed')
-    .eq('id', userId)
-    .maybeSingle()
+  if (!userId) {
+    onboardingCompleted.value = localStorage.getItem('soundroom_onboarding_completed') === 'true'
+    onboardingStatusLoaded.value = true
+    return
+  }
 
-  if (!data || data.onboarding_completed === true) return
+  try {
+    const { data, error } = await supabase
+      .from('users')
+      .select('onboarding_completed')
+      .eq('id', userId)
+      .maybeSingle()
 
-  // Update DB one time
-  await supabase
-    .from('users')
-    .update({ onboarding_completed: true })
-    .eq('id', userId)
+    if (error) throw error
+
+    const dbComplete = data?.onboarding_completed === true
+    onboardingCompleted.value = dbComplete
+
+    if (dbComplete) {
+      localStorage.setItem('soundroom_onboarding_completed', 'true')
+      localStorage.removeItem('soundroom_onboarding_started')
+    } else {
+      // FIX: Onboarding Cycle 3 – DB state overrides stale local flags
+      localStorage.removeItem('soundroom_onboarding_completed')
+      localStorage.removeItem('soundroom_onboarding_started')
+    }
+  } catch (error) {
+    console.warn('Failed to sync onboarding status', error)
+  } finally {
+    onboardingStatusLoaded.value = true
+  }
 }
 
 supabase.auth.getSession().then(async ({ data }) => {
@@ -134,6 +154,10 @@ supabase.auth.getSession().then(async ({ data }) => {
   if (user.value?.id) {
     refreshTier()
     syncOnboardingStatus(user.value.id)   // <-- ADD THIS TOO
+  } else {
+    // FIX: Onboarding Cycle 3 – ensure status is initialized for guests
+    onboardingCompleted.value = localStorage.getItem('soundroom_onboarding_completed') === 'true'
+    onboardingStatusLoaded.value = true
   }
 })
 
@@ -148,8 +172,26 @@ supabase.auth.onAuthStateChange(async (_event, session) => {
     syncOnboardingStatus(user.value.id)   // <-- ADD THIS
   } else {
     tier.value = 'free'
+    onboardingCompleted.value = localStorage.getItem('soundroom_onboarding_completed') === 'true'
+    onboardingStatusLoaded.value = true
   }
 })
+
+// FIX: Onboarding Cycle 3 – explicit DB completion helper for onboarding
+async function markOnboardingCompletedInDb() {
+  if (!user.value?.id) return
+
+  try {
+    await supabase
+      .from('users')
+      .update({ onboarding_completed: true })
+      .eq('id', user.value.id)
+
+    onboardingCompleted.value = true
+  } catch (error) {
+    console.warn('Failed to mark onboarding complete', error)
+  }
+}
 
 refreshTier(true) // Initial tier load
 
@@ -175,11 +217,14 @@ export function useAuth() {
     sessionLoaded: readonly(sessionLoaded),
     isAuthenticated: computed(() => !!user.value),
     tier: readonly(tier),
+    onboardingCompleted: readonly(onboardingCompleted),
+    onboardingStatusLoaded: readonly(onboardingStatusLoaded),
     hasBillingHistory: readonly(hasBillingHistory),
     getTier: getUserTier,
     refreshTier,
     primeTier,
     primeBillingHistory,
+    markOnboardingCompletedInDb,
     clearUser: () => {
       user.value = null
       tier.value = 'free'

@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { VTour } from '@globalhive/vuejs-tour';
-import { watch, ref, computed, h } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
+import { watch, ref, onMounted, onUnmounted } from 'vue';
+import { useRoute } from 'vue-router';
 import { useAudioCacheStore } from '@/stores/useAudioCacheStore';
 import { useAudioEngineStore } from '@/stores/useAudioEngineStore';
 import { storeToRefs } from 'pinia';
+import { useAuth } from '@/composables/useAuth';
 
 const { soundLibrarySources } = storeToRefs(useAudioCacheStore())
 const { audioEngine } = storeToRefs(useAudioEngineStore())
@@ -16,6 +17,32 @@ const props = defineProps({
 });
 
 const tourRunning = ref(false);
+const { markOnboardingCompletedInDb } = useAuth();
+const activeBackdropHandler = (event) => {
+  if (!tourRunning.value) return;
+  const backdropTarget = event.target?.closest?.('.vjt-backdrop');
+  if (!backdropTarget) return;
+
+  // FIX: Onboarding Cycle 2 – prevent backdrop clicks from leaking or advancing
+  event.preventDefault();
+  event.stopPropagation();
+  if (typeof event.stopImmediatePropagation === 'function') {
+    event.stopImmediatePropagation();
+  }
+};
+
+onMounted(() => {
+  document.addEventListener('click', activeBackdropHandler, true);
+});
+
+onUnmounted(() => {
+  document.removeEventListener('click', activeBackdropHandler, true);
+
+  // FIX: Onboarding Cycle 1 – reset start flag when tour exits unexpectedly
+  if (localStorage.getItem('soundroom_onboarding_completed') !== 'true') {
+    localStorage.removeItem('soundroom_onboarding_started');
+  }
+});
 
 watch(() => props.startTour, (v) => {
   if (v) {
@@ -116,10 +143,14 @@ const steps = [
       const unwatch = watch(
         () => soundLibrarySources.value.length,
         async (val) => {
-        if (val === 0) return;
+          if (!tourRunning.value) {
+            unwatch();
+            return;
+          }
+          if (val === 0) return;
           unwatch();
           vTour.value.nextStep();
-          
+
         }
       );
     },
@@ -179,10 +210,14 @@ const steps = [
       const unwatch = watch(
         () => audioEngine.value.soundSources.value.length,
         async (val) => {
+          if (!tourRunning.value) {
+            unwatch();
+            return;
+          }
           if (val === 0) return;
           unwatch();
           vTour.value.nextStep();
-          
+
         }
       );
     },
@@ -242,8 +277,19 @@ function waitForDom(selector, attempts = 20) {
 function finishTour() {
   const btn = document.getElementById('add-source-btn');
   if (btn) btn.disabled = false;
-  vTour.value.endTour();
-  localStorage.setItem('soundroom_onboarding_completed', 'true');
+
+  const isFinalStep = (vTour.value?.currentStep ?? 0) >= steps.length - 1;
+  vTour.value?.endTour();
+
+  if (isFinalStep) {
+    localStorage.setItem('soundroom_onboarding_completed', 'true');
+    localStorage.removeItem('soundroom_onboarding_started');
+    markOnboardingCompletedInDb();
+  } else {
+    // FIX: Onboarding Cycle 1 – clear start flag when onboarding ends early
+    localStorage.removeItem('soundroom_onboarding_started');
+  }
+
   tourRunning.value = false;
 }
 

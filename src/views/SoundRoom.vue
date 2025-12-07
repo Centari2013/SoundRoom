@@ -84,7 +84,7 @@ import { watch } from 'vue';
 defineOptions({
   name: 'SoundRoomRoot',
 })
-import { ref, provide, onBeforeMount, onUnmounted, onMounted } from 'vue'
+import { ref, provide, onBeforeMount, onUnmounted, onMounted, computed } from 'vue'
 
 // Shared constants
 const SOUND_NODE_PART_NAME = 'sound-node-part'
@@ -177,7 +177,7 @@ setMaxLibSources(MAX_LIB_SOURCES)
 
 const showWelcomeOverlay = ref(false)
 const showInitOverlay = ref(false)
-const { user, isAuthenticated } = useAuth()
+const { user, isAuthenticated, onboardingCompleted, onboardingStatusLoaded } = useAuth()
 
 const preferenceDefaults = Object.freeze({
   autoResumePlayback: false,
@@ -273,6 +273,16 @@ onBeforeMount(async () => {
 })
 
 const startTour = ref(false);
+const onboardingStartQueued = ref(false)
+
+// FIX: Onboarding Cycle 1 – ensure start flag is cleared when tour halts prematurely
+function resetOnboardingStartFlag() {
+  localStorage.removeItem('soundroom_onboarding_started')
+}
+
+function onboardingIsCompleted() {
+  return onboardingCompleted.value || localStorage.getItem('soundroom_onboarding_completed') === 'true'
+}
 
 function waitForWelcome() {
   return new Promise((resolve) => {
@@ -296,6 +306,7 @@ onMounted(async() => {
 
       // If we are leaving *any* /app route (including children)
       if (!newPath.startsWith('/app')) {
+        resetOnboardingStartFlag()
         resetRoomState()
         audioEngine.value?.dispose()
         cacheStore.audioCacheManager.clearMemoryCache()
@@ -321,37 +332,66 @@ onMounted(async() => {
     },
     { immediate: true }
   )
-  
-   // If welcome overlay exists, wait for it
-      if (showWelcomeOverlay.value && !welcomeDone.value) {
-        await waitForWelcome()
+
+  // If welcome overlay exists, wait for it
+  if (showWelcomeOverlay.value && !welcomeDone.value) {
+    await waitForWelcome()
+  }
+
+  const onboardingStatusReady = computed(() => onboardingStatusLoaded.value || !isAuthenticated.value)
+
+  const evaluateOnboardingStart = () => {
+    if (!onboardingStatusReady.value) return
+    if (showWelcomeOverlay.value && !welcomeDone.value) return
+
+    if (route.path !== '/app') {
+      startTour.value = false
+      if (!onboardingIsCompleted()) {
+        resetOnboardingStartFlag()
       }
-
-  if (localStorage.getItem('soundroom_onboarding_completed') === 'true') return;
-  if (localStorage.getItem('soundroom_onboarding_started') === 'true') return;
-
-  if (route.path == '/app') {
-        startTour.value = true
-        localStorage.setItem('soundroom_onboarding_started', 'true');
-        return
-      }
-
-  const routeUnwatch = watch(
-    () => route.path,
-    async (newPath) => {
-
-      // Only start on /app
-      if (newPath !== '/app') {
-        startTour.value = false
-        return
-      }
-
-      // Now it's safe to start
-      localStorage.setItem('soundroom_onboarding_started', 'true');
-      startTour.value = true
-      routeUnwatch() // only run once
+      return
     }
+
+    if (onboardingIsCompleted()) {
+      resetOnboardingStartFlag()
+      startTour.value = false
+      return
+    }
+
+    if (showAudioResumeOverlay.value) {
+      onboardingStartQueued.value = true
+      startTour.value = false
+      return
+    }
+
+    onboardingStartQueued.value = false
+
+    if (localStorage.getItem('soundroom_onboarding_started') !== 'true') {
+      localStorage.setItem('soundroom_onboarding_started', 'true')
+    }
+
+    startTour.value = true
+  }
+
+  watch(
+    () => [route.path, onboardingStatusReady.value],
+    () => evaluateOnboardingStart(),
+    { immediate: true }
   )
+
+  watch(showAudioResumeOverlay, (visible) => {
+    if (!visible && onboardingStartQueued.value) {
+      evaluateOnboardingStart()
+    }
+  })
+
+  watch(onboardingCompleted, (val) => {
+    if (val) {
+      localStorage.setItem('soundroom_onboarding_completed', 'true')
+      resetOnboardingStartFlag()
+      startTour.value = false
+    }
+  })
 })
 
 
