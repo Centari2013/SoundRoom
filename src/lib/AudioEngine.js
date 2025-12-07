@@ -580,6 +580,11 @@ export default class AudioEngine {
         base: src.base,
         storageKey: src.storageKey,
         fileId: src.fileId,
+        locked: !!src.locked,
+        accessReason: src.accessReason,
+        requiredPlan: src.requiredPlan,
+        entitlementFeature: src.entitlementFeature,
+        canUpgrade: src.canUpgrade,
         name: src.name,
         audioPath: src.audioPath,
         instance: {
@@ -599,7 +604,7 @@ export default class AudioEngine {
           coneInner: src.state.coneInner,
           coneOuter: src.state.coneOuter,
         },
-        index: src.index,
+          index: src.index,
       })),
       masterVolume: this.masterVolume.value,
       reverb: {
@@ -619,7 +624,7 @@ export default class AudioEngine {
     let engine = null;
 
     if (Array.isArray(json.soundSources)) {
-     const uninitializedSoundSources = json.soundSources.map(src => {
+        const uninitializedSoundSources = json.soundSources.map(src => {
           const base = src.base ?? src.plan_tier ?? 'users'
           const storageKey = src.storageKey ?? (src.bucket && src.path ? buildStorageKey(base, src.bucket, src.path) : null)
           const fileId = src.fileId ?? src.libraryId ?? storageKey
@@ -637,6 +642,11 @@ export default class AudioEngine {
               base,
               storageKey,
               fileId,
+              locked: !!src.locked,
+              accessReason: src.accessReason,
+              requiredPlan: src.requiredPlan,
+              entitlementFeature: src.entitlementFeature,
+              canUpgrade: src.canUpgrade,
             }
           }
         })
