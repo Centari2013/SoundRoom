@@ -8,12 +8,12 @@
 
   <ul id="library-sound-list" class="overflow-y-auto space-y-2 text-sm text-[var(--color-text-primary)]"
   :class="{ 'flex-1 mt-4': soundLibrarySources.length > 0 }">
-    <LibrarySource 
+    <LibrarySource
       v-for="s in soundLibrarySources"
       :key="s.id || s.name"
-      :librarySource="s" 
+      :librarySource="s"
       @contextmenu="(e) => openContextMenu(e, s)"
-      @dragstart="(e) => handleDragStart(e, s)"
+      @dragstart="(e) => { if (!s.locked) handleDragStart(e, s) }"
     />
   </ul>
 
