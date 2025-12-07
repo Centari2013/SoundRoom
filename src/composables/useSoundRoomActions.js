@@ -9,6 +9,10 @@ import { isSoundAvailable } from '@/utils/soundIntegrity'
 let actionsRegistered = false
 let registeredActionManager = null
 
+const LOCKED_PLACEHOLDER_AUDIO = 'data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAESsAACJWAAACABAAZGF0YQAAAAA='
+
+const getLockedPlaceholderAudio = (libraryId) => `${LOCKED_PLACEHOLDER_AUDIO}#locked-${libraryId ?? 'source'}`
+
 /**
  * Register all SoundRoom related undoable actions.
  */
@@ -223,19 +227,23 @@ function registerDraggableActions() {
     let blobUrl = payload.src.audioPath
 
     if (!blobUrl) {
-      try {
-        const downloadResult = await downloadAudio(
-          payload.src.bucket,
-          payload.src.path,
-          payload.src.plan_tier ?? 'users',
-          false,
-          null,
-          payload.src.libraryId
-        )
-        blobUrl = downloadResult.blobUrl
-      } catch (err) {
-        console.warn(`Unable to restore audio for sound ${payload.src.libraryId}:`, err)
-        return
+      if (isLocked) {
+        blobUrl = getLockedPlaceholderAudio(payload.src.libraryId)
+      } else {
+        try {
+          const downloadResult = await downloadAudio(
+            payload.src.bucket,
+            payload.src.path,
+            payload.src.plan_tier ?? 'users',
+            false,
+            null,
+            payload.src.libraryId
+          )
+          blobUrl = downloadResult.blobUrl
+        } catch (err) {
+          console.warn(`Unable to restore audio for sound ${payload.src.libraryId}:`, err)
+          return
+        }
       }
     }
 
