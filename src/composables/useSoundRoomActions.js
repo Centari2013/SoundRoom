@@ -207,22 +207,38 @@ function registerDraggableActions() {
    */
   const addDraggableSoundSource = async (payload) => {
     if (maxLibSourcesReached(soundLibrarySources)) return;
-    if (payload?.src?.libraryId) {
+
+    const isLocked = Boolean(payload?.src?.locked)
+
+    if (!isLocked && payload?.src?.libraryId) {
       const available = await isSoundAvailable(payload.src.libraryId)
       if (!available) {
         console.warn(`Cannot restore deleted sound ${payload.src.libraryId}`)
         return
       }
     }
-    // download blob and re-instate draggable source
-    const { blobUrl } = await downloadAudio(
-      payload.src.bucket,
-      payload.src.path,
-      payload.src.plan_tier ?? 'users',
-      false,
-      null,
-      payload.src.libraryId
-    )
+
+    // If the source was locked (or we already have a blob URL), reuse the
+    // existing audio path to avoid fetching gated content during undo.
+    let blobUrl = payload.src.audioPath
+
+    if (!blobUrl) {
+      try {
+        const downloadResult = await downloadAudio(
+          payload.src.bucket,
+          payload.src.path,
+          payload.src.plan_tier ?? 'users',
+          false,
+          null,
+          payload.src.libraryId
+        )
+        blobUrl = downloadResult.blobUrl
+      } catch (err) {
+        console.warn(`Unable to restore audio for sound ${payload.src.libraryId}:`, err)
+        return
+      }
+    }
+
     payload.src.audioPath = blobUrl
     const base = payload.src.base ?? payload.src.plan_tier ?? 'users'
     const storageKey = payload.src.storageKey ?? buildStorageKey(base, payload.src.bucket, payload.src.path)
@@ -237,10 +253,11 @@ function registerDraggableActions() {
         soundLibrarySources.value.push(payload.src)
       }
     }
-  
+
     // recreate old sound nodes with new blob
     payload.soundNodes?.forEach(s => {
       s.src.audioPath = blobUrl
+      s.src.locked = s.src.locked ?? payload.src.locked
       s.src.base = s.src.base ?? payload.src.base
       s.src.plan_tier = s.src.plan_tier ?? payload.src.plan_tier
       s.src.bucket = s.src.bucket ?? payload.src.bucket
