@@ -10,7 +10,7 @@
         class="flex items-center gap-2 text-xs text-[var(--color-text-muted)]"
         :title="lockTooltip"
       >
-        <span aria-hidden="true">🔒</span>
+        <LockIcon aria-hidden="true" class="w-4 h-4" />
         <span>Available on Pro tier.</span>
       </div>
       <!-- Readouts -->
@@ -43,12 +43,12 @@
       <div class="w-full space-y-2">
         <button
           @click="playPauseSource"
-          class="w-full bg-[var(--color-bg-surface)] text-xs rounded hover:bg-[var(--color-bg-elevated)] border border-[var(--color-border-subtle)] text-[var(--color-text-primary)]"
+          class="w-full bg-[var(--color-bg-surface)] text-xs rounded hover:bg-[var(--color-bg-elevated)] border border-[var(--color-border-subtle)] text-[var(--color-text-primary)] items-center flex justify-center"
           :disabled="isLocked"
           :title="isLocked ? lockTooltip : undefined"
         >
           {{ playPauseLabel }}
-          <span v-if="isLocked" aria-hidden="true"> 🔒</span>
+          <LockIcon v-if="isLocked" aria-hidden="true" class="w-4 h-4 inline-block ml-2" />
         </button>
         <button
           @click="deleteSource"
@@ -211,6 +211,7 @@ import { useActionManagerStore } from '@/stores/useActionManagerStore';
 import { useAudioEngineStore } from '@/stores/useAudioEngineStore';
 import { storeToRefs } from 'pinia';
 import { useEntitlements } from '@/composables/useEntitlements';
+import LockIcon from '@/assets/icons/lock.svg';
 
 const props = defineProps({
   selectedSource: Object

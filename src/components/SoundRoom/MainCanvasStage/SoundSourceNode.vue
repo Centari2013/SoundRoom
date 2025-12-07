@@ -63,15 +63,6 @@
       @mouseout="setCursor($event, 'default')"
     />
 
-    <v-text
-      v-if="isLocked"
-      :text="'🔒'"
-      :fontSize="16"
-      :fill="themeTokens.white"
-      :offsetX="8"
-      :offsetY="10"
-      :listening="false"
-    />
 
     <ScheduledPlayRing
       v-if="true"
@@ -136,7 +127,6 @@ import ScheduledPlayRing from '@/components/SoundRoom/MainCanvasStage/ScheduledP
 import { useKonvaThemeRedraw } from '@/composables/useKonvaTheme'
 import { useThemeStore } from '@/stores/useThemeStore'
 
-// Props and emits
 const props = defineProps({
   source: Object,
   index: Number,

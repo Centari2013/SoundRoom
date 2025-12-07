@@ -15,7 +15,7 @@
         class="absolute inset-0 flex items-center justify-center text-2xl"
         aria-hidden="true"
       >
-        🔒
+          <LockIcon class="w-6 h-6" />
       </div>
     </div>
     <div class="flex items-start justify-between gap-2">
@@ -43,6 +43,7 @@
 import BaseButton from '@/components/ui/input/BaseButton.vue'
 import EditableRoomName from '@/components/ui/modals/RoomManager/EditableRoomName.vue'
 import { formatDate } from '@/utils/dateUtils'
+import LockIcon from '@/assets/icons/lock.svg'
 
 const props = defineProps({
   room: Object,

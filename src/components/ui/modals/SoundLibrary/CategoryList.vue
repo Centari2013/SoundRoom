@@ -5,7 +5,7 @@
       v-if="isAuthenticated"
       :key="'your-sounds'"
       @click="handleSelectYourSounds"
-      :class="['sound-lib-button', { active: active === 'your-sounds', locked: !canUpload }]"
+      :class="['sound-lib-button', { active: active === 'your-sounds' }]"
     >
       <span class="button-inner">
         <span>Your Sounds</span>
@@ -43,7 +43,7 @@ const { canAccess, requireEntitlement } = useEntitlements()
 const canUpload = computed(() => canAccess('canUpload'))
 
 function handleSelectYourSounds() {
-  if (!requireEntitlement('canUpload')) return
+  //if (!requireEntitlement('canUpload')) return
   // Only emit when the user can actually reach their sounds
   // to avoid switching the grid without access.
   emit('update:active', 'your-sounds')
