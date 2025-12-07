@@ -1,5 +1,5 @@
 <template>
-  <div class="room-name font-medium truncate">
+  <div class="room-name font-medium truncate w-full">
     <template v-if="isEditing">
       <input
         v-model="localName"
