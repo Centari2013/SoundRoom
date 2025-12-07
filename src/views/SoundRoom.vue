@@ -326,7 +326,28 @@ onMounted(async() => {
       showAudioResumeOverlay.value = false;
     }
 
-  if (localStorage.getItem('soundroom_onboarding_completed') === 'true') return;
+  let onboardingCompleted = localStorage.getItem('soundroom_onboarding_completed') === 'true'
+
+  if (!onboardingCompleted && isAuthenticated.value && user.value?.id) {
+    try {
+      const { data, error } = await supabase
+        .from('users')
+        .select('onboarding_completed')
+        .eq('id', user.value.id)
+        .maybeSingle()
+
+      if (error) throw error
+
+      onboardingCompleted = data?.onboarding_completed === true
+      if (onboardingCompleted) {
+        localStorage.setItem('soundroom_onboarding_completed', 'true')
+      }
+    } catch (err) {
+      console.warn('Failed to fetch onboarding status, falling back to local storage', err)
+    }
+  }
+
+  if (onboardingCompleted) return;
 
   if (route.path == '/app') {
     startTour.value = true
