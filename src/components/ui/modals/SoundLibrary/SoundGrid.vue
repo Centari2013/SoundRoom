@@ -55,7 +55,7 @@
     </div>
     <div ref="gridScroll" class="mt-5 place-content-start p-6 pt-44 overflow-y-auto h-full grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
       <SoundGridItem
-        v-for="sound in filteredSounds"
+        v-for="sound in visibleSounds"
         :key="sound.libraryId || sound.id"
         :sound="sound"
         :userSound="activeCategory === 'your-sounds'"
@@ -65,6 +65,13 @@
         @delete="$emit('delete', $event)"
         @locked="$emit('locked', $event)"
       />
+
+      <div v-if="showLoadMore" class="col-span-full flex justify-center pt-2">
+        <BaseButton class="text-xs px-3 py-1" @click="loadMoreSounds">
+          Show more ({{ remainingSoundsCount }})
+        </BaseButton>
+      </div>
+
       <template v-if="canUpload && activeCategory === 'your-sounds' && sounds.length === 0">
         <div class="col-span-full text-center text-text-muted mt-32">
           <div class="text-xl font-semibold mb-2">Nothing to hear!</div>
@@ -96,7 +103,7 @@
 </template>
 
 <script setup>
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { Search, SlidersHorizontal, X } from 'lucide-vue-next'
 import BaseButton from '@/components/ui/input/BaseButton.vue'
 import SoundGridItem from './SoundGridItem.vue'
@@ -111,10 +118,14 @@ const props = defineProps({
   activeCategory: String
 })
 
+const INITIAL_VISIBLE_LIMIT = 50
+const VISIBLE_STEP = 50
+
 const categories = ['Nature', 'Human', 'Musical', 'Work/Focus', 'Atmospheric', 'Misc']
 const searchQuery = ref('')
 const isCategoryFilterOpen = ref(false)
 const selectedCategory = ref('')
+const visibleLimit = ref(INITIAL_VISIBLE_LIMIT)
 
 const filteredSounds = computed(() => {
   const normalizedSearch = searchQuery.value.trim().toLowerCase()
@@ -142,7 +153,14 @@ const filteredSounds = computed(() => {
   })
 })
 
+const visibleSounds = computed(() => filteredSounds.value.slice(0, visibleLimit.value))
+const remainingSoundsCount = computed(() => Math.max(filteredSounds.value.length - visibleSounds.value.length, 0))
+const showLoadMore = computed(() => remainingSoundsCount.value > 0)
 const hasActiveFilters = computed(() => Boolean(searchQuery.value.trim()) || Boolean(selectedCategory.value))
+
+watch([searchQuery, selectedCategory, () => props.activeCategory], () => {
+  visibleLimit.value = INITIAL_VISIBLE_LIMIT
+})
 
 function toggleCategory(category) {
   selectedCategory.value = selectedCategory.value === category ? '' : category
@@ -151,6 +169,10 @@ function toggleCategory(category) {
 function clearFilters() {
   searchQuery.value = ''
   selectedCategory.value = ''
+}
+
+function loadMoreSounds() {
+  visibleLimit.value += VISIBLE_STEP
 }
 
 const { isAuthenticated } = useAuth()
