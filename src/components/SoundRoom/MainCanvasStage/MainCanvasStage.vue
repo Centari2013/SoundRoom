@@ -21,15 +21,15 @@
     <!-- Konva stage: purely visual, hide from screen readers -->
     <v-stage
       ref="vStageRef"
-      :config="{ width: room.width, height: room.height }"
-      @contextmenu="(e) => e.evt.preventDefault()"
+      :config="stageConfig"
+      @contextmenu="onStageContextMenu"
       @mousedown="handleStageClick"
       aria-hidden="true"
     >
       <v-layer ref="mainLayer">
         <SoundSourceNode
           v-for="(src, i) in audioEngine.soundSources.value"
-          :key="i"
+          :key="getSourceKey(src, i)"
           :source="src"
           :selected="i === selectedIndex"
           :index="i"
@@ -43,6 +43,7 @@
     <!-- Labels — depends if they're meaningful or decorative -->
     <SoundSourceLabel
       v-for="sntc in soundNodeTitleCoords"
+      :key="sntc.key"
       v-bind="sntc"
       :aria-hidden="true"
     />
@@ -76,6 +77,18 @@ const props = defineProps({
   selectedIndex: Number,
 })
 
+const stageConfig = computed(() => ({
+  width: room.value.width,
+  height: room.value.height
+}))
+
+function onStageContextMenu(e) {
+  e.evt.preventDefault()
+}
+
+function getSourceKey(src, index) {
+  return src?.id ?? src?.libraryId ?? src?.name ?? index
+}
 
 defineEmits(['selectNode'])
 
@@ -107,7 +120,8 @@ const soundNodeTitleCoords = computed(() => {
     return []
   }
 
-  return audioEngine.value.soundSources.value.map(sn => ({
+  return audioEngine.value.soundSources.value.map((sn, index) => ({
+    key: getSourceKey(sn, index),
     x: sn.instance.state.x,
     y: sn.instance.state.y + 20, //20 is to account for directional arrow
     name: sn.name,

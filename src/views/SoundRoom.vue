@@ -294,8 +294,9 @@ onMounted(async() => {
     () => route.path,
     async (newPath) => {
 
-      // If we are leaving *any* /app route (including children)
-      if (!newPath.startsWith('/app') || !newPath.includes('settings')) {
+      // Only reset room/canvas state when fully leaving the /app workspace.
+      // Opening modal child routes like /app/sound-library should not tear down audio/canvas state.
+      if (!newPath.startsWith('/app')) {
         startTour.value = false;
         resetRoomState()
         audioEngine.value?.dispose()

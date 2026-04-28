@@ -19,7 +19,7 @@
 
   <button
     :disabled="soundLibrarySources.length == MAX_SOURCES"
-    @click="() => { router.push({ name: 'sound-library' }) }"
+    @click="openSoundLibrary"
     id="add-source-btn"
     class="w-full mt-4 bg-[var(--color-bg-surface)] text-xs rounded hover:bg-[var(--color-bg-elevated)] border border-[var(--color-border-subtle)] text-[var(--color-text-primary)]"
   >
@@ -65,6 +65,21 @@ function openContextMenu(e, source) {
 function deleteSound() {
   actionStore.deleteLibrarySoundSource(contextSound.value)
   contextSound.value = null
+}
+
+function openSoundLibrary() {
+  if (import.meta.env.DEV) {
+    console.time('open-sound-library')
+  }
+
+  router.push({ name: 'sound-library' }).finally(() => {
+    if (!import.meta.env.DEV) return
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        console.timeEnd('open-sound-library')
+      })
+    })
+  })
 }
 
 </script>
