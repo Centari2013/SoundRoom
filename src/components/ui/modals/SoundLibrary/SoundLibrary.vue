@@ -23,6 +23,7 @@
         @upload="showUploadPanel = true"
         @delete="promptDeleteSound"
         @locked="handleLockedSound"
+        @update:activeCategory="val => activeCategory = val"
       />
      
     </div>
@@ -127,7 +128,7 @@ function handleLockedSound(sound) {
   })
 }
 
-const activeCategory = ref(categories?.[0]?.id || '')
+const activeCategory = ref('')
 const gridRef = ref(null) // ref to SoundGrid component
 const rawSounds = ref([])
 const categorySoundCache = ref([])
@@ -153,7 +154,9 @@ watch(
     }
 
     await ensureCategorySoundsLoaded()
-    const cachedCategorySounds = categorySoundCache.value.filter((sound) => sound.bucket === newCategory)
+    const cachedCategorySounds = newCategory
+      ? categorySoundCache.value.filter((sound) => sound.bucket === newCategory)
+      : categorySoundCache.value
     rawSounds.value = mapLibraryRows(cachedCategorySounds)
   },
   { immediate: true }
@@ -210,7 +213,7 @@ async function ensureCategorySoundsLoaded() {
   const categoryIds = categories.map(({ id }) => id)
   const { data, error } = await supabase
     .from('sound_files')
-    .select()
+    .select('id, name, bucket, category, tags, description, path, preview_url, duration_seconds, preview_duration_seconds, owner_id, plan_tier, required_plan, base')
     .in('bucket', categoryIds)
 
   if (error) {
@@ -223,9 +226,25 @@ async function ensureCategorySoundsLoaded() {
   hasFetchedCategorySounds.value = true
 }
 
+function normalizeTags(rawTags) {
+  if (Array.isArray(rawTags)) {
+    return rawTags.map((tag) => String(tag).trim()).filter(Boolean)
+  }
+
+  if (typeof rawTags === 'string') {
+    return rawTags
+      .split(',')
+      .map((tag) => tag.trim())
+      .filter(Boolean)
+  }
+
+  return []
+}
+
 function mapLibraryRows(rows = []) {
-  return rows.map(({ id, ...rest }) => ({
+  return rows.map(({ id, tags, ...rest }) => ({
     libraryId: id,
+    tags: normalizeTags(tags),
     ...rest
   }))
 }
@@ -240,7 +259,7 @@ async function listUserSounds() {
 
   const { data, error } = await supabase
     .from('sound_files')
-    .select()
+    .select('id, name, bucket, category, tags, description, path, preview_url, duration_seconds, preview_duration_seconds, owner_id, plan_tier, required_plan, base')
     .eq('owner_id', userId)
   if (error) {
     console.error('Failed to list user sounds:', error)

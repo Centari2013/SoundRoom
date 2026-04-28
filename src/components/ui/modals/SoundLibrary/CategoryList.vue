@@ -2,6 +2,13 @@
   <aside class="w-60 bg-surface-base text-text-primary border-r border-border-subtle p-4 space-y-3 overflow-y-auto">
     <h2 class="font-bold text-sm mb-2">Categories</h2>
     <BaseButton
+      :key="'all-sounds'"
+      @click="$emit('update:active', '')"
+      :class="['sound-lib-button', { active: !active }]"
+    >
+      All Sounds
+    </BaseButton>
+    <BaseButton
       v-if="isAuthenticated"
       :key="'your-sounds'"
       @click="handleSelectYourSounds"
