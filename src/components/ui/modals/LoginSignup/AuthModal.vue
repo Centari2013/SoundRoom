@@ -90,6 +90,14 @@ import ResetView from '@/components/ui/modals/LoginSignup/ResetView.vue'
 const mode = ref('login') // Default mode
 const route = useRoute()
 
+function normalizeRedirectPath(input) {
+  if (typeof input !== 'string') return ''
+  const trimmed = input.trim()
+  if (!trimmed.startsWith('/')) return ''
+  if (trimmed.startsWith('//')) return ''
+  return trimmed
+}
+
 watch(
   () => route.path,
   (newPath) => {
@@ -204,19 +212,42 @@ async function signInWithEmail({ email, password }) {
   localStorage.setItem('userProfile', JSON.stringify(profile))
   sessionStorage.setItem('justLoggedIn', 'true')
 
-  // Example: redirect to auth callback
-  router.push({ name: 'auth-callback' })
+  const redirectPath = normalizeRedirectPath(
+    Array.isArray(route.query.redirect) ? route.query.redirect[0] : route.query.redirect
+  )
+  const plan = Array.isArray(route.query.plan) ? route.query.plan[0] : route.query.plan
+  const query = {}
+
+  if (redirectPath) query.redirect = redirectPath
+  if (typeof plan === 'string' && plan.trim()) query.plan = plan.trim().toLowerCase()
+
+  router.push({
+    name: 'auth-callback',
+    query
+  })
   loading.value = false
 }
 
 
 async function handleGoogleAuth() {
   resetErrorMessage();
+  const redirectPath = normalizeRedirectPath(
+    Array.isArray(route.query.redirect) ? route.query.redirect[0] : route.query.redirect
+  )
+  const plan = Array.isArray(route.query.plan) ? route.query.plan[0] : route.query.plan
+  const callbackUrl = new URL('/auth/callback', window.location.origin)
+
+  if (redirectPath) {
+    callbackUrl.searchParams.set('redirect', redirectPath)
+  }
+  if (typeof plan === 'string' && plan.trim()) {
+    callbackUrl.searchParams.set('plan', plan.trim().toLowerCase())
+  }
 
   await supabase.auth.signInWithOAuth({
     provider: 'google',
     options: {
-      redirectTo: `${window.location.origin}/auth/callback`, // Ensure this matches your OAuth redirect URI
+      redirectTo: callbackUrl.toString(),
       scopes: 'email openid profile',
       queryParams: {
         access_type: 'offline', // gets provider_refresh_token
@@ -241,4 +272,3 @@ async function resetPassword(email) {
   sent.value = true
 }
 </script>
-
