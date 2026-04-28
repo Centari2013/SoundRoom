@@ -226,12 +226,13 @@ async function listCategoryFiles() {
  */
 
 async function listUserSounds() {
-  if (!isAuthenticated.value) return []
+  const userId = user.value?.id
+  if (!isAuthenticated.value || !userId) return []
 
   const { data, error } = await supabase
     .from('sound_files')
     .select()
-    .eq('owner_id', user.value.id)
+    .eq('owner_id', userId)
   if (error) {
     console.error('Failed to list user sounds:', error)
     return []
