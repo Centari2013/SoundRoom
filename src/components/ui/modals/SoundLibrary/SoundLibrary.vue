@@ -130,6 +130,8 @@ function handleLockedSound(sound) {
 const activeCategory = ref(categories?.[0]?.id || '')
 const gridRef = ref(null) // ref to SoundGrid component
 const rawSounds = ref([])
+const categorySoundCache = ref([])
+const hasFetchedCategorySounds = ref(false)
 const filteredSounds = computed(() => {
   const userTier = tier.value
   const userId = user.value?.id
@@ -142,19 +144,17 @@ watch(
     currentlyPlayingId.value = null
     await nextTick()
     gridRef.value?.scrollTop() // scroll up when new category is selected
-    let sounds = []
+
     if (newCategory === 'your-sounds') {
       rawSounds.value = []
-      sounds = await listUserSounds()
-    } else {
-      sounds = await listCategoryFiles(newCategory)
+      const userSounds = await listUserSounds()
+      rawSounds.value = mapLibraryRows(userSounds)
+      return
     }
 
-    rawSounds.value = sounds.map(({ id, ...rest }) => ({
-      libraryId: id,
-      ...rest
-    }))
-
+    await ensureCategorySoundsLoaded()
+    const cachedCategorySounds = categorySoundCache.value.filter((sound) => sound.bucket === newCategory)
+    rawSounds.value = mapLibraryRows(cachedCategorySounds)
   },
   { immediate: true }
 ) // run at least once, like a do while
@@ -162,10 +162,7 @@ watch(
 const refreshUserSounds = async () => {
   if (activeCategory.value === 'your-sounds') {
     const sounds = await listUserSounds()
-    rawSounds.value = sounds.map(({ id, ...rest }) => ({
-      libraryId: id,
-      ...rest
-    }))
+    rawSounds.value = mapLibraryRows(sounds)
   }
 }
 
@@ -198,7 +195,6 @@ async function doDeleteSound() {
   } catch (error) {
     console.error('Failed to delete user sound:', error)
   }
-  refreshUserSounds()
   cancelDeleteSound()
   
 }
@@ -208,17 +204,30 @@ async function doDeleteSound() {
  *
  * @returns {Promise<Array>} list of sound metadata records
  */
-async function listCategoryFiles() {
-  // select rows of sound file info where bucket name matches active category name
+async function ensureCategorySoundsLoaded() {
+  if (hasFetchedCategorySounds.value) return
+
+  const categoryIds = categories.map(({ id }) => id)
   const { data, error } = await supabase
     .from('sound_files')
     .select()
-    .eq('bucket', activeCategory.value)
+    .in('bucket', categoryIds)
+
   if (error) {
-    console.error('Failed to list files:', error)
-    return []
+    console.error('Failed to list category files:', error)
+    categorySoundCache.value = []
+    return
   }
-  return data
+
+  categorySoundCache.value = data ?? []
+  hasFetchedCategorySounds.value = true
+}
+
+function mapLibraryRows(rows = []) {
+  return rows.map(({ id, ...rest }) => ({
+    libraryId: id,
+    ...rest
+  }))
 }
 
 /**
