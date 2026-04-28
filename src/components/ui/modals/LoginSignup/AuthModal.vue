@@ -56,7 +56,7 @@
     <!-- Mode Switch Links -->
     <RouterLink
       v-if="mode !== 'reset' && !signUpSuccess"
-      :to="mode === 'login' ? signupRouteTarget : loginRouteTarget"
+      :to="mode === 'login' ? '/signup' : '/login'"
       @click="emit('mode', mode === 'login' ? 'signup' : 'login')"
       class="text-sm text-accent cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)]"
     >
@@ -65,7 +65,7 @@
 
     <RouterLink
       v-if="mode === 'login'"
-      :to="resetRouteTarget"
+      to="/reset"
       @click="$emit('mode', 'reset')"
       class="text-sm text-accent cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)]"
     >
@@ -89,14 +89,6 @@ import ResetView from '@/components/ui/modals/LoginSignup/ResetView.vue'
 
 const mode = ref('login') // Default mode
 const route = useRoute()
-
-function normalizeRedirectPath(input) {
-  if (typeof input !== 'string') return ''
-  const trimmed = input.trim()
-  if (!trimmed.startsWith('/')) return ''
-  if (trimmed.startsWith('//')) return ''
-  return trimmed
-}
 
 watch(
   () => route.path,
@@ -122,27 +114,6 @@ const title = computed(() => {
 const resetErrorMessage = () => {
   errorMessage.value = ''
 }
-
-const normalizedPlanParam = computed(() => {
-  const rawPlan = Array.isArray(route.query.plan) ? route.query.plan[0] : route.query.plan
-  if (typeof rawPlan !== 'string' || !rawPlan.trim()) return ''
-  return rawPlan.trim().toLowerCase()
-})
-
-const redirectPathParam = computed(() => normalizeRedirectPath(
-  Array.isArray(route.query.redirect) ? route.query.redirect[0] : route.query.redirect
-))
-
-const authIntentQuery = computed(() => {
-  const query = {}
-  if (redirectPathParam.value) query.redirect = redirectPathParam.value
-  if (normalizedPlanParam.value) query.plan = normalizedPlanParam.value
-  return query
-})
-
-const signupRouteTarget = computed(() => ({ path: '/signup', query: authIntentQuery.value }))
-const loginRouteTarget = computed(() => ({ path: '/login', query: authIntentQuery.value }))
-const resetRouteTarget = computed(() => ({ path: '/reset', query: authIntentQuery.value }))
 
 
 const signUpSuccess = ref(false)
@@ -233,42 +204,19 @@ async function signInWithEmail({ email, password }) {
   localStorage.setItem('userProfile', JSON.stringify(profile))
   sessionStorage.setItem('justLoggedIn', 'true')
 
-  const redirectPath = normalizeRedirectPath(
-    redirectPathParam.value
-  )
-  const plan = normalizedPlanParam.value
-  const query = {}
-
-  if (redirectPath) query.redirect = redirectPath
-  if (plan) query.plan = plan
-
-  router.push({
-    name: 'auth-callback',
-    query
-  })
+  // Example: redirect to auth callback
+  router.push({ name: 'auth-callback' })
   loading.value = false
 }
 
 
 async function handleGoogleAuth() {
   resetErrorMessage();
-  const redirectPath = normalizeRedirectPath(
-    redirectPathParam.value
-  )
-  const plan = normalizedPlanParam.value
-  const callbackUrl = new URL('/auth/callback', window.location.origin)
-
-  if (redirectPath) {
-    callbackUrl.searchParams.set('redirect', redirectPath)
-  }
-  if (plan) {
-    callbackUrl.searchParams.set('plan', plan)
-  }
 
   await supabase.auth.signInWithOAuth({
     provider: 'google',
     options: {
-      redirectTo: callbackUrl.toString(),
+      redirectTo: `${window.location.origin}/auth/callback`, // Ensure this matches your OAuth redirect URI
       scopes: 'email openid profile',
       queryParams: {
         access_type: 'offline', // gets provider_refresh_token
@@ -293,3 +241,4 @@ async function resetPassword(email) {
   sent.value = true
 }
 </script>
+

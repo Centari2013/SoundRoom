@@ -5,41 +5,9 @@
 
 <script setup>
 import { onMounted } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { useRouter } from 'vue-router'
 import { supabase } from '@/utils/supabase'
 const router = useRouter()
-const route = useRoute()
-
-function normalizeRedirectPath(input) {
-  if (typeof input !== 'string') return ''
-  const trimmed = input.trim()
-  if (!trimmed.startsWith('/')) return ''
-  if (trimmed.startsWith('//')) return ''
-  return trimmed
-}
-
-function getPostAuthRouteTarget() {
-  const redirectParam = Array.isArray(route.query.redirect)
-    ? route.query.redirect[0]
-    : route.query.redirect
-  const planParam = Array.isArray(route.query.plan)
-    ? route.query.plan[0]
-    : route.query.plan
-  const redirectPath = normalizeRedirectPath(redirectParam)
-
-  if (!redirectPath) {
-    return { name: 'app' }
-  }
-
-  const query = {}
-  if (typeof planParam === 'string' && planParam.trim()) {
-    query.plan = planParam.trim().toLowerCase()
-  }
-
-  return Object.keys(query).length > 0
-    ? { path: redirectPath, query }
-    : { path: redirectPath }
-}
 
 onMounted(async () => { 
   const { data, error } = await supabase.auth.getSession()
@@ -68,7 +36,7 @@ onMounted(async () => {
     }
 
     localStorage.setItem('userProfile', JSON.stringify(finalProfile))
-    router.push(getPostAuthRouteTarget())
+    router.push({ name: 'app' })
 
 
   } else {
