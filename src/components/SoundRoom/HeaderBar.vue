@@ -178,9 +178,9 @@ const visibleButtons = computed(() => {
       shouldShow: !authed
     },
     {
-      label: 'Upgrade',
+      label: tier.value === 'basic' ? 'Upgrade to Pro' : 'Upgrade',
       action: () => router.push({ name: 'upgrade' }),
-      shouldShow: authed && tier.value === 'free'
+      shouldShow: authed && tier.value !== 'pro'
     },
     {
       label: 'Settings',
