@@ -4,10 +4,10 @@
       <div class="flex items-start justify-between gap-4">
         <div class="flex-1 min-w-0">
           <h2 class="text-2xl font-bold">SoundLibrary</h2>
-          <div class="mt-3">
+          <div class="mt-3" v-if="activeCategory === ''"">
             <div class="flex items-center gap-2">
               <div class="relative flex-1">
-                <Search class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-text-muted pointer-events-none" />
+                <Search class="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-text-muted pointer-events-none" />
                 <input
                   v-model="searchQuery"
                   type="text"
@@ -123,7 +123,8 @@
         <BaseButton id="close-lib-btn" class="text-sm mt-1" @click="$emit('close')">Close</BaseButton>
       </div>
     </div>
-    <div ref="gridScroll" class="mt-5 place-content-start p-6 pt-52 overflow-y-auto h-full grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+    <div ref="gridScroll" class="mt-5 place-content-start p-6 overflow-y-auto h-full grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"
+    :style="{'paddingTop': activeCategory === '' ? '8.75rem' : '6rem'}">
       <SoundGridItem
         v-for="sound in visibleSounds"
         :key="sound.libraryId || sound.id"
@@ -199,8 +200,8 @@ const props = defineProps({
 
 const emit = defineEmits(['close', 'toggleSound', 'updateCurrent', 'upload', 'delete', 'locked', 'update:activeCategory'])
 
-const INITIAL_VISIBLE_LIMIT = 50
-const VISIBLE_STEP = 50
+const INITIAL_VISIBLE_LIMIT = 10
+const VISIBLE_STEP = 10
 const TAG_SUGGESTION_LIMIT = 10
 
 const categoryOptions = [
@@ -308,6 +309,7 @@ const hasActiveFilters = computed(() => {
 watch([searchQuery, activeCategory, selectedTags], () => {
   visibleLimit.value = INITIAL_VISIBLE_LIMIT
   showAllTags.value = false
+  activeCategory.value !== '' ? clearSearch() : null;
 }, { deep: true })
 
 function setCategory(categoryId) {

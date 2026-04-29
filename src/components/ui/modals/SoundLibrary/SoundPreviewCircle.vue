@@ -25,7 +25,7 @@
     </svg>
 
     <!-- Icon -->
-    <div class="z-10 flex items-center justify-center">
+    <div class="flex items-center justify-center">
       <svg v-if="!isPlaying" class="w-4 h-4 text-current" fill="currentColor" viewBox="0 0 16 16">
         <path d="M4.5 3.5v9l7-4.5-7-4.5z" />
       </svg>
