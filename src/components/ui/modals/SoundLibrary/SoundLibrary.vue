@@ -213,7 +213,7 @@ async function ensureCategorySoundsLoaded() {
   const categoryIds = categories.map(({ id }) => id)
   const { data, error } = await supabase
     .from('sound_files')
-    .select('id, name, bucket, tags, description, path, preview_url, duration_seconds, preview_duration_seconds, owner_id, plan_tier, required_plan, base')
+    .select('id, name, bucket, tags, path, preview_url, duration_seconds, size, mime_type, owner_id, plan_tier, created_at, cone_inner, cone_outer')
     .in('bucket', categoryIds)
 
   if (error) {
@@ -259,7 +259,7 @@ async function listUserSounds() {
 
   const { data, error } = await supabase
     .from('sound_files')
-    .select('id, name, bucket, tags, description, path, preview_url, duration_seconds, preview_duration_seconds, owner_id, plan_tier, required_plan, base')
+    .select('id, name, bucket, tags, path, preview_url, duration_seconds, size, mime_type, owner_id, plan_tier, created_at, cone_inner, cone_outer')
     .eq('owner_id', userId)
   if (error) {
     console.error('Failed to list user sounds:', error)
