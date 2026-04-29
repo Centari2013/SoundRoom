@@ -22,8 +22,9 @@ Sentry.init({
   app,
   dsn: 'https://b56e70467391993e18ece8ec50872188@o4510087125008384.ingest.us.sentry.io/4510087127629824',
   integrations: [],
+  sendDefaultPii: true,
 })
-
+myUndefinedFunction();
 app
   .use(VueKonva)
   .use(PortalVue)
