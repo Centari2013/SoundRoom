@@ -285,8 +285,6 @@ function waitForWelcome() {
   })
 }
 
-fafafoom()
-
 let routeUnwatcher = null;
 
 onMounted(async() => {

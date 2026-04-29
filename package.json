@@ -16,7 +16,7 @@
     "@aws-sdk/client-s3": "^3.744.0",
     "@globalhive/vuejs-tour": "^2.6.0",
     "@sentry/vite-plugin": "^4.3.0",
-    "@sentry/vue": "^10.50.0",
+    "@sentry/vue": "^10.51.0",
     "@stripe/stripe-js": "^8.1.0",
     "@supabase/supabase-js": "^2.49.7",
     "@tailwindcss/vite": "^4.1.7",

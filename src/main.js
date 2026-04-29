@@ -14,11 +14,12 @@ const app = createApp(App)
 
 Sentry.init({
   app,
-  dsn: "https://f8bcee8dd2c0389848650e810aa8f391@o4510087173242880.ingest.us.sentry.io/4510087984513024",
+  dsn: "https://b21091cd57d3ee756ad1623c5fe73033@o4510087173242880.ingest.us.sentry.io/4511303805894656",
   // Setting this option to true will send default PII data to Sentry.
   // For example, automatic IP address collection on events
   sendDefaultPii: true
 });
+
 
 const pinia = createPinia()
 app.use(pinia)
