@@ -11,6 +11,15 @@ import '@globalhive/vuejs-tour/dist/style.css'
 import { useThemeStore } from '@/stores/useThemeStore'
 
 const app = createApp(App)
+
+Sentry.init({
+  app,
+  dsn: "https://f8bcee8dd2c0389848650e810aa8f391@o4510087173242880.ingest.us.sentry.io/4510087984513024",
+  // Setting this option to true will send default PII data to Sentry.
+  // For example, automatic IP address collection on events
+  sendDefaultPii: true
+});
+
 const pinia = createPinia()
 app.use(pinia)
 
@@ -18,12 +27,7 @@ const themeStore = useThemeStore(pinia)
 themeStore.hydrateFromStorage()
 themeStore.watchAuthTheme()
 
-Sentry.init({
-  app,
-  dsn: "https://f8bcee8dd2c0389848650e810aa8f391@o4510087173242880.ingest.us.sentry.io/4510087984513024",
-  integrations: [],
-  sendDefaultPii: true,
-})
+
 
 app
   .use(VueKonva)

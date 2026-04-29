@@ -285,6 +285,7 @@ function waitForWelcome() {
   })
 }
 
+fafafoom()
 
 let routeUnwatcher = null;
 
