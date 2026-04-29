@@ -20,7 +20,7 @@ themeStore.watchAuthTheme()
 
 Sentry.init({
   app,
-  dsn: 'https://b56e70467391993e18ece8ec50872188@o4510087125008384.ingest.us.sentry.io/4510087127629824',
+  dsn: "https://f8bcee8dd2c0389848650e810aa8f391@o4510087173242880.ingest.us.sentry.io/4510087984513024",
   integrations: [],
   sendDefaultPii: true,
 })
