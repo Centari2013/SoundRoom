@@ -24,7 +24,7 @@ Sentry.init({
   integrations: [],
   sendDefaultPii: true,
 })
-myUndefinedFunction();
+
 app
   .use(VueKonva)
   .use(PortalVue)

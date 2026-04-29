@@ -285,7 +285,7 @@ function waitForWelcome() {
   })
 }
 
-
+myUndefinedFunction();
 
 let routeUnwatcher = null;
 
