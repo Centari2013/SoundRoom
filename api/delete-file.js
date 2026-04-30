@@ -2,21 +2,13 @@ import { AwsClient } from 'aws4fetch'
 import { supabaseAdmin } from './_utils/serverClients.js'
 import { authenticateRequest, resolveUserAccessContext } from './_utils/auth.js'
 import { HttpError } from './_utils/errors.js'
+import { buildCorsHeaders } from './_utils/http.js'
 
-const ALLOWED_ORIGIN =
-  process.env.NODE_ENV === 'production' ? 'https://soundroom.live' : '*'
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': ALLOWED_ORIGIN,
-  'Access-Control-Allow-Methods': 'DELETE, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-  'Access-Control-Allow-Credentials': 'true',
-}
-
-export function OPTIONS() {
+export function OPTIONS(request) {
   return new Response(null, {
     status: 204,
-    headers: corsHeaders,
+    headers: buildCorsHeaders(request, 'DELETE, OPTIONS'),
   })
 }
 
@@ -92,20 +84,20 @@ export async function DELETE(request) {
 
     return new Response(JSON.stringify({ success: true }), {
       status: 200,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      headers: { ...buildCorsHeaders(request, 'DELETE, OPTIONS'), 'Content-Type': 'application/json' },
     })
   } catch (error) {
     if (error instanceof HttpError) {
       return new Response(JSON.stringify({ error: error.message }), {
         status: error.status,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { ...buildCorsHeaders(request, 'DELETE, OPTIONS'), 'Content-Type': 'application/json' },
       })
     }
 
     console.error('💥 DELETE ERROR:', error)
     return new Response(JSON.stringify({ error: 'Internal Server Error' }), {
       status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      headers: { ...buildCorsHeaders(request, 'DELETE, OPTIONS'), 'Content-Type': 'application/json' },
     })
   }
 }

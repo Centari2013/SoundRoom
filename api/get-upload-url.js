@@ -3,6 +3,7 @@ import { randomBytes, randomUUID } from "node:crypto";
 import { AwsClient } from "aws4fetch";
 import { authenticateRequest, resolveUserAccessContext } from './_utils/auth.js'
 import { HttpError } from './_utils/errors.js'
+import { buildCorsHeaders } from './_utils/http.js'
 
 function createRandomId() {
   if (typeof randomUUID === "function") {
@@ -65,20 +66,11 @@ function getR2Config() {
   return env;
 }
 
-const ALLOWED_ORIGIN =
-  process.env.NODE_ENV === "production" ? "https://soundroom.live" : "*";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": ALLOWED_ORIGIN,
-  "Access-Control-Allow-Methods": "GET, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type, Authorization",
-  "Access-Control-Allow-Credentials": "true",
-};
-
-export function OPTIONS() {
+export function OPTIONS(request) {
   return new Response(null, {
     status: 204,
-    headers: corsHeaders,
+    headers: buildCorsHeaders(request, 'GET, OPTIONS'),
   });
 }
 
@@ -102,7 +94,7 @@ export async function GET(request) {
         {
           status: 500,
           headers: {
-            ...corsHeaders,
+            ...buildCorsHeaders(request, 'GET, OPTIONS'),
             "Content-Type": "application/json",
           },
         }
@@ -136,7 +128,7 @@ export async function GET(request) {
       {
         status: 200,
         headers: {
-          ...corsHeaders,
+          ...buildCorsHeaders(request, 'GET, OPTIONS'),
           "Content-Type": "application/json",
         },
       }
@@ -148,7 +140,7 @@ export async function GET(request) {
         {
           status: error.status,
           headers: {
-            ...corsHeaders,
+            ...buildCorsHeaders(request, 'GET, OPTIONS'),
             "Content-Type": "application/json",
           },
         }
@@ -161,7 +153,7 @@ export async function GET(request) {
       {
         status: 500,
         headers: {
-          ...corsHeaders,
+          ...buildCorsHeaders(request, 'GET, OPTIONS'),
           "Content-Type": "application/json",
         },
       }
