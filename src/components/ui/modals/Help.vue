@@ -132,7 +132,7 @@
 
               <div class="grid gap-4 md:grid-cols-2">
                 <div>
-                  <label for="topic" class="block text-sm font-medium mb-1">Topic</label>
+                  <label for="topic" class="block text-sm font-medium mb-1">Request Type</label>
                   <select
                     id="topic"
                     v-model="form.topic"
@@ -141,6 +141,9 @@
                   >
                     <option v-for="item in topicOptions" :key="item.value" :value="item.value">{{ item.label }}</option>
                   </select>
+                  <p v-if="isDeletionRequest" class="mt-1 text-xs text-[var(--color-text-muted)]">
+                    For deletion requests, please use the email tied to your SoundRoom account so we can verify ownership.
+                  </p>
                 </div>
 
                 <div>
@@ -178,6 +181,9 @@
                   placeholder="Tell us what you were working on and what you expected to happen."
                   class="w-full px-3 py-2 border border-[var(--color-border-subtle)] rounded bg-[var(--color-bg-surface)] text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-focus-ring)] focus:ring-offset-2 focus:ring-offset-[var(--color-bg-surface)] text-sm"
                 ></textarea>
+                <p v-if="!user" class="mt-1 text-xs text-[var(--color-text-muted)]">
+                  Not logged in? Include the email associated with your SoundRoom account in your message so support can locate it.
+                </p>
               </div>
 
               <div>
@@ -219,7 +225,7 @@
 </template>
 
 <script setup>
-import { ref, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import BaseButton from '@/components/ui/input/BaseButton.vue'
 import { PLAN_LABELS } from '@/constants/entitlementCopy'
@@ -230,11 +236,11 @@ const router = useRouter()
 const { tier, user } = useAuth()
 
 const topicOptions = [
-  { value: 'support', label: 'Product support' },
-  { value: 'bug', label: 'Bug report' },
-  { value: 'billing', label: 'Billing or plan question' },
-  { value: 'feature', label: 'Feature request' },
-  { value: 'feedback', label: 'Feedback / Kudos' }
+  { value: 'general-support', label: 'General Support' },
+  { value: 'billing-help', label: 'Billing Help' },
+  { value: 'bug-report', label: 'Bug Report' },
+  { value: 'account-data-deletion', label: 'Account/Data Deletion' },
+  { value: 'other', label: 'Other' }
 ]
 
 const planOptions = ['free', 'basic', 'pro']
@@ -345,8 +351,8 @@ const faqGroups = ref([
         open: false
       },
       {
-        question: 'How do I delete my account?',
-        answer: 'Email support@soundroom.live to request account deletion. Include your email and any relevant details for verification.',
+        question: 'How do I delete my account or request data deletion?',
+        answer: 'You can request account or data deletion by using the contact form and selecting “Account/Data Deletion” as the reason. If you’re logged in, we’ll include your account ID automatically so we can process the request safely.',
         open: false
       }
     ]
@@ -502,6 +508,7 @@ const initialFormState = () => ({
 })
 
 const form = ref(initialFormState())
+const isDeletionRequest = computed(() => form.value.topic === 'account-data-deletion')
 
 watch(tier, (val) => {
   if (val && !form.value.plan) {
@@ -545,6 +552,19 @@ async function handleSubmit() {
   if (submitting.value) return
 
   formError.value = ''
+  if (!form.value.email.trim()) {
+    formError.value = 'Please enter your email.'
+    return
+  }
+  if (!form.value.topic) {
+    formError.value = 'Please select a request type.'
+    return
+  }
+  if (!form.value.message.trim()) {
+    formError.value = 'Please enter a message.'
+    return
+  }
+
   submitting.value = true
 
   const endpoint = 'https://formsubmit.co/support@soundroom.live'
@@ -565,7 +585,7 @@ async function handleSubmit() {
     payload.append('room_link', form.value.roomLink.trim())
   }
 
-  payload.append('message', form.value.message)
+  payload.append('message', form.value.message.trim())
 
   if (form.value.reproSteps) {
     payload.append('steps_to_reproduce', form.value.reproSteps)
@@ -577,6 +597,8 @@ async function handleSubmit() {
   payload.append('_autoresponse', 'Thanks for contacting SoundRoom Support! We\'ll follow up shortly.')
 
   const metadata = {
+    requestType: form.value.topic,
+    requestTypeLabel: topicLabel,
     topic: form.value.topic,
     topicLabel,
     plan: planValue || 'unspecified',
@@ -585,10 +607,16 @@ async function handleSubmit() {
     userId: user.value?.id ?? '',
     userEmail: user.value?.email ?? '',
     currentUrl: typeof window !== 'undefined' ? window.location.href : '',
-    userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : ''
+    userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : '',
+    submittedAt: new Date().toISOString(),
+    appEnvironment: import.meta.env.MODE || 'unknown'
   }
 
   payload.append('app_metadata', JSON.stringify(metadata))
+  payload.append('timestamp', metadata.submittedAt)
+  payload.append('environment', metadata.appEnvironment)
+  payload.append('authenticated_user_id', metadata.userId || 'not-authenticated')
+  payload.append('authenticated_email', metadata.userEmail || 'not-authenticated')
 
   try {
     const response = await fetch(endpoint, {
