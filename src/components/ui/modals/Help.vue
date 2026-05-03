@@ -336,23 +336,28 @@ const faqGroups = ref([
     hint: 'Access + login',
     items: [
       {
+        question: 'What is SoundRoom and what can I do with it?',
+        answer: 'SoundRoom lets you build immersive ambient rooms by layering multiple sounds on a shared canvas. You can position a listener and sound sources, tune playback, and save rooms to return to later.',
+        open: false
+      },
+      {
         question: 'Do I need an account to build?',
-        answer: 'You can audition and place sounds on Free, but saving rooms, RoomManager, scheduling, and uploads all require signing in.',
+        answer: 'You can try SoundRoom without an account, but you’ll need to sign in to save rooms and manage them later. Signing in is also required for features like uploads and scheduling.',
         open: false
       },
       {
         question: 'Why am I seeing the mobile splash?',
-        answer: 'If you open SoundRoom on a small viewport or mobile browser we show a “Mobile Coming Soon” page. Resize or switch to desktop for the full canvas.',
+        answer: 'SoundRoom currently works best on desktop. On small screens and mobile browsers, you may see a “Mobile Coming Soon” page instead of the full editor.',
         open: false
       },
       {
         question: 'How do I reset my password?',
-        answer: 'Use the Forgot Password link on the sign-in page. An email with reset instructions will be sent to your account email.',
+        answer: 'Click Forgot Password on the sign-in page, then check your email for reset instructions. If you don’t see it, check spam/junk and try again.',
         open: false
       },
       {
         question: 'How do I delete my account or request data deletion?',
-        answer: 'You can request account or data deletion by using the contact form and selecting “Account/Data Deletion” as the reason. If you’re logged in, we’ll include your account ID automatically so we can process the request safely.',
+        answer: 'Use the contact form and choose “Account/Data Deletion” to request account or data removal. If you’re logged in, your account ID is included automatically to help us process your request safely.',
         open: false
       }
     ]
@@ -363,17 +368,17 @@ const faqGroups = ref([
     items: [
       {
         question: 'How do I load a sound onto the canvas?',
-        answer: 'Open + Add Source, pick a category, preview it if you\'d like, then click Load. The tile moves to your source tray so you can drag it into the room.',
+        answer: 'Click + Add Source, choose a sound, then click Load. It appears in your source tray, where you can drag it onto the room canvas.',
         open: false
       },
       {
         question: 'What happens if I delete an upload?',
-        answer: 'Deleting from Your Sounds removes it from any rooms that reference it.',
+        answer: 'Deleting a file from Your Sounds removes it from any rooms that use it. If a saved room depends on that file, you’ll need to add a replacement.',
         open: false
       },
       {
         question: 'Why is a tile locked?',
-        answer: 'Tiles show a badge for the required plan. Selecting them opens the upgrade modal unless you are already on Basic or Pro. Free cannot unlock gated packs.',
+        answer: 'Some sounds are plan-gated. If a tile is locked, you’ll see which plan is required and be prompted to upgrade if needed.',
         open: false
       }
     ]
@@ -384,12 +389,17 @@ const faqGroups = ref([
     items: [
       {
         question: 'Why is Save disabled?',
-        answer: 'The Save Room button lights up only when the scene differs from your last save. Move a node, tweak a cone, or change volume to enable it.',
+        answer: 'Save is enabled only when you’ve made changes since your last save. If nothing has changed, the button stays disabled by design.',
         open: false
       },
       {
         question: 'Will I lose changes when switching rooms?',
-        answer: 'If there are unsaved edits, you will be prompted before loading another room. Save first to avoid losing the current layout.',
+        answer: 'You’ll get a warning before switching if your current room has unsaved changes. Save first to keep your latest edits.',
+        open: false
+      },
+      {
+        question: 'Why won’t my room save or load?',
+        answer: 'This is usually caused by a connection hiccup, expired login session, or missing uploaded sound. Refresh the page, sign in again if prompted, and try once more. If it keeps happening, contact support through the Help form with your room name and what you clicked.',
         open: false
       }
     ]
@@ -400,17 +410,17 @@ const faqGroups = ref([
     items: [
       {
         question: 'How do timed loops work?',
-        answer: 'Select a source, open the sidebar, and toggle Enable Scheduling. Set min/max gaps to randomize the wait between replays. Basic enables this control.',
+        answer: 'Select a source and enable scheduling in the sidebar to make it replay automatically. Min/max gap settings add natural variation between repeats.',
         open: false
       },
       {
         question: 'What is available on Pro scheduling?',
-        answer: 'Pro adds play counts and combined interval+count modes so you can fire a source a set number of times with natural spacing.',
+        answer: 'Pro adds extra control, including play counts and combined interval + count behavior. This helps you shape patterns that stop after a specific number of plays.',
         open: false
       },
       {
         question: 'My scheduled source stopped after pausing.',
-        answer: 'Pausing the room halts active playback and timers. Resume and the scheduler will honor any remaining gap time before the next loop. But more features are coming!',
+        answer: 'Pausing stops active audio and scheduling timers. When you resume, playback continues and waits out any remaining gap time before the next scheduled play.',
         open: false
       }
     ]
@@ -426,12 +436,12 @@ const faqGroups = ref([
       },
       {
         question: 'How do I reset the mix quickly?',
-        answer: 'Use the toolbar master play/pause to stop everything, then adjust the Master gain slider before resuming.',
+        answer: 'Use the master play/pause to stop all audio at once, then adjust the Master slider before resuming. This is the fastest way to recover from an overly loud mix.',
         open: false
       },
       {
         question: 'Can I right-click sources?',
-        answer: 'Yes—context actions let you nudge position without dragging, useful for fine alignment on crowded canvases.',
+        answer: 'Yes. Right-click opens quick actions, including position nudges for fine placement without dragging.',
         open: false
       }
     ]
@@ -442,18 +452,18 @@ const faqGroups = ref([
     items: [
       {
         question: 'How do I change or cancel my plan?',
-        answer: 'Open Manage Plan. Upgrades redirect to Stripe Checkout; downgrades call the manage-plan endpoint to move you to Free.',
+        answer: 'Open Manage Plan to upgrade, downgrade, or cancel. Upgrades are handled in Stripe Checkout, and plan changes are applied to your SoundRoom account after confirmation.',
         open: false
       },
       {
         question: 'Where can I download invoices?',
-        answer: 'If you have billing history, use the Stripe billing portal link in Manage Plan. Otherwise, email support@soundroom.app with your account email.',
+        answer: 'Use the Stripe billing portal from Manage Plan to view or download invoices. If you can’t access the portal, contact support@soundroom.app with your account email.',
         open: false,
         isHtml: true
       },
       {
         question: 'Why did I see an upgrade dialog in the library?',
-        answer: 'Tap View Plan FAQ or Manage Plan to upgrade and unlock the pack.',
+        answer: 'You selected a sound pack that is not included in your current plan. Use View Plan FAQ or Manage Plan to compare plans and unlock that pack.',
         open: false
       }
     ]
@@ -464,17 +474,32 @@ const faqGroups = ref([
     items: [
       {
         question: 'I cannot hear previews.',
-        answer: 'Check your system output and make sure another preview is not already playing. Only one preview plays at a time; tap the ring again to stop.',
+        answer: 'First check your device volume and output settings. SoundRoom plays one preview at a time, so stop the current preview and try again.',
         open: false
       },
       {
         question: 'Sources are silent after loading a room.',
-        answer: 'Verify the Master slider is above zero and that the listener is within range and facing the cones. If an uploaded file was deleted, replace it from Your Sounds.',
+        answer: 'Check that Master volume is above zero and playback is running. Then make sure your listener is close enough and facing each source; direction and distance affect volume in spatial audio.',
         open: false
       },
       {
         question: 'Undo/redo is not working.',
-        answer: 'Undo (U) and Redo (R) work on moves, rotations, deletes, and adds. Some settings like master gain are global and do not record an action.',
+        answer: 'Undo/redo works for room edits like adding, moving, rotating, and deleting sources. Some global controls (like Master volume) may not appear in undo history.',
+        open: false
+      },
+      {
+        question: 'What should I do if something breaks?',
+        answer: 'Start with a page refresh and try the action again. If the issue continues, use the Help contact form and include what happened, your browser, and steps to reproduce.',
+        open: false
+      },
+      {
+        question: 'Can using multiple tabs cause issues?',
+        answer: 'It can. Running SoundRoom in multiple tabs at once may cause confusing save or playback state, so we recommend using one active tab per account/session.',
+        open: false
+      },
+      {
+        question: 'Will SoundRoom behave the same in every browser?',
+        answer: 'Most modern desktop browsers work, but audio behavior can vary slightly by browser and system audio settings. If audio acts unexpectedly, refresh and test in another browser.',
         open: false
       }
     ]
@@ -485,12 +510,12 @@ const faqGroups = ref([
     items: [
       {
         question: 'How do I keep mixes from feeling repetitive?',
-        answer: 'Use scheduling gaps with wide min/max ranges, rotate sources periodically, and layer complementary packs (e.g., Atmospheric + Human).',
+        answer: 'Layer multiple sounds with different timing and positions so the room feels alive. Wider scheduling ranges and subtle source rotation can reduce repetition.',
         open: false
       },
       {
         question: 'Any experimental areas?',
-        answer: 'Uploads, pack gating, and scheduling are stable; more advanced search, occlusion, and collaboration are on the roadmap. Expect iterative updates.',
+        answer: 'Core room building is stable, while some advanced areas continue to evolve over time. If you notice odd behavior, refresh first, then contact support if it continues.',
         open: false
       }
     ]
