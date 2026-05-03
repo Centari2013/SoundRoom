@@ -505,6 +505,11 @@ export default class AudioEngine {
   dispose() {
     // Tear down all nodes and close the audio context entirely.
     this.pauseAll()
+    this.#scheduler.stop()
+    this.#scheduleWatchers.forEach((unwatchers) => {
+      unwatchers.forEach(stop => stop?.())
+    })
+    this.#scheduleWatchers.clear()
     this.soundSources.value.forEach(s => s.instance.dispose())
     this.soundSources.value.length = 0
  
@@ -539,6 +544,7 @@ export default class AudioEngine {
     }
 
     this.#currentIRName = null
+    this.#uninitializedSoundSources = []
   }
 
   /**
