@@ -241,6 +241,7 @@ import BaseInput from '@/components/ui/input/BaseInput.vue'
 import ThemeSelector from '@/components/Settings/ThemeSelector.vue'
 import { useAuth } from '@/composables/useAuth'
 import { supabase } from '@/utils/supabase'
+import { resetRoomState } from '@/utils/resetRoomState'
 
 const router = useRouter()
 const route = useRoute()
@@ -609,6 +610,7 @@ async function saveProfile() {
 async function signOutCurrentSession() {
   securityMessage.value = ''
   securityError.value = ''
+  resetRoomState()
 
   const { error } = await supabase.auth.signOut()
   if (error) {

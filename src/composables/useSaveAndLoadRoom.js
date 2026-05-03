@@ -50,6 +50,14 @@ export function useSaveAndLoadRoom() {
   const { soundLibrarySources } = storeToRefs(cacheStore);
   const { requireWithinLimit, canAccess } = useEntitlements()
 
+  function clearAudioRuntime() {
+    try {
+      audioEngine.value?.dispose?.()
+    } catch (error) {
+      console.warn('Failed to clear previous audio runtime before room transition:', error)
+    }
+  }
+
   /**
    * Persist the current room to Supabase. Handles insert or update logic
    * depending on whether the room already has an id.
@@ -225,6 +233,7 @@ export function useSaveAndLoadRoom() {
    */
   async function loadRoom(roomId=null) {
     isLoadingRoom.value = true;
+    clearAudioRuntime()
     // get room data from supabase
     const { data, error } = await getRoomDataById(roomId);
     if (!data) {
@@ -349,6 +358,10 @@ export function useSaveAndLoadRoom() {
    * @returns {Promise<boolean>} true if deletion succeeded
    */
   async function deleteRoom(roomId) {
+    if (String(room.value?.id ?? '') === String(roomId ?? '')) {
+      clearAudioRuntime()
+      resetRoomState()
+    }
 
     const { error, statusText } = await supabase
       .from("rooms")
@@ -428,6 +441,7 @@ export function useSaveAndLoadRoom() {
    */
   async function loadRoomLocal() {
     isLoadingRoom.value = true;
+    clearAudioRuntime()
     const stored = localStorage.getItem("tempSoundRoomData");
     if (!stored) {
       console.warn("No room data found in local storage.");
