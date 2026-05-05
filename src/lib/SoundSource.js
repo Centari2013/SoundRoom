@@ -125,19 +125,46 @@ export default class SoundSource {
     this.cornerCompressor.attack.value = 0.005
     this.cornerCompressor.release.value = 0.1
 
-    // Surround bypass: postPannerGain gates the spatial path; surroundGain is the direct bypass.
-    // Toggling between them lets the audio skip the PannerNode for omnidirectional playback.
+    // postPannerGain gates the spatial path (normal mode).
     this._postPannerGain = audioContext.createGain()
     this._postPannerGain.gain.value = this.state.surround ? 0 : 1
     this._pannerNode.connect(this._postPannerGain)
 
-    this._surroundGain = audioContext.createGain()
-    this._surroundGain.gain.value = this.state.surround ? 1 : 0
-    this._gainNode.connect(this._surroundGain)
+    // True 360° surround: 8 PannerNodes evenly distributed at a large fixed radius.
+    // rolloffFactor=0 means distance never attenuates them; HRTF gives each a distinct
+    // perceived direction so the listener hears the source arriving from all sides at once.
+    const SURROUND_COUNT = 8
+    const SURROUND_RADIUS = 20 // audio-space units — well beyond the room so angles stay
+                               // nearly constant as the listener moves
+    this._surroundMixGain = audioContext.createGain()
+    this._surroundMixGain.gain.value = this.state.surround ? 1 : 0
+    this._surroundPanners = []
+
+    for (let i = 0; i < SURROUND_COUNT; i++) {
+      const angle = (i / SURROUND_COUNT) * 2 * Math.PI
+      const sp = audioContext.createPanner()
+      sp.panningModel = 'HRTF'
+      sp.distanceModel = 'inverse'
+      sp.rolloffFactor = 0   // constant gain regardless of distance
+      sp.refDistance = 1
+      sp.coneInnerAngle = 360
+      sp.coneOuterAngle = 360
+      sp.positionX.value = SURROUND_RADIUS * Math.cos(angle)
+      sp.positionY.value = SURROUND_RADIUS * Math.sin(angle)
+      sp.positionZ.value = 0
+
+      const spGain = audioContext.createGain()
+      spGain.gain.value = 1 / SURROUND_COUNT // normalise summed output
+
+      this._gainNode.connect(spGain)
+      spGain.connect(sp)
+      sp.connect(this._surroundMixGain)
+      this._surroundPanners.push({ panner: sp, gain: spGain })
+    }
 
     // Both paths feed into cornerFilter
     this._postPannerGain.connect(this.cornerFilter)
-    this._surroundGain.connect(this.cornerFilter)
+    this._surroundMixGain.connect(this.cornerFilter)
     this.cornerFilter.connect(this.cornerCompressor)
     this.cornerCompressor.connect(masterGain ?? this._audioContext.destination)
 
@@ -430,18 +457,18 @@ export default class SoundSource {
   }
 
   /**
-   * Switch between spatialised (panner) and omnidirectional (bypass) routing.
+   * Switch between spatialised (single panner) and true 360° surround (8-panner ring) routing.
    * @param {boolean} enabled
    */
   applySurroundMode(enabled) {
-    if (!this._postPannerGain || !this._surroundGain || !this._audioContext) return
+    if (!this._postPannerGain || !this._surroundMixGain || !this._audioContext) return
     const ct = this._audioContext.currentTime
     if (enabled) {
       this._postPannerGain.gain.setValueAtTime(0, ct)
-      this._surroundGain.gain.setValueAtTime(1, ct)
+      this._surroundMixGain.gain.setValueAtTime(1, ct)
     } else {
       this._postPannerGain.gain.setValueAtTime(1, ct)
-      this._surroundGain.gain.setValueAtTime(0, ct)
+      this._surroundMixGain.gain.setValueAtTime(0, ct)
     }
   }
 
@@ -571,7 +598,12 @@ export default class SoundSource {
       try { this._gainNode?.disconnect() } catch (_) {}
       try { this._pannerNode?.disconnect() } catch (_) {}
       try { this._postPannerGain?.disconnect() } catch (_) {}
-      try { this._surroundGain?.disconnect() } catch (_) {}
+      this._surroundPanners?.forEach(({ panner, gain }) => {
+        try { gain.disconnect() } catch (_) {}
+        try { panner.disconnect() } catch (_) {}
+      })
+      this._surroundPanners = []
+      try { this._surroundMixGain?.disconnect() } catch (_) {}
       try { this.cornerFilter?.disconnect() } catch (_) {}
       try { this.cornerCompressor?.disconnect() } catch (_) {}
       try { this.reverbSend?.disconnect() } catch (_) {}
@@ -579,7 +611,7 @@ export default class SoundSource {
       this._gainNode = null
       this._pannerNode = null
       this._postPannerGain = null
-      this._surroundGain = null
+      this._surroundMixGain = null
       this.cornerFilter = null
       this.cornerCompressor = null
       this.reverbSend = null
