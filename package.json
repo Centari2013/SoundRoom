@@ -31,6 +31,7 @@
     "dotenv": "^16.5.0",
     "ffmpeg-static": "^5.2.0",
     "ffprobe-static": "^3.1.0",
+    "gsap": "^3.15.0",
     "idb-keyval": "^3.0.0",
     "konva": "^9.3.20",
     "lucide-vue-next": "^1.0.0",

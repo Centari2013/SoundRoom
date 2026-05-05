@@ -49,12 +49,21 @@ a:hover {
   color: var(--color-accent-soft);
 }
 
+html,
+body,
+#app {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+html {
+  overscroll-behavior: none;
+}
+
 body {
   margin: 0;
-  display: flex;
-  place-items: center;
   min-width: 320px;
-  min-height: 100vh;
   color: var(--color-text-primary);
   background: var(--color-bg-app);
 }
@@ -91,7 +100,7 @@ button:focus-visible {
 }
 
 #app {
-  margin: 0 auto;
+  margin: 0;
   text-align: center;
 }
 

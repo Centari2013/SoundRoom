@@ -7,6 +7,7 @@ export default class TimelineScheduler {
     this._rafId = null
     this._startedAt = null
     this._startOffset = 0
+    this._activeTimelinePlays = new Map()
 
     this.isRunning = ref(false)
     this.currentTime = ref(0)
@@ -22,6 +23,7 @@ export default class TimelineScheduler {
     this._startedAt = performance.now()
     this.currentTime.value = this._startOffset
     this.isRunning.value = true
+    this._startActiveClips(this._startOffset)
     this._scheduleClips(this._startOffset)
     this._tick()
   }
@@ -37,6 +39,7 @@ export default class TimelineScheduler {
     if (this.isRunning.value) return
     this._startedAt = performance.now()
     this.isRunning.value = true
+    this._startActiveClips(this._startOffset)
     this._scheduleClips(this._startOffset)
     this._tick()
   }
@@ -51,11 +54,13 @@ export default class TimelineScheduler {
   seek(seconds) {
     const wasRunning = this.isRunning.value
     this._clearAll()
+    this._stopTimelineSources()
     this._startOffset = Math.max(0, Math.min(seconds, this._timeline.duration))
     this.currentTime.value = this._startOffset
     if (wasRunning) {
       this._startedAt = performance.now()
       this.isRunning.value = true
+      this._startActiveClips(this._startOffset)
       this._scheduleClips(this._startOffset)
       this._tick()
     }
@@ -70,6 +75,7 @@ export default class TimelineScheduler {
     }
     this.isRunning.value = false
     this._startedAt = null
+    this._activeTimelinePlays.clear()
   }
 
   _tick() {
@@ -79,6 +85,7 @@ export default class TimelineScheduler {
     const { duration, loop } = this._timeline
 
     if (pos >= duration) {
+      this._stopTimelineSources()
       if (loop) {
         this._clearAll()
         this.start(0)
@@ -96,32 +103,96 @@ export default class TimelineScheduler {
   _scheduleClips(fromSeconds) {
     for (const clip of this._timeline.clips) {
       const delay = (clip.startTime - fromSeconds) * 1000
-      if (delay < 0) continue
+      if (delay <= 0) continue
 
       const id = setTimeout(() => {
-        const src = this._engine.soundSources.value.find(
-          s => s.instance?.state?.schedule?.id === clip.sourceId
-        )
-        if (src && !src.locked) {
-          src.instance.play()
-        }
+        this._playClip(clip)
       }, delay)
 
       this._timeouts.push(id)
     }
   }
 
-  _stopTimelineSources() {
+  _startActiveClips(atSeconds) {
     for (const clip of this._timeline.clips) {
+      const endTime = this._clipEndTime(clip)
+      if (clip.startTime <= atSeconds && atSeconds < endTime) {
+        this._playClip(clip, atSeconds - clip.startTime)
+      }
+    }
+  }
+
+  _clipEndTime(clip) {
+    if (Number.isFinite(clip.endTime)) return clip.endTime
+    if (Number.isFinite(clip.duration)) return clip.startTime + clip.duration
+    return clip.startTime
+  }
+
+  async _playClip(clip, offset = 0) {
+    const src = this._engine.soundSources.value.find(
+      s => s.instance?.state?.schedule?.id === clip.sourceId
+    )
+
+    if (!src || src.locked || !src.instance) return
+
+    const instance = src.instance
+    const safeOffset = Math.max(0, offset)
+    const endTime = this._clipEndTime(clip)
+    const remaining = endTime - clip.startTime - safeOffset
+    if (remaining <= 0) return
+    const playToken = Symbol(clip.id)
+
+    instance.stop?.()
+    this._activeTimelinePlays.set(clip.sourceId, playToken)
+
+    if (typeof instance._ensureAudioBuffer === 'function' && typeof instance._startPlayback === 'function') {
+      try {
+        await instance._ensureAudioBuffer()
+        if (this._activeTimelinePlays.get(clip.sourceId) !== playToken) return
+        instance._startPlayback(safeOffset)
+        instance.updateAudio?.()
+        this._scheduleClipStop(clip, remaining, playToken)
+        return
+      } catch (err) {
+        console.warn('Failed to start timeline clip at offset:', err)
+      }
+    }
+
+    instance.play?.({ offset: safeOffset })
+    this._scheduleClipStop(clip, remaining, playToken)
+  }
+
+  _scheduleClipStop(clip, remainingSeconds, playToken) {
+    const id = setTimeout(() => {
+      if (this._activeTimelinePlays.get(clip.sourceId) !== playToken) return
+
       const src = this._engine.soundSources.value.find(
         s => s.instance?.state?.schedule?.id === clip.sourceId
       )
 
+      src?.instance?.stop?.()
+      src?.instance?.pause?.()
+      this._activeTimelinePlays.delete(clip.sourceId)
+    }, remainingSeconds * 1000)
+
+    this._timeouts.push(id)
+  }
+
+  _stopTimelineSources() {
+    const sourceIds = new Set(this._timeline.clips.map(clip => clip.sourceId))
+
+    for (const sourceId of sourceIds) {
+      const src = this._engine.soundSources.value.find(
+        s => s.instance?.state?.schedule?.id === sourceId
+      )
+
       if (src?.instance) {
-        //src.instance.stop?.()
+        src.instance.stop?.()
         src.instance.pause?.()
       }
     }
+
+    this._activeTimelinePlays.clear()
   }
 
   dispose() {

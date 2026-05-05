@@ -2,9 +2,9 @@
 <template>
   <Analytics />
   <MobileComingSoon v-if="isMobile" />
-  <div class="h-screen max-h-screen min-w-screen flex flex-col">
+  <div class="w-screen h-screen max-w-screen max-h-screen min-w-0 overflow-hidden flex flex-col">
     <HeaderBar />
-    <div class="flex-1 min-h-0 flex flex-col">
+    <div class="flex-1 min-h-0 min-w-0 overflow-hidden flex flex-col">
       <div
         v-if="globalError"
         class="flex-1 flex flex-col items-center justify-center text-center px-6 py-12 bg-surface-app text-text-primary"

@@ -220,6 +220,9 @@ onUnmounted(() => {
   background: var(--color-bg-surface, #111827);
   border-top: 1px solid var(--color-border-subtle, #374151);
   height: 200px;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
   overflow: hidden;
   flex-shrink: 0;
 }
@@ -233,6 +236,9 @@ onUnmounted(() => {
   height: 36px;
   border-bottom: 1px solid var(--color-border-subtle, #374151);
   flex-shrink: 0;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
   background: var(--color-bg-elevated, #1f2937);
 }
 
@@ -295,6 +301,9 @@ onUnmounted(() => {
 /* Scroll area */
 .tl-scroll {
   flex: 1;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
   overflow-x: auto;
   overflow-y: auto;
   position: relative;
@@ -304,6 +313,8 @@ onUnmounted(() => {
 
 .tl-ruler-row {
   display: flex;
+  width: max-content;
+  min-width: 100%;
   flex-shrink: 0;
   position: sticky;
   top: 0;
@@ -323,6 +334,8 @@ onUnmounted(() => {
   flex: 1;
   display: flex;
   flex-direction: column;
+  width: max-content;
+  min-width: 100%;
 }
 
 .tl-empty {

@@ -45,6 +45,8 @@ const trackWidth = computed(() => props.duration * props.pxPerSecond)
   display: flex;
   height: 40px;
   border-bottom: 1px solid var(--color-border-subtle, #374151);
+  width: max-content;
+  min-width: 100%;
   flex-shrink: 0;
 }
 
@@ -66,7 +68,7 @@ const trackWidth = computed(() => props.duration * props.pxPerSecond)
 
 .track-lane {
   position: relative;
-  flex: 1;
+  flex: 0 0 auto;
   background: var(--color-bg-elevated, #1f2937);
   overflow: hidden;
 }

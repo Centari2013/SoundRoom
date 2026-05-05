@@ -21,8 +21,8 @@
   />
 
   <!-- Footer Buttons -->
-  <div class="relative flex items-center justify-between h-15 p-2">
-    <div class="flex space-x-3">
+  <div class="relative flex items-center justify-between h-15 min-w-0 overflow-hidden p-2">
+    <div class="flex min-w-0 space-x-3">
       <BaseButton
         @click="showSaveConfirm = true"
         :disabled="isSaving || !isRoomSaveable"
@@ -59,7 +59,7 @@
       </BaseButton>
     </div>
 
-    <div v-if="isAuthenticated" class="ml-auto">
+    <div v-if="isAuthenticated" class="ml-auto shrink-0">
       <RouterLink
         to="/room-manager"
         aria-label="Open Room Manager"

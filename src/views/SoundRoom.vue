@@ -1,25 +1,25 @@
 <template>
 
   <Onboarding :startTour="startTour" />
-  <div class="h-full bg-surface-app text-text-primary flex flex-col">
+  <div class="h-full w-full min-h-0 min-w-0 overflow-hidden bg-surface-app text-text-primary flex flex-col">
     <!-- Main Layout -->
-    <div class="flex flex-1 overflow-hidden">
+    <div class="flex flex-1 min-h-0 min-w-0 overflow-hidden">
 
       <!-- Left Sidebar -->
       <SidebarLeft 
-        class="min-w-[7.5rem] max-w-64 w-[20%] flex-shrink"
+        class="min-w-[7.5rem] max-w-64 w-[20%] flex-shrink-0"
         :MAX_SOURCES="MAX_LIB_SOURCES"
         :handleDragStart="handleDragStart"
         :listener="listener"
       />
 
       <!-- Canvas + Controls -->
-      <main class="flex-1 flex flex-col">
+      <main class="flex-1 min-h-0 min-w-0 overflow-hidden flex flex-col">
         <!-- Toolbar -->
         <Toolbar/>
 
         <!-- Canvas Area -->
-        <div class="flex-1 relative overflow-hidden bg-[var(--color-bg-surface)] flex items-center justify-center border-t border-[var(--color-border-subtle)]">
+        <div class="flex-1 min-h-0 min-w-0 relative overflow-hidden bg-[var(--color-bg-surface)] flex items-center justify-center border-t border-[var(--color-border-subtle)]">
           <div class="pointer-events-none absolute inset-0 canvas-vignette" aria-hidden="true"></div>
           <MainCanvasStage
             v-bind="{
@@ -43,13 +43,19 @@
 
       <!-- Right Sidebar -->
       <SidebarRight
-        class="min-w-[7.5rem] max-w-64 w-[20%] flex-shrink"
+        class="min-w-[7.5rem] max-w-64 w-[20%] flex-shrink-0"
         v-bind="{
           selectedSource
         }"
       />
     </div>
-    <TimelinePanel v-if="timelineOpen" />
+    <Transition
+      :css="false"
+      @enter="onTimelineEnter"
+      @leave="onTimelineLeave"
+    >
+      <TimelinePanel v-if="timelineOpen" />
+    </Transition>
     <FooterBar
       :on-save="saveRoom"
       :timeline-open="timelineOpen"
@@ -88,6 +94,7 @@ defineOptions({
   name: 'SoundRoomRoot',
 })
 import { ref, provide, onBeforeMount, onUnmounted, onMounted } from 'vue'
+import { gsap } from 'gsap'
 
 // Shared constants
 const SOUND_NODE_PART_NAME = 'sound-node-part'
@@ -138,6 +145,39 @@ const MAX_CANVAS_SOURCES = 30
 
 
 engineStore.setMaxCanvasSources(MAX_CANVAS_SOURCES)
+
+function onTimelineEnter(el, done) {
+  gsap.killTweensOf(el)
+  gsap.fromTo(
+    el,
+    {
+      height: 0,
+      y: 18,
+      autoAlpha: 0,
+    },
+    {
+      height: el.scrollHeight,
+      y: 0,
+      autoAlpha: 1,
+      duration: 0.22,
+      ease: 'power2.out',
+      clearProps: 'height,transform,opacity,visibility',
+      onComplete: done,
+    }
+  )
+}
+
+function onTimelineLeave(el, done) {
+  gsap.killTweensOf(el)
+  gsap.to(el, {
+    height: 0,
+    y: 18,
+    autoAlpha: 0,
+    duration: 0.18,
+    ease: 'power2.in',
+    onComplete: done,
+  })
+}
 
 
 // Selection
