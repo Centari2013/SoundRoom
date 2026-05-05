@@ -111,7 +111,21 @@ export default class TimelineScheduler {
     }
   }
 
+  _stopTimelineSources() {
+    for (const clip of this._timeline.clips) {
+      const src = this._engine.soundSources.value.find(
+        s => s.instance?.state?.schedule?.id === clip.sourceId
+      )
+
+      if (src?.instance) {
+        //src.instance.stop?.()
+        src.instance.pause?.()
+      }
+    }
+  }
+
   dispose() {
     this._clearAll()
+    this._stopTimelineSources()
   }
 }
