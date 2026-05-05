@@ -27,6 +27,7 @@ export function registerSoundRoomActions() {
   registerDraggableActions()
   registerSchedulingActions()
   registerTimelineActions()
+  registerSurroundActions()
   actionsRegistered = true
   registeredActionManager = actionManager.value
 }
@@ -46,6 +47,7 @@ export function unregisterSoundRoomActions() {
     'delete_draggable_sound_source',
     'add_draggable_sound_source',
     'update_sound_source_schedule',
+    'toggle_source_surround',
     'add_timeline_clip',
     'delete_timeline_clip',
     'remove_source_from_timeline',
@@ -327,6 +329,22 @@ function registerSchedulingActions() {
   );
 
   
+}
+
+function registerSurroundActions() {
+  const { actionManager } = storeToRefs(useActionManagerStore())
+
+  const applySurround = (src, value) => {
+    if (src?.locked) return
+    src.instance.state.surround = value
+    src.instance.updateAudio()
+  }
+
+  actionManager.value.registerActionHandlers(
+    'toggle_source_surround',
+    payload => applySurround(payload.src, payload.to),
+    payload => applySurround(payload.src, payload.from)
+  )
 }
 
 function registerTimelineActions() {

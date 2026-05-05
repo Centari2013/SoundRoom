@@ -77,6 +77,26 @@
 
       <hr class="w-full border-[var(--color-border-subtle)]" />
 
+      <!-- Surround Sound Toggle -->
+      <div class="w-full flex items-center space-x-2 text-left px-1 text-[var(--color-text-muted)]">
+        <input
+          type="checkbox"
+          :checked="state.surround"
+          :disabled="isLocked"
+          @change="handleSurroundToggle"
+          class="accent-purple-500 disabled:cursor-not-allowed disabled:opacity-60"
+        />
+        <label class="text-sm">Surround Sound (360°)</label>
+      </div>
+      <p
+        v-if="state.surround"
+        class="w-full px-1 text-left text-xs text-[var(--color-text-muted)]"
+      >
+        Plays equally in all directions, regardless of position.
+      </p>
+
+      <hr class="w-full border-[var(--color-border-subtle)]" />
+
       <!-- Scheduling Toggle -->
       <div class="w-full flex items-center space-x-2 text-left px-1 text-[var(--color-text-muted)]">
         <input
@@ -373,6 +393,16 @@ function commitSchedulePatch(patch) {
     ...patch
   };
   commitScheduleEdit();
+}
+
+function handleSurroundToggle(event) {
+  if (isLocked.value) return
+  const nextSurround = !!event.target.checked
+  actionManager.value.doAction('toggle_source_surround', {
+    src: selectedSource.value,
+    from: !!state.value.surround,
+    to: nextSurround
+  })
 }
 
 function handleSchedulingToggle(event) {

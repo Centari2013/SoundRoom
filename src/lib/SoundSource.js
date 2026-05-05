@@ -28,6 +28,7 @@ export default class SoundSource {
     // `state` holds the spatial position/angle and is kept in sync with the
     // canvas representation.
     this.state = state
+    this.state.surround = this.state.surround ?? false
     this.state.schedule = reactive(state.schedule ?? {
       id: crypto.randomUUID(),
       enabled: false,
@@ -124,8 +125,19 @@ export default class SoundSource {
     this.cornerCompressor.attack.value = 0.005
     this.cornerCompressor.release.value = 0.1
 
-    // Chain: output → filter → compressor → master
-    this.outputNode.connect(this.cornerFilter)
+    // Surround bypass: postPannerGain gates the spatial path; surroundGain is the direct bypass.
+    // Toggling between them lets the audio skip the PannerNode for omnidirectional playback.
+    this._postPannerGain = audioContext.createGain()
+    this._postPannerGain.gain.value = this.state.surround ? 0 : 1
+    this._pannerNode.connect(this._postPannerGain)
+
+    this._surroundGain = audioContext.createGain()
+    this._surroundGain.gain.value = this.state.surround ? 1 : 0
+    this._gainNode.connect(this._surroundGain)
+
+    // Both paths feed into cornerFilter
+    this._postPannerGain.connect(this.cornerFilter)
+    this._surroundGain.connect(this.cornerFilter)
     this.cornerFilter.connect(this.cornerCompressor)
     this.cornerCompressor.connect(masterGain ?? this._audioContext.destination)
 
@@ -418,6 +430,22 @@ export default class SoundSource {
   }
 
   /**
+   * Switch between spatialised (panner) and omnidirectional (bypass) routing.
+   * @param {boolean} enabled
+   */
+  applySurroundMode(enabled) {
+    if (!this._postPannerGain || !this._surroundGain || !this._audioContext) return
+    const ct = this._audioContext.currentTime
+    if (enabled) {
+      this._postPannerGain.gain.setValueAtTime(0, ct)
+      this._surroundGain.gain.setValueAtTime(1, ct)
+    } else {
+      this._postPannerGain.gain.setValueAtTime(1, ct)
+      this._surroundGain.gain.setValueAtTime(0, ct)
+    }
+  }
+
+  /**
    * Sync Web Audio panner position and orientation with the state used by the canvas.
    */
   updateAudio() {
@@ -438,6 +466,9 @@ export default class SoundSource {
     p.orientationX.setValueAtTime(Math.cos(angleRad), ctx.currentTime);
     p.orientationY.setValueAtTime(Math.sin(angleRad), ctx.currentTime);
     p.orientationZ.setValueAtTime(0, ctx.currentTime);
+
+    this.applySurroundMode(this.state.surround)
+
     if (this._room) {
       this.updateRoomInteraction(this._room);
     }
@@ -539,12 +570,16 @@ export default class SoundSource {
 
       try { this._gainNode?.disconnect() } catch (_) {}
       try { this._pannerNode?.disconnect() } catch (_) {}
+      try { this._postPannerGain?.disconnect() } catch (_) {}
+      try { this._surroundGain?.disconnect() } catch (_) {}
       try { this.cornerFilter?.disconnect() } catch (_) {}
       try { this.cornerCompressor?.disconnect() } catch (_) {}
       try { this.reverbSend?.disconnect() } catch (_) {}
 
       this._gainNode = null
       this._pannerNode = null
+      this._postPannerGain = null
+      this._surroundGain = null
       this.cornerFilter = null
       this.cornerCompressor = null
       this.reverbSend = null

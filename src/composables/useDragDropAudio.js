@@ -51,7 +51,8 @@ export function useDragDropAudio({ draggedSource }) {
         y: dropY,
         angle: 0,
         coneInner: draggedSource.value.coneInner ?? 60,
-        coneOuter: draggedSource.value.coneOuter ?? 180
+        coneOuter: draggedSource.value.coneOuter ?? 180,
+        surround: false
       }),
       audioPath: draggedSource.value.audioPath,
       name: draggedSource.value.name,

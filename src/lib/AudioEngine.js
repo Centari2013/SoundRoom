@@ -779,6 +779,7 @@ export default class AudioEngine {
             angle: src.instance.state.angle,
             coneInner: src.instance.state.coneInner,
             coneOuter: src.instance.state.coneOuter,
+            surround: src.instance.state.surround ?? false,
             isPlaying: src.instance.playing,
             volume: src.instance?.getVolume?.() ?? 1,
             schedule: src.instance.state.schedule
