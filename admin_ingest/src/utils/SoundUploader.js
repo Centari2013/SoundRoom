@@ -23,8 +23,29 @@ async function getSignedUploadUrl({ objectKey, userId }) {
 
   if (userId) params.set('userId', userId)
 
+  const {
+    data: { session },
+    error: sessionError
+  } = await supabase.auth.getSession()
+
+  if (sessionError) {
+    throw new Error(`Unable to read Supabase session: ${sessionError.message}`)
+  }
+
+  const token = session?.access_token
+
+  if (!token) {
+    throw new Error('Missing Supabase access token. Please sign in again.')
+  }
+
   const endpoint = buildApiUrl(`/api/get-upload-url?${params.toString()}`)
-  const response = await fetch(endpoint)
+
+  const response = await fetch(endpoint, {
+    method: 'GET',
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  })
 
   const rawBody = await response.text().catch(() => '')
 
@@ -34,7 +55,7 @@ async function getSignedUploadUrl({ objectKey, userId }) {
       const json = JSON.parse(rawBody)
       message = json?.error || json?.message || message
     } catch (_err) {
-      // fall back to the raw or default message
+      // fall back to raw/default
     }
     throw new Error(`${message} (status ${response.status})`)
   }
@@ -52,6 +73,7 @@ async function getSignedUploadUrl({ objectKey, userId }) {
   if (!payload?.signedUrl || !payload?.key) {
     throw new Error('Signed upload URL response was missing "signedUrl" or "key"')
   }
+
   return payload
 }
 

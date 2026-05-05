@@ -81,6 +81,7 @@ const categories = [
   { id: 'human', label: 'Human' },
   { id: 'musical', label: 'Musical' },
   { id: 'tools', label: 'Work & Focus' },
+  { id: 'urban-mechanical', label: 'Urban/Mechanical' },
   { id: 'atmospheric', label: 'Atmospheric' },
   { id: 'misc', label: 'Misc' },
 ]

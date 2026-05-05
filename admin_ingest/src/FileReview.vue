@@ -99,6 +99,8 @@ function handleEnter(event) {
         <audio
           class="w-full rounded-lg overflow-hidden shadow border border-gray-800"
           controls
+          autoplay
+          loop
           preload="metadata"
           :src="fileEntry.previewUrl"
           @loadedmetadata="handleAudioMetadata"

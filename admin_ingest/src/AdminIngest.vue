@@ -147,8 +147,7 @@ function baseFileDraft(relativePath, file, index) {
     cone_outer: storedDraft.cone_outer ?? 60,
     plan_tier: storedDraft.plan_tier || supportedPlanTiers.at(-1),
     bucket:
-      normalizeBucket(storedDraft.bucket || storedDraft.category) ||
-      BUCKET_OPTIONS[0]?.value || '',
+      normalizeBucket(storedDraft.bucket || storedDraft.category) || '',
     duration_seconds: storedDraft.duration_seconds ?? null,
     relativePath,
     uploaded: Boolean(uploadedMap.value[relativePath]),
