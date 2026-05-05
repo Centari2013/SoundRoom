@@ -60,10 +60,45 @@ function onSeek(seconds) {
   store.seekTimeline(Math.max(0, Math.min(seconds, timeline.value.duration)))
 }
 
-// ── Duration input ────────────────────────────────────────────────────
-function onDurationInput(e) {
-  const v = parseFloat(e.target.value)
-  if (Number.isFinite(v) && v >= 10) store.setTimelineDuration(v)
+// ── Duration controls ─────────────────────────────────────────────────
+const durationParts = computed(() => {
+  const totalSeconds = Math.max(0, Math.round(timeline.value?.duration ?? 0))
+  const hours = Math.floor(totalSeconds / 3600)
+  const minutes = Math.floor((totalSeconds % 3600) / 60)
+  const seconds = totalSeconds % 60
+  return { hours, minutes, seconds }
+})
+
+function clampDuration(totalSeconds) {
+  return Math.max(10, Math.round(totalSeconds))
+}
+
+function setTimelineDurationFromParts(parts) {
+  const hours = Number.isFinite(parts.hours) ? parts.hours : durationParts.value.hours
+  const minutes = Number.isFinite(parts.minutes) ? parts.minutes : durationParts.value.minutes
+  const seconds = Number.isFinite(parts.seconds) ? parts.seconds : durationParts.value.seconds
+  store.setTimelineDuration(clampDuration(hours * 3600 + minutes * 60 + seconds))
+}
+
+function onDurationPartInput(part, value) {
+  const parsed = Number.parseInt(value, 10)
+  const next = { ...durationParts.value }
+
+  if (!Number.isFinite(parsed)) return
+
+  if (part === 'hours') {
+    next.hours = Math.max(0, Math.min(parsed, 99))
+  } else if (part === 'minutes') {
+    next.minutes = Math.max(0, Math.min(parsed, 59))
+  } else if (part === 'seconds') {
+    next.seconds = Math.max(0, Math.min(parsed, 59))
+  }
+
+  setTimelineDurationFromParts(next)
+}
+
+function nudgeDuration(deltaSeconds) {
+  store.setTimelineDuration(clampDuration((timeline.value?.duration ?? 10) + deltaSeconds))
 }
 
 // ── Playback controls ─────────────────────────────────────────────────
@@ -148,17 +183,47 @@ onUnmounted(() => {
 
       <span class="tl-time">{{ currentTime.toFixed(1) }}s</span>
 
-      <label class="tl-label">
-        Duration
-        <input
-          class="tl-duration-input"
-          type="number"
-          min="10"
-          step="10"
-          :value="timeline.duration"
-          @change="onDurationInput"
-        />s
-      </label>
+      <div class="tl-duration-control" aria-label="Timeline duration">
+        <span class="tl-duration-title">Duration</span>
+        <label class="tl-duration-part">
+          <input
+            class="tl-duration-input"
+            type="number"
+            min="0"
+            max="99"
+            step="1"
+            :value="durationParts.hours"
+            @change="e => onDurationPartInput('hours', e.target.value)"
+          />
+          <span>h</span>
+        </label>
+        <div class="tl-duration-part tl-minute-part">
+          <button class="tl-btn tl-nudge" @click="nudgeDuration(-60)" title="Shorten by 1 minute" aria-label="Shorten timeline by 1 minute">−</button>
+          <input
+            class="tl-duration-input"
+            type="number"
+            min="0"
+            max="59"
+            step="1"
+            :value="durationParts.minutes"
+            @change="e => onDurationPartInput('minutes', e.target.value)"
+          />
+          <span>m</span>
+          <button class="tl-btn tl-nudge" @click="nudgeDuration(60)" title="Extend by 1 minute" aria-label="Extend timeline by 1 minute">+</button>
+        </div>
+        <label class="tl-duration-part">
+          <input
+            class="tl-duration-input"
+            type="number"
+            min="0"
+            max="59"
+            step="1"
+            :value="durationParts.seconds"
+            @change="e => onDurationPartInput('seconds', e.target.value)"
+          />
+          <span>s</span>
+        </label>
+      </div>
 
       <label class="tl-label tl-loop">
         <input type="checkbox" :checked="timeline.loop" @change="e => store.setTimelineLoop(e.target.checked)" />
@@ -278,15 +343,50 @@ onUnmounted(() => {
   gap: 4px;
 }
 
+.tl-duration-control {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  color: var(--color-text-muted, #9ca3af);
+}
+
+.tl-duration-title {
+  font-size: 11px;
+}
+
+.tl-duration-part {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 11px;
+  color: var(--color-text-muted, #9ca3af);
+}
+
+.tl-minute-part {
+  gap: 3px;
+}
+
 .tl-duration-input {
-  width: 52px;
+  width: 45px;
   background: var(--color-bg-surface, #111827);
   border: 1px solid var(--color-border-subtle, #374151);
   border-radius: 3px;
   color: var(--color-text-primary, #f9fafb);
   font-size: 11px;
   padding: 1px 4px;
-  text-align: right;
+  text-align: left;
+}
+
+.tl-nudge {
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  font-size: 12px;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .tl-loop { margin-left: 4px; cursor: pointer; }
