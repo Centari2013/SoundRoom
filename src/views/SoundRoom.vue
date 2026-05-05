@@ -49,8 +49,11 @@
         }"
       />
     </div>
+    <TimelinePanel v-if="timelineOpen" />
     <FooterBar
       :on-save="saveRoom"
+      :timeline-open="timelineOpen"
+      :on-toggle-timeline="() => (timelineOpen = !timelineOpen)"
       v-bind="{ isSaving: isSavingRoom }"
     />
   </div>
@@ -95,6 +98,7 @@ import SidebarLeft from '@/components/SoundRoom/SidebarLeft/SidebarLeft.vue'
 import SidebarRight from '@/components/SoundRoom/SidebarRight/SidebarRight.vue'
 import MainCanvasStage from '@/components/SoundRoom/MainCanvasStage/MainCanvasStage.vue'
 import FooterBar from '@/components/SoundRoom/FooterBar.vue'
+import TimelinePanel from '@/components/SoundRoom/Timeline/TimelinePanel.vue'
 import PulsingOverlay from '@/components/ui/overlays/PulsingOverlay.vue'
 import WelcomeOverlay from '@/components/ui/overlays/WelcomeOverlay.vue'
 
@@ -120,6 +124,7 @@ import { supabase } from '@/utils/supabase'
 // State
 const selectedIndex = ref(null)
 const draggedSource = ref(null)
+const timelineOpen = ref(false)
 const route = useRoute()
 const roomStore = useRoomStore()
 const listenerStore = useListenerStore()

@@ -44,11 +44,28 @@
         <button
           @click="playPauseSource"
           class="w-full bg-[var(--color-bg-surface)] text-xs rounded hover:bg-[var(--color-bg-elevated)] border border-[var(--color-border-subtle)] text-[var(--color-text-primary)] items-center flex justify-center"
-          :disabled="isLocked"
-          :title="isLocked ? lockTooltip : undefined"
+          :disabled="isLocked || isOnTimeline"
+          :title="isOnTimeline ? 'Controlled by Timeline' : isLocked ? lockTooltip : undefined"
         >
           {{ playPauseLabel }}
           <LockIcon v-if="isLocked" aria-hidden="true" class="w-4 h-4 inline-block ml-2" />
+        </button>
+        <button
+          v-if="canUseTimeline && !isOnTimeline"
+          @click="addToTimeline"
+          class="w-full bg-[var(--color-bg-surface)] text-xs rounded hover:bg-[var(--color-bg-elevated)] border border-[var(--color-border-subtle)] text-[var(--color-text-primary)]"
+          :disabled="isLocked"
+          title="Add this source as a clip on the timeline"
+        >
+          Add to Timeline
+        </button>
+        <button
+          v-if="canUseTimeline && isOnTimeline"
+          @click="removeFromTimeline"
+          class="w-full bg-[var(--color-bg-surface)] text-xs rounded hover:bg-[var(--color-bg-elevated)] border border-[var(--color-border-subtle)] text-[var(--color-text-muted)]"
+          title="Remove this source from the timeline"
+        >
+          Remove from Timeline
         </button>
         <button
           @click="deleteSource"
@@ -220,6 +237,26 @@ const props = defineProps({
 const selectedSource = inject('selectedSource');
 const { actionManager } = storeToRefs(useActionManagerStore());
 const audioEngineStore = useAudioEngineStore();
+
+const isOnTimeline = computed(() => {
+  const sourceId = selectedSource.value?.instance?.state?.schedule?.id
+  if (!sourceId || !audioEngineStore.audioEngine) return false
+  return audioEngineStore.audioEngine.isSourceOnTimeline(sourceId)
+})
+
+function addToTimeline() {
+  if (!selectedSource.value || isLocked.value) return
+  const sourceId = selectedSource.value.instance?.state?.schedule?.id
+  if (!sourceId) return
+  const fileDuration = selectedSource.value.instance?._audioBuffer?.duration ?? 5
+  audioEngineStore.addTimelineClip(sourceId, 0, fileDuration)
+}
+
+function removeFromTimeline() {
+  const sourceId = selectedSource.value?.instance?.state?.schedule?.id
+  if (!sourceId) return
+  audioEngineStore.removeSourceFromTimeline(sourceId)
+}
 const { canAccess, requireEntitlement } = useEntitlements();
 const isLocked = computed(() => !!selectedSource.value?.locked);
 const lockTooltip = 'Available on Pro tier.'
@@ -236,6 +273,7 @@ const schedulingEnabled = computed({
 
 const canUseTimedLoops = computed(() => canAccess('timedLoops'));
 const canUseAdvancedScheduling = computed(() => canAccess('schedulePlayback'));
+const canUseTimeline = computed(() => canAccess('timelineScheduler'));
 
 let scheduleCopy = ref(null)
 

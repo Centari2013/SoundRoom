@@ -45,6 +45,18 @@
     </div>
     <div class="absolute left-1/2 -translate-x-1/2">
       <IRSelect v-if="false"/>
+      <BaseButton
+        v-if="canUseTimeline && onToggleTimeline"
+        class="px-3 py-2 rounded border transition text-xs"
+        :class="timelineOpen
+          ? 'bg-[var(--color-bg-elevated)] border-[var(--color-focus-ring)] text-[var(--color-text-primary)]'
+          : 'bg-[var(--color-bg-surface)] border-[var(--color-border-subtle)] text-[var(--color-text-primary)] hover:bg-[var(--color-bg-elevated)]'"
+        @click="onToggleTimeline"
+        type="button"
+        aria-label="Toggle timeline"
+      >
+        {{ timelineOpen ? '▾ Timeline' : '▸ Timeline' }}
+      </BaseButton>
     </div>
 
     <div v-if="isAuthenticated" class="ml-auto">
@@ -62,11 +74,12 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { storeToRefs } from 'pinia';
 import { useRoomStore } from '@/stores/useRoomStore';
 import { useAuth } from '@/composables/useAuth';
+import { useEntitlements } from '@/composables/useEntitlements';
 import { resetRoomState } from '@/utils/resetRoomState';
 import BaseButton from '@/components/ui/input/BaseButton.vue';
 import YesNoModal from '@/components/ui/modals/YesNoModal.vue';
@@ -75,10 +88,14 @@ import IRSelect from '@/components/SoundRoom/IRSelect.vue';
 const props = defineProps({
   isSaving: { type: Boolean, required: true },
   onSave: { type: Function, required: true },
+  timelineOpen: { type: Boolean, default: false },
+  onToggleTimeline: { type: Function, default: null },
 });
 
 const router = useRouter();
 const { isAuthenticated } = useAuth();
+const { canAccess } = useEntitlements();
+const canUseTimeline = computed(() => canAccess('timelineScheduler'));
 const { isRoomSaveable, isRoomEmpty } = storeToRefs(useRoomStore());
 
 const showSaveConfirm = ref(false);

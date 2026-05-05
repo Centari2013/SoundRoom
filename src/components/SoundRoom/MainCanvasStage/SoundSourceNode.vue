@@ -70,6 +70,18 @@
       :scheduled="isScheduled"
     />
 
+    <!-- Timeline badge: small amber dot above the node -->
+    <v-circle
+      v-if="isOnTimeline"
+      :x="8"
+      :y="-12"
+      :radius="4"
+      :fill="TIMELINE_NODE_COLOR"
+      :stroke="'#78350f'"
+      :strokeWidth="1"
+      :listening="false"
+    />
+
 
 
     <!-- Direction Diamond -->
@@ -122,6 +134,7 @@
 import { computed, ref } from 'vue'
 import { useRoomStore } from '@/stores/useRoomStore'
 import { useActionManagerStore } from '@/stores/useActionManagerStore'
+import { useAudioEngineStore } from '@/stores/useAudioEngineStore'
 import { storeToRefs } from 'pinia'
 import ScheduledPlayRing from '@/components/SoundRoom/MainCanvasStage/ScheduledPlayRing.vue'
 import { useKonvaThemeRedraw } from '@/composables/useKonvaTheme'
@@ -135,6 +148,13 @@ const props = defineProps({
 
 const { room } = storeToRefs(useRoomStore())
 const { actionManager } = storeToRefs(useActionManagerStore())
+const engineStore = useAudioEngineStore()
+
+const isOnTimeline = computed(() => {
+  const sourceId = props.source?.instance?.state?.schedule?.id
+  if (!sourceId || !engineStore.audioEngine) return false
+  return engineStore.audioEngine.isSourceOnTimeline(sourceId)
+})
 const emit = defineEmits(['select'])
 const themeStore = useThemeStore()
 
@@ -175,7 +195,10 @@ const themeTokens = computed(() => ({
   white: getVar('--base-white', '#ffffff'),
 }))
 
+const TIMELINE_NODE_COLOR = '#f59e0b' // amber-400
+
 const getFillColor = computed(() => {
+  if (isOnTimeline.value) return TIMELINE_NODE_COLOR
   if (isDarkMode.value) {
     if (props.selected) return themeTokens.value.selected
     return isScheduled.value ? themeTokens.value.primary : themeTokens.value.danger
