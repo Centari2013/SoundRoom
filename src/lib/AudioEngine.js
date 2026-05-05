@@ -50,7 +50,7 @@ export default class AudioEngine {
     this.#scheduleWatchers = new Map()
 
     this.timeline = reactive({
-      enabled: false,
+      enabled: timelineData?.enabled ?? true,
       duration: timelineData?.duration ?? 60,
       loop: timelineData?.loop ?? false,
       clips: timelineData?.clips ?? [],
@@ -461,6 +461,18 @@ export default class AudioEngine {
     src.instance.stop();
   }
 
+  async seekSoundSource(src, offsetSeconds, { play = src?.instance?.playing ?? false } = {}) {
+    if (!src || !src.instance) {
+      console.warn("Tried to seek sound source but it was not valid:", src)
+      return
+    }
+
+    // Sources on the timeline are controlled exclusively by TimelineScheduler.
+    if (this.isSourceOnTimeline(src.instance.state.schedule.id)) return
+
+    return src.instance.seek?.(offsetSeconds, { play })
+  }
+
 
   /**
    * Start playback of all sound sources and initialise scheduling.
@@ -598,9 +610,21 @@ export default class AudioEngine {
     return this.#timelineScheduler
   }
 
+  setTimelineEnabled(enabled) {
+    const nextEnabled = Boolean(enabled)
+    if (this.timeline.enabled === nextEnabled) return
+
+    if (!nextEnabled) {
+      this.#timelineScheduler.stop()
+    }
+
+    this.timeline.enabled = nextEnabled
+  }
+
   // ── Timeline helpers ───────────────────────────────────────────────
 
   isSourceOnTimeline(sourceId) {
+    if (!this.timeline.enabled) return false
     return this.timeline.clips.some(c => c.sourceId === sourceId)
   }
 
@@ -612,36 +636,90 @@ export default class AudioEngine {
 
   // ── Timeline management ────────────────────────────────────────────
 
-  addTimelineClip(sourceId, startTime = 0, duration = 5) {
-    // Stop the source first to prevent audio collision
-    const src = this.soundSources.value.find(s => s.instance?.state?.schedule?.id === sourceId)
-    if (src?.instance?.playing) {
-      this.#scheduler.cancelSchedule(src.instance)
-      src.instance.stop()
-    }
+  #findTimelineSource(sourceId) {
+    return this.soundSources.value.find(s => s.instance?.state?.schedule?.id === sourceId)
+  }
 
+  #takeSourceOverForTimeline(sourceId) {
+    const src = this.#findTimelineSource(sourceId)
+    if (!src?.instance) return
+    this.#scheduler.cancelSchedule(src.instance)
+    src.instance.stop?.()
+  }
+
+  #stopTimelineSource(sourceId) {
+    const src = this.#findTimelineSource(sourceId)
+    src?.instance?.stop?.()
+    src?.instance?.pause?.()
+  }
+
+  #syncTimelineSchedulerAfterMutation() {
+    if (!this.#timelineScheduler.isRunning.value) return
+    this.#timelineScheduler.seek(this.#timelineScheduler.currentTime.value)
+  }
+
+  addTimelineClip(sourceId, startTime = 0, duration = 5, options = {}) {
     const clip = {
-      id: crypto.randomUUID(),
+      id: options.id ?? crypto.randomUUID(),
       sourceId,
       startTime,
       duration,
+      sourceDuration: options.sourceDuration ?? this.#findTimelineSource(sourceId)?.instance?.duration ?? duration,
     }
-    this.timeline.clips.push(clip)
+    const index = Number.isInteger(options.index)
+      ? Math.max(0, Math.min(options.index, this.timeline.clips.length))
+      : this.timeline.clips.length
+    this.#takeSourceOverForTimeline(sourceId)
+    this.timeline.clips.splice(index, 0, clip)
+    this.#syncTimelineSchedulerAfterMutation()
+    return clip.id
+  }
+
+  insertTimelineClip(clip, index = this.timeline.clips.length) {
+    if (!clip?.id || this.timeline.clips.some(c => c.id === clip.id)) return
+    const safeIndex = Number.isInteger(index)
+      ? Math.max(0, Math.min(index, this.timeline.clips.length))
+      : this.timeline.clips.length
+    this.#takeSourceOverForTimeline(clip.sourceId)
+    this.timeline.clips.splice(safeIndex, 0, { ...clip })
+    this.#syncTimelineSchedulerAfterMutation()
     return clip.id
   }
 
   removeTimelineClip(clipId) {
     const idx = this.timeline.clips.findIndex(c => c.id === clipId)
-    if (idx !== -1) this.timeline.clips.splice(idx, 1)
+    if (idx === -1) return null
+    const [clip] = this.timeline.clips.splice(idx, 1)
+    if (!this.timeline.clips.some(c => c.sourceId === clip.sourceId)) {
+      this.#stopTimelineSource(clip.sourceId)
+    }
+    this.#syncTimelineSchedulerAfterMutation()
+    return { clip: { ...clip }, index: idx }
   }
 
   removeSourceFromTimeline(sourceId) {
-    this.timeline.clips = this.timeline.clips.filter(c => c.sourceId !== sourceId)
+    const removed = []
+    for (let i = this.timeline.clips.length - 1; i >= 0; i--) {
+      if (this.timeline.clips[i].sourceId === sourceId) {
+        const [clip] = this.timeline.clips.splice(i, 1)
+        removed.unshift({ clip: { ...clip }, index: i })
+      }
+    }
+    if (removed.length) {
+      this.#stopTimelineSource(sourceId)
+      this.#syncTimelineSchedulerAfterMutation()
+    }
+    return removed
   }
 
-  updateTimelineClip(clipId, patch) {
+  updateTimelineClip(clipId, patch, { sync = true } = {}) {
     const clip = this.timeline.clips.find(c => c.id === clipId)
-    if (clip) Object.assign(clip, patch)
+    if (clip) {
+      Object.assign(clip, patch)
+      if (sync) {
+        this.#syncTimelineSchedulerAfterMutation()
+      }
+    }
   }
 
   setTimelineDuration(seconds) {

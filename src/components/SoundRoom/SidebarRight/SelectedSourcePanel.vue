@@ -81,15 +81,21 @@
       <div class="w-full flex items-center space-x-2 text-left px-1 text-[var(--color-text-muted)]">
         <input
           type="checkbox"
-          :checked="schedulingEnabled"
-          :disabled="!canUseTimedLoops || isLocked"
+          :checked="!isOnTimeline && schedulingEnabled"
+          :disabled="!canUseTimedLoops || isLocked || isOnTimeline"
           @change="handleSchedulingToggle"
           class="accent-blue-500 disabled:cursor-not-allowed disabled:opacity-60"
         />
-        <label class="text-sm">Enable Scheduling</label>
+        <label class="text-sm">{{ isOnTimeline ? 'Enable Simple Scheduling' : 'Enable Scheduling' }}</label>
       </div>
       <p
-        v-if="!canUseTimedLoops"
+        v-if="isOnTimeline"
+        class="w-full px-1 text-left text-xs text-[var(--color-text-muted)]"
+      >
+        Timeline clips control this source. Remove it from the timeline to use simple scheduling.
+      </p>
+      <p
+        v-else-if="!canUseTimedLoops"
         class="w-full px-1 text-left text-xs text-[var(--color-warning)]"
       >
         Upgrade to unlock timed loops for automated playback.
@@ -97,7 +103,7 @@
 
       <!-- Scheduling Settings -->
       <div
-        v-if="schedulingEnabled && canUseTimedLoops"
+        v-if="schedulingEnabled && canUseTimedLoops && !isOnTimeline"
         class="space-y-4 w-full text-xs text-[var(--color-text-muted)] px-1"
       >
         <!-- Mode -->
@@ -249,13 +255,20 @@ function addToTimeline() {
   const sourceId = selectedSource.value.instance?.state?.schedule?.id
   if (!sourceId) return
   const fileDuration = selectedSource.value.instance?._audioBuffer?.duration ?? 5
-  audioEngineStore.addTimelineClip(sourceId, 0, fileDuration)
+  actionManager.value.doAction('add_timeline_clip', {
+    clip: {
+      sourceId,
+      startTime: 0,
+      duration: fileDuration,
+      sourceDuration: fileDuration,
+    },
+  })
 }
 
 function removeFromTimeline() {
   const sourceId = selectedSource.value?.instance?.state?.schedule?.id
   if (!sourceId) return
-  audioEngineStore.removeSourceFromTimeline(sourceId)
+  actionManager.value.doAction('remove_source_from_timeline', { sourceId })
 }
 const { canAccess, requireEntitlement } = useEntitlements();
 const isLocked = computed(() => !!selectedSource.value?.locked);
@@ -363,7 +376,7 @@ function commitSchedulePatch(patch) {
 }
 
 function handleSchedulingToggle(event) {
-  if (isLocked.value) return
+  if (isLocked.value || isOnTimeline.value) return
   const nextEnabled = !!event.target.checked;
   if (nextEnabled && !requireEntitlement('timedLoops')) {
     event.target.checked = !!schedule.value.enabled;
@@ -373,7 +386,7 @@ function handleSchedulingToggle(event) {
 }
 
 function handleScheduleModeChange(event) {
-  if (isLocked.value) return
+  if (isLocked.value || isOnTimeline.value) return
   const nextMode = event.target.value;
   if (!canUseAdvancedScheduling.value && nextMode !== 'interval') {
     event.target.value = schedule.value.mode ?? 'interval';
@@ -383,7 +396,7 @@ function handleScheduleModeChange(event) {
 }
 
 function commitScheduleEdit() {
-  if (isLocked.value) return
+  if (isLocked.value || isOnTimeline.value) return
   const changedKeys = Object.keys(scheduleCopy.value).filter(key => {
   const scheduleVal = schedule.value[key]
   const copyVal = scheduleCopy.value[key];

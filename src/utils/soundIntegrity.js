@@ -146,11 +146,21 @@ export function stripSoundFromRoom(roomConfig, soundId) {
 
   const currentLibrary = roomConfig.soundLibrarySources ?? []
   const currentEngineSources = roomConfig.audioEngine?.soundSources ?? []
+  const currentTimelineClips = roomConfig.audioEngine?.timeline?.clips ?? []
 
   const filteredLibrary = currentLibrary.filter(src => src.libraryId !== soundId)
   const filteredEngine = currentEngineSources.filter(src => src.libraryId !== soundId)
+  const removedSourceIds = new Set(
+    currentEngineSources
+      .filter(src => src.libraryId === soundId)
+      .map(src => src.instance?.state?.schedule?.id)
+      .filter(Boolean)
+  )
+  const filteredClips = currentTimelineClips.filter(clip => !removedSourceIds.has(clip.sourceId))
 
-  const removed = (currentLibrary.length - filteredLibrary.length) + (currentEngineSources.length - filteredEngine.length)
+  const removed = (currentLibrary.length - filteredLibrary.length)
+    + (currentEngineSources.length - filteredEngine.length)
+    + (currentTimelineClips.length - filteredClips.length)
 
   return {
     roomData: {
@@ -158,7 +168,11 @@ export function stripSoundFromRoom(roomConfig, soundId) {
       soundLibrarySources: filteredLibrary,
       audioEngine: {
         ...(roomConfig.audioEngine ?? {}),
-        soundSources: filteredEngine
+        soundSources: filteredEngine,
+        timeline: {
+          ...(roomConfig.audioEngine?.timeline ?? {}),
+          clips: filteredClips
+        }
       }
     },
     removed
@@ -186,11 +200,20 @@ export function filterRoomByAvailableSounds(roomConfig, availableIds) {
 
   const currentLibrary = roomConfig.soundLibrarySources ?? []
   const currentEngineSources = roomConfig.audioEngine?.soundSources ?? []
+  const currentTimelineClips = roomConfig.audioEngine?.timeline?.clips ?? []
 
   const filteredLibrary = currentLibrary.filter(predicate)
   const filteredEngine = currentEngineSources.filter(predicate)
+  const retainedSourceIds = new Set(
+    filteredEngine
+      .map(src => src.instance?.state?.schedule?.id)
+      .filter(Boolean)
+  )
+  const filteredClips = currentTimelineClips.filter(clip => retainedSourceIds.has(clip.sourceId))
 
-  const removed = (currentLibrary.length - filteredLibrary.length) + (currentEngineSources.length - filteredEngine.length)
+  const removed = (currentLibrary.length - filteredLibrary.length)
+    + (currentEngineSources.length - filteredEngine.length)
+    + (currentTimelineClips.length - filteredClips.length)
 
   return {
     roomData: {
@@ -198,10 +221,13 @@ export function filterRoomByAvailableSounds(roomConfig, availableIds) {
       soundLibrarySources: filteredLibrary,
       audioEngine: {
         ...(roomConfig.audioEngine ?? {}),
-        soundSources: filteredEngine
+        soundSources: filteredEngine,
+        timeline: {
+          ...(roomConfig.audioEngine?.timeline ?? {}),
+          clips: filteredClips
+        }
       }
     },
     removed
   }
 }
-

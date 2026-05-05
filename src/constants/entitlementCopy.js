@@ -33,6 +33,10 @@ export const ENTITLEMENT_COPY = {
     featureName: 'Scheduling',
     action: 'schedule automatic playback'
   },
+  timelineScheduler: {
+    featureName: 'Timeline Sequencer',
+    action: 'arrange sounds on a timeline'
+  },
   maxSavedRooms: {
     featureName: 'Saved Rooms',
     action: 'save more rooms'

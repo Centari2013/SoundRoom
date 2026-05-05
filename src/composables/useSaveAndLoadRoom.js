@@ -58,6 +58,14 @@ export function useSaveAndLoadRoom() {
     }
   }
 
+  function applyTimelineAccess(roomData) {
+    const timeline = roomData?.audioEngine?.timeline
+    if (!timeline) return roomData
+
+    timeline.enabled = canAccess('timelineScheduler')
+    return roomData
+  }
+
   /**
    * Persist the current room to Supabase. Handles insert or update logic
    * depending on whether the room already has an id.
@@ -340,6 +348,7 @@ export function useSaveAndLoadRoom() {
       room.value.id = resolvedRoomId;
     }
     listenerStore.loadListener(roomData.listener);
+    applyTimelineAccess(roomData)
     audioEngineStore.loadAudioEngine(roomData.audioEngine);
 
     audioEngineStore.setupAudioContext();
@@ -530,6 +539,7 @@ export function useSaveAndLoadRoom() {
 
       room.value = Room.fromJSON(roomData.room);
       listener.value = Listener.fromJSON(roomData.listener);
+      applyTimelineAccess(roomData)
       audioEngine.value = AudioEngine.fromJSON(roomData.audioEngine);
 
       audioEngineStore.setupAudioContext();

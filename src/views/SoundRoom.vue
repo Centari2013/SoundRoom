@@ -54,12 +54,12 @@
       @enter="onTimelineEnter"
       @leave="onTimelineLeave"
     >
-      <TimelinePanel v-if="timelineOpen" />
+      <TimelinePanel v-if="timelineOpen && canUseTimeline" />
     </Transition>
     <FooterBar
       :on-save="saveRoom"
       :timeline-open="timelineOpen"
-      :on-toggle-timeline="() => (timelineOpen = !timelineOpen)"
+      :on-toggle-timeline="toggleTimeline"
       v-bind="{ isSaving: isSavingRoom }"
     />
   </div>
@@ -88,7 +88,7 @@
 
 <script setup>
 import Onboarding from '@/components/ui/context/Onboarding.vue'
-import { watch } from 'vue';
+import { computed, watch } from 'vue';
 
 defineOptions({
   name: 'SoundRoomRoot',
@@ -123,6 +123,7 @@ import { useContextMenuLogic } from '@/composables/useContextMenuLogic'
 import { registerSoundRoomActions, unregisterSoundRoomActions, setMaxLibSources } from '@/composables/useSoundRoomActions'
 import { useSaveAndLoadRoom } from '@/composables/useSaveAndLoadRoom';
 import { useAuth } from '@/composables/useAuth'
+import { useEntitlements } from '@/composables/useEntitlements'
 import { storeToRefs } from 'pinia'
 import { useRoute } from 'vue-router'
 import { resetRoomState } from "@/utils/resetRoomState";
@@ -139,12 +140,31 @@ const engineStore = useAudioEngineStore()
 const cacheStore = useAudioCacheStore()
 const { listener } = storeToRefs(listenerStore)
 const { audioEngine } = storeToRefs(engineStore)
+const { canAccess } = useEntitlements()
+const canUseTimeline = computed(() => canAccess('timelineScheduler'))
 
 const MAX_LIB_SOURCES = 20
 const MAX_CANVAS_SOURCES = 30
 
 
 engineStore.setMaxCanvasSources(MAX_CANVAS_SOURCES)
+
+function toggleTimeline() {
+  if (!canUseTimeline.value) {
+    timelineOpen.value = false
+    return
+  }
+
+  timelineOpen.value = !timelineOpen.value
+}
+
+watch(() => [canUseTimeline.value, audioEngine.value], ([allowed, engine]) => {
+  if (!engine) return
+  engineStore.setTimelineEnabled(allowed)
+  if (!allowed) {
+    timelineOpen.value = false
+  }
+}, { immediate: true })
 
 function onTimelineEnter(el, done) {
   gsap.killTweensOf(el)

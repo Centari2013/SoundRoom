@@ -14,7 +14,24 @@ const style = computed(() => ({
   width: `${Math.max(props.clip.duration * props.pxPerSecond, 24)}px`,
   backgroundColor: props.color + '33',
   borderColor: props.color,
+  color: props.color,
 }))
+
+const repeatSegments = computed(() => {
+  const sourceDuration = props.clip._sourceDuration
+  if (!Number.isFinite(sourceDuration) || sourceDuration <= 0) return []
+  if (props.clip.duration <= sourceDuration) return []
+
+  const segments = []
+  for (let start = sourceDuration; start < props.clip.duration; start += sourceDuration) {
+    const remaining = props.clip.duration - start
+    segments.push({
+      start,
+      width: Math.min(sourceDuration, remaining),
+    })
+  }
+  return segments
+})
 
 function onMousedownClip(e) {
   if (e.button !== 0) return
@@ -35,6 +52,15 @@ function onMousedownResize(e) {
     :style="style"
     @mousedown="onMousedownClip"
   >
+    <div
+      v-for="segment in repeatSegments"
+      :key="segment.start"
+      class="clip-repeat-slice"
+      :style="{
+        left: `${segment.start * pxPerSecond}px`,
+        width: `${Math.max(segment.width * pxPerSecond, 1)}px`,
+      }"
+    />
     <span class="clip-label">{{ clip._name }}</span>
 
     <button
@@ -68,6 +94,8 @@ function onMousedownResize(e) {
 }
 
 .clip-label {
+  position: relative;
+  z-index: 1;
   font-size: 10px;
   padding: 0 6px;
   white-space: nowrap;
@@ -79,6 +107,8 @@ function onMousedownResize(e) {
 }
 
 .clip-delete {
+  position: relative;
+  z-index: 2;
   flex-shrink: 0;
   width: 16px;
   height: 16px;
@@ -109,5 +139,23 @@ function onMousedownResize(e) {
   width: 8px;
   cursor: ew-resize;
   background: transparent;
+  z-index: 3;
+}
+
+.clip-repeat-slice {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  border-left: 1px solid currentColor;
+  background:
+    repeating-linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.08) 0,
+      rgba(255, 255, 255, 0.08) 4px,
+      transparent 4px,
+      transparent 9px
+    );
+  color: inherit;
+  pointer-events: none;
 }
 </style>

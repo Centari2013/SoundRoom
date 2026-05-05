@@ -14,7 +14,11 @@ const emit = defineEmits(['clip-dragstart', 'clip-resizestart', 'clip-delete'])
 
 // Attach the source name onto each clip so the clip label renders correctly
 const annotatedClips = computed(() =>
-  props.clips.map(c => ({ ...c, _name: props.source.name ?? 'Sound' }))
+  props.clips.map(c => ({
+    ...c,
+    _name: props.source.name ?? 'Sound',
+    _sourceDuration: c.sourceDuration ?? props.source.instance?.duration ?? props.source.instance?._audioBuffer?.duration ?? c.duration,
+  }))
 )
 
 const trackWidth = computed(() => props.duration * props.pxPerSecond)

@@ -2,12 +2,14 @@
 import { computed, ref, onUnmounted } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useAudioEngineStore } from '@/stores/useAudioEngineStore'
+import { useActionManagerStore } from '@/stores/useActionManagerStore'
 import TimelineRuler from './TimelineRuler.vue'
 import TimelineTrack from './TimelineTrack.vue'
 
 // ── Store ────────────────────────────────────────────────────────────
 const store = useAudioEngineStore()
 const { audioEngine } = storeToRefs(store)
+const { actionManager } = storeToRefs(useActionManagerStore())
 
 const timeline = computed(() => audioEngine.value?.timeline)
 const scheduler = computed(() => audioEngine.value?.timelineScheduler)
@@ -129,10 +131,20 @@ function onDragMove(e) {
   const { clip, startX, originalStart } = dragState.value
   const dx = e.clientX - startX
   const newStart = Math.max(0, originalStart + dx / pxPerSecond.value)
-  store.updateTimelineClip(clip.id, { startTime: newStart })
+  store.updateTimelineClip(clip.id, { startTime: newStart }, { sync: false })
 }
 
 function onDragEnd() {
+  if (dragState.value) {
+    const { clip, originalStart } = dragState.value
+    if (clip.startTime !== originalStart) {
+      actionManager.value.doAction('update_timeline_clip', {
+        clipId: clip.id,
+        from: { startTime: originalStart },
+        to: { startTime: clip.startTime },
+      })
+    }
+  }
   dragState.value = null
   document.removeEventListener('mousemove', onDragMove)
   document.removeEventListener('mouseup', onDragEnd)
@@ -149,17 +161,32 @@ function onResizeMove(e) {
   const { clip, startX, originalDuration } = resizeState.value
   const dx = e.clientX - startX
   const newDuration = Math.max(0.5, originalDuration + dx / pxPerSecond.value)
-  store.updateTimelineClip(clip.id, { duration: newDuration })
+  store.updateTimelineClip(clip.id, { duration: newDuration }, { sync: false })
 }
 
 function onResizeEnd() {
+  if (resizeState.value) {
+    const { clip, originalDuration } = resizeState.value
+    if (clip.duration !== originalDuration) {
+      actionManager.value.doAction('update_timeline_clip', {
+        clipId: clip.id,
+        from: { duration: originalDuration },
+        to: { duration: clip.duration },
+      })
+    }
+  }
   resizeState.value = null
   document.removeEventListener('mousemove', onResizeMove)
   document.removeEventListener('mouseup', onResizeEnd)
 }
 
 function onClipDelete(clipId) {
-  store.removeTimelineClip(clipId)
+  const clip = timeline.value?.clips.find(c => c.id === clipId)
+  if (!clip) return
+  actionManager.value.doAction('delete_timeline_clip', {
+    clip: { ...clip },
+    clipId,
+  })
 }
 
 onUnmounted(() => {

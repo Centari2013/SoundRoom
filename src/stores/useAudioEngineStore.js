@@ -111,8 +111,20 @@ export const useAudioEngineStore = defineStore('audioEngine', () => {
     audioEngine.value.pauseSoundSource(src)
   }
 
-  function addTimelineClip(sourceId, startTime, duration) {
-    return audioEngine.value.addTimelineClip(sourceId, startTime, duration)
+  function seekSoundSource(src, offsetSeconds, options) {
+    return audioEngine.value.seekSoundSource(src, offsetSeconds, options)
+  }
+
+  function setTimelineEnabled(enabled) {
+    audioEngine.value.setTimelineEnabled(enabled)
+  }
+
+  function addTimelineClip(sourceId, startTime, duration, options) {
+    return audioEngine.value.addTimelineClip(sourceId, startTime, duration, options)
+  }
+
+  function insertTimelineClip(clip, index) {
+    return audioEngine.value.insertTimelineClip(clip, index)
   }
 
   function removeTimelineClip(clipId) {
@@ -123,8 +135,8 @@ export const useAudioEngineStore = defineStore('audioEngine', () => {
     audioEngine.value.removeSourceFromTimeline(sourceId)
   }
 
-  function updateTimelineClip(clipId, patch) {
-    audioEngine.value.updateTimelineClip(clipId, patch)
+  function updateTimelineClip(clipId, patch, options) {
+    audioEngine.value.updateTimelineClip(clipId, patch, options)
   }
 
   function setTimelineDuration(seconds) {
@@ -157,7 +169,10 @@ export const useAudioEngineStore = defineStore('audioEngine', () => {
     if (allSourcesOnTimeline.value) {
       return audioEngine.value.timelineScheduler?.isRunning.value ?? false
     }
-    return audioEngine.value.soundSources.value.some(w => w.instance.playing)
+    return audioEngine.value.soundSources.value.some(w => {
+      const scheduleId = w.instance?.state?.schedule?.id
+      return !audioEngine.value.isSourceOnTimeline(scheduleId) && w.instance.playing
+    })
   })
 
   const MAX_CANVAS_SOURCES = computed(() => audioEngine.value.maxSourceCount)
@@ -173,7 +188,10 @@ export const useAudioEngineStore = defineStore('audioEngine', () => {
     loadIR,
     playSoundSource,
     pauseSoundSource,
+    seekSoundSource,
+    setTimelineEnabled,
     addTimelineClip,
+    insertTimelineClip,
     removeTimelineClip,
     removeSourceFromTimeline,
     updateTimelineClip,

@@ -186,12 +186,19 @@ export default class SoundSource {
     })
   }
 
+  _normalizePlaybackOffset(offset = 0) {
+    if (!this._audioBuffer) return 0
+    if (!Number.isFinite(offset)) return 0
+    return Math.max(0, Math.min(offset, Math.max(0, this._audioBuffer.duration - 0.001)))
+  }
+
   _startPlayback(offset = 0, { notify = true } = {}) {
     if (!this._audioBuffer) {
       throw new Error('Audio buffer not loaded')
     }
 
     this._stopActiveSource({ notify })
+    const safeOffset = this._normalizePlaybackOffset(offset)
 
     const source = this._audioContext.createBufferSource()
     source.buffer = this._audioBuffer
@@ -209,7 +216,7 @@ export default class SoundSource {
 
     this._activeSource = source
     this._setPlaying(true)
-    source.start(0, offset)
+    source.start(0, safeOffset)
   }
 
   _stopActiveSource({ notify = true } = {}) {
@@ -283,6 +290,10 @@ export default class SoundSource {
     this._setLoopingActive(flag)
   }
 
+  async loadAudioBuffer() {
+    return this._ensureAudioBuffer()
+  }
+
   /**
    * Connect this source's reverb send to the provided convolver.
    * @param {AudioNode} convolver
@@ -296,10 +307,27 @@ export default class SoundSource {
   }
 
   /** Start playback of the audio buffer. */
-  async play() {
+  async play({ offset = 0 } = {}) {
     await this._ensureAudioBuffer()
-    this._startPlayback(0)
+    this.playLoaded({ offset })
+  }
+
+  playLoaded({ offset = 0 } = {}) {
+    this._startPlayback(offset)
     this.updateAudio()
+  }
+
+  async seek(offset = 0, { play = this.playing } = {}) {
+    await this._ensureAudioBuffer()
+    const safeOffset = this._normalizePlaybackOffset(offset)
+
+    if (!play) {
+      this._stopActiveSource()
+      return safeOffset
+    }
+
+    this.playLoaded({ offset: safeOffset })
+    return safeOffset
   }
 
   /** Force playback from the start of the audio file. */
@@ -343,6 +371,10 @@ export default class SoundSource {
     })()
 
     return active || this._looping
+  }
+
+  get duration() {
+    return this._audioBuffer?.duration ?? null
   }
 
   /**

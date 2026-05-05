@@ -145,13 +145,19 @@ export default class TimelineScheduler {
     instance.stop?.()
     this._activeTimelinePlays.set(clip.sourceId, playToken)
 
-    if (typeof instance._ensureAudioBuffer === 'function' && typeof instance._startPlayback === 'function') {
+    if (typeof instance.loadAudioBuffer === 'function' && typeof instance.playLoaded === 'function') {
       try {
-        await instance._ensureAudioBuffer()
+        await instance.loadAudioBuffer()
         if (this._activeTimelinePlays.get(clip.sourceId) !== playToken) return
-        instance._startPlayback(safeOffset)
-        instance.updateAudio?.()
-        this._scheduleClipStop(clip, remaining, playToken)
+        const sourceDuration = this._clipSourceDuration(clip, instance)
+        const sourceOffset = sourceDuration ? safeOffset % sourceDuration : safeOffset
+        const segmentSeconds = sourceDuration
+          ? Math.min(remaining, sourceDuration - sourceOffset)
+          : remaining
+        const nextOffset = safeOffset + segmentSeconds
+
+        instance.playLoaded({ offset: sourceOffset })
+        this._scheduleClipSegmentEnd(clip, segmentSeconds, playToken, nextOffset)
         return
       } catch (err) {
         console.warn('Failed to start timeline clip at offset:', err)
@@ -159,10 +165,15 @@ export default class TimelineScheduler {
     }
 
     instance.play?.({ offset: safeOffset })
-    this._scheduleClipStop(clip, remaining, playToken)
+    this._scheduleClipSegmentEnd(clip, remaining, playToken)
   }
 
-  _scheduleClipStop(clip, remainingSeconds, playToken) {
+  _clipSourceDuration(clip, instance) {
+    const sourceDuration = clip.sourceDuration ?? instance.duration ?? instance._audioBuffer?.duration
+    return Number.isFinite(sourceDuration) && sourceDuration > 0 ? sourceDuration : null
+  }
+
+  _scheduleClipSegmentEnd(clip, segmentSeconds, playToken, nextOffset = null) {
     const id = setTimeout(() => {
       if (this._activeTimelinePlays.get(clip.sourceId) !== playToken) return
 
@@ -173,7 +184,11 @@ export default class TimelineScheduler {
       src?.instance?.stop?.()
       src?.instance?.pause?.()
       this._activeTimelinePlays.delete(clip.sourceId)
-    }, remainingSeconds * 1000)
+
+      if (Number.isFinite(nextOffset) && nextOffset < this._clipEndTime(clip) - clip.startTime) {
+        this._playClip(clip, nextOffset)
+      }
+    }, segmentSeconds * 1000)
 
     this._timeouts.push(id)
   }
