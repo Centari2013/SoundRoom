@@ -125,28 +125,30 @@ describe('AudioEngine media session controls', () => {
     expect(timelineSource.instance.loadAudioBuffer).not.toHaveBeenCalled()
   })
 
-  it('preloads source buffers before playAll starts scheduling playback', async () => {
+  it('starts ready sources without waiting for slower source buffers', async () => {
     let resolveLoad
     const loadPromise = new Promise(resolve => {
       resolveLoad = resolve
     })
-    const source = makeSource('scheduled-source', {
+    const slowSource = makeSource('slow-source', {
       loadAudioBuffer: () => loadPromise,
     })
+    const readySource = makeSource('ready-source')
     const engine = new AudioEngine()
-    engine.soundSources.value.push(source)
+    engine.soundSources.value.push(slowSource, readySource)
     engine.getAudioContext().state = 'running'
 
-    const playPromise = engine.playAll()
+    await engine.playAll()
     await Promise.resolve()
 
-    expect(source.instance.loadAudioBuffer).toHaveBeenCalled()
-    expect(source.instance.scheduleLoaded).not.toHaveBeenCalled()
+    expect(slowSource.instance.loadAudioBuffer).toHaveBeenCalled()
+    expect(slowSource.instance.scheduleLoaded).not.toHaveBeenCalled()
+    expect(readySource.instance.scheduleLoaded).toHaveBeenCalled()
 
-    resolveLoad(source.instance._audioBuffer)
-    await playPromise
+    resolveLoad(slowSource.instance._audioBuffer)
+    await Promise.resolve()
 
-    expect(source.instance.scheduleLoaded).toHaveBeenCalled()
+    expect(slowSource.instance.scheduleLoaded).toHaveBeenCalled()
   })
 
   it('resumes canvas master playback from the paused audible clip instead of waiting in silence', async () => {

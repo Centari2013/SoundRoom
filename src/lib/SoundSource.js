@@ -175,6 +175,23 @@ export default class SoundSource {
     this._volume = this.state.volume ?? 1 // default to 1 if not set
     this._gainNode.gain.value = this._volume
   }
+
+  async _fetchAudioBlob() {
+    if (this._storageKey) {
+      return await fetchAudioBlob(this._storageKey)
+    }
+
+    if (this._audioPath) {
+      const res = await fetch(this._audioPath)
+      if (!res.ok) {
+        throw new Error(`Failed to fetch audio blob for source (status ${res.status})`)
+      }
+      return await res.blob()
+    }
+
+    throw new Error('No audio source available for sound.')
+  }
+
   async _ensureAudioBuffer() {
     if (this._audioBuffer) return this._audioBuffer
 
@@ -183,30 +200,32 @@ export default class SoundSource {
     }
 
     this._bufferPromise = (async () => {
-      let blob = null
+      if (
+        this._audioCacheManager &&
+        this._fileId &&
+        this._audioCacheManager.audioContext &&
+        typeof this._audioCacheManager.getAudioBuffer === 'function'
+      ) {
+        const decoded = await this._audioCacheManager.getAudioBuffer(
+          this._fileId,
+          () => this._fetchAudioBlob()
+        )
+        this._audioBuffer = decoded
+        this._bufferPromise = null
+        return decoded
+      }
 
-      if (this._audioCacheManager && this._fileId) {
+      let blob = null
+      if (
+        this._audioCacheManager &&
+        this._fileId &&
+        typeof this._audioCacheManager.getOrFetchBlob === 'function'
+      ) {
         blob = await this._audioCacheManager.getOrFetchBlob(this._fileId, async () => {
-          if (this._storageKey) {
-            return await fetchAudioBlob(this._storageKey)
-          }
-          if (this._audioPath) {
-            const res = await fetch(this._audioPath)
-            if (!res.ok) {
-              throw new Error(`Failed to fetch audio blob for source (status ${res.status})`)
-            }
-            return await res.blob()
-          }
-          throw new Error('No audio source available for sound.')
+          return await this._fetchAudioBlob()
         })
-      } else if (this._audioPath) {
-        const res = await fetch(this._audioPath)
-        if (!res.ok) {
-          throw new Error(`Failed to fetch audio blob for source (status ${res.status})`)
-        }
-        blob = await res.blob()
-      } else if (this._storageKey) {
-        blob = await fetchAudioBlob(this._storageKey)
+      } else {
+        blob = await this._fetchAudioBlob()
       }
 
       if (!blob) {

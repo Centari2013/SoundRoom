@@ -75,19 +75,21 @@ describe('SoundSource', () => {
   })
 
   it('loads audio through the cache manager when one is available', async () => {
-    const blob = new Blob(['audio'])
+    const decoded = { duration: 1 }
+    const audioContext = makeContext()
     const cache = {
-      getOrFetchBlob: vi.fn(async () => blob),
+      audioContext,
+      getAudioBuffer: vi.fn(async () => decoded),
     }
-    const { source, audioContext } = makeSource({
+    const { source } = makeSource({
       file: { fileId: 'sound-1', audioPath: '/sounds/rain.wav' },
       audioCacheManager: cache,
     })
 
     await source.loadAudioBuffer()
 
-    expect(cache.getOrFetchBlob).toHaveBeenCalledWith('sound-1', expect.any(Function))
-    expect(audioContext.decodeAudioData).toHaveBeenCalledWith(expect.any(ArrayBuffer))
+    expect(cache.getAudioBuffer).toHaveBeenCalledWith('sound-1', expect.any(Function))
+    expect(audioContext.decodeAudioData).not.toHaveBeenCalled()
     expect(source.duration).toBe(1)
   })
 

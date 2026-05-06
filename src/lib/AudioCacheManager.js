@@ -17,11 +17,18 @@ export default class AudioCacheManager {
    * @param {number} [maxEntries=20]  Maximum number of in-memory object URLs.
    * @param {number} [maxPersistentEntries=100]  Maximum number of blobs stored
    *   in IndexedDB. A value of `0` disables the limit.
+   * @param {number} [maxDecodedBuffers=30]  Maximum decoded AudioBuffers kept
+   *   in memory.
    */
-  constructor(audioContext, maxEntries = 20, maxPersistentEntries = 100) {
+  constructor(audioContext, maxEntries = 20, maxPersistentEntries = 100, maxDecodedBuffers = 30) {
     // Map of fileId -> Object URL. New entries are added to the end so we can
     // treat it like an LRU cache.
     this.memoryCache = new Map()
+
+    // Decoded buffers are much faster to reuse than Blob URLs because Web Audio
+    // does not need to fetch or decode the same sound for every source instance.
+    this.bufferCache = new Map()
+    this._bufferPromises = new Map()
 
     // `audioContext` is optional so that the manager can be constructed before
     // Web Audio is initialised. It can later be supplied via `setAudioContext`.
@@ -32,6 +39,9 @@ export default class AudioCacheManager {
 
     // Maximum number of persistent blobs allowed in IndexedDB.
     this._maxPersistentEntries = maxPersistentEntries
+
+    // Maximum number of decoded buffers to retain in memory.
+    this._maxDecodedBuffers = maxDecodedBuffers
   }
 
   /**
@@ -78,6 +88,18 @@ export default class AudioCacheManager {
     }
   }
 
+  _touchBuffer(fileId, buffer) {
+    if (this.bufferCache.has(fileId)) {
+      this.bufferCache.delete(fileId)
+    }
+    this.bufferCache.set(fileId, buffer)
+
+    if (this.bufferCache.size > this._maxDecodedBuffers) {
+      const [oldestId] = this.bufferCache.keys()
+      this.bufferCache.delete(oldestId)
+    }
+  }
+
   /**
    * Retrieve an object URL for an audio file.
    *
@@ -117,11 +139,37 @@ export default class AudioCacheManager {
    * @returns {Promise<AudioBuffer>}
    */
   async getAudioBuffer(fileId, fetchFn) {
-    const blob = await this.getOrFetchBlob(fileId, fetchFn)
-    const arrayBuffer = await blob.arrayBuffer()
-    return await this.audioContext.decodeAudioData(arrayBuffer)
+    if (!this.audioContext) {
+      throw new Error('AudioContext is required to decode audio buffers.')
+    }
+
+    if (this.bufferCache.has(fileId)) {
+      const buffer = this.bufferCache.get(fileId)
+      this._touchBuffer(fileId, buffer)
+      return buffer
+    }
+
+    if (this._bufferPromises.has(fileId)) {
+      return this._bufferPromises.get(fileId)
+    }
+
+    const promise = (async () => {
+      const blob = await this.getOrFetchBlob(fileId, fetchFn)
+      const arrayBuffer = await blob.arrayBuffer()
+      const decoded = await this.audioContext.decodeAudioData(arrayBuffer.slice(0))
+      this._touchBuffer(fileId, decoded)
+      return decoded
+    })()
+
+    this._bufferPromises.set(fileId, promise)
+
+    try {
+      return await promise
+    } finally {
+      this._bufferPromises.delete(fileId)
+    }
   }
-    // Add a blob to persistent cache and trigger pruning
+
   /**
    * Add a Blob directly to the persistent cache, bypassing any fetch step.
    * The blob will also trigger a pruning run to enforce the persistent limit.
@@ -171,6 +219,8 @@ export default class AudioCacheManager {
       URL.revokeObjectURL(url)
     }
     this.memoryCache.clear()
+    this.bufferCache.clear()
+    this._bufferPromises.clear()
   }
 
   /**
@@ -188,6 +238,8 @@ export default class AudioCacheManager {
     const url = this.memoryCache.get(fileId)
     if (url) URL.revokeObjectURL(url)
     this.memoryCache.delete(fileId)
+    this.bufferCache.delete(fileId)
+    this._bufferPromises.delete(fileId)
     await del(fileId)
   }
 

@@ -351,6 +351,7 @@ export default class AudioEngine {
       if (src.locked || instance.locked) return
       if (sched.paused || !sched.enabled) return
       if (this.isSourceOnTimeline(sched.id)) return
+      if (instance.playing || sched.isPlaying) return
       this.#scheduler.scheduleNewSource(instance)
     })
   }
@@ -620,10 +621,6 @@ export default class AudioEngine {
     this.#canvasMasterPauseSnapshot = null
 
     if (canvasSources.length > 0) {
-      await this.preloadAudioBuffers({ includeTimeline: false })
-      for (const s of canvasSources) {
-        await this.playSoundSource(s, { preserveMediaSessionSnapshot: true })
-      }
       if (!usingCanvasMasterSnapshot) {
         if (this.#scheduler.roomStartTime === null) {
           this.#scheduler.start()
@@ -631,6 +628,12 @@ export default class AudioEngine {
           this.#scheduler.resume()
         }
       }
+      canvasSources.forEach((s) => {
+        void this.playSoundSource(s, { preserveMediaSessionSnapshot: true })
+          .catch(err => {
+            console.warn('Unable to start sound source from master play:', err)
+          })
+      })
     }
 
     updateSiteAudioPlaybackState()

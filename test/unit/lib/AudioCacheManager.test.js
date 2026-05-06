@@ -28,6 +28,7 @@ describe('AudioCacheManager', () => {
     it('starts with an empty memory cache', () => {
       const mgr = new AudioCacheManager()
       expect(mgr.memoryCache.size).toBe(0)
+      expect(mgr.bufferCache.size).toBe(0)
     })
 
     it('accepts an optional AudioContext', () => {
@@ -46,10 +47,16 @@ describe('AudioCacheManager', () => {
       expect(mgr._maxPersistentEntries).toBe(100)
     })
 
+    it('defaults maxDecodedBuffers to 30', () => {
+      const mgr = new AudioCacheManager()
+      expect(mgr._maxDecodedBuffers).toBe(30)
+    })
+
     it('accepts custom limits', () => {
-      const mgr = new AudioCacheManager(null, 5, 50)
+      const mgr = new AudioCacheManager(null, 5, 50, 10)
       expect(mgr._maxEntries).toBe(5)
       expect(mgr._maxPersistentEntries).toBe(50)
+      expect(mgr._maxDecodedBuffers).toBe(10)
     })
   })
 
@@ -162,6 +169,54 @@ describe('AudioCacheManager', () => {
     })
   })
 
+  // ─── getAudioBuffer ──────────────────────────────────────────────────────────
+
+  describe('getAudioBuffer', () => {
+    it('returns a decoded buffer from memory without fetching or decoding twice', async () => {
+      const decoded = { duration: 1 }
+      const ctx = { decodeAudioData: vi.fn(async () => decoded) }
+      const mgr = new AudioCacheManager(ctx)
+      const fetchFn = vi.fn(async () => new Blob(['audio data']))
+
+      const first = await mgr.getAudioBuffer('sound-1', fetchFn)
+      const second = await mgr.getAudioBuffer('sound-1', fetchFn)
+
+      expect(first).toBe(decoded)
+      expect(second).toBe(decoded)
+      expect(fetchFn).toHaveBeenCalledOnce()
+      expect(ctx.decodeAudioData).toHaveBeenCalledOnce()
+    })
+
+    it('shares an in-flight decode for the same file id', async () => {
+      const decoded = { duration: 1 }
+      const ctx = { decodeAudioData: vi.fn(async () => decoded) }
+      const mgr = new AudioCacheManager(ctx)
+      const fetchFn = vi.fn(async () => new Blob(['audio data']))
+
+      const [first, second] = await Promise.all([
+        mgr.getAudioBuffer('sound-1', fetchFn),
+        mgr.getAudioBuffer('sound-1', fetchFn),
+      ])
+
+      expect(first).toBe(decoded)
+      expect(second).toBe(decoded)
+      expect(fetchFn).toHaveBeenCalledOnce()
+      expect(ctx.decodeAudioData).toHaveBeenCalledOnce()
+    })
+
+    it('evicts the oldest decoded buffer when capacity is exceeded', async () => {
+      const ctx = { decodeAudioData: vi.fn(async () => ({ duration: 1 })) }
+      const mgr = new AudioCacheManager(ctx, 20, 100, 1)
+      const fetchFn = vi.fn(async () => new Blob(['audio data']))
+
+      await mgr.getAudioBuffer('first', fetchFn)
+      await mgr.getAudioBuffer('second', fetchFn)
+
+      expect(mgr.bufferCache.has('first')).toBe(false)
+      expect(mgr.bufferCache.has('second')).toBe(true)
+    })
+  })
+
   // ─── clearMemoryCache ────────────────────────────────────────────────────────
 
   describe('clearMemoryCache', () => {
@@ -169,8 +224,10 @@ describe('AudioCacheManager', () => {
       const mgr = new AudioCacheManager()
       mgr._touch('a', 'blob:a')
       mgr._touch('b', 'blob:b')
+      mgr._touchBuffer('decoded', { duration: 1 })
       mgr.clearMemoryCache()
       expect(mgr.memoryCache.size).toBe(0)
+      expect(mgr.bufferCache.size).toBe(0)
     })
 
     it('revokes object URLs for all cleared entries', () => {
@@ -189,8 +246,10 @@ describe('AudioCacheManager', () => {
     it('deletes the entry from memory cache', async () => {
       const mgr = new AudioCacheManager()
       mgr._touch('del-me', 'blob:del-me')
+      mgr._touchBuffer('del-me', { duration: 1 })
       await mgr.remove('del-me')
       expect(mgr.memoryCache.has('del-me')).toBe(false)
+      expect(mgr.bufferCache.has('del-me')).toBe(false)
     })
 
     it('calls del on IndexedDB', async () => {
