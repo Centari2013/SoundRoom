@@ -53,8 +53,7 @@ function colorFor(sourceId) {
 // ── Playhead ─────────────────────────────────────────────────────────
 const scrollEl = ref(null)
 const playheadX = computed(() => {
-  const scrollLeft = scrollEl.value?.scrollLeft ?? 0
-  return 120 + currentTime.value * pxPerSecond.value - scrollLeft
+  return 120 + currentTime.value * pxPerSecond.value
 })
 
 // ── Seek via ruler ────────────────────────────────────────────────────
@@ -121,7 +120,8 @@ const dragState = ref(null) // { clip, startX, originalStart }
 const resizeState = ref(null) // { clip, startX, originalDuration }
 
 function onClipDragStart({ clip, startX }) {
-  dragState.value = { clip, startX, originalStart: clip.startTime }
+  const realClip = timeline.value?.clips.find(c => c.id === clip.id) ?? clip
+  dragState.value = { clip: realClip, startX, originalStart: realClip.startTime }
   document.addEventListener('mousemove', onDragMove)
   document.addEventListener('mouseup', onDragEnd)
 }
@@ -151,7 +151,8 @@ function onDragEnd() {
 }
 
 function onClipResizeStart({ clip, startX }) {
-  resizeState.value = { clip, startX, originalDuration: clip.duration }
+  const realClip = timeline.value?.clips.find(c => c.id === clip.id) ?? clip
+  resizeState.value = { clip: realClip, startX, originalDuration: realClip.duration }
   document.addEventListener('mousemove', onResizeMove)
   document.addEventListener('mouseup', onResizeEnd)
 }

@@ -55,7 +55,7 @@
         type="button"
         aria-label="Toggle timeline"
       >
-        {{ timelineOpen ? '▾ Timeline' : '▸ Timeline' }}
+        {{ timelineOpen ? '▲ Timeline' : '▶ Timeline' }}
       </BaseButton>
     </div>
 
