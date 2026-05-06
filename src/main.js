@@ -7,6 +7,7 @@ import router from '@/utils/router.js'
 import '@/composables/useAuth.js' // Ensure auth is initialized before app mounts
 import '@globalhive/vuejs-tour/dist/style.css'
 import { useThemeStore } from '@/stores/useThemeStore'
+import { installSiteMediaSessionHandlers } from '@/lib/siteAudioTransport'
 import * as Sentry from "@sentry/vue";
 
 const app = createApp(App)
@@ -17,6 +18,8 @@ app.use(pinia)
 const themeStore = useThemeStore(pinia)
 themeStore.hydrateFromStorage()
 themeStore.watchAuthTheme()
+
+installSiteMediaSessionHandlers()
 
 
 
@@ -39,4 +42,3 @@ app
   .use(PortalVue)
   .use(router)
   .mount('#app')
-

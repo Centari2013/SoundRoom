@@ -7,6 +7,7 @@ import { computed, ref, watch, reactive } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useAudioCacheStore } from '@/stores/useAudioCacheStore'
 import { buildStorageKey } from '@/utils/downloadAudio'
+import { registerSiteAudioTarget, updateSiteAudioPlaybackState } from '@/lib/siteAudioTransport'
 
 /**
  * Central manager for all Web Audio operations.
@@ -34,6 +35,8 @@ export default class AudioEngine {
   #room = null
   #audioCacheManagerRef = null
   #timelineScheduler = null
+  #unregisterSiteAudioTarget = null
+  #mediaSessionPauseSnapshot = null
 
   /**
    * Create a new AudioEngine instance.
@@ -175,7 +178,7 @@ export default class AudioEngine {
    */
   setupAudioEngine() {
     // Recreate `SoundSource` instances from any previously saved data and
-    // register media session handlers so hardware play/pause keys work.
+    // register with the site transport so hardware play/pause keys work.
     if (this.#uninitializedSoundSources.length > 0) { // add loaded sound sources
       this.#uninitializedSoundSources.forEach(src => {
         this.addSoundSource(src) // saved sound sources already in payload format
@@ -184,26 +187,11 @@ export default class AudioEngine {
 
     this.#scheduler.start();
 
-    if ('mediaSession' in navigator) {
-      navigator.mediaSession.setActionHandler('play', () => {
-        this.playAll()
-      })
-    
-      navigator.mediaSession.setActionHandler('pause', () => {
-        this.pauseAll()
-      })
-    
-      navigator.mediaSession.metadata = new MediaMetadata({
-        title: 'SoundRoom',
-        artist: 'Various',
-        album: 'SoundRoom Noise',
-        artwork: [
-          {
-            src: 'SoundRoom.png',
-            sizes: '512x512',
-            type: 'image/png'
-          }
-        ]
+    if (!this.#unregisterSiteAudioTarget) {
+      this.#unregisterSiteAudioTarget = registerSiteAudioTarget({
+        pauseForMediaSession: () => this.pauseForMediaSession(),
+        resumeFromMediaSession: () => this.resumeFromMediaSession(),
+        isPlaying: () => this.isPlayingForMediaSession(),
       })
     }
 
@@ -297,6 +285,8 @@ export default class AudioEngine {
   }
 
   async playSoundSourceImmediately(src) {
+    this.#mediaSessionPauseSnapshot = null
+
     if (!src || !src.instance) {
       console.warn("Tried to autoplay sound source but it was not valid:", src)
       return
@@ -322,12 +312,10 @@ export default class AudioEngine {
     const sched = src.instance.state.schedule
     sched.paused = false
     sched.isPlaying = true
+    updateSiteAudioPlaybackState()
 
     await src.instance.play()
-
-    if ('mediaSession' in navigator) {
-      navigator.mediaSession.playbackState = 'playing'
-    }
+    updateSiteAudioPlaybackState()
   }
 
   /**
@@ -461,7 +449,11 @@ export default class AudioEngine {
 
   }
 
-  playSoundSource(src) {
+  playSoundSource(src, { preserveMediaSessionSnapshot = false } = {}) {
+    if (!preserveMediaSessionSnapshot) {
+      this.#mediaSessionPauseSnapshot = null
+    }
+
     if (!src || !src.instance) {
       console.warn("Tried to play sound source but it was not valid:", src)
       return
@@ -481,9 +473,15 @@ export default class AudioEngine {
     } else {
       this.#scheduler.updateSchedule(src.instance)
     }
+
+    updateSiteAudioPlaybackState()
   }
 
-  pauseSoundSource(src) {
+  pauseSoundSource(src, { preserveMediaSessionSnapshot = false } = {}) {
+    if (!preserveMediaSessionSnapshot) {
+      this.#mediaSessionPauseSnapshot = null
+    }
+
     if (!src || !src.instance) {
       console.warn("Tried to pause sound source but it was not valid:", src)
       return
@@ -494,6 +492,7 @@ export default class AudioEngine {
 
     this.#scheduler.pauseSource(src.instance);
     src.instance.stop();
+    updateSiteAudioPlaybackState()
   }
 
   async seekSoundSource(src, offsetSeconds, { play = src?.instance?.playing ?? false } = {}) {
@@ -513,7 +512,11 @@ export default class AudioEngine {
    * Start playback of all sound sources and initialise scheduling.
    * If every source is on the timeline, delegates to the timeline scheduler.
    */
-  playAll() {
+  playAll({ preserveMediaSessionSnapshot = false } = {}) {
+    if (!preserveMediaSessionSnapshot) {
+      this.#mediaSessionPauseSnapshot = null
+    }
+
     if (this.#audioContext?.state === 'suspended') {
       this.#audioContext.resume()
     }
@@ -528,7 +531,7 @@ export default class AudioEngine {
       this.soundSources.value.forEach(s => {
         if (s.locked) return
         if (this.isSourceOnTimeline(s.instance?.state?.schedule?.id)) return
-        this.playSoundSource(s)
+        this.playSoundSource(s, { preserveMediaSessionSnapshot: true })
       })
       if (this.#scheduler.roomStartTime === null) {
         this.#scheduler.start()
@@ -537,15 +540,7 @@ export default class AudioEngine {
       }
     }
 
-    if ('mediaSession' in navigator) {
-      navigator.mediaSession.playbackState = 'playing'
-      navigator.mediaSession.metadata = new MediaMetadata({
-        title: 'SoundRoom',
-        artist: 'Various',
-        album: 'SoundRoom Noise',
-        artwork: [{ src: 'SoundRoom.png', sizes: '512x512', type: 'image/png' }]
-      })
-    }
+    updateSiteAudioPlaybackState()
   }
 
 
@@ -553,21 +548,114 @@ export default class AudioEngine {
    * Pause all active sound sources and suspend scheduling.
    * If every source is on the timeline, delegates to the timeline scheduler.
    */
-  pauseAll() {
+  pauseAll({ preserveMediaSessionSnapshot = false } = {}) {
+    if (!preserveMediaSessionSnapshot) {
+      this.#mediaSessionPauseSnapshot = null
+    }
+
+    const timelineWasRunning = this.#timelineScheduler.isRunning.value
+
     if (this.allSourcesOnTimeline) {
       this.#timelineScheduler.pause()
     } else {
+      if (timelineWasRunning) {
+        this.#timelineScheduler.pause()
+      }
       this.soundSources.value.forEach(s => {
         if (this.isSourceOnTimeline(s.instance?.state?.schedule?.id)) return
-        this.pauseSoundSource(s)
+        this.pauseSoundSource(s, { preserveMediaSessionSnapshot: true })
       })
       this.#scheduler.pause()
     }
+
+    updateSiteAudioPlaybackState()
     
-    if ('mediaSession' in navigator) {
-      navigator.mediaSession.playbackState = 'paused'
+  }
+
+  #getSourceScheduleId(src) {
+    return src?.instance?.state?.schedule?.id ?? null
+  }
+
+  #isNonTimelineSourceActive(src) {
+    if (!src?.instance || src.locked || src.instance.locked) return false
+    if (this.isSourceOnTimeline(this.#getSourceScheduleId(src))) return false
+
+    const sched = src.instance.state?.schedule
+    return Boolean(src.instance.playing || sched?.isPlaying)
+  }
+
+  #findSourceByScheduleId(scheduleId) {
+    return this.soundSources.value.find(s => this.#getSourceScheduleId(s) === scheduleId)
+  }
+
+  isPlayingForMediaSession() {
+    return this.#timelineScheduler.isRunning.value ||
+      this.soundSources.value.some(s => Boolean(s.instance?.playing || s.instance?.state?.schedule?.isPlaying))
+  }
+
+  pauseForMediaSession() {
+    const timelineWasRunning = this.#timelineScheduler.isRunning.value
+    const sourceIds = this.soundSources.value
+      .filter(s => this.#isNonTimelineSourceActive(s))
+      .map(s => this.#getSourceScheduleId(s))
+      .filter(Boolean)
+
+    if (!timelineWasRunning && sourceIds.length === 0) {
+      updateSiteAudioPlaybackState()
+      return false
     }
-    
+
+    this.#mediaSessionPauseSnapshot = { timelineWasRunning, sourceIds }
+
+    if (timelineWasRunning) {
+      this.#timelineScheduler.pause()
+    }
+
+    sourceIds.forEach(sourceId => {
+      const src = this.#findSourceByScheduleId(sourceId)
+      if (src) {
+        this.pauseSoundSource(src, { preserveMediaSessionSnapshot: true })
+      }
+    })
+
+    updateSiteAudioPlaybackState()
+    return true
+  }
+
+  async resumeFromMediaSession() {
+    const snapshot = this.#mediaSessionPauseSnapshot
+    if (!snapshot) {
+      updateSiteAudioPlaybackState()
+      return false
+    }
+
+    if (this.#audioContext?.state === 'suspended') {
+      try {
+        await this.#audioContext.resume()
+      } catch (err) {
+        console.warn('Failed to resume audio context for media session:', err)
+      }
+    }
+
+    let resumedAny = false
+
+    snapshot.sourceIds.forEach(sourceId => {
+      const src = this.#findSourceByScheduleId(sourceId)
+      if (!src || src.locked || src.instance?.locked) return
+      if (this.isSourceOnTimeline(sourceId)) return
+
+      this.playSoundSource(src, { preserveMediaSessionSnapshot: true })
+      resumedAny = true
+    })
+
+    if (snapshot.timelineWasRunning) {
+      this.#timelineScheduler.resume()
+      resumedAny = true
+    }
+
+    this.#mediaSessionPauseSnapshot = null
+    updateSiteAudioPlaybackState()
+    return resumedAny
   }
 
   /**
@@ -584,6 +672,12 @@ export default class AudioEngine {
     this.#scheduleWatchers.clear()
     this.soundSources.value.forEach(s => s.instance.dispose())
     this.soundSources.value.length = 0
+
+    if (this.#unregisterSiteAudioTarget) {
+      this.#unregisterSiteAudioTarget()
+      this.#unregisterSiteAudioTarget = null
+    }
+    this.#mediaSessionPauseSnapshot = null
  
     if (this.#convolver) {
       try {
@@ -766,16 +860,22 @@ export default class AudioEngine {
   }
 
   playTimeline(fromSeconds) {
+    this.#mediaSessionPauseSnapshot = null
     const from = fromSeconds ?? this.#timelineScheduler.currentTime.value
     this.#timelineScheduler.start(from)
+    updateSiteAudioPlaybackState()
   }
 
   pauseTimeline() {
+    this.#mediaSessionPauseSnapshot = null
     this.#timelineScheduler.pause()
+    updateSiteAudioPlaybackState()
   }
 
   stopTimeline() {
+    this.#mediaSessionPauseSnapshot = null
     this.#timelineScheduler.stop()
+    updateSiteAudioPlaybackState()
   }
 
   seekTimeline(seconds) {

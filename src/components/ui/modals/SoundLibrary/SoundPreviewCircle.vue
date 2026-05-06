@@ -45,6 +45,7 @@ import { storeToRefs } from 'pinia'
 import { useAudioEngineStore } from '@/stores/useAudioEngineStore'
 import { useAudioCacheStore } from '@/stores/useAudioCacheStore'
 import { buildStorageKey, fetchAudioBlob } from '@/utils/downloadAudio'
+import { registerSiteAudioTarget, updateSiteAudioPlaybackState } from '@/lib/siteAudioTransport'
 
 const props = defineProps({
   soundData: Object,
@@ -63,7 +64,13 @@ const isLoading = ref(false)
 let rafId = null
 let timeoutId = null
 let bufferSource = null
+let previewContext = null
+let previewBuffer = null
 let playStartTime = 0
+let playbackOffset = 0
+let playbackDuration = 0
+let pausedForMediaSession = false
+let unregisterSiteAudioTarget = null
 
 const circleRef = ref(null)
 const radius = ref(0)
@@ -76,7 +83,7 @@ const audioCacheStore = useAudioCacheStore()
 const { audioCacheManager } = storeToRefs(audioCacheStore)
 
 watch(() => props.currentlyPlayingId, (newId) => {
-  if (newId !== props.soundData.libraryId && isPlaying.value) {
+  if (newId !== props.soundData.libraryId && (isPlaying.value || pausedForMediaSession)) {
     stopPlayback()
   }
 })
@@ -97,7 +104,13 @@ function syncDurationFromProps() {
   duration.value = durationSeconds
 }
 
-onMounted(async () => {
+onMounted(() => {
+  unregisterSiteAudioTarget = registerSiteAudioTarget({
+    pauseForMediaSession,
+    resumeFromMediaSession,
+    isPlaying: () => isPlaying.value || isLoading.value,
+  })
+
   syncDurationFromProps()
 
   nextTick(() => {
@@ -165,6 +178,7 @@ async function togglePlay() {
   const fileId = previewUrl ? `preview-${fallbackFileId}` : fallbackFileId
 
   isLoading.value = true
+  updateSiteAudioPlaybackState()
 
   try {
     const buffer = await cacheManager.getAudioBuffer(fileId, async () => {
@@ -196,38 +210,58 @@ async function togglePlay() {
     }
 
     stopPlayback()
-
-    bufferSource = context.createBufferSource()
-    bufferSource.buffer = buffer
-    bufferSource.onended = () => stopPlayback(true)
-    bufferSource.connect(context.destination)
-
-    const playbackDuration = buffer.duration
-    playStartTime = context.currentTime
-
-    bufferSource.start(0, 0, playbackDuration)
-
-    isPlaying.value = true
-    emit('updateCurrent', props.soundData.libraryId)
-
-    setupProgressTracking(context, playbackDuration)
-    timeoutId = setTimeout(() => stopPlayback(), playbackDuration * 1000)
+    previewContext = context
+    previewBuffer = buffer
+    startBufferPlayback(context, buffer, 0)
   } catch (err) {
     console.error('Failed to preview sound:', err)
     stopPlayback()
   } finally {
     isLoading.value = false
+    updateSiteAudioPlaybackState()
   }
 }
 
-function setupProgressTracking(context, maxDuration) {
+function getCurrentPlaybackOffset() {
+  if (!previewContext || !isPlaying.value) return playbackOffset
+
+  const elapsed = Math.max(0, previewContext.currentTime - playStartTime)
+  return Math.min(playbackOffset + elapsed, playbackDuration || elapsed)
+}
+
+function startBufferPlayback(context, buffer, offset = 0) {
+  clearTimeout(timeoutId)
+  timeoutId = null
+  cancelAnimationFrame(rafId)
+
+  playbackDuration = buffer.duration
+  playbackOffset = Math.max(0, Math.min(offset, Math.max(0, playbackDuration - 0.001)))
+
+  bufferSource = context.createBufferSource()
+  bufferSource.buffer = buffer
+  bufferSource.onended = () => stopPlayback(true)
+  bufferSource.connect(context.destination)
+
+  playStartTime = context.currentTime
+  const remainingDuration = Math.max(0.001, playbackDuration - playbackOffset)
+  bufferSource.start(0, playbackOffset, remainingDuration)
+
+  isPlaying.value = true
+  pausedForMediaSession = false
+  emit('updateCurrent', props.soundData.libraryId)
+
+  setupProgressTracking(context)
+  timeoutId = setTimeout(() => stopPlayback(), remainingDuration * 1000)
+  updateSiteAudioPlaybackState()
+}
+
+function setupProgressTracking(context) {
   cancelAnimationFrame(rafId)
 
   function updateProgress() {
     if (isPlaying.value) {
-      const elapsed = Math.max(0, context.currentTime - playStartTime)
-      const denom = maxDuration || 1
-      progress.value = Math.min(elapsed / denom, 1)
+      const denom = playbackDuration || 1
+      progress.value = Math.min(getCurrentPlaybackOffset() / denom, 1)
       rafId = requestAnimationFrame(updateProgress)
     }
   }
@@ -235,7 +269,9 @@ function setupProgressTracking(context, maxDuration) {
   rafId = requestAnimationFrame(updateProgress)
 }
 
-function stopPlayback(skipStop = false) {
+function stopPlayback(skipStop = false, { rememberOffset = false, resetProgress = true, preserveMediaSessionPause = false } = {}) {
+  const nextOffset = rememberOffset ? getCurrentPlaybackOffset() : 0
+
   clearTimeout(timeoutId)
   timeoutId = null
   cancelAnimationFrame(rafId)
@@ -254,11 +290,43 @@ function stopPlayback(skipStop = false) {
   }
 
   isPlaying.value = false
-  progress.value = 0
+  playbackOffset = nextOffset
+  pausedForMediaSession = preserveMediaSessionPause && nextOffset < playbackDuration
+  progress.value = resetProgress
+    ? 0
+    : Math.min(playbackDuration ? playbackOffset / playbackDuration : progress.value, 1)
+  updateSiteAudioPlaybackState()
+}
+
+function pauseForMediaSession() {
+  if (!isPlaying.value) return false
+
+  stopPlayback(false, {
+    rememberOffset: true,
+    resetProgress: false,
+    preserveMediaSessionPause: true
+  })
+  return true
+}
+
+async function resumeFromMediaSession() {
+  if (!pausedForMediaSession || !previewContext || !previewBuffer) return false
+
+  if (previewContext.state === 'suspended') {
+    try {
+      await previewContext.resume()
+    } catch (err) {
+      console.warn('Failed to resume audio context for preview:', err)
+    }
+  }
+
+  startBufferPlayback(previewContext, previewBuffer, playbackOffset)
+  return true
 }
 
 onUnmounted(() => {
   stopPlayback()
+  unregisterSiteAudioTarget?.()
 })
 </script>
 
