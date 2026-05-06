@@ -100,6 +100,9 @@
   --color-node-blue: #5a8cff;
   --color-node-blue-rgb: 90, 140, 255;
 
+  --color-node-surround: #a855f7;
+  --color-node-surround-rgb: 168, 85, 247;
+
   --color-node-highlight: rgba(var(--color-accent-rgb), 0.14);
 
   --color-selection-strong: #2f6dfd;
@@ -169,6 +172,8 @@
   --color-danger-rgb: 187, 74, 74;
   --color-node-blue-rgb: 90, 140, 255;
   --color-node-red-rgb: 232, 90, 90;
+  --color-node-surround: #a855f7;
+  --color-node-surround-rgb: 168, 85, 247;
 
   /* Borders */
   --color-border-subtle: #c9ced6;

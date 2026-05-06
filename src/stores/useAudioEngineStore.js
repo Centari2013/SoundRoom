@@ -111,7 +111,70 @@ export const useAudioEngineStore = defineStore('audioEngine', () => {
     audioEngine.value.pauseSoundSource(src)
   }
 
-  const isPlaying = computed(() => audioEngine.value.soundSources.value.some(wrapper => wrapper.instance.playing))
+  function seekSoundSource(src, offsetSeconds, options) {
+    return audioEngine.value.seekSoundSource(src, offsetSeconds, options)
+  }
+
+  function setTimelineEnabled(enabled) {
+    audioEngine.value.setTimelineEnabled(enabled)
+  }
+
+  function addTimelineClip(sourceId, startTime, duration, options) {
+    return audioEngine.value.addTimelineClip(sourceId, startTime, duration, options)
+  }
+
+  function insertTimelineClip(clip, index) {
+    return audioEngine.value.insertTimelineClip(clip, index)
+  }
+
+  function removeTimelineClip(clipId) {
+    audioEngine.value.removeTimelineClip(clipId)
+  }
+
+  function removeSourceFromTimeline(sourceId) {
+    audioEngine.value.removeSourceFromTimeline(sourceId)
+  }
+
+  function updateTimelineClip(clipId, patch, options) {
+    audioEngine.value.updateTimelineClip(clipId, patch, options)
+  }
+
+  function setTimelineDuration(seconds) {
+    audioEngine.value.setTimelineDuration(seconds)
+  }
+
+  function setTimelineLoop(loop) {
+    audioEngine.value.setTimelineLoop(loop)
+  }
+
+  function playTimeline(fromSeconds) {
+    audioEngine.value.playTimeline(fromSeconds)
+  }
+
+  function pauseTimeline() {
+    audioEngine.value.pauseTimeline()
+  }
+
+  function stopTimeline() {
+    audioEngine.value.stopTimeline()
+  }
+
+  function seekTimeline(seconds) {
+    audioEngine.value.seekTimeline(seconds)
+  }
+
+  const allSourcesOnTimeline = computed(() => audioEngine.value.allSourcesOnTimeline)
+
+  const isPlaying = computed(() => {
+    if (allSourcesOnTimeline.value) {
+      return audioEngine.value.timelineScheduler?.isRunning.value ?? false
+    }
+    return audioEngine.value.soundSources.value.some(w => {
+      const scheduleId = w.instance?.state?.schedule?.id
+      return !audioEngine.value.isSourceOnTimeline(scheduleId) && w.instance.playing
+    })
+  })
+
   const MAX_CANVAS_SOURCES = computed(() => audioEngine.value.maxSourceCount)
 
   return {
@@ -125,6 +188,20 @@ export const useAudioEngineStore = defineStore('audioEngine', () => {
     loadIR,
     playSoundSource,
     pauseSoundSource,
+    seekSoundSource,
+    setTimelineEnabled,
+    addTimelineClip,
+    insertTimelineClip,
+    removeTimelineClip,
+    removeSourceFromTimeline,
+    updateTimelineClip,
+    setTimelineDuration,
+    setTimelineLoop,
+    playTimeline,
+    pauseTimeline,
+    stopTimeline,
+    seekTimeline,
+    allSourcesOnTimeline,
     isPlaying,
     MAX_CANVAS_SOURCES
   }

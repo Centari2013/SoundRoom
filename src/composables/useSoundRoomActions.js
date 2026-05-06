@@ -26,6 +26,8 @@ export function registerSoundRoomActions() {
   registerCanvasActions()
   registerDraggableActions()
   registerSchedulingActions()
+  registerTimelineActions()
+  registerSurroundActions()
   actionsRegistered = true
   registeredActionManager = actionManager.value
 }
@@ -43,7 +45,13 @@ export function unregisterSoundRoomActions() {
     'delete_canvas_sound_source',
     'move_canvas_sound_source',
     'delete_draggable_sound_source',
-    'add_draggable_sound_source'
+    'add_draggable_sound_source',
+    'update_sound_source_schedule',
+    'toggle_source_surround',
+    'add_timeline_clip',
+    'delete_timeline_clip',
+    'remove_source_from_timeline',
+    'update_timeline_clip'
   ])
   actionsRegistered = false
   registeredActionManager = null
@@ -101,8 +109,12 @@ function registerCanvasActions() {
       : null)
     payload.src.storageKey = storageKey
     payload.src.fileId = payload.src.fileId ?? payload.src.libraryId ?? storageKey ?? payload.src.audioPath ?? null
-    audioEngine.value.addSoundSource(payload)
+    const addedSource = audioEngine.value.addSoundSource(payload)
     listener.value.updateAudio()
+
+    if (payload.autoplay && addedSource) {
+      await audioEngine.value.playSoundSourceImmediately(addedSource)
+    }
   }
 
   /**
@@ -321,4 +333,84 @@ function registerSchedulingActions() {
   );
 
   
+}
+
+function registerSurroundActions() {
+  const { actionManager } = storeToRefs(useActionManagerStore())
+
+  const applySurround = (src, value) => {
+    if (src?.locked) return
+    src.instance.state.surround = value
+    src.instance.updateAudio()
+  }
+
+  actionManager.value.registerActionHandlers(
+    'toggle_source_surround',
+    payload => applySurround(payload.src, payload.to),
+    payload => applySurround(payload.src, payload.from)
+  )
+}
+
+function registerTimelineActions() {
+  const { audioEngine } = storeToRefs(useAudioEngineStore())
+  const { actionManager } = storeToRefs(useActionManagerStore())
+
+  const addTimelineClip = (payload) => {
+    if (!payload?.clip?.sourceId) return
+    const clip = payload.clip
+    payload.clip.id = clip.id ?? crypto.randomUUID()
+    audioEngine.value.insertTimelineClip(payload.clip, payload.index)
+  }
+
+  const deleteTimelineClip = (payload) => {
+    const removed = audioEngine.value.removeTimelineClip(payload?.clip?.id ?? payload?.clipId)
+    if (removed) {
+      payload.clip = removed.clip
+      payload.index = removed.index
+    }
+  }
+
+  const removeSourceFromTimeline = (payload) => {
+    if (!payload?.sourceId) return
+    const removed = audioEngine.value.removeSourceFromTimeline(payload.sourceId)
+    if (removed?.length) {
+      payload.removedClips = removed
+    }
+  }
+
+  const restoreSourceTimelineClips = (payload) => {
+    for (const item of payload?.removedClips ?? []) {
+      audioEngine.value.insertTimelineClip(item.clip, item.index)
+    }
+  }
+
+  const applyTimelineClipPatch = (payload, key) => {
+    const clip = audioEngine.value.timeline.clips.find(c => c.id === payload?.clipId)
+    if (!clip || !payload?.[key]) return
+    audioEngine.value.updateTimelineClip(payload.clipId, { ...payload[key] })
+  }
+
+  actionManager.value.registerActionHandlers(
+    'add_timeline_clip',
+    addTimelineClip,
+    deleteTimelineClip
+  )
+
+  actionManager.value.registerActionHandlers(
+    'delete_timeline_clip',
+    deleteTimelineClip,
+    addTimelineClip
+  )
+
+  actionManager.value.registerActionHandlers(
+    'remove_source_from_timeline',
+    removeSourceFromTimeline,
+    restoreSourceTimelineClips
+  )
+
+  actionManager.value.registerActionHandlers(
+    'update_timeline_clip',
+    payload => applyTimelineClipPatch(payload, 'to'),
+    payload => applyTimelineClipPatch(payload, 'from')
+  )
 }

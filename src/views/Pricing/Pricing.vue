@@ -90,11 +90,20 @@ const FEATURE_DEFINITIONS = [
 
   {
     key: 'timed-loops',
-    label: 'Timed Loop Controls',
+    label: 'Simple Scheduling',
     tiers: {
-      free: { status: 'unavailable', detail: 'Basic unlocks timed loops' },
-      basic: { status: 'limited', detail: 'Per-source loop timing' },
-      pro: { status: 'included', detail: 'Per-source loop timing & chaining' }
+      free: { status: 'unavailable', detail: 'Basic unlocks simple scheduling' },
+      basic: { status: 'included', detail: 'Per-source interval timing' },
+      pro: { status: 'included', detail: 'Per-source interval timing' }
+    }
+  },
+  {
+    key: 'timeline-sequencer',
+    label: 'Timeline Sequencer',
+    tiers: {
+      free: { status: 'unavailable', detail: 'Pro unlocks timeline clips' },
+      basic: { status: 'unavailable', detail: 'Pro unlocks timeline clips' },
+      pro: { status: 'included', detail: 'Arrange, seek, loop, and repeat clip regions' }
     }
   },
   {
@@ -117,11 +126,11 @@ const FEATURE_DEFINITIONS = [
   },
   {
     key: 'schedule-playback',
-    label: 'Schedule Playback (Coming Soon)',
+    label: 'Advanced Scheduling',
     tiers: {
-      free: { status: 'unavailable', detail: 'Coming soon with Pro' },
-      basic: { status: 'unavailable', detail: 'Coming soon with Pro' },
-      pro: { status: 'included', detail: 'Early access when it launches' }
+      free: { status: 'unavailable', detail: 'Pro unlocks play counts' },
+      basic: { status: 'unavailable', detail: 'Pro unlocks play counts' },
+      pro: { status: 'included', detail: 'Play counts and interval + count modes' }
     }
   },
   {
@@ -163,8 +172,8 @@ const planDefinitions = [
     id: 'pro',
     name: 'Pro',
     price: '$10/mo',
-    tagline: 'Unlock everything in Basic + uploads, AI tools, and pro scheduling workflows.',
-    spotlightKeys: ['custom-uploads', 'schedule-playback', 'theme-options']
+    tagline: 'Unlock everything in Basic + uploads, timeline sequencing, and pro scheduling workflows.',
+    spotlightKeys: ['custom-uploads', 'timeline-sequencer', 'schedule-playback']
   }
 ]
 

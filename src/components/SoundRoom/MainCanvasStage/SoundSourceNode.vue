@@ -49,7 +49,10 @@
     />
     <v-circle
       :radius="10"
-      :fill="getFillColor"
+      :fill="isTimelineAndSurround ? undefined : getFillColor"
+      :fillLinearGradientStartPoint="isTimelineAndSurround ? { x: -10, y: 0 } : undefined"
+      :fillLinearGradientEndPoint="isTimelineAndSurround ? { x: 10, y: 0 } : undefined"
+      :fillLinearGradientColorStops="isTimelineAndSurround ? [0, TIMELINE_NODE_COLOR, 1, SURROUND_NODE_COLOR] : undefined"
       :stroke="dotStrokeColor"
       :strokeWidth="2"
       :shadowColor="getFillColor"
@@ -68,6 +71,41 @@
       v-if="true"
       :playing="sourceIsPlaying"
       :scheduled="isScheduled"
+    />
+
+    <!-- Surround ring: dashed circle indicating omnidirectional radiation -->
+    <v-circle
+      v-if="isSurround"
+      :radius="28"
+      fill="transparent"
+      :stroke="surroundRingColor"
+      :strokeWidth="1.5"
+      :dash="[4, 3]"
+      :listening="false"
+    />
+
+    <!-- Timeline badge: small amber dot above-right the node -->
+    <v-circle
+      v-if="isOnTimeline"
+      :x="8"
+      :y="-12"
+      :radius="4"
+      :fill="TIMELINE_NODE_COLOR"
+      :stroke="'#78350f'"
+      :strokeWidth="1"
+      :listening="false"
+    />
+
+    <!-- Surround badge: small purple dot above-left the node -->
+    <v-circle
+      v-if="isSurround"
+      :x="-8"
+      :y="-12"
+      :radius="4"
+      :fill="SURROUND_NODE_COLOR"
+      :stroke="'#6b21a8'"
+      :strokeWidth="1"
+      :listening="false"
     />
 
 
@@ -122,6 +160,7 @@
 import { computed, ref } from 'vue'
 import { useRoomStore } from '@/stores/useRoomStore'
 import { useActionManagerStore } from '@/stores/useActionManagerStore'
+import { useAudioEngineStore } from '@/stores/useAudioEngineStore'
 import { storeToRefs } from 'pinia'
 import ScheduledPlayRing from '@/components/SoundRoom/MainCanvasStage/ScheduledPlayRing.vue'
 import { useKonvaThemeRedraw } from '@/composables/useKonvaTheme'
@@ -135,6 +174,13 @@ const props = defineProps({
 
 const { room } = storeToRefs(useRoomStore())
 const { actionManager } = storeToRefs(useActionManagerStore())
+const engineStore = useAudioEngineStore()
+
+const isOnTimeline = computed(() => {
+  const sourceId = props.source?.instance?.state?.schedule?.id
+  if (!sourceId || !engineStore.audioEngine) return false
+  return engineStore.audioEngine.isSourceOnTimeline(sourceId)
+})
 const emit = defineEmits(['select'])
 const themeStore = useThemeStore()
 
@@ -175,7 +221,20 @@ const themeTokens = computed(() => ({
   white: getVar('--base-white', '#ffffff'),
 }))
 
+const TIMELINE_NODE_COLOR = '#f59e0b' // amber-400
+const SURROUND_NODE_COLOR = '#a855f7' // purple-500
+
+const isSurround = computed(() => !!props.source.instance.state.surround)
+const isTimelineAndSurround = computed(() => isOnTimeline.value && isSurround.value)
+
+const surroundRingColor = computed(() =>
+  rgbaFromVar('--color-node-surround-rgb', 0.45, 'rgba(168, 85, 247, 0.45)')
+)
+
 const getFillColor = computed(() => {
+  if (isSurround.value && !isOnTimeline.value) return SURROUND_NODE_COLOR
+  if (isOnTimeline.value && !isSurround.value) return TIMELINE_NODE_COLOR
+  if (isTimelineAndSurround.value) return SURROUND_NODE_COLOR // gradient handles display; this is for shadow
   if (isDarkMode.value) {
     if (props.selected) return themeTokens.value.selected
     return isScheduled.value ? themeTokens.value.primary : themeTokens.value.danger
@@ -244,12 +303,13 @@ const directionShadowColor = computed(() => isDarkMode.value
 
 
 
-// Cone visibility logic
+// Cone visibility logic: hide directional cones when surround mode is active
 const hasCone = computed(() =>
-  props.source.instance.state.coneInner < 360 || props.source.instance.state.coneOuter < 360
+  !isSurround.value &&
+  (props.source.instance.state.coneInner < 360 || props.source.instance.state.coneOuter < 360)
 )
-const hasInnerCone = computed(() => props.source.instance.state.coneInner < 360)
-const hasOuterCone = computed(() => props.source.instance.state.coneOuter < 360)
+const hasInnerCone = computed(() => !isSurround.value && props.source.instance.state.coneInner < 360)
+const hasOuterCone = computed(() => !isSurround.value && props.source.instance.state.coneOuter < 360)
 
 const coneInner = computed(() => props.source.instance.state.coneInner)
 const coneOuter = computed(() => props.source.instance.state.coneOuter)

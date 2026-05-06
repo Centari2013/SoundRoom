@@ -1,6 +1,7 @@
 // lib/AudioEngine.js
 import SoundSource from '@/lib/SoundSource'
 import SoundScheduler from '@/lib/SoundScheduler'
+import TimelineScheduler from '@/lib/TimelineScheduler'
 import Room from './Room'
 import { computed, ref, watch, reactive } from 'vue'
 import { storeToRefs } from 'pinia'
@@ -32,20 +33,29 @@ export default class AudioEngine {
 
   #room = null
   #audioCacheManagerRef = null
-
+  #timelineScheduler = null
 
   /**
    * Create a new AudioEngine instance.
    *
    * @param {Array} [uninitializedSoundSources=[]] sound sources to create on setup
    * @param {number} [volume=1] initial master volume
+   * @param {Object} [timelineData=null] persisted timeline state to rehydrate
    */
-  constructor(uninitializedSoundSources, volume = 1 ) {
+  constructor(uninitializedSoundSources, volume = 1, timelineData = null) {
     this.#uninitializedSoundSources = uninitializedSoundSources || []
     this.soundSources.value = []  // reactive array of sources
     this.masterVolume.value = volume
     this.#scheduler = new SoundScheduler(this)
     this.#scheduleWatchers = new Map()
+
+    this.timeline = reactive({
+      enabled: timelineData?.enabled ?? true,
+      duration: timelineData?.duration ?? 60,
+      loop: timelineData?.loop ?? false,
+      clips: timelineData?.clips ?? [],
+    })
+    this.#timelineScheduler = new TimelineScheduler(this)
 
     try {
       const cacheStore = useAudioCacheStore()
@@ -254,15 +264,16 @@ export default class AudioEngine {
       const sched = instance.state.schedule
       sched.paused = true
       sched.enabled = false
-      return
+      return src
     }
 
-    // Watch schedule changes to hook into the scheduler
+    // Watch schedule changes to hook into the interval scheduler.
+    // Skip sources that are managed by the timeline scheduler instead.
     const sched = instance.state.schedule
     const enabledUnwatch = watch(
       () => sched.enabled,
       () => {
-        if (!sched.paused) {
+        if (!sched.paused && !this.isSourceOnTimeline(sched.id)) {
           this.#scheduler.updateSchedule(instance)
         }
       }
@@ -271,17 +282,52 @@ export default class AudioEngine {
     const paramsUnwatch = watch(
       () => [sched.gapMin, sched.gapMax, sched.activeStart, sched.activeEnd, sched.count, sched.mode],
       () => {
-        if (sched.enabled && !sched.paused) {
+        if (sched.enabled && !sched.paused && !this.isSourceOnTimeline(sched.id)) {
           this.#scheduler.updateSchedule(instance)
         }
       }
     )
     this.#scheduleWatchers.set(sched.id, [enabledUnwatch, paramsUnwatch])
 
-    if (!sched.paused) {
+    if (sched.enabled && !sched.paused && !this.isSourceOnTimeline(sched.id)) {
       this.#scheduler.scheduleNewSource(instance)
     }
 
+    return src
+  }
+
+  async playSoundSourceImmediately(src) {
+    if (!src || !src.instance) {
+      console.warn("Tried to autoplay sound source but it was not valid:", src)
+      return
+    }
+
+    if (src.locked || src.instance.locked) {
+      console.info('Sound source is locked for the current plan.')
+      return
+    }
+
+    if (this.isSourceOnTimeline(src.instance.state.schedule.id)) return
+
+    const audioContext = this.getAudioContext()
+    if (audioContext.state === 'suspended') {
+      await audioContext.resume()
+    }
+
+    if (audioContext.state === 'suspended') {
+      console.warn('Audio context is still suspended; browser blocked autoplay.')
+      return
+    }
+
+    const sched = src.instance.state.schedule
+    sched.paused = false
+    sched.isPlaying = true
+
+    await src.instance.play()
+
+    if ('mediaSession' in navigator) {
+      navigator.mediaSession.playbackState = 'playing'
+    }
   }
 
   /**
@@ -426,6 +472,9 @@ export default class AudioEngine {
       return
     }
 
+    // Sources on the timeline are controlled exclusively by TimelineScheduler
+    if (this.isSourceOnTimeline(src.instance.state.schedule.id)) return
+
     const schedId = src.instance.state.schedule.id
     if (this.#scheduler.pauseInfo.has(schedId) && this.#scheduler.pauseInfo.get(schedId).isPaused) {
       this.#scheduler.resumeSource(src.instance)
@@ -439,59 +488,81 @@ export default class AudioEngine {
       console.warn("Tried to pause sound source but it was not valid:", src)
       return
     }
+
+    // Sources on the timeline are controlled exclusively by TimelineScheduler
+    if (this.isSourceOnTimeline(src.instance.state.schedule.id)) return
+
     this.#scheduler.pauseSource(src.instance);
     src.instance.stop();
+  }
+
+  async seekSoundSource(src, offsetSeconds, { play = src?.instance?.playing ?? false } = {}) {
+    if (!src || !src.instance) {
+      console.warn("Tried to seek sound source but it was not valid:", src)
+      return
+    }
+
+    // Sources on the timeline are controlled exclusively by TimelineScheduler.
+    if (this.isSourceOnTimeline(src.instance.state.schedule.id)) return
+
+    return src.instance.seek?.(offsetSeconds, { play })
   }
 
 
   /**
    * Start playback of all sound sources and initialise scheduling.
+   * If every source is on the timeline, delegates to the timeline scheduler.
    */
   playAll() {
-    // Ensure the context is running then start every source. This also updates
-    // the Media Session API so system controls display the correct state.
     if (this.#audioContext?.state === 'suspended') {
       this.#audioContext.resume()
     }
 
-    this.soundSources.value.forEach(s => {
-      if (s.locked) return
-      this.playSoundSource(s) // play each source
-    })
-    if (this.#scheduler.roomStartTime === null) {
-      this.#scheduler.start(); // initial start
+    if (this.allSourcesOnTimeline) {
+      // All sources managed by timeline — drive it from here
+      if (!this.#timelineScheduler.isRunning.value) {
+        this.#timelineScheduler.resume()
+      }
     } else {
-      this.#scheduler.resume(); // resume from pause
+      // Only play / schedule sources that are NOT on the timeline
+      this.soundSources.value.forEach(s => {
+        if (s.locked) return
+        if (this.isSourceOnTimeline(s.instance?.state?.schedule?.id)) return
+        this.playSoundSource(s)
+      })
+      if (this.#scheduler.roomStartTime === null) {
+        this.#scheduler.start()
+      } else {
+        this.#scheduler.resume()
+      }
     }
-  
+
     if ('mediaSession' in navigator) {
       navigator.mediaSession.playbackState = 'playing'
       navigator.mediaSession.metadata = new MediaMetadata({
         title: 'SoundRoom',
         artist: 'Various',
         album: 'SoundRoom Noise',
-        artwork: [
-          {
-            src: 'SoundRoom.png',
-            sizes: '512x512',
-            type: 'image/png'
-          }
-        ]
+        artwork: [{ src: 'SoundRoom.png', sizes: '512x512', type: 'image/png' }]
       })
     }
-    
   }
-  
+
 
   /**
    * Pause all active sound sources and suspend scheduling.
+   * If every source is on the timeline, delegates to the timeline scheduler.
    */
   pauseAll() {
-    // Stop playback on all active sources and update the Media Session state.
-    this.soundSources.value.forEach(s => {
-      this.pauseSoundSource(s) // pause each source
-    })
-    this.#scheduler.pause();
+    if (this.allSourcesOnTimeline) {
+      this.#timelineScheduler.pause()
+    } else {
+      this.soundSources.value.forEach(s => {
+        if (this.isSourceOnTimeline(s.instance?.state?.schedule?.id)) return
+        this.pauseSoundSource(s)
+      })
+      this.#scheduler.pause()
+    }
     
     if ('mediaSession' in navigator) {
       navigator.mediaSession.playbackState = 'paused'
@@ -506,6 +577,7 @@ export default class AudioEngine {
     // Tear down all nodes and close the audio context entirely.
     this.pauseAll()
     this.#scheduler.stop()
+    this.#timelineScheduler.dispose()
     this.#scheduleWatchers.forEach((unwatchers) => {
       unwatchers.forEach(stop => stop?.())
     })
@@ -569,6 +641,147 @@ export default class AudioEngine {
     return this.soundSources.value.length
   }
   
+  get timelineScheduler() {
+    return this.#timelineScheduler
+  }
+
+  setTimelineEnabled(enabled) {
+    const nextEnabled = Boolean(enabled)
+    if (this.timeline.enabled === nextEnabled) return
+
+    if (!nextEnabled) {
+      this.#timelineScheduler.stop()
+    }
+
+    this.timeline.enabled = nextEnabled
+  }
+
+  // ── Timeline helpers ───────────────────────────────────────────────
+
+  isSourceOnTimeline(sourceId) {
+    if (!this.timeline.enabled) return false
+    return this.timeline.clips.some(c => c.sourceId === sourceId)
+  }
+
+  get allSourcesOnTimeline() {
+    const sources = this.soundSources.value
+    if (sources.length === 0) return false
+    return sources.every(s => this.isSourceOnTimeline(s.instance?.state?.schedule?.id))
+  }
+
+  // ── Timeline management ────────────────────────────────────────────
+
+  #findTimelineSource(sourceId) {
+    return this.soundSources.value.find(s => s.instance?.state?.schedule?.id === sourceId)
+  }
+
+  #takeSourceOverForTimeline(sourceId) {
+    const src = this.#findTimelineSource(sourceId)
+    if (!src?.instance) return
+    this.#scheduler.cancelSchedule(src.instance)
+    src.instance.stop?.()
+  }
+
+  #stopTimelineSource(sourceId) {
+    const src = this.#findTimelineSource(sourceId)
+    src?.instance?.stop?.()
+    src?.instance?.pause?.()
+  }
+
+  #syncTimelineSchedulerAfterMutation() {
+    if (!this.#timelineScheduler.isRunning.value) return
+    this.#timelineScheduler.seek(this.#timelineScheduler.currentTime.value)
+  }
+
+  addTimelineClip(sourceId, startTime = 0, duration = 5, options = {}) {
+    const clip = {
+      id: options.id ?? crypto.randomUUID(),
+      sourceId,
+      startTime,
+      duration,
+      sourceDuration: options.sourceDuration ?? this.#findTimelineSource(sourceId)?.instance?.duration ?? duration,
+    }
+    const index = Number.isInteger(options.index)
+      ? Math.max(0, Math.min(options.index, this.timeline.clips.length))
+      : this.timeline.clips.length
+    this.#takeSourceOverForTimeline(sourceId)
+    this.timeline.clips.splice(index, 0, clip)
+    this.#syncTimelineSchedulerAfterMutation()
+    return clip.id
+  }
+
+  insertTimelineClip(clip, index = this.timeline.clips.length) {
+    if (!clip?.id || this.timeline.clips.some(c => c.id === clip.id)) return
+    const safeIndex = Number.isInteger(index)
+      ? Math.max(0, Math.min(index, this.timeline.clips.length))
+      : this.timeline.clips.length
+    this.#takeSourceOverForTimeline(clip.sourceId)
+    this.timeline.clips.splice(safeIndex, 0, { ...clip })
+    this.#syncTimelineSchedulerAfterMutation()
+    return clip.id
+  }
+
+  removeTimelineClip(clipId) {
+    const idx = this.timeline.clips.findIndex(c => c.id === clipId)
+    if (idx === -1) return null
+    const [clip] = this.timeline.clips.splice(idx, 1)
+    if (!this.timeline.clips.some(c => c.sourceId === clip.sourceId)) {
+      this.#stopTimelineSource(clip.sourceId)
+    }
+    this.#syncTimelineSchedulerAfterMutation()
+    return { clip: { ...clip }, index: idx }
+  }
+
+  removeSourceFromTimeline(sourceId) {
+    const removed = []
+    for (let i = this.timeline.clips.length - 1; i >= 0; i--) {
+      if (this.timeline.clips[i].sourceId === sourceId) {
+        const [clip] = this.timeline.clips.splice(i, 1)
+        removed.unshift({ clip: { ...clip }, index: i })
+      }
+    }
+    if (removed.length) {
+      this.#stopTimelineSource(sourceId)
+      this.#syncTimelineSchedulerAfterMutation()
+    }
+    return removed
+  }
+
+  updateTimelineClip(clipId, patch, { sync = true } = {}) {
+    const clip = this.timeline.clips.find(c => c.id === clipId)
+    if (clip) {
+      Object.assign(clip, patch)
+      if (sync) {
+        this.#syncTimelineSchedulerAfterMutation()
+      }
+    }
+  }
+
+  setTimelineDuration(seconds) {
+    this.timeline.duration = Math.max(10, seconds)
+  }
+
+  setTimelineLoop(loop) {
+    this.timeline.loop = loop
+  }
+
+  playTimeline(fromSeconds) {
+    const from = fromSeconds ?? this.#timelineScheduler.currentTime.value
+    this.#timelineScheduler.start(from)
+  }
+
+  pauseTimeline() {
+    this.#timelineScheduler.pause()
+  }
+
+  stopTimeline() {
+    this.#timelineScheduler.stop()
+  }
+
+  seekTimeline(seconds) {
+    this.#timelineScheduler.seek(seconds)
+  }
+
   /**
    * Serialise the engine state so it can be saved.
    *
@@ -601,6 +814,7 @@ export default class AudioEngine {
             angle: src.instance.state.angle,
             coneInner: src.instance.state.coneInner,
             coneOuter: src.instance.state.coneOuter,
+            surround: src.instance.state.surround ?? false,
             isPlaying: src.instance.playing,
             volume: src.instance?.getVolume?.() ?? 1,
             schedule: src.instance.state.schedule
@@ -616,6 +830,11 @@ export default class AudioEngine {
       masterVolume: this.masterVolume.value,
       reverb: {
         preset: this.#currentIRName ?? null,
+      },
+      timeline: {
+        duration: this.timeline.duration,
+        loop: this.timeline.loop,
+        clips: this.timeline.clips.map(c => ({ ...c })),
       }
     }
   }
@@ -657,7 +876,7 @@ export default class AudioEngine {
             }
           }
         })
-      engine = new AudioEngine(uninitializedSoundSources, json.masterVolume ?? 1)
+      engine = new AudioEngine(uninitializedSoundSources, json.masterVolume ?? 1, json.timeline ?? null)
       if (json.reverb?.preset) {
         const IR_PRESETS = {
           cathedral: '/impulses/1st_baptist_nashville_far_wide.wav',

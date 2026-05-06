@@ -29,6 +29,7 @@ export const ENTITLEMENTS = {
     curatedPacks: true,
     allPacks: true,
     themes: 'pro',
-    schedulePlayback: true
+    schedulePlayback: true,
+    timelineScheduler: true
   }
 }

@@ -58,6 +58,14 @@ export function useSaveAndLoadRoom() {
     }
   }
 
+  function applyTimelineAccess(roomData) {
+    const timeline = roomData?.audioEngine?.timeline
+    if (!timeline) return roomData
+
+    timeline.enabled = canAccess('timelineScheduler')
+    return roomData
+  }
+
   /**
    * Persist the current room to Supabase. Handles insert or update logic
    * depending on whether the room already has an id.
@@ -232,6 +240,11 @@ export function useSaveAndLoadRoom() {
    * @returns {Promise<boolean>} whether the load succeeded
    */
   async function loadRoom(roomId=null) {
+    if (!roomId && !user.value?.id) {
+      console.warn("Cannot load most recent room without an authenticated user.")
+      return false
+    }
+
     isLoadingRoom.value = true;
     stopAllAudioForRoomChange()
     // get room data from supabase
@@ -340,6 +353,7 @@ export function useSaveAndLoadRoom() {
       room.value.id = resolvedRoomId;
     }
     listenerStore.loadListener(roomData.listener);
+    applyTimelineAccess(roomData)
     audioEngineStore.loadAudioEngine(roomData.audioEngine);
 
     audioEngineStore.setupAudioContext();
@@ -446,7 +460,7 @@ export function useSaveAndLoadRoom() {
     if (!stored) {
       console.warn("No room data found in local storage.");
       isLoadingRoom.value = false;
-      return
+      return false
     } else {
       let roomData = JSON.parse(stored);
       const ids = roomData.soundLibrarySources.map(s => s.libraryId);
@@ -530,6 +544,7 @@ export function useSaveAndLoadRoom() {
 
       room.value = Room.fromJSON(roomData.room);
       listener.value = Listener.fromJSON(roomData.listener);
+      applyTimelineAccess(roomData)
       audioEngine.value = AudioEngine.fromJSON(roomData.audioEngine);
 
       audioEngineStore.setupAudioContext();
@@ -538,6 +553,8 @@ export function useSaveAndLoadRoom() {
     setTimeout(() => {
       isLoadingRoom.value = false;
     }, 2000);
+
+    return true
   }
   return {
     saveRoom,

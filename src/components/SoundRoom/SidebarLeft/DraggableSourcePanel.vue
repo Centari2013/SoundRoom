@@ -6,7 +6,7 @@
     Sound Sources
   </h5>
 
-  <ul id="library-sound-list" class="overflow-y-auto space-y-2 text-sm text-[var(--color-text-primary)]"
+  <ul id="library-sound-list" data-tour="library-sound-list" class="overflow-y-auto space-y-2 text-sm text-[var(--color-text-primary)]"
   :class="{ 'flex-1 mt-4': soundLibrarySources.length > 0 }">
     <LibrarySource
       v-for="s in soundLibrarySources"

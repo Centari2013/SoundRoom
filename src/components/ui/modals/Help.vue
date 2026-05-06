@@ -29,9 +29,9 @@
           <div class="rounded-xl border border-border-subtle bg-surface-base/70 p-5 space-y-3">
             <h2 class="text-lg font-semibold">Plan Highlights</h2>
             <ul class="list-disc list-inside space-y-2 text-text-secondary">
-              <li><strong>Free:</strong> 1 saved room, curated starter packs, no uploads, no scheduling.</li>
-              <li><strong>Basic:</strong> Up to 10 saved rooms, timed loops, full preset access, curated packs.</li>
-              <li><strong>Pro:</strong> Unlimited rooms, uploads, all packs/themes, scheduling with play counts and combined interval+count modes.</li>
+              <li><strong>Free:</strong> 1 saved room, curated starter packs, no uploads, no scheduling or timeline.</li>
+              <li><strong>Basic:</strong> Up to 10 saved rooms, simple per-source scheduling, full preset access, curated packs.</li>
+              <li><strong>Pro:</strong> Unlimited rooms, uploads, all packs/themes, advanced scheduling, and the timeline sequencer.</li>
             </ul>
             <p class="text-xs text-text-muted">Plan badges on sounds enforce access; selecting a locked sound triggers the upgrade prompt.</p>
           </div>
@@ -275,12 +275,23 @@ const featureSections = [
   {
     title: 'Scheduling & Loops',
     caption: 'Basic/Pro',
-    description: 'Scheduling is controlled per-source in the sidebar and uses randomized gaps between plays.',
+    description: 'Simple scheduling is controlled per-source in the sidebar and uses randomized gaps between plays.',
     points: [
-      'Toggle Enable Scheduling to start interval-based playback; Basic unlocks timed loops.',
+      'Toggle Enable Scheduling to start interval-based playback; Basic unlocks simple scheduling.',
       'Pro adds play counts plus combined interval + count modes for more predictable bursts.',
       'Scheduling pauses when you pause the room; resuming honors remaining gap time.',
       'Use gap min/max to keep loops organic. Add play counts for finite stingers that stop themselves.',
+    ]
+  },
+  {
+    title: 'Timeline Sequencer',
+    caption: 'Pro',
+    description: 'The timeline is a Pro sequencing surface for arranging clips against a shared playhead.',
+    points: [
+      'Add a source to the timeline from the sidebar, then drag or resize its clip in the timeline drawer.',
+      'Timeline clips control their source; simple scheduling is disabled while that source is on the timeline.',
+      'Stretch a clip beyond the sound duration to repeat it as DAW-style regions in the same lane.',
+      'Timeline duration, loop state, and clips are saved with the room. If you downgrade, the saved timeline stays in the room but is inactive until Pro is restored.',
     ]
   },
   {
@@ -324,7 +335,7 @@ const featureSections = [
     caption: 'MVP notes',
     points: [
       'Maximum of 30 placed sources and 20 unique library sounds per session.',
-      'Uploads and scheduling are Pro features; Basic lacks uploads and advanced counts.',
+      'Uploads, the timeline sequencer, and advanced scheduling are Pro features; Basic has simple scheduling but lacks uploads, timeline clips, and advanced counts.',
       'Mobile is currently redirected to a “Coming Soon” view; best experienced on desktop.',
     ]
   },
@@ -400,12 +411,22 @@ const faqGroups = ref([
     items: [
       {
         question: 'How do timed loops work?',
-        answer: 'Select a source, open the sidebar, and toggle Enable Scheduling. Set min/max gaps to randomize the wait between replays. Basic enables this control.',
+        answer: 'Select a source, open the sidebar, and toggle Enable Scheduling. Set min/max gaps to randomize the wait between replays. Basic enables this simple scheduling control.',
         open: false
       },
       {
         question: 'What is available on Pro scheduling?',
-        answer: 'Pro adds play counts and combined interval+count modes so you can fire a source a set number of times with natural spacing.',
+        answer: 'Pro adds play counts and combined interval+count modes so you can fire a source a set number of times with natural spacing. Pro also unlocks the timeline sequencer for arranging clips against a playhead.',
+        open: false
+      },
+      {
+        question: 'How does the timeline sequencer work?',
+        answer: 'The timeline drawer lets Pro users place sources as clips, seek through the room, loop the timeline, and stretch clips into repeated regions. Sources on the timeline are controlled by the timeline, so their simple scheduling toggle is disabled until they are removed from the timeline.',
+        open: false
+      },
+      {
+        question: 'What happens to timeline data if I downgrade?',
+        answer: 'Timeline duration, loop settings, and clips stay saved in the room data, but the timeline is gated and inactive on Free or Basic. If you return to Pro and reload the room, the saved timeline becomes active again.',
         open: false
       },
       {

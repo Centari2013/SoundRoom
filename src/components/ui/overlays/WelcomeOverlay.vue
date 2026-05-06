@@ -28,7 +28,7 @@ const emit = defineEmits(['finished'])
 onMounted(() => {
   setTimeout(() => {
     visible.value = false
-    emit('finished')   // <-- tell parent we're done
+    emit('finished')
   }, 2500)
 })
 
@@ -45,12 +45,6 @@ defineProps({
 })
 
 const visible = ref(true)
-
-onMounted(() => {
-  setTimeout(() => {
-    visible.value = false
-  }, 2500)
-})
 </script>
 
 <style scoped>

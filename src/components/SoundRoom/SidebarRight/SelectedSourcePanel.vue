@@ -44,11 +44,28 @@
         <button
           @click="playPauseSource"
           class="w-full bg-[var(--color-bg-surface)] text-xs rounded hover:bg-[var(--color-bg-elevated)] border border-[var(--color-border-subtle)] text-[var(--color-text-primary)] items-center flex justify-center"
-          :disabled="isLocked"
-          :title="isLocked ? lockTooltip : undefined"
+          :disabled="isLocked || isOnTimeline"
+          :title="isOnTimeline ? 'Controlled by Timeline' : isLocked ? lockTooltip : undefined"
         >
           {{ playPauseLabel }}
           <LockIcon v-if="isLocked" aria-hidden="true" class="w-4 h-4 inline-block ml-2" />
+        </button>
+        <button
+          v-if="canUseTimeline && !isOnTimeline"
+          @click="addToTimeline"
+          class="w-full bg-[var(--color-bg-surface)] text-xs rounded hover:bg-[var(--color-bg-elevated)] border border-[var(--color-border-subtle)] text-[var(--color-text-primary)]"
+          :disabled="isLocked"
+          title="Add this source as a clip on the timeline"
+        >
+          Add to Timeline
+        </button>
+        <button
+          v-if="canUseTimeline && isOnTimeline"
+          @click="removeFromTimeline"
+          class="w-full bg-[var(--color-bg-surface)] text-xs rounded hover:bg-[var(--color-bg-elevated)] border border-[var(--color-border-subtle)] text-[var(--color-text-muted)]"
+          title="Remove this source from the timeline"
+        >
+          Remove from Timeline
         </button>
         <button
           @click="deleteSource"
@@ -60,19 +77,45 @@
 
       <hr class="w-full border-[var(--color-border-subtle)]" />
 
+      <!-- Surround Sound Toggle -->
+      <div class="w-full flex items-center space-x-2 text-left px-1 text-[var(--color-text-muted)]">
+        <input
+          type="checkbox"
+          :checked="state.surround"
+          :disabled="isLocked"
+          @change="handleSurroundToggle"
+          class="accent-purple-500 disabled:cursor-not-allowed disabled:opacity-60"
+        />
+        <label class="text-sm">Surround Sound (360°)</label>
+      </div>
+      <p
+        v-if="state.surround"
+        class="w-full px-1 text-left text-xs text-[var(--color-text-muted)]"
+      >
+        Plays equally in all directions, regardless of position.
+      </p>
+
+      <hr class="w-full border-[var(--color-border-subtle)]" />
+
       <!-- Scheduling Toggle -->
       <div class="w-full flex items-center space-x-2 text-left px-1 text-[var(--color-text-muted)]">
         <input
           type="checkbox"
-          :checked="schedulingEnabled"
-          :disabled="!canUseTimedLoops || isLocked"
+          :checked="!isOnTimeline && schedulingEnabled"
+          :disabled="!canUseTimedLoops || isLocked || isOnTimeline"
           @change="handleSchedulingToggle"
           class="accent-blue-500 disabled:cursor-not-allowed disabled:opacity-60"
         />
-        <label class="text-sm">Enable Scheduling</label>
+        <label class="text-sm">{{ isOnTimeline ? 'Enable Simple Scheduling' : 'Enable Scheduling' }}</label>
       </div>
       <p
-        v-if="!canUseTimedLoops"
+        v-if="isOnTimeline"
+        class="w-full px-1 text-left text-xs text-[var(--color-text-muted)]"
+      >
+        Timeline clips control this source. Remove it from the timeline to use simple scheduling.
+      </p>
+      <p
+        v-else-if="!canUseTimedLoops"
         class="w-full px-1 text-left text-xs text-[var(--color-warning)]"
       >
         Upgrade to unlock timed loops for automated playback.
@@ -80,7 +123,7 @@
 
       <!-- Scheduling Settings -->
       <div
-        v-if="schedulingEnabled && canUseTimedLoops"
+        v-if="schedulingEnabled && canUseTimedLoops && !isOnTimeline"
         class="space-y-4 w-full text-xs text-[var(--color-text-muted)] px-1"
       >
         <!-- Mode -->
@@ -220,6 +263,33 @@ const props = defineProps({
 const selectedSource = inject('selectedSource');
 const { actionManager } = storeToRefs(useActionManagerStore());
 const audioEngineStore = useAudioEngineStore();
+
+const isOnTimeline = computed(() => {
+  const sourceId = selectedSource.value?.instance?.state?.schedule?.id
+  if (!sourceId || !audioEngineStore.audioEngine) return false
+  return audioEngineStore.audioEngine.isSourceOnTimeline(sourceId)
+})
+
+function addToTimeline() {
+  if (!selectedSource.value || isLocked.value) return
+  const sourceId = selectedSource.value.instance?.state?.schedule?.id
+  if (!sourceId) return
+  const fileDuration = selectedSource.value.instance?._audioBuffer?.duration ?? 5
+  actionManager.value.doAction('add_timeline_clip', {
+    clip: {
+      sourceId,
+      startTime: 0,
+      duration: fileDuration,
+      sourceDuration: fileDuration,
+    },
+  })
+}
+
+function removeFromTimeline() {
+  const sourceId = selectedSource.value?.instance?.state?.schedule?.id
+  if (!sourceId) return
+  actionManager.value.doAction('remove_source_from_timeline', { sourceId })
+}
 const { canAccess, requireEntitlement } = useEntitlements();
 const isLocked = computed(() => !!selectedSource.value?.locked);
 const lockTooltip = 'Available on Pro tier.'
@@ -236,6 +306,7 @@ const schedulingEnabled = computed({
 
 const canUseTimedLoops = computed(() => canAccess('timedLoops'));
 const canUseAdvancedScheduling = computed(() => canAccess('schedulePlayback'));
+const canUseTimeline = computed(() => canAccess('timelineScheduler'));
 
 let scheduleCopy = ref(null)
 
@@ -324,8 +395,18 @@ function commitSchedulePatch(patch) {
   commitScheduleEdit();
 }
 
-function handleSchedulingToggle(event) {
+function handleSurroundToggle(event) {
   if (isLocked.value) return
+  const nextSurround = !!event.target.checked
+  actionManager.value.doAction('toggle_source_surround', {
+    src: selectedSource.value,
+    from: !!state.value.surround,
+    to: nextSurround
+  })
+}
+
+function handleSchedulingToggle(event) {
+  if (isLocked.value || isOnTimeline.value) return
   const nextEnabled = !!event.target.checked;
   if (nextEnabled && !requireEntitlement('timedLoops')) {
     event.target.checked = !!schedule.value.enabled;
@@ -335,7 +416,7 @@ function handleSchedulingToggle(event) {
 }
 
 function handleScheduleModeChange(event) {
-  if (isLocked.value) return
+  if (isLocked.value || isOnTimeline.value) return
   const nextMode = event.target.value;
   if (!canUseAdvancedScheduling.value && nextMode !== 'interval') {
     event.target.value = schedule.value.mode ?? 'interval';
@@ -345,7 +426,7 @@ function handleScheduleModeChange(event) {
 }
 
 function commitScheduleEdit() {
-  if (isLocked.value) return
+  if (isLocked.value || isOnTimeline.value) return
   const changedKeys = Object.keys(scheduleCopy.value).filter(key => {
   const scheduleVal = schedule.value[key]
   const copyVal = scheduleCopy.value[key];

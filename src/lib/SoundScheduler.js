@@ -22,6 +22,11 @@ export default class SoundScheduler {
 
   }
 
+  _isTimelineSource(source) {
+    const scheduleId = source?.state?.schedule?.id ?? source?.instance?.state?.schedule?.id
+    return Boolean(scheduleId && this.audioEngine.isSourceOnTimeline(scheduleId))
+  }
+
   /**
    * Starts scheduling for all sound sources that have scheduling enabled.
    * This should be called when the room starts playing.
@@ -112,6 +117,7 @@ export default class SoundScheduler {
 
   pause() {
     for (const source of this.audioEngine.soundSources.value) {
+      if (this._isTimelineSource(source)) continue
       const sched = source.state.schedule;
       const { id } = sched;
       let info = this.pauseInfo.get(id);
@@ -147,6 +153,7 @@ export default class SoundScheduler {
 
   resume() {
     for (const source of this.audioEngine.soundSources.value) {
+      if (this._isTimelineSource(source)) continue
       const sched = source.state.schedule;
       const { id } = sched;
       const info = this.pauseInfo.get(id);
@@ -248,7 +255,10 @@ export default class SoundScheduler {
       clearTimeout(id);
     }
     this.intervals.clear();
-    this.audioEngine.soundSources.value.forEach(s => s.instance?.setLoopingActive?.(false))
+    this.audioEngine.soundSources.value.forEach(s => {
+      if (this._isTimelineSource(s)) return
+      s.instance?.setLoopingActive?.(false)
+    })
   }
 
   /**

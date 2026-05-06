@@ -28,6 +28,7 @@ export default class SoundSource {
     // `state` holds the spatial position/angle and is kept in sync with the
     // canvas representation.
     this.state = state
+    this.state.surround = this.state.surround ?? false
     this.state.schedule = reactive(state.schedule ?? {
       id: crypto.randomUUID(),
       enabled: false,
@@ -124,8 +125,46 @@ export default class SoundSource {
     this.cornerCompressor.attack.value = 0.005
     this.cornerCompressor.release.value = 0.1
 
-    // Chain: output → filter → compressor → master
-    this.outputNode.connect(this.cornerFilter)
+    // postPannerGain gates the spatial path (normal mode).
+    this._postPannerGain = audioContext.createGain()
+    this._postPannerGain.gain.value = this.state.surround ? 0 : 1
+    this._pannerNode.connect(this._postPannerGain)
+
+    // True 360° surround: 8 PannerNodes evenly distributed at a large fixed radius.
+    // rolloffFactor=0 means distance never attenuates them; HRTF gives each a distinct
+    // perceived direction so the listener hears the source arriving from all sides at once.
+    const SURROUND_COUNT = 8
+    const SURROUND_RADIUS = 20 // audio-space units — well beyond the room so angles stay
+                               // nearly constant as the listener moves
+    this._surroundMixGain = audioContext.createGain()
+    this._surroundMixGain.gain.value = this.state.surround ? 1 : 0
+    this._surroundPanners = []
+
+    for (let i = 0; i < SURROUND_COUNT; i++) {
+      const angle = (i / SURROUND_COUNT) * 2 * Math.PI
+      const sp = audioContext.createPanner()
+      sp.panningModel = 'HRTF'
+      sp.distanceModel = 'inverse'
+      sp.rolloffFactor = 0   // constant gain regardless of distance
+      sp.refDistance = 1
+      sp.coneInnerAngle = 360
+      sp.coneOuterAngle = 360
+      sp.positionX.value = SURROUND_RADIUS * Math.cos(angle)
+      sp.positionY.value = SURROUND_RADIUS * Math.sin(angle)
+      sp.positionZ.value = 0
+
+      const spGain = audioContext.createGain()
+      spGain.gain.value = 1 / SURROUND_COUNT // normalise summed output
+
+      this._gainNode.connect(spGain)
+      spGain.connect(sp)
+      sp.connect(this._surroundMixGain)
+      this._surroundPanners.push({ panner: sp, gain: spGain })
+    }
+
+    // Both paths feed into cornerFilter
+    this._postPannerGain.connect(this.cornerFilter)
+    this._surroundMixGain.connect(this.cornerFilter)
     this.cornerFilter.connect(this.cornerCompressor)
     this.cornerCompressor.connect(masterGain ?? this._audioContext.destination)
 
@@ -186,12 +225,19 @@ export default class SoundSource {
     })
   }
 
+  _normalizePlaybackOffset(offset = 0) {
+    if (!this._audioBuffer) return 0
+    if (!Number.isFinite(offset)) return 0
+    return Math.max(0, Math.min(offset, Math.max(0, this._audioBuffer.duration - 0.001)))
+  }
+
   _startPlayback(offset = 0, { notify = true } = {}) {
     if (!this._audioBuffer) {
       throw new Error('Audio buffer not loaded')
     }
 
     this._stopActiveSource({ notify })
+    const safeOffset = this._normalizePlaybackOffset(offset)
 
     const source = this._audioContext.createBufferSource()
     source.buffer = this._audioBuffer
@@ -209,7 +255,7 @@ export default class SoundSource {
 
     this._activeSource = source
     this._setPlaying(true)
-    source.start(0, offset)
+    source.start(0, safeOffset)
   }
 
   _stopActiveSource({ notify = true } = {}) {
@@ -283,6 +329,10 @@ export default class SoundSource {
     this._setLoopingActive(flag)
   }
 
+  async loadAudioBuffer() {
+    return this._ensureAudioBuffer()
+  }
+
   /**
    * Connect this source's reverb send to the provided convolver.
    * @param {AudioNode} convolver
@@ -296,10 +346,27 @@ export default class SoundSource {
   }
 
   /** Start playback of the audio buffer. */
-  async play() {
+  async play({ offset = 0 } = {}) {
     await this._ensureAudioBuffer()
-    this._startPlayback(0)
+    this.playLoaded({ offset })
+  }
+
+  playLoaded({ offset = 0 } = {}) {
+    this._startPlayback(offset)
     this.updateAudio()
+  }
+
+  async seek(offset = 0, { play = this.playing } = {}) {
+    await this._ensureAudioBuffer()
+    const safeOffset = this._normalizePlaybackOffset(offset)
+
+    if (!play) {
+      this._stopActiveSource()
+      return safeOffset
+    }
+
+    this.playLoaded({ offset: safeOffset })
+    return safeOffset
   }
 
   /** Force playback from the start of the audio file. */
@@ -345,6 +412,10 @@ export default class SoundSource {
     return active || this._looping
   }
 
+  get duration() {
+    return this._audioBuffer?.duration ?? null
+  }
+
   /**
    * Set the playback volume for this source.
    * @param {number} v
@@ -386,6 +457,22 @@ export default class SoundSource {
   }
 
   /**
+   * Switch between spatialised (single panner) and true 360° surround (8-panner ring) routing.
+   * @param {boolean} enabled
+   */
+  applySurroundMode(enabled) {
+    if (!this._postPannerGain || !this._surroundMixGain || !this._audioContext) return
+    const ct = this._audioContext.currentTime
+    if (enabled) {
+      this._postPannerGain.gain.setValueAtTime(0, ct)
+      this._surroundMixGain.gain.setValueAtTime(1, ct)
+    } else {
+      this._postPannerGain.gain.setValueAtTime(1, ct)
+      this._surroundMixGain.gain.setValueAtTime(0, ct)
+    }
+  }
+
+  /**
    * Sync Web Audio panner position and orientation with the state used by the canvas.
    */
   updateAudio() {
@@ -406,6 +493,9 @@ export default class SoundSource {
     p.orientationX.setValueAtTime(Math.cos(angleRad), ctx.currentTime);
     p.orientationY.setValueAtTime(Math.sin(angleRad), ctx.currentTime);
     p.orientationZ.setValueAtTime(0, ctx.currentTime);
+
+    this.applySurroundMode(this.state.surround)
+
     if (this._room) {
       this.updateRoomInteraction(this._room);
     }
@@ -507,12 +597,21 @@ export default class SoundSource {
 
       try { this._gainNode?.disconnect() } catch (_) {}
       try { this._pannerNode?.disconnect() } catch (_) {}
+      try { this._postPannerGain?.disconnect() } catch (_) {}
+      this._surroundPanners?.forEach(({ panner, gain }) => {
+        try { gain.disconnect() } catch (_) {}
+        try { panner.disconnect() } catch (_) {}
+      })
+      this._surroundPanners = []
+      try { this._surroundMixGain?.disconnect() } catch (_) {}
       try { this.cornerFilter?.disconnect() } catch (_) {}
       try { this.cornerCompressor?.disconnect() } catch (_) {}
       try { this.reverbSend?.disconnect() } catch (_) {}
 
       this._gainNode = null
       this._pannerNode = null
+      this._postPannerGain = null
+      this._surroundMixGain = null
       this.cornerFilter = null
       this.cornerCompressor = null
       this.reverbSend = null

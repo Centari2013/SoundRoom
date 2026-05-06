@@ -23,15 +23,6 @@
               v-model="file.name"
               class="flex-1 p-1 text-base border border-[var(--color-border-subtle)] rounded-md bg-[var(--color-bg-elevated)] text-[var(--color-text-primary)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-bg-elevated)]"
             />
-            <BaseButton class="ml-2" @click="autoTag(file)" :disabled="file.tagging">
-              <template v-if="file.tagging">
-                <LoadingSpinner />
-              </template>
-              <template v-else>
-                Auto-Tag
-              </template>
-            </BaseButton>
-
           </div>
 
           <div class="flex items-center gap-2">
@@ -78,7 +69,7 @@
 
       <div v-if="files.length" class="mt-6 flex justify-end gap-2">
         <BaseButton @click="$emit('close')" variant="ghost">Cancel</BaseButton>
-        <BaseButton @click="uploadAll" :disabled="uploading || isBusy">
+        <BaseButton @click="uploadAll" :disabled="uploading">
           <template v-if="uploading">
             <LoadingSpinner />
           </template>
@@ -93,14 +84,13 @@
 
 <script setup>
 import pLimit from 'p-limit'
-import { ref, computed } from 'vue'
+import { ref } from 'vue'
 import BaseButton from '@/components/ui/input/BaseButton.vue'
 import LoadingSpinner from '@/components/ui/loading/LoadingSpinner.vue'
 import uploadAudio from '@/utils/uploadAudio'
 import { getFileDuration, stripExtension } from '@/utils/audioFileUtils'
 import { supabase } from '@/utils/supabase'
 import { useAuth } from '@/composables/useAuth'
-import { classifyAudio, initAudioClassifier } from '@/utils/audioTaggerNamer'
 import { requestPreviewGeneration } from '@/utils/previewGeneration'
 
 const emit = defineEmits(['close', 'finished'])
@@ -109,9 +99,6 @@ const { user } = useAuth()
 const fileInput = ref(null)
 const files = ref([])
 const uploading = ref(false)
-const isBusy = computed(() => {
-  return uploading.value || files.value.some(f => f.tagging)
-})
 
 function handleFileSelect(e) {
   const selected = Array.from(e.target.files || [])
@@ -124,7 +111,6 @@ function handleFileSelect(e) {
       name: stripExtension(f.name),
       previewUrl: URL.createObjectURL(f),
       tags: [],
-      tagging: false,
       newTag: '',
       progress: 0
     })
@@ -140,20 +126,6 @@ function addTag(file) {
   file.newTag = ''
 }
 
-
-async function autoTag(file) {
-  file.tagging = true
-  try {
-    await initAudioClassifier()
-    const tags = await classifyAudio(file.raw)
-    file.tags.push(...tags.filter(tag => !file.tags.includes(tag)))
-    //file.name = await generateNameFromTags(tags)
-  } catch (err) {
-    console.error('Auto-tag failed:', err)
-  } finally {
-    file.tagging = false
-  }
-}
 
 const limit = pLimit(3) // allow 3 concurrent uploads at once
 
