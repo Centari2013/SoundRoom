@@ -171,4 +171,28 @@ describe('AudioEngine media session controls', () => {
       duration: expect.closeTo(0.63, 2),
     }))
   })
+
+  it('does not restart a manually paused canvas source after master pause/play', async () => {
+    const active = makeSource('active-source')
+    const manuallyPaused = makeSource('manually-paused-source')
+    const engine = new AudioEngine()
+    engine.soundSources.value.push(active, manuallyPaused)
+    const audioContext = engine.getAudioContext()
+    audioContext.state = 'running'
+
+    await engine.playAll()
+    engine.pauseSoundSource(manuallyPaused)
+
+    active.instance.scheduleLoaded.mockClear()
+    manuallyPaused.instance.scheduleLoaded.mockClear()
+
+    audioContext.currentTime = 0.4
+    engine.pauseAll()
+
+    audioContext.currentTime = 5
+    await engine.playAll()
+
+    expect(active.instance.scheduleLoaded).toHaveBeenCalled()
+    expect(manuallyPaused.instance.scheduleLoaded).not.toHaveBeenCalled()
+  })
 })

@@ -37,6 +37,7 @@ export default class AudioEngine {
   #timelineScheduler = null
   #unregisterSiteAudioTarget = null
   #mediaSessionPauseSnapshot = null
+  #canvasMasterPauseSnapshot = null
   #deferredScheduleSourceIds = new Set()
 
   /**
@@ -356,6 +357,7 @@ export default class AudioEngine {
 
   async playSoundSourceImmediately(src) {
     this.#mediaSessionPauseSnapshot = null
+    this.#canvasMasterPauseSnapshot = null
 
     if (!src || !src.instance) {
       console.warn("Tried to autoplay sound source but it was not valid:", src)
@@ -522,6 +524,7 @@ export default class AudioEngine {
   async playSoundSource(src, { preserveMediaSessionSnapshot = false } = {}) {
     if (!preserveMediaSessionSnapshot) {
       this.#mediaSessionPauseSnapshot = null
+      this.#canvasMasterPauseSnapshot = null
     }
 
     if (!src || !src.instance) {
@@ -557,6 +560,7 @@ export default class AudioEngine {
   pauseSoundSource(src, { preserveMediaSessionSnapshot = false } = {}) {
     if (!preserveMediaSessionSnapshot) {
       this.#mediaSessionPauseSnapshot = null
+      this.#canvasMasterPauseSnapshot = null
     }
 
     if (!src || !src.instance) {
@@ -598,21 +602,34 @@ export default class AudioEngine {
       this.#audioContext.resume()
     }
 
-    const canvasSources = this.soundSources.value.filter(s =>
-      !s.locked &&
-      !s.instance?.locked &&
-      !this.isSourceOnTimeline(s.instance?.state?.schedule?.id)
-    )
+    const usingCanvasMasterSnapshot = Boolean(this.#canvasMasterPauseSnapshot)
+    const canvasSources = usingCanvasMasterSnapshot
+      ? this.#canvasMasterPauseSnapshot.sourceIds
+        .map(sourceId => this.#findSourceByScheduleId(sourceId))
+        .filter(src => src &&
+          !src.locked &&
+          !src.instance?.locked &&
+          !this.isSourceOnTimeline(src.instance?.state?.schedule?.id)
+        )
+      : this.soundSources.value.filter(s =>
+        !s.locked &&
+        !s.instance?.locked &&
+        !this.isSourceOnTimeline(s.instance?.state?.schedule?.id)
+      )
+
+    this.#canvasMasterPauseSnapshot = null
 
     if (canvasSources.length > 0) {
       await this.preloadAudioBuffers({ includeTimeline: false })
       for (const s of canvasSources) {
         await this.playSoundSource(s, { preserveMediaSessionSnapshot: true })
       }
-      if (this.#scheduler.roomStartTime === null) {
-        this.#scheduler.start()
-      } else {
-        this.#scheduler.resume()
+      if (!usingCanvasMasterSnapshot) {
+        if (this.#scheduler.roomStartTime === null) {
+          this.#scheduler.start()
+        } else {
+          this.#scheduler.resume()
+        }
       }
     }
 
@@ -629,9 +646,18 @@ export default class AudioEngine {
       this.#mediaSessionPauseSnapshot = null
     }
 
-    this.soundSources.value.forEach(s => {
-      if (this.isSourceOnTimeline(s.instance?.state?.schedule?.id)) return
-      this.pauseSoundSource(s, { preserveMediaSessionSnapshot: true })
+    const sourceIds = this.soundSources.value
+      .filter(s => this.#isNonTimelineSourceActive(s))
+      .map(s => this.#getSourceScheduleId(s))
+      .filter(Boolean)
+
+    this.#canvasMasterPauseSnapshot = sourceIds.length > 0 ? { sourceIds } : null
+
+    sourceIds.forEach(sourceId => {
+      const src = this.#findSourceByScheduleId(sourceId)
+      if (src) {
+        this.pauseSoundSource(src, { preserveMediaSessionSnapshot: true })
+      }
     })
 
     updateSiteAudioPlaybackState()
@@ -745,6 +771,7 @@ export default class AudioEngine {
       this.#unregisterSiteAudioTarget = null
     }
     this.#mediaSessionPauseSnapshot = null
+    this.#canvasMasterPauseSnapshot = null
  
     if (this.#convolver) {
       try {
