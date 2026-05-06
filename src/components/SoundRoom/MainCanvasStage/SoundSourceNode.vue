@@ -1,6 +1,7 @@
 <template>
   <v-group
     ref="sourceGroup"
+    name="sound-source-node"
     :x="source.instance.state.x"
     :y="source.instance.state.y"
     @dragmove="onSourceDragMove"

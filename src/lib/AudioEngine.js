@@ -37,6 +37,7 @@ export default class AudioEngine {
   #timelineScheduler = null
   #unregisterSiteAudioTarget = null
   #mediaSessionPauseSnapshot = null
+  #deferredScheduleSourceIds = new Set()
 
   /**
    * Create a new AudioEngine instance.
@@ -176,16 +177,19 @@ export default class AudioEngine {
   /**
    * Re-create sound sources and register media session handlers.
    */
-  setupAudioEngine() {
+  setupAudioEngine({ deferScheduling = false } = {}) {
     // Recreate `SoundSource` instances from any previously saved data and
     // register with the site transport so hardware play/pause keys work.
     if (this.#uninitializedSoundSources.length > 0) { // add loaded sound sources
       this.#uninitializedSoundSources.forEach(src => {
-        this.addSoundSource(src) // saved sound sources already in payload format
+        this.addSoundSource(src, { deferScheduling }) // saved sound sources already in payload format
       })
+      this.#uninitializedSoundSources = []
     }
 
-    this.#scheduler.start();
+    if (!deferScheduling) {
+      this.#scheduler.start()
+    }
 
     if (!this.#unregisterSiteAudioTarget) {
       this.#unregisterSiteAudioTarget = registerSiteAudioTarget({
@@ -203,7 +207,7 @@ export default class AudioEngine {
    *
    * @param {{src:Object, index?:number}} payload
    */
-  addSoundSource(payload) {
+  addSoundSource(payload, { deferScheduling = false } = {}) {
     if (this.maxSourceCountReached){
       window.alert(`Limit of ${this.#MAX_SOURCE_COUNT} sound${this.#MAX_SOURCE_COUNT == 1 ? '' : 's'} in room reached.`);
       return
@@ -278,10 +282,76 @@ export default class AudioEngine {
     this.#scheduleWatchers.set(sched.id, [enabledUnwatch, paramsUnwatch])
 
     if (sched.enabled && !sched.paused && !this.isSourceOnTimeline(sched.id)) {
-      this.#scheduler.scheduleNewSource(instance)
+      if (deferScheduling) {
+        this.#deferredScheduleSourceIds.add(sched.id)
+      } else {
+        this.#scheduler.scheduleNewSource(instance)
+      }
     }
 
     return src
+  }
+
+  async preloadAudioBuffers({
+    includeTimeline = true,
+    includeNonTimeline = true,
+    timeoutMs = 30000,
+    concurrency = 4,
+  } = {}) {
+    const candidates = this.soundSources.value.filter(src => {
+      const instance = src?.instance
+      if (!instance || src.locked || instance.locked) return false
+      if (typeof instance.loadAudioBuffer !== 'function') return false
+
+      const scheduleId = instance.state?.schedule?.id
+      const onTimeline = this.isSourceOnTimeline(scheduleId)
+      if (onTimeline && !includeTimeline) return false
+      if (!onTimeline && !includeNonTimeline) return false
+      return true
+    })
+
+    const results = await runWithConcurrency(candidates, Math.max(1, concurrency), async (src) => {
+      const instance = src.instance
+      try {
+        await withTimeout(
+          instance.loadAudioBuffer(),
+          timeoutMs,
+          `Timed out preloading audio for ${src.name ?? instance.state?.schedule?.id ?? 'sound source'}`
+        )
+        return { source: src, ok: true }
+      } catch (err) {
+        console.warn('Failed to preload sound source:', err)
+        return { source: src, ok: false, error: err }
+      }
+    })
+
+    const failed = results.filter(result => !result.ok)
+    return {
+      total: candidates.length,
+      loaded: results.length - failed.length,
+      failed,
+    }
+  }
+
+  startDeferredScheduling() {
+    if (this.#deferredScheduleSourceIds.size === 0) {
+      this.#scheduler.start()
+      return
+    }
+
+    const deferredIds = new Set(this.#deferredScheduleSourceIds)
+    this.#deferredScheduleSourceIds.clear()
+
+    this.#scheduler.start()
+    this.soundSources.value.forEach(src => {
+      const instance = src?.instance
+      const sched = instance?.state?.schedule
+      if (!sched?.id || !deferredIds.has(sched.id)) return
+      if (src.locked || instance.locked) return
+      if (sched.paused || !sched.enabled) return
+      if (this.isSourceOnTimeline(sched.id)) return
+      this.#scheduler.scheduleNewSource(instance)
+    })
   }
 
   async playSoundSourceImmediately(src) {
@@ -449,7 +519,7 @@ export default class AudioEngine {
 
   }
 
-  playSoundSource(src, { preserveMediaSessionSnapshot = false } = {}) {
+  async playSoundSource(src, { preserveMediaSessionSnapshot = false } = {}) {
     if (!preserveMediaSessionSnapshot) {
       this.#mediaSessionPauseSnapshot = null
     }
@@ -466,6 +536,13 @@ export default class AudioEngine {
 
     // Sources on the timeline are controlled exclusively by TimelineScheduler
     if (this.isSourceOnTimeline(src.instance.state.schedule.id)) return
+
+    try {
+      await src.instance.loadAudioBuffer?.()
+    } catch (err) {
+      console.warn('Unable to preload sound source before playback:', err)
+      return
+    }
 
     const schedId = src.instance.state.schedule.id
     if (this.#scheduler.pauseInfo.has(schedId) && this.#scheduler.pauseInfo.get(schedId).isPaused) {
@@ -512,7 +589,7 @@ export default class AudioEngine {
    * Start playback of all sound sources and initialise scheduling.
    * If every source is on the timeline, delegates to the timeline scheduler.
    */
-  playAll({ preserveMediaSessionSnapshot = false } = {}) {
+  async playAll({ preserveMediaSessionSnapshot = false } = {}) {
     if (!preserveMediaSessionSnapshot) {
       this.#mediaSessionPauseSnapshot = null
     }
@@ -522,17 +599,19 @@ export default class AudioEngine {
     }
 
     if (this.allSourcesOnTimeline) {
+      await this.preloadAudioBuffers({ includeNonTimeline: false })
       // All sources managed by timeline — drive it from here
       if (!this.#timelineScheduler.isRunning.value) {
         this.#timelineScheduler.resume()
       }
     } else {
+      await this.preloadAudioBuffers({ includeTimeline: false })
       // Only play / schedule sources that are NOT on the timeline
-      this.soundSources.value.forEach(s => {
-        if (s.locked) return
-        if (this.isSourceOnTimeline(s.instance?.state?.schedule?.id)) return
-        this.playSoundSource(s, { preserveMediaSessionSnapshot: true })
-      })
+      for (const s of this.soundSources.value) {
+        if (s.locked) continue
+        if (this.isSourceOnTimeline(s.instance?.state?.schedule?.id)) continue
+        await this.playSoundSource(s, { preserveMediaSessionSnapshot: true })
+      }
       if (this.#scheduler.roomStartTime === null) {
         this.#scheduler.start()
       } else {
@@ -639,16 +718,17 @@ export default class AudioEngine {
 
     let resumedAny = false
 
-    snapshot.sourceIds.forEach(sourceId => {
+    for (const sourceId of snapshot.sourceIds) {
       const src = this.#findSourceByScheduleId(sourceId)
-      if (!src || src.locked || src.instance?.locked) return
-      if (this.isSourceOnTimeline(sourceId)) return
+      if (!src || src.locked || src.instance?.locked) continue
+      if (this.isSourceOnTimeline(sourceId)) continue
 
-      this.playSoundSource(src, { preserveMediaSessionSnapshot: true })
+      await this.playSoundSource(src, { preserveMediaSessionSnapshot: true })
       resumedAny = true
-    })
+    }
 
     if (snapshot.timelineWasRunning) {
+      await this.preloadAudioBuffers({ includeNonTimeline: false })
       this.#timelineScheduler.resume()
       resumedAny = true
     }
@@ -859,9 +939,10 @@ export default class AudioEngine {
     this.timeline.loop = loop
   }
 
-  playTimeline(fromSeconds) {
+  async playTimeline(fromSeconds) {
     this.#mediaSessionPauseSnapshot = null
     const from = fromSeconds ?? this.#timelineScheduler.currentTime.value
+    await this.preloadAudioBuffers({ includeNonTimeline: false })
     this.#timelineScheduler.start(from)
     updateSiteAudioPlaybackState()
   }
@@ -1002,4 +1083,36 @@ export default class AudioEngine {
     return engine
   }
 
+}
+
+function withTimeout(promise, timeoutMs, message) {
+  if (!Number.isFinite(timeoutMs) || timeoutMs <= 0) return promise
+
+  let timeoutId = null
+  const timeout = new Promise((_, reject) => {
+    timeoutId = setTimeout(() => reject(new Error(message)), timeoutMs)
+  })
+
+  return Promise.race([promise, timeout])
+    .finally(() => {
+      if (timeoutId !== null) {
+        clearTimeout(timeoutId)
+      }
+    })
+}
+
+async function runWithConcurrency(items, concurrency, worker) {
+  const results = new Array(items.length)
+  let nextIndex = 0
+
+  const workers = Array.from({ length: Math.min(concurrency, items.length) }, async () => {
+    while (nextIndex < items.length) {
+      const index = nextIndex
+      nextIndex += 1
+      results[index] = await worker(items[index], index)
+    }
+  })
+
+  await Promise.all(workers)
+  return results
 }

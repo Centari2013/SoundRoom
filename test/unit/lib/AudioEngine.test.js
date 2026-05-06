@@ -2,7 +2,12 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { createPinia, setActivePinia } from 'pinia'
 import AudioEngine from '@/lib/AudioEngine'
 
-function makeSource(id, { playing = false, schedulePlaying = false, locked = false } = {}) {
+function makeSource(id, {
+  playing = false,
+  schedulePlaying = false,
+  locked = false,
+  loadAudioBuffer = null,
+} = {}) {
   const schedule = {
     id,
     enabled: true,
@@ -19,7 +24,7 @@ function makeSource(id, { playing = false, schedulePlaying = false, locked = fal
     state: { schedule },
     playing,
     playAndWait: vi.fn(async () => {}),
-    loadAudioBuffer: vi.fn(async () => instance._audioBuffer),
+    loadAudioBuffer: vi.fn(loadAudioBuffer ?? (async () => instance._audioBuffer)),
     scheduleLoaded: vi.fn(),
     stop: vi.fn(() => {
       instance.playing = false
@@ -86,5 +91,29 @@ describe('AudioEngine media session controls', () => {
     engine.pauseAll()
 
     expect(pauseTimeline).toHaveBeenCalledOnce()
+  })
+
+  it('preloads source buffers before playAll starts scheduling playback', async () => {
+    let resolveLoad
+    const loadPromise = new Promise(resolve => {
+      resolveLoad = resolve
+    })
+    const source = makeSource('scheduled-source', {
+      loadAudioBuffer: () => loadPromise,
+    })
+    const engine = new AudioEngine()
+    engine.soundSources.value.push(source)
+    engine.getAudioContext().state = 'running'
+
+    const playPromise = engine.playAll()
+    await Promise.resolve()
+
+    expect(source.instance.loadAudioBuffer).toHaveBeenCalled()
+    expect(source.instance.scheduleLoaded).not.toHaveBeenCalled()
+
+    resolveLoad(source.instance._audioBuffer)
+    await playPromise
+
+    expect(source.instance.scheduleLoaded).toHaveBeenCalled()
   })
 })

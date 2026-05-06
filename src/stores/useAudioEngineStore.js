@@ -71,15 +71,23 @@ export const useAudioEngineStore = defineStore('audioEngine', () => {
    *
    * @returns {void}
    */
-  function setupAudioContext() {
+  function setupAudioContext(options = {}) {
     const listenerStore = useListenerStore()
     const cacheStore = useAudioCacheStore()
     const audioContext = audioEngine.value.getAudioContext()
 
     listenerStore.listener.setAudioContext(audioContext)
     cacheStore.audioCacheManager.setAudioContext(audioContext)
-    audioEngine.value.setupAudioEngine()
+    audioEngine.value.setupAudioEngine(options)
     listenerStore.listener.updateAudio()
+  }
+
+  async function preloadAudioBuffers(options = {}) {
+    return await audioEngine.value.preloadAudioBuffers(options)
+  }
+
+  function startDeferredScheduling() {
+    audioEngine.value.startDeferredScheduling()
   }
 
   /**
@@ -100,7 +108,7 @@ export const useAudioEngineStore = defineStore('audioEngine', () => {
    * @returns {void}
    */
   function playSoundSource(src) {
-    audioEngine.value.playSoundSource(src)
+    return audioEngine.value.playSoundSource(src)
   }
   /**
    * Pauses sound source.
@@ -148,7 +156,7 @@ export const useAudioEngineStore = defineStore('audioEngine', () => {
   }
 
   function playTimeline(fromSeconds) {
-    audioEngine.value.playTimeline(fromSeconds)
+    return audioEngine.value.playTimeline(fromSeconds)
   }
 
   function pauseTimeline() {
@@ -184,6 +192,8 @@ export const useAudioEngineStore = defineStore('audioEngine', () => {
     resumeAudioContext,
     setMaxCanvasSources,
     setupAudioContext,
+    preloadAudioBuffers,
+    startDeferredScheduling,
     resetAudioEngine,
     loadIR,
     playSoundSource,

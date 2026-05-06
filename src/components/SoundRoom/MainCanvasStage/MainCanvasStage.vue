@@ -51,7 +51,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted, nextTick, watch } from 'vue'
 
 import ContextMenu from '@/components/ui/context/ContextMenu.vue'
 import SoundSourceNode from '@/components/SoundRoom/MainCanvasStage/SoundSourceNode.vue'
@@ -87,7 +87,7 @@ function onStageContextMenu(e) {
 }
 
 function getSourceKey(src, index) {
-  return src?.id ?? src?.libraryId ?? src?.name ?? index
+  return src?.instance?.state?.schedule?.id ?? src?.state?.schedule?.id ?? src?.id ?? `${src?.libraryId ?? src?.name ?? 'source'}:${index}`
 }
 
 defineEmits(['selectNode'])
@@ -95,7 +95,9 @@ defineEmits(['selectNode'])
 const stageDivRef = ref(null)
 const contextMenuRef = ref(null)
 const vStageRef = ref(null) // for Konva stage
+const mainLayer = ref(null)
 const coordsVersion = ref(0) // reactive bump trigger
+let stopSourceRenderWatch = null
 
 onMounted(() => {
   window.addEventListener('resize', updateCoords)
@@ -103,13 +105,42 @@ onMounted(() => {
   canvasStore.setStageDivRef(stageDivRef.value)
   canvasStore.setContextMenuRef(contextMenuRef.value) // share context menu instance safely
   canvasStore.setVStageRef(vStageRef.value)
+  stopSourceRenderWatch = watch(
+    [
+      audioEngine,
+      () => audioEngine.value.soundSources.value.map((src, index) => getSourceKey(src, index)).join('|')
+    ],
+    reportRenderedSoundSources,
+    { immediate: true, flush: 'post' }
+  )
 })
 onUnmounted(() => {
   window.removeEventListener('resize', updateCoords)
+  stopSourceRenderWatch?.()
+  useCanvasStore().setRenderedSoundSourceCount(0)
 })
 
 function updateCoords() {
   coordsVersion.value++
+}
+
+async function reportRenderedSoundSources() {
+  await nextTick()
+  await nextAnimationFrame()
+
+  const layer = mainLayer.value?.getNode?.()
+  layer?.batchDraw?.()
+
+  const renderedCount = layer?.find?.('.sound-source-node')?.length ?? 0
+  useCanvasStore().setRenderedSoundSourceCount(renderedCount)
+}
+
+function nextAnimationFrame() {
+  if (typeof requestAnimationFrame !== 'function') {
+    return new Promise(resolve => setTimeout(resolve, 0))
+  }
+
+  return new Promise(resolve => requestAnimationFrame(() => resolve()))
 }
 
 

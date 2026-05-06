@@ -246,6 +246,7 @@ export function useSaveAndLoadRoom() {
     }
 
     isLoadingRoom.value = true;
+    canvasStore.resetRenderedSoundSourceCount()
     stopAllAudioForRoomChange()
     // get room data from supabase
     const { data, error } = await getRoomDataById(roomId);
@@ -356,11 +357,11 @@ export function useSaveAndLoadRoom() {
     applyTimelineAccess(roomData)
     audioEngineStore.loadAudioEngine(roomData.audioEngine);
 
-    audioEngineStore.setupAudioContext();
-    
-    setTimeout(() => {
+    try {
+      await setupLoadedRoomAudio()
+    } finally {
       isLoadingRoom.value = false;
-    }, 2000);
+    }
 
     return true;
   }
@@ -437,6 +438,25 @@ export function useSaveAndLoadRoom() {
     source.canUpgrade = access.canUpgrade
     source.base = source.base ?? access.base ?? source.plan_tier ?? 'users'
   }
+
+  async function setupLoadedRoomAudio() {
+    audioEngineStore.setupAudioContext({ deferScheduling: true })
+    const preloadResult = await audioEngineStore.preloadAudioBuffers()
+
+    if (preloadResult?.failed?.length) {
+      console.warn(
+        `Loaded room with ${preloadResult.failed.length} sound source(s) that could not be preloaded.`
+      )
+    }
+
+    const expectedCanvasSources = audioEngine.value?.soundSources?.value?.length ?? 0
+    const canvasReady = await canvasStore.waitForRenderedSoundSources(expectedCanvasSources)
+    if (!canvasReady) return preloadResult
+
+    audioEngineStore.startDeferredScheduling()
+    return preloadResult
+  }
+
   /**
    * Persist the current room to browser localStorage for offline usage.
    */
@@ -455,6 +475,7 @@ export function useSaveAndLoadRoom() {
    */
   async function loadRoomLocal() {
     isLoadingRoom.value = true;
+    canvasStore.resetRenderedSoundSourceCount()
     stopAllAudioForRoomChange()
     const stored = localStorage.getItem("tempSoundRoomData");
     if (!stored) {
@@ -547,12 +568,10 @@ export function useSaveAndLoadRoom() {
       applyTimelineAccess(roomData)
       audioEngine.value = AudioEngine.fromJSON(roomData.audioEngine);
 
-      audioEngineStore.setupAudioContext();
+      await setupLoadedRoomAudio()
     }
     localStorage.removeItem("tempSoundRoomData");
-    setTimeout(() => {
-      isLoadingRoom.value = false;
-    }, 2000);
+    isLoadingRoom.value = false;
 
     return true
   }

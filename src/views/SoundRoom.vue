@@ -288,7 +288,7 @@ async function resumeAudio() {
 
     if (!stillSuspended && pendingAutoPlayback.value) {
       pendingAutoPlayback.value = false
-      engine?.playAll?.()
+      await engine?.playAll?.()
     }
   } catch (err) {
     console.warn("Failed to resume audio context:", err)
@@ -499,7 +499,7 @@ async function startOrRequestAutoPlayback(loadedRoom) {
 
   pendingAutoPlayback.value = false
   showAudioResumeOverlay.value = false
-  engine.playAll()
+  await engine.playAll()
 }
 
 let routeUnwatcher = null;
