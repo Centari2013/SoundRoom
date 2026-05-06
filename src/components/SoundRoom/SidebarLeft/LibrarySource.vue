@@ -7,6 +7,7 @@
     }"
     :draggable="!librarySource.locked"
     :aria-disabled="librarySource.locked"
+    data-tour="library-source"
   >
     {{ librarySource.name }}
   </li>

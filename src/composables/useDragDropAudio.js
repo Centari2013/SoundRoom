@@ -68,7 +68,7 @@ export function useDragDropAudio({ draggedSource }) {
     // Re-register handlers in case the ActionManager was reset while the view remained active.
     registerSoundRoomActions()
 
-    actionManager.value.doAction("add_canvas_sound_source", { src: src })
+    actionManager.value.doAction("add_canvas_sound_source", { src: src, autoplay: true })
   }
   
 

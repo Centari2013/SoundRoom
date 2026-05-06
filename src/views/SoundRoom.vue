@@ -1,6 +1,10 @@
 <template>
 
-  <Onboarding :startTour="startTour" />
+  <Onboarding
+    v-if="startTour"
+    :startTour="startTour"
+    @finished="handleOnboardingFinished"
+  />
   <div class="h-full w-full min-h-0 min-w-0 overflow-hidden bg-surface-app text-text-primary flex flex-col">
     <!-- Main Layout -->
     <div class="flex flex-1 min-h-0 min-w-0 overflow-hidden">
@@ -87,8 +91,7 @@
 </template>
 
 <script setup>
-import Onboarding from '@/components/ui/context/Onboarding.vue'
-import { computed, getCurrentInstance, onBeforeMount, onMounted, onUnmounted, provide, ref, watch } from 'vue'
+import { computed, defineAsyncComponent, getCurrentInstance, onBeforeMount, onMounted, onUnmounted, provide, ref, watch } from 'vue'
 import VueKonva from 'vue-konva'
 
 defineOptions({
@@ -128,6 +131,8 @@ import { storeToRefs } from 'pinia'
 import { useRoute } from 'vue-router'
 import { resetRoomState } from "@/utils/resetRoomState";
 import { supabase } from '@/utils/supabase'
+
+const Onboarding = defineAsyncComponent(() => import('@/components/ui/context/Onboarding.vue'))
 
 const app = getCurrentInstance()?.appContext?.app
 if (app && !app.config.globalProperties.$soundRoomKonvaInstalled) {
@@ -419,6 +424,23 @@ onBeforeMount(async () => {
 })
 
 const startTour = ref(false);
+
+async function handleOnboardingFinished() {
+  startTour.value = false
+
+  if (!isAuthenticated.value || !user.value?.id) return
+
+  try {
+    const { error } = await supabase
+      .from('users')
+      .update({ onboarding_completed: true })
+      .eq('id', user.value.id)
+
+    if (error) throw error
+  } catch (err) {
+    console.warn('Failed to sync onboarding completion', err)
+  }
+}
 
 function waitForWelcome() {
   if (!showWelcomeOverlay.value || welcomeDone.value) {

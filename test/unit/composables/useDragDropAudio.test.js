@@ -46,6 +46,13 @@ describe('useDragDropAudio', () => {
     const cacheStore = useAudioCacheStore()
     const engineStore = useAudioEngineStore()
     const { handleDrop } = useDragDropAudio({ draggedSource })
+    const audioContext = engineStore.audioEngine.getAudioContext()
+    audioContext.state = 'running'
+    cacheStore.audioCacheManager.getOrFetchBlob = vi.fn(async (_fileId, fetcher) => fetcher())
+    global.fetch = vi.fn(async () => ({
+      ok: true,
+      blob: async () => new Blob([new Uint8Array([1, 2, 3])]),
+    }))
 
     cacheStore.soundLibrarySources.push({
       audioPath: '/sounds/rain.wav',
@@ -74,6 +81,7 @@ describe('useDragDropAudio', () => {
       coneInner: 45,
       coneOuter: 120,
     })
+    expect(engineStore.audioEngine.soundSources.value[0].instance.playing).toBe(true)
   })
 
   it('does nothing when no source is being dragged', () => {

@@ -22,7 +22,7 @@ themeStore.watchAuthTheme()
 
 Sentry.init({
   app,
-  dsn: "https://406d3b12b2a8cd441ed785b4152b2acf@o4511340484493312.ingest.us.sentry.io/4511340491505664",
+  dsn: "https://5a5715b629b8d52b7fc6e09b5a06694d@o4510087173242880.ingest.us.sentry.io/4511340458606592",
   // Setting this option to true will send default PII data to Sentry.
   // For example, automatic IP address collection on events
   sendDefaultPii: true,

@@ -264,7 +264,7 @@ export default class AudioEngine {
       const sched = instance.state.schedule
       sched.paused = true
       sched.enabled = false
-      return
+      return src
     }
 
     // Watch schedule changes to hook into the interval scheduler.
@@ -293,6 +293,41 @@ export default class AudioEngine {
       this.#scheduler.scheduleNewSource(instance)
     }
 
+    return src
+  }
+
+  async playSoundSourceImmediately(src) {
+    if (!src || !src.instance) {
+      console.warn("Tried to autoplay sound source but it was not valid:", src)
+      return
+    }
+
+    if (src.locked || src.instance.locked) {
+      console.info('Sound source is locked for the current plan.')
+      return
+    }
+
+    if (this.isSourceOnTimeline(src.instance.state.schedule.id)) return
+
+    const audioContext = this.getAudioContext()
+    if (audioContext.state === 'suspended') {
+      await audioContext.resume()
+    }
+
+    if (audioContext.state === 'suspended') {
+      console.warn('Audio context is still suspended; browser blocked autoplay.')
+      return
+    }
+
+    const sched = src.instance.state.schedule
+    sched.paused = false
+    sched.isPlaying = true
+
+    await src.instance.play()
+
+    if ('mediaSession' in navigator) {
+      navigator.mediaSession.playbackState = 'playing'
+    }
   }
 
   /**

@@ -41,6 +41,27 @@ test.describe('launch smoke', () => {
     expect(consoleErrors).toEqual([])
   })
 
+  test('first-time desktop visitors can start and skip onboarding', async ({ page }) => {
+    await page.addInitScript(() => {
+      const now = new Date()
+      const month = String(now.getMonth() + 1).padStart(2, '0')
+      const day = String(now.getDate()).padStart(2, '0')
+      const today = `${now.getFullYear()}-${month}-${day}`
+
+      localStorage.setItem('soundroom.welcomeLastSeen:anonymous', today)
+      localStorage.removeItem('soundroom_onboarding_completed')
+    })
+
+    await page.goto('/app')
+
+    await expect(page.getByText(/Welcome to SoundRoom\./i)).toBeVisible()
+    await page.getByRole('button', { name: 'Next' }).click()
+    await expect(page.getByText(/This is the SoundStage\./i)).toBeVisible()
+
+    await page.getByRole('button', { name: 'Skip' }).click()
+    await expect.poll(() => page.evaluate(() => localStorage.getItem('soundroom_onboarding_completed'))).toBe('true')
+  })
+
   test('mobile visitors see the desktop-only guard instead of the editor', async ({ browser }) => {
     const context = await browser.newContext({
       viewport: { width: 390, height: 844 },

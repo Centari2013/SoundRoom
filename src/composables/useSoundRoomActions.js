@@ -109,8 +109,12 @@ function registerCanvasActions() {
       : null)
     payload.src.storageKey = storageKey
     payload.src.fileId = payload.src.fileId ?? payload.src.libraryId ?? storageKey ?? payload.src.audioPath ?? null
-    audioEngine.value.addSoundSource(payload)
+    const addedSource = audioEngine.value.addSoundSource(payload)
     listener.value.updateAudio()
+
+    if (payload.autoplay && addedSource) {
+      await audioEngine.value.playSoundSourceImmediately(addedSource)
+    }
   }
 
   /**
