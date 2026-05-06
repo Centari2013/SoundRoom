@@ -586,8 +586,8 @@ export default class AudioEngine {
 
 
   /**
-   * Start playback of all sound sources and initialise scheduling.
-   * If every source is on the timeline, delegates to the timeline scheduler.
+   * Start playback for canvas-controlled sources only.
+   * Sources on the timeline are controlled exclusively by TimelineScheduler.
    */
   async playAll({ preserveMediaSessionSnapshot = false } = {}) {
     if (!preserveMediaSessionSnapshot) {
@@ -598,18 +598,15 @@ export default class AudioEngine {
       this.#audioContext.resume()
     }
 
-    if (this.allSourcesOnTimeline) {
-      await this.preloadAudioBuffers({ includeNonTimeline: false })
-      // All sources managed by timeline — drive it from here
-      if (!this.#timelineScheduler.isRunning.value) {
-        this.#timelineScheduler.resume()
-      }
-    } else {
+    const canvasSources = this.soundSources.value.filter(s =>
+      !s.locked &&
+      !s.instance?.locked &&
+      !this.isSourceOnTimeline(s.instance?.state?.schedule?.id)
+    )
+
+    if (canvasSources.length > 0) {
       await this.preloadAudioBuffers({ includeTimeline: false })
-      // Only play / schedule sources that are NOT on the timeline
-      for (const s of this.soundSources.value) {
-        if (s.locked) continue
-        if (this.isSourceOnTimeline(s.instance?.state?.schedule?.id)) continue
+      for (const s of canvasSources) {
         await this.playSoundSource(s, { preserveMediaSessionSnapshot: true })
       }
       if (this.#scheduler.roomStartTime === null) {
@@ -624,28 +621,18 @@ export default class AudioEngine {
 
 
   /**
-   * Pause all active sound sources and suspend scheduling.
-   * If every source is on the timeline, delegates to the timeline scheduler.
+   * Pause canvas-controlled sources only.
+   * Sources on the timeline are controlled exclusively by TimelineScheduler.
    */
   pauseAll({ preserveMediaSessionSnapshot = false } = {}) {
     if (!preserveMediaSessionSnapshot) {
       this.#mediaSessionPauseSnapshot = null
     }
 
-    const timelineWasRunning = this.#timelineScheduler.isRunning.value
-
-    if (this.allSourcesOnTimeline) {
-      this.#timelineScheduler.pause()
-    } else {
-      if (timelineWasRunning) {
-        this.#timelineScheduler.pause()
-      }
-      this.soundSources.value.forEach(s => {
-        if (this.isSourceOnTimeline(s.instance?.state?.schedule?.id)) return
-        this.pauseSoundSource(s, { preserveMediaSessionSnapshot: true })
-      })
-      this.#scheduler.pause()
-    }
+    this.soundSources.value.forEach(s => {
+      if (this.isSourceOnTimeline(s.instance?.state?.schedule?.id)) return
+      this.pauseSoundSource(s, { preserveMediaSessionSnapshot: true })
+    })
 
     updateSiteAudioPlaybackState()
     

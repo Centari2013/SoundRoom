@@ -3,9 +3,9 @@
           
     <div class="flex space-x-2 w-1/3">
       <BaseButton
-        :disabled="audioEngine.soundSources.value.length === 0"
+        :disabled="!hasCanvasTransportSources"
         @click="isPlaying ? audioEngine.pauseAll() : audioEngine.playAll()"
-        :title="allSourcesOnTimeline ? (isPlaying ? 'Pause timeline' : 'Play timeline') : (isPlaying ? 'Pause' : 'Play')"
+        :title="isPlaying ? 'Pause canvas sources' : 'Play canvas sources'"
         class="px-3 py-1 rounded text-sm bg-[var(--color-bg-surface)] hover:bg-[var(--color-bg-elevated)] text-[var(--color-text-primary)]"
       >
         <component :is="isPlaying ? Pause : Play" class="h-4 w-4 fill-[var(--color-text-primary)]" />
@@ -70,7 +70,7 @@ const roomStore = useRoomStore()
 const engineStore = useAudioEngineStore()
 const actionStore = useActionManagerStore()
 const { room } = storeToRefs(roomStore)
-const { audioEngine, isPlaying, allSourcesOnTimeline } = storeToRefs(engineStore)
+const { audioEngine, isPlaying, hasCanvasTransportSources } = storeToRefs(engineStore)
 const { actionManager, actionStackEmpty, redoStackEmpty, waiting } = storeToRefs(actionStore)
 
 const { isAuthenticated } = useAuth()

@@ -173,13 +173,20 @@ export const useAudioEngineStore = defineStore('audioEngine', () => {
 
   const allSourcesOnTimeline = computed(() => audioEngine.value.allSourcesOnTimeline)
 
+  const hasCanvasTransportSources = computed(() =>
+    audioEngine.value.soundSources.value.some(w => {
+      const scheduleId = w.instance?.state?.schedule?.id
+      return !w.locked && !w.instance?.locked && !audioEngine.value.isSourceOnTimeline(scheduleId)
+    })
+  )
+
   const isPlaying = computed(() => {
-    if (allSourcesOnTimeline.value) {
-      return audioEngine.value.timelineScheduler?.isRunning.value ?? false
-    }
     return audioEngine.value.soundSources.value.some(w => {
       const scheduleId = w.instance?.state?.schedule?.id
-      return !audioEngine.value.isSourceOnTimeline(scheduleId) && w.instance.playing
+      return !w.locked &&
+        !w.instance?.locked &&
+        !audioEngine.value.isSourceOnTimeline(scheduleId) &&
+        Boolean(w.instance?.playing || w.instance?.state?.schedule?.isPlaying)
     })
   })
 
@@ -212,6 +219,7 @@ export const useAudioEngineStore = defineStore('audioEngine', () => {
     stopTimeline,
     seekTimeline,
     allSourcesOnTimeline,
+    hasCanvasTransportSources,
     isPlaying,
     MAX_CANVAS_SOURCES
   }

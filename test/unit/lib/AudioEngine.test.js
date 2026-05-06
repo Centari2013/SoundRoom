@@ -55,25 +55,37 @@ describe('AudioEngine media session controls', () => {
     vi.restoreAllMocks()
   })
 
-  it('resumes only non-timeline sources that were active when media pause was pressed', async () => {
+  it('resumes only sources and timeline transport that were active when media pause was pressed', async () => {
     const engine = new AudioEngine()
     const active = makeSource('active-source', { playing: true })
     const inactive = makeSource('inactive-source')
-    engine.soundSources.value.push(active, inactive)
+    const timelineSource = makeSource('timeline-source')
+    engine.soundSources.value.push(active, inactive, timelineSource)
+    engine.timeline.clips.push({
+      id: 'clip-1',
+      sourceId: 'timeline-source',
+      startTime: 0,
+      duration: 1,
+    })
+    engine.timelineScheduler.isRunning.value = true
+    const pauseTimeline = vi.spyOn(engine.timelineScheduler, 'pause')
+    const resumeTimeline = vi.spyOn(engine.timelineScheduler, 'resume')
     engine.getAudioContext().state = 'running'
 
     expect(engine.pauseForMediaSession()).toBe(true)
 
+    expect(pauseTimeline).toHaveBeenCalledOnce()
     expect(active.instance.setLoopingActive).toHaveBeenCalledWith(false)
     expect(inactive.instance.setLoopingActive).not.toHaveBeenCalled()
 
     await engine.resumeFromMediaSession()
 
+    expect(resumeTimeline).toHaveBeenCalledOnce()
     expect(active.instance.scheduleLoaded).toHaveBeenCalled()
     expect(inactive.instance.scheduleLoaded).not.toHaveBeenCalled()
   })
 
-  it('pauses a running timeline even when non-timeline sources are also present', () => {
+  it('does not pause the timeline from the canvas master pause', () => {
     const engine = new AudioEngine()
     const timelineSource = makeSource('timeline-source')
     const looseSource = makeSource('loose-source')
@@ -90,7 +102,27 @@ describe('AudioEngine media session controls', () => {
 
     engine.pauseAll()
 
-    expect(pauseTimeline).toHaveBeenCalledOnce()
+    expect(pauseTimeline).not.toHaveBeenCalled()
+  })
+
+  it('does not start the timeline from the canvas master play', async () => {
+    const engine = new AudioEngine()
+    const timelineSource = makeSource('timeline-source')
+    engine.soundSources.value.push(timelineSource)
+    engine.timeline.clips.push({
+      id: 'clip-1',
+      sourceId: 'timeline-source',
+      startTime: 0,
+      duration: 1,
+    })
+    const resumeTimeline = vi.spyOn(engine.timelineScheduler, 'resume')
+    const startTimeline = vi.spyOn(engine.timelineScheduler, 'start')
+
+    await engine.playAll()
+
+    expect(resumeTimeline).not.toHaveBeenCalled()
+    expect(startTimeline).not.toHaveBeenCalled()
+    expect(timelineSource.instance.loadAudioBuffer).not.toHaveBeenCalled()
   })
 
   it('preloads source buffers before playAll starts scheduling playback', async () => {
@@ -115,5 +147,28 @@ describe('AudioEngine media session controls', () => {
     await playPromise
 
     expect(source.instance.scheduleLoaded).toHaveBeenCalled()
+  })
+
+  it('resumes canvas master playback from the paused audible clip instead of waiting in silence', async () => {
+    const source = makeSource('scheduled-source')
+    const engine = new AudioEngine()
+    engine.soundSources.value.push(source)
+    const audioContext = engine.getAudioContext()
+    audioContext.state = 'running'
+
+    await engine.playAll()
+
+    audioContext.currentTime = 0.4
+    engine.pauseAll()
+    source.instance.scheduleLoaded.mockClear()
+
+    audioContext.currentTime = 5
+    await engine.playAll()
+
+    expect(source.instance.scheduleLoaded).toHaveBeenCalledWith(expect.objectContaining({
+      when: expect.closeTo(5.03, 3),
+      offset: expect.closeTo(0.37, 2),
+      duration: expect.closeTo(0.63, 2),
+    }))
   })
 })
