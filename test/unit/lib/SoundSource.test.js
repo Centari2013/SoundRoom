@@ -108,6 +108,22 @@ describe('SoundSource', () => {
     expect(source.playing).toBe(false)
   })
 
+  it('can schedule loaded playback at an AudioContext time without cancelling existing scheduled sources', () => {
+    const { source, audioContext } = makeSource()
+    source._audioBuffer = { duration: 4 }
+
+    source.scheduleLoaded({ when: 2, offset: 0, duration: 1 })
+    source.scheduleLoaded({ when: 3, offset: 1, duration: 1 })
+
+    expect(audioContext.createBufferSource).toHaveBeenCalledTimes(2)
+    const first = audioContext.createBufferSource.mock.results[0].value
+    const second = audioContext.createBufferSource.mock.results[1].value
+    expect(first.start).toHaveBeenCalledWith(2, 0, 1)
+    expect(second.start).toHaveBeenCalledWith(3, 1, 1)
+    expect(first.stop).not.toHaveBeenCalled()
+    expect(source.playing).toBe(true)
+  })
+
   it('disconnects nodes and clears buffers during dispose', () => {
     const { source } = makeSource()
     source._audioBuffer = { duration: 3 }

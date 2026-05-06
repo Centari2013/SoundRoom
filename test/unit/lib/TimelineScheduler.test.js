@@ -2,10 +2,20 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { ref } from 'vue'
 import TimelineScheduler from '@/lib/TimelineScheduler'
 
-function makeEngine({ clips = [], duration = 10, loop = false, sources = [] } = {}) {
+function makeEngine({ clips = [], duration = 10, loop = false, sources = [], currentTime = 0 } = {}) {
+  const audioContext = {
+    currentTime,
+    state: 'running',
+    resume: vi.fn(async () => {
+      audioContext.state = 'running'
+    }),
+  }
+
   return {
+    audioContext,
     timeline: { clips, duration, loop },
     soundSources: ref(sources),
+    getAudioContext: () => audioContext,
   }
 }
 
@@ -16,6 +26,7 @@ function sourceFor(scheduleId, overrides = {}) {
       state: { schedule: { id: scheduleId } },
       loadAudioBuffer: vi.fn(async () => {}),
       playLoaded: vi.fn(),
+      scheduleLoaded: vi.fn(),
       stop: vi.fn(),
       pause: vi.fn(),
       _audioBuffer: { duration: 2 },
@@ -44,11 +55,15 @@ describe('TimelineScheduler', () => {
     const scheduler = new TimelineScheduler(engine)
 
     scheduler.start(1)
-    await vi.advanceTimersByTimeAsync(1_000)
+    await vi.advanceTimersByTimeAsync(0)
 
     expect(scheduler.isRunning.value).toBe(true)
     expect(source.instance.loadAudioBuffer).toHaveBeenCalledOnce()
-    expect(source.instance.playLoaded).toHaveBeenCalledWith({ offset: 0 })
+    expect(source.instance.scheduleLoaded).toHaveBeenCalledWith(expect.objectContaining({
+      when: 1,
+      offset: 0,
+      duration: 1,
+    }))
   })
 
   it('starts clips that are already active at the seek offset', async () => {
@@ -60,20 +75,25 @@ describe('TimelineScheduler', () => {
     const scheduler = new TimelineScheduler(engine)
 
     scheduler.start(4)
-    await vi.runOnlyPendingTimersAsync()
+    await vi.advanceTimersByTimeAsync(0)
 
-    expect(source.instance.playLoaded).toHaveBeenCalledWith({ offset: 2 })
+    expect(source.instance.scheduleLoaded).toHaveBeenCalledWith(expect.objectContaining({
+      offset: expect.closeTo(2.03, 2),
+      duration: expect.closeTo(2.97, 2),
+    }))
   })
 
   it('pauses and resumes from the current timeline position', async () => {
     const source = sourceFor('source-1')
-    const scheduler = new TimelineScheduler(makeEngine({
+    const engine = makeEngine({
       clips: [{ id: 'clip-1', sourceId: 'source-1', startTime: 0, duration: 5 }],
       sources: [source],
-    }))
+    })
+    const scheduler = new TimelineScheduler(engine)
 
     scheduler.start(0)
-    await vi.advanceTimersByTimeAsync(500)
+    engine.audioContext.currentTime = 0.5
+    await vi.advanceTimersByTimeAsync(100)
     scheduler.pause()
     const pausedAt = scheduler.currentTime.value
 
@@ -104,40 +124,46 @@ describe('TimelineScheduler', () => {
   describe('seek', () => {
     it('while running: stops current clips and restarts from the new position', async () => {
       // Use a large audio buffer so the offset does not wrap via modulo
-      const source = sourceFor('s1', { _audioBuffer: { duration: 100 } })
-      const scheduler = new TimelineScheduler(makeEngine({
+    const source = sourceFor('s1', { _audioBuffer: { duration: 100 } })
+      const engine = makeEngine({
         clips: [{ id: 'clip-1', sourceId: 's1', startTime: 0, duration: 10 }],
         sources: [source],
-      }))
+      })
+      const scheduler = new TimelineScheduler(engine)
 
       scheduler.start(0)
+      engine.audioContext.currentTime = 0.1
       await vi.advanceTimersByTimeAsync(100)
 
       scheduler.seek(5)
-      await vi.runOnlyPendingTimersAsync()
+      await vi.advanceTimersByTimeAsync(0)
 
       expect(scheduler.isRunning.value).toBe(true)
       expect(scheduler.currentTime.value).toBeGreaterThanOrEqual(5)
-      expect(source.instance.playLoaded).toHaveBeenLastCalledWith({ offset: 5 })
+      expect(source.instance.scheduleLoaded).toHaveBeenLastCalledWith(expect.objectContaining({
+        offset: expect.closeTo(5.03, 2),
+      }))
     })
 
     it('while paused: updates currentTime but does not restart playback', async () => {
       const source = sourceFor('s1')
-      const scheduler = new TimelineScheduler(makeEngine({
+      const engine = makeEngine({
         clips: [{ id: 'clip-1', sourceId: 's1', startTime: 0, duration: 10 }],
         sources: [source],
-      }))
+      })
+      const scheduler = new TimelineScheduler(engine)
 
       scheduler.start(0)
+      engine.audioContext.currentTime = 0.1
       await vi.advanceTimersByTimeAsync(100)
       scheduler.pause()
 
-      source.instance.playLoaded.mockClear()
+      source.instance.scheduleLoaded.mockClear()
       scheduler.seek(7)
 
       expect(scheduler.isRunning.value).toBe(false)
       expect(scheduler.currentTime.value).toBe(7)
-      expect(source.instance.playLoaded).not.toHaveBeenCalled()
+      expect(source.instance.scheduleLoaded).not.toHaveBeenCalled()
     })
 
     it('clamps seek target to [0, duration]', () => {
@@ -158,7 +184,8 @@ describe('TimelineScheduler', () => {
       const scheduler = new TimelineScheduler(engine)
 
       scheduler.start(0)
-      await vi.advanceTimersByTimeAsync(1500) // 500 ms past the 1 s duration
+      engine.audioContext.currentTime = 1.5
+      await vi.advanceTimersByTimeAsync(100) // 500 ms past the 1 s duration
 
       expect(scheduler.isRunning.value).toBe(true)
       expect(scheduler.currentTime.value).toBeLessThan(1)
@@ -169,7 +196,8 @@ describe('TimelineScheduler', () => {
       const scheduler = new TimelineScheduler(engine)
 
       scheduler.start(0)
-      await vi.advanceTimersByTimeAsync(1500)
+      engine.audioContext.currentTime = 1.5
+      await vi.advanceTimersByTimeAsync(100)
 
       expect(scheduler.isRunning.value).toBe(false)
       expect(scheduler.currentTime.value).toBe(1)
@@ -185,7 +213,7 @@ describe('TimelineScheduler', () => {
       const scheduler = new TimelineScheduler(engine)
 
       expect(() => scheduler.start(0)).not.toThrow()
-      await vi.runOnlyPendingTimersAsync()
+      await vi.advanceTimersByTimeAsync(0)
 
       expect(scheduler.isRunning.value).toBe(true)
     })
@@ -199,10 +227,10 @@ describe('TimelineScheduler', () => {
       }))
 
       scheduler.start(0)
-      await vi.runOnlyPendingTimersAsync()
+      await vi.advanceTimersByTimeAsync(0)
 
       expect(source.instance.loadAudioBuffer).not.toHaveBeenCalled()
-      expect(source.instance.playLoaded).not.toHaveBeenCalled()
+      expect(source.instance.scheduleLoaded).not.toHaveBeenCalled()
     })
 
     it('continues running after loadAudioBuffer rejects', async () => {
@@ -214,9 +242,9 @@ describe('TimelineScheduler', () => {
       }))
 
       scheduler.start(0)
-      await vi.runOnlyPendingTimersAsync()
+      await vi.advanceTimersByTimeAsync(0)
 
-      expect(source.instance.playLoaded).not.toHaveBeenCalled()
+      expect(source.instance.scheduleLoaded).not.toHaveBeenCalled()
       expect(scheduler.isRunning.value).toBe(true)
     })
   })
@@ -231,18 +259,15 @@ describe('TimelineScheduler', () => {
       }))
 
       scheduler.start(0)
-      // Advance a small amount to flush async _playClip microtasks without
-      // triggering the 2000 ms segment-end timer.
-      await vi.advanceTimersByTimeAsync(50)
+      await vi.advanceTimersByTimeAsync(0)
 
-      expect(source.instance.playLoaded).toHaveBeenCalledTimes(1)
-      expect(source.instance.playLoaded).toHaveBeenLastCalledWith({ offset: 0 })
-
-      await vi.advanceTimersByTimeAsync(2000) // segment 1 ends → segment 2 starts
-      expect(source.instance.playLoaded).toHaveBeenCalledTimes(2)
-
-      await vi.advanceTimersByTimeAsync(2000) // segment 2 ends → segment 3 starts
-      expect(source.instance.playLoaded).toHaveBeenCalledTimes(3)
+      expect(source.instance.scheduleLoaded).toHaveBeenCalledTimes(3)
+      expect(source.instance.scheduleLoaded).toHaveBeenNthCalledWith(1, expect.objectContaining({
+        offset: expect.closeTo(0.03, 2),
+        duration: expect.closeTo(1.97, 2),
+      }))
+      expect(source.instance.scheduleLoaded).toHaveBeenNthCalledWith(2, expect.objectContaining({ offset: 0, duration: 2 }))
+      expect(source.instance.scheduleLoaded).toHaveBeenNthCalledWith(3, expect.objectContaining({ offset: 0, duration: 2 }))
     })
   })
 
@@ -255,7 +280,7 @@ describe('TimelineScheduler', () => {
       }))
 
       scheduler.start(0)
-      await vi.runOnlyPendingTimersAsync()
+      await vi.advanceTimersByTimeAsync(0)
       scheduler.dispose()
 
       expect(scheduler.isRunning.value).toBe(false)

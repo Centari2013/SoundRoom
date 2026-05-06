@@ -1,13 +1,27 @@
 import { ref } from 'vue'
 
+const DEFAULT_LOOKAHEAD_SECONDS = 5
+const DEFAULT_SCHEDULE_INTERVAL_MS = 100
+const MIN_SCHEDULE_LEAD_SECONDS = 0.03
+const HIDDEN_UI_INTERVAL_MS = 250
+
 export default class TimelineScheduler {
-  constructor(audioEngine) {
+  constructor(audioEngine, options = {}) {
     this._engine = audioEngine
-    this._timeouts = []
-    this._rafId = null
-    this._startedAt = null
+    this._lookaheadSeconds = options.lookaheadSeconds ?? DEFAULT_LOOKAHEAD_SECONDS
+    this._scheduleIntervalMs = options.scheduleIntervalMs ?? DEFAULT_SCHEDULE_INTERVAL_MS
+    this._minScheduleLeadSeconds = options.minScheduleLeadSeconds ?? MIN_SCHEDULE_LEAD_SECONDS
+
+    this._schedulerTimerId = null
+    this._uiRafId = null
+    this._uiTimerId = null
     this._startOffset = 0
-    this._activeTimelinePlays = new Map()
+    this._transportStartContextTime = null
+    this._scheduledEventKeys = new Set()
+    this._scheduleGeneration = 0
+    this._lifecycleHandlersInstalled = false
+
+    this._handleVisibilityChange = this._handleVisibilityChange.bind(this)
 
     this.isRunning = ref(false)
     this.currentTime = ref(0)
@@ -17,109 +31,321 @@ export default class TimelineScheduler {
     return this._engine.timeline
   }
 
+  get _audioContext() {
+    return this._engine.getAudioContext?.() ?? null
+  }
+
   start(fromSeconds = 0) {
-    this._clearAll()
-    this._startOffset = Math.max(0, fromSeconds)
-    this._startedAt = performance.now()
+    this._stopScheduling()
+    this._stopTimelineSources()
+    this._startOffset = this._clampTimelineTime(fromSeconds)
     this.currentTime.value = this._startOffset
-    this.isRunning.value = true
-    this._startActiveClips(this._startOffset)
-    this._scheduleClips(this._startOffset)
-    this._tick()
+    this._beginTransportAtCurrentContextTime()
   }
 
   pause() {
     if (!this.isRunning.value) return
+    this._updateCurrentTimeFromClock()
     this._startOffset = this.currentTime.value
-    this._clearAll()
+    this._stopScheduling()
     this._stopTimelineSources()
+    this.isRunning.value = false
+    this._transportStartContextTime = null
   }
 
   resume() {
     if (this.isRunning.value) return
-    this._startedAt = performance.now()
-    this.isRunning.value = true
-    this._startActiveClips(this._startOffset)
-    this._scheduleClips(this._startOffset)
-    this._tick()
+    this._startOffset = this._clampTimelineTime(this.currentTime.value || this._startOffset)
+    this._beginTransportAtCurrentContextTime()
   }
 
   stop() {
-    this._clearAll()
+    this._stopScheduling()
     this._stopTimelineSources()
     this.currentTime.value = 0
     this._startOffset = 0
+    this.isRunning.value = false
+    this._transportStartContextTime = null
   }
 
   seek(seconds) {
     const wasRunning = this.isRunning.value
-    this._clearAll()
+    const nextTime = this._clampTimelineTime(seconds)
+
+    this._stopScheduling()
     this._stopTimelineSources()
-    this._startOffset = Math.max(0, Math.min(seconds, this._timeline.duration))
-    this.currentTime.value = this._startOffset
-    if (wasRunning) {
-      this._startedAt = performance.now()
-      this.isRunning.value = true
-      this._startActiveClips(this._startOffset)
-      this._scheduleClips(this._startOffset)
-      this._tick()
-    }
-  }
-
-  _clearAll() {
-    this._timeouts.forEach(clearTimeout)
-    this._timeouts = []
-    if (this._rafId !== null) {
-      cancelAnimationFrame(this._rafId)
-      this._rafId = null
-    }
+    this._startOffset = nextTime
+    this.currentTime.value = nextTime
+    this._transportStartContextTime = null
     this.isRunning.value = false
-    this._startedAt = null
-    this._activeTimelinePlays.clear()
+
+    if (wasRunning) {
+      this._beginTransportAtCurrentContextTime()
+    }
   }
 
-  _tick() {
-    if (!this.isRunning.value) return
-    const elapsed = (performance.now() - this._startedAt) / 1000
-    const pos = this._startOffset + elapsed
-    const { duration, loop } = this._timeline
-
-    if (pos >= duration) {
-      this._stopTimelineSources()
-      if (loop) {
-        this._clearAll()
-        this.start(0)
-      } else {
-        this.currentTime.value = duration
-        this._clearAll()
-      }
+  _beginTransportAtCurrentContextTime() {
+    const audioContext = this._audioContext
+    if (!audioContext) {
+      console.warn('Timeline scheduler cannot start without an AudioContext.')
       return
     }
 
-    this.currentTime.value = pos
-    this._rafId = requestAnimationFrame(() => this._tick())
-  }
-
-  _scheduleClips(fromSeconds) {
-    for (const clip of this._timeline.clips) {
-      const delay = (clip.startTime - fromSeconds) * 1000
-      if (delay <= 0) continue
-
-      const id = setTimeout(() => {
-        this._playClip(clip)
-      }, delay)
-
-      this._timeouts.push(id)
+    if (audioContext.state === 'suspended') {
+      void audioContext.resume?.()
     }
+
+    this._scheduleGeneration += 1
+    this._scheduledEventKeys.clear()
+    this._transportStartContextTime = audioContext.currentTime
+    this.isRunning.value = true
+
+    this._installLifecycleHandlers()
+    this._scheduleTick(0)
+    this._startUiClock()
   }
 
-  _startActiveClips(atSeconds) {
-    for (const clip of this._timeline.clips) {
-      const endTime = this._clipEndTime(clip)
-      if (clip.startTime <= atSeconds && atSeconds < endTime) {
-        this._playClip(clip, atSeconds - clip.startTime)
+  _stopScheduling() {
+    if (this._schedulerTimerId !== null) {
+      clearTimeout(this._schedulerTimerId)
+      this._schedulerTimerId = null
+    }
+    if (this._uiRafId !== null) {
+      cancelAnimationFrame(this._uiRafId)
+      this._uiRafId = null
+    }
+    if (this._uiTimerId !== null) {
+      clearTimeout(this._uiTimerId)
+      this._uiTimerId = null
+    }
+
+    this._scheduleGeneration += 1
+    this._scheduledEventKeys.clear()
+  }
+
+  _scheduleTick(delayMs = this._scheduleIntervalMs) {
+    if (!this.isRunning.value) return
+
+    if (this._schedulerTimerId !== null) {
+      clearTimeout(this._schedulerTimerId)
+    }
+
+    this._schedulerTimerId = setTimeout(() => {
+      this._schedulerTimerId = null
+      this._schedulerTick()
+    }, delayMs)
+  }
+
+  _schedulerTick() {
+    if (!this.isRunning.value) return
+
+    const ended = this._updateCurrentTimeFromClock()
+    if (ended) return
+
+    const audioContext = this._audioContext
+    if (!audioContext || audioContext.state === 'suspended') {
+      this._scheduleTick(this._scheduleIntervalMs)
+      return
+    }
+
+    const absolutePosition = this._absolutePositionAtContextTime(audioContext.currentTime)
+    this._scheduleWindow(absolutePosition, absolutePosition + this._lookaheadSeconds)
+    this._scheduleTick(this._scheduleIntervalMs)
+  }
+
+  _startUiClock() {
+    if (!this.isRunning.value) return
+
+    const tick = () => {
+      this._uiRafId = null
+      this._uiTimerId = null
+      if (!this.isRunning.value) return
+
+      const ended = this._updateCurrentTimeFromClock()
+      if (ended) return
+
+      if (typeof document !== 'undefined' && document.hidden) {
+        this._uiTimerId = setTimeout(tick, HIDDEN_UI_INTERVAL_MS)
+        return
+      }
+
+      if (typeof requestAnimationFrame === 'function') {
+        this._uiRafId = requestAnimationFrame(tick)
+      } else {
+        this._uiTimerId = setTimeout(tick, 16)
       }
     }
+
+    tick()
+  }
+
+  _updateCurrentTimeFromClock() {
+    if (!this.isRunning.value || this._transportStartContextTime === null) return false
+
+    const audioContext = this._audioContext
+    if (!audioContext) return false
+
+    const absolutePosition = this._absolutePositionAtContextTime(audioContext.currentTime)
+    const duration = this._timeline.duration
+
+    if (!this._timeline.loop && absolutePosition >= duration) {
+      this.currentTime.value = duration
+      this._stopScheduling()
+      this._stopTimelineSources()
+      this.isRunning.value = false
+      this._startOffset = duration
+      this._transportStartContextTime = null
+      return true
+    }
+
+    this.currentTime.value = this._positionWithinTimeline(absolutePosition)
+    return false
+  }
+
+  _absolutePositionAtContextTime(contextTime) {
+    if (this._transportStartContextTime === null) return this._startOffset
+    return Math.max(0, this._startOffset + (contextTime - this._transportStartContextTime))
+  }
+
+  _contextTimeForAbsolutePosition(absolutePosition) {
+    if (this._transportStartContextTime === null) return this._audioContext?.currentTime ?? 0
+    return this._transportStartContextTime + (absolutePosition - this._startOffset)
+  }
+
+  _positionWithinTimeline(absolutePosition) {
+    const duration = Math.max(0, this._timeline.duration)
+    if (duration === 0) return 0
+    return this._timeline.loop ? absolutePosition % duration : Math.min(absolutePosition, duration)
+  }
+
+  _scheduleWindow(absoluteWindowStart, absoluteWindowEnd) {
+    const duration = this._timeline.duration
+    if (!Number.isFinite(duration) || duration <= 0) return
+
+    const firstCycle = this._timeline.loop ? Math.floor(absoluteWindowStart / duration) : 0
+    const lastCycle = this._timeline.loop ? Math.floor(absoluteWindowEnd / duration) : 0
+    const generation = this._scheduleGeneration
+
+    for (let cycle = firstCycle; cycle <= lastCycle; cycle += 1) {
+      if (!this._timeline.loop && cycle > 0) break
+      const cycleStart = cycle * duration
+
+      for (const clip of this._timeline.clips) {
+        this._scheduleClipSegmentsForCycle(clip, cycle, cycleStart, absoluteWindowStart, absoluteWindowEnd, generation)
+      }
+    }
+  }
+
+  _scheduleClipSegmentsForCycle(clip, cycle, cycleStart, absoluteWindowStart, absoluteWindowEnd, generation) {
+    const source = this._findSource(clip.sourceId)
+    if (!source || source.locked || !source.instance) return
+
+    const clipStart = Number.isFinite(clip.startTime) ? clip.startTime : 0
+    const clipEnd = this._clipEndTime(clip)
+    const clipDuration = Math.max(0, clipEnd - clipStart)
+    if (clipDuration <= 0) return
+
+    const sourceDuration = this._clipSourceDuration(clip, source.instance)
+    const segmentLength = sourceDuration ? Math.min(sourceDuration, clipDuration) : clipDuration
+    const segmentCount = Math.max(1, Math.ceil(clipDuration / segmentLength))
+    const absoluteClipStart = cycleStart + clipStart
+    const firstSegmentIndex = Math.max(
+      0,
+      Math.floor(Math.max(0, absoluteWindowStart - absoluteClipStart) / segmentLength)
+    )
+    const lastSegmentIndex = Math.min(
+      segmentCount - 1,
+      Math.floor(Math.max(0, absoluteWindowEnd - absoluteClipStart) / segmentLength)
+    )
+
+    for (let segmentIndex = firstSegmentIndex; segmentIndex <= lastSegmentIndex; segmentIndex += 1) {
+      const segmentStartInClip = segmentIndex * segmentLength
+      const segmentDuration = Math.min(segmentLength, clipDuration - segmentStartInClip)
+      const absoluteSegmentStart = absoluteClipStart + segmentStartInClip
+      const absoluteSegmentEnd = absoluteSegmentStart + segmentDuration
+
+      if (absoluteSegmentEnd <= absoluteWindowStart) continue
+      if (absoluteSegmentStart >= absoluteWindowEnd) continue
+
+      const sourceOffset = sourceDuration ? segmentStartInClip % sourceDuration : segmentStartInClip
+      const eventKey = `${generation}:${cycle}:${clip.id}:${segmentIndex}`
+
+      this._scheduleEvent({
+        eventKey,
+        clip,
+        source,
+        absoluteSegmentStart,
+        absoluteSegmentEnd,
+        sourceOffset,
+        generation
+      })
+    }
+  }
+
+  _scheduleEvent({
+    eventKey,
+    clip,
+    source,
+    absoluteSegmentStart,
+    absoluteSegmentEnd,
+    sourceOffset,
+    generation
+  }) {
+    if (this._scheduledEventKeys.has(eventKey)) return
+
+    this._scheduledEventKeys.add(eventKey)
+
+    void (async () => {
+      try {
+        const instance = source.instance
+        await instance.loadAudioBuffer?.()
+
+        if (!this.isRunning.value || generation !== this._scheduleGeneration) {
+          this._scheduledEventKeys.delete(eventKey)
+          return
+        }
+
+        const audioContext = this._audioContext
+        if (!audioContext) {
+          this._scheduledEventKeys.delete(eventKey)
+          return
+        }
+
+        const segmentEndContextTime = this._contextTimeForAbsolutePosition(absoluteSegmentEnd)
+        if (segmentEndContextTime <= audioContext.currentTime) {
+          this._scheduledEventKeys.delete(eventKey)
+          return
+        }
+
+        const nominalStartContextTime = this._contextTimeForAbsolutePosition(absoluteSegmentStart)
+        const when = Math.max(audioContext.currentTime + this._minScheduleLeadSeconds, nominalStartContextTime)
+        const elapsedBeforeStart = Math.max(0, when - nominalStartContextTime)
+        const duration = Math.max(0, segmentEndContextTime - when)
+        if (duration <= 0) {
+          this._scheduledEventKeys.delete(eventKey)
+          return
+        }
+
+        const offset = Math.max(0, sourceOffset + elapsedBeforeStart)
+        const onended = () => {
+          this._scheduledEventKeys.delete(eventKey)
+          if (this._scheduledEventKeys.size === 0 && !this.isRunning.value) {
+            this._activeTimelinePlays?.clear?.()
+          }
+        }
+
+        if (typeof instance.scheduleLoaded !== 'function') {
+          this._scheduledEventKeys.delete(eventKey)
+          console.warn('Timeline source does not support AudioContext-time scheduling.')
+          return
+        }
+
+        instance.scheduleLoaded({ when, offset, duration, onended })
+      } catch (err) {
+        this._scheduledEventKeys.delete(eventKey)
+        console.warn('Failed to schedule timeline clip:', err)
+      }
+    })()
   }
 
   _clipEndTime(clip) {
@@ -128,78 +354,22 @@ export default class TimelineScheduler {
     return clip.startTime
   }
 
-  async _playClip(clip, offset = 0) {
-    const src = this._engine.soundSources.value.find(
-      s => s.instance?.state?.schedule?.id === clip.sourceId
-    )
-
-    if (!src || src.locked || !src.instance) return
-
-    const instance = src.instance
-    const safeOffset = Math.max(0, offset)
-    const endTime = this._clipEndTime(clip)
-    const remaining = endTime - clip.startTime - safeOffset
-    if (remaining <= 0) return
-    const playToken = Symbol(clip.id)
-
-    instance.stop?.()
-    this._activeTimelinePlays.set(clip.sourceId, playToken)
-
-    if (typeof instance.loadAudioBuffer === 'function' && typeof instance.playLoaded === 'function') {
-      try {
-        await instance.loadAudioBuffer()
-        if (this._activeTimelinePlays.get(clip.sourceId) !== playToken) return
-        const sourceDuration = this._clipSourceDuration(clip, instance)
-        const sourceOffset = sourceDuration ? safeOffset % sourceDuration : safeOffset
-        const segmentSeconds = sourceDuration
-          ? Math.min(remaining, sourceDuration - sourceOffset)
-          : remaining
-        const nextOffset = safeOffset + segmentSeconds
-
-        instance.playLoaded({ offset: sourceOffset })
-        this._scheduleClipSegmentEnd(clip, segmentSeconds, playToken, nextOffset)
-        return
-      } catch (err) {
-        console.warn('Failed to start timeline clip at offset:', err)
-      }
-    }
-
-    instance.play?.({ offset: safeOffset })
-    this._scheduleClipSegmentEnd(clip, remaining, playToken)
-  }
-
   _clipSourceDuration(clip, instance) {
     const sourceDuration = clip.sourceDuration ?? instance.duration ?? instance._audioBuffer?.duration
     return Number.isFinite(sourceDuration) && sourceDuration > 0 ? sourceDuration : null
   }
 
-  _scheduleClipSegmentEnd(clip, segmentSeconds, playToken, nextOffset = null) {
-    const id = setTimeout(() => {
-      if (this._activeTimelinePlays.get(clip.sourceId) !== playToken) return
-
-      const src = this._engine.soundSources.value.find(
-        s => s.instance?.state?.schedule?.id === clip.sourceId
-      )
-
-      src?.instance?.stop?.()
-      src?.instance?.pause?.()
-      this._activeTimelinePlays.delete(clip.sourceId)
-
-      if (Number.isFinite(nextOffset) && nextOffset < this._clipEndTime(clip) - clip.startTime) {
-        this._playClip(clip, nextOffset)
-      }
-    }, segmentSeconds * 1000)
-
-    this._timeouts.push(id)
+  _findSource(sourceId) {
+    return this._engine.soundSources.value.find(
+      s => s.instance?.state?.schedule?.id === sourceId
+    )
   }
 
   _stopTimelineSources() {
     const sourceIds = new Set(this._timeline.clips.map(clip => clip.sourceId))
 
     for (const sourceId of sourceIds) {
-      const src = this._engine.soundSources.value.find(
-        s => s.instance?.state?.schedule?.id === sourceId
-      )
+      const src = this._findSource(sourceId)
 
       if (src?.instance) {
         src.instance.stop?.()
@@ -207,11 +377,47 @@ export default class TimelineScheduler {
       }
     }
 
-    this._activeTimelinePlays.clear()
+    this._scheduledEventKeys.clear()
+  }
+
+  _clampTimelineTime(seconds) {
+    const duration = Math.max(0, this._timeline.duration)
+    if (!Number.isFinite(seconds)) return 0
+    return Math.max(0, Math.min(seconds, duration))
+  }
+
+  async _handleVisibilityChange() {
+    if (typeof document !== 'undefined' && document.hidden) return
+    if (!this.isRunning.value) return
+
+    const audioContext = this._audioContext
+    if (audioContext?.state === 'suspended') {
+      try {
+        await audioContext.resume?.()
+      } catch (err) {
+        console.warn('Failed to resume AudioContext after visibility change:', err)
+      }
+    }
+
+    this._schedulerTick()
+  }
+
+  _installLifecycleHandlers() {
+    if (this._lifecycleHandlersInstalled || typeof document === 'undefined') return
+    document.addEventListener('visibilitychange', this._handleVisibilityChange)
+    this._lifecycleHandlersInstalled = true
+  }
+
+  _removeLifecycleHandlers() {
+    if (!this._lifecycleHandlersInstalled || typeof document === 'undefined') return
+    document.removeEventListener('visibilitychange', this._handleVisibilityChange)
+    this._lifecycleHandlersInstalled = false
   }
 
   dispose() {
-    this._clearAll()
+    this._stopScheduling()
     this._stopTimelineSources()
+    this.isRunning.value = false
+    this._removeLifecycleHandlers()
   }
 }

@@ -68,6 +68,7 @@ export default class SoundSource {
 
     this._audioBuffer = null
     this._activeSource = null
+    this._activeSources = new Set()
     this._playbackListeners = new Set()
     this._bufferPromise = null
     this._looping = false
@@ -231,55 +232,98 @@ export default class SoundSource {
     return Math.max(0, Math.min(offset, Math.max(0, this._audioBuffer.duration - 0.001)))
   }
 
-  _startPlayback(offset = 0, { notify = true } = {}) {
+  _startPlayback(offset = 0, {
+    notify = true,
+    when = 0,
+    duration = null,
+    stopExisting = true,
+    onended = null
+  } = {}) {
     if (!this._audioBuffer) {
       throw new Error('Audio buffer not loaded')
     }
 
-    this._stopActiveSource({ notify })
+    if (stopExisting) {
+      this._stopActiveSource({ notify })
+    }
+
     const safeOffset = this._normalizePlaybackOffset(offset)
+    const safeWhen = Number.isFinite(when)
+      ? Math.max(this._audioContext.currentTime, when)
+      : this._audioContext.currentTime
+    const safeDuration = Number.isFinite(duration)
+      ? Math.max(0, Math.min(duration, Math.max(0, this._audioBuffer.duration - safeOffset)))
+      : null
+
+    if (safeDuration !== null && safeDuration <= 0) return null
 
     const source = this._audioContext.createBufferSource()
     source.buffer = this._audioBuffer
     source.connect(this._gainNode)
 
     source.onended = () => {
+      this._activeSources.delete(source)
       if (this._activeSource === source) {
         this._activeSource = null
       }
-      if (!this._looping) {
+      try {
+        source.disconnect()
+      } catch (err) {
+        console.warn('Problem disconnecting ended buffer source:', err)
+      }
+      if (!this._looping && this._activeSources.size === 0) {
         this._setPlaying(false)
+      }
+      if (typeof onended === 'function') {
+        try {
+          onended()
+        } catch (err) {
+          console.warn('Playback end handler threw:', err)
+        }
       }
       this._notifyPlaybackListeners()
     }
 
     this._activeSource = source
+    this._activeSources.add(source)
     this._setPlaying(true)
-    source.start(0, safeOffset)
+    if (safeDuration !== null) {
+      source.start(safeWhen, safeOffset, safeDuration)
+    } else {
+      source.start(safeWhen, safeOffset)
+    }
+
+    return source
   }
 
   _stopActiveSource({ notify = true } = {}) {
-    if (!this._activeSource) {
+    if (!this._activeSource && this._activeSources.size === 0) {
       if (notify) {
         this._setPlaying(false)
       }
       return
     }
 
-    const source = this._activeSource
+    const sources = this._activeSources.size > 0
+      ? Array.from(this._activeSources)
+      : [this._activeSource]
     this._activeSource = null
+    this._activeSources.clear()
 
-    source.onended = null
-    try {
-      source.stop()
-    } catch (err) {
-      // Safari throws if stop called after natural end; ignore.
-    }
-    try {
-      source.disconnect()
-    } catch (err) {
-      console.warn('Problem disconnecting buffer source:', err)
-    }
+    sources.forEach(source => {
+      if (!source) return
+      source.onended = null
+      try {
+        source.stop()
+      } catch (err) {
+        // Safari throws if stop called after natural end; ignore.
+      }
+      try {
+        source.disconnect()
+      } catch (err) {
+        console.warn('Problem disconnecting buffer source:', err)
+      }
+    })
 
     if (notify) {
       this._setPlaying(false)
@@ -354,6 +398,23 @@ export default class SoundSource {
   playLoaded({ offset = 0 } = {}) {
     this._startPlayback(offset)
     this.updateAudio()
+  }
+
+  scheduleLoaded({
+    when = this._audioContext.currentTime,
+    offset = 0,
+    duration = null,
+    onended = null
+  } = {}) {
+    const source = this._startPlayback(offset, {
+      when,
+      duration,
+      notify: false,
+      stopExisting: false,
+      onended
+    })
+    this.updateAudio()
+    return source
   }
 
   async seek(offset = 0, { play = this.playing } = {}) {
@@ -621,6 +682,8 @@ export default class SoundSource {
       this._audioDescriptor = null
       this._audioCacheManager = null
       this._playbackListeners = new Set()
+      this._activeSources = new Set()
+      this._activeSource = null
       this._playing = ref(false)
       this._bufferPromise = null
 
