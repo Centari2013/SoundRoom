@@ -5,15 +5,26 @@ import tailwindcss from '@tailwindcss/vite'
 import svgLoader from 'vite-svg-loader'
 
 const isGitHubPages = process.env.DEPLOY_TARGET === 'GH_PAGES';
+const hasSentryAuthToken = Boolean(process.env.SENTRY_AUTH_TOKEN);
+const plugins = [vue(), tailwindcss(), svgLoader()];
+
+if (hasSentryAuthToken) {
+  plugins.push(sentryVitePlugin({
+    org: "soundroom",
+    project: "javascript-vue",
+    authToken: process.env.SENTRY_AUTH_TOKEN,
+    telemetry: false,
+    sourcemaps: {
+      filesToDeleteAfterUpload: ['dist/**/*.map'],
+    },
+  }));
+}
 
 export default defineConfig({
   server: {
     host: true
   },
-  plugins: [vue(), tailwindcss(), svgLoader(), sentryVitePlugin({
-    org: "soundroom",
-    project: "javascript-vue"
-  })],
+  plugins,
 
   resolve: {
     alias: [
@@ -47,6 +58,6 @@ export default defineConfig({
   },
 
   build: {
-    sourcemap: true
+    sourcemap: hasSentryAuthToken ? 'hidden' : false
   }
 })

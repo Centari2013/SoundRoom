@@ -27,6 +27,20 @@ test.describe('launch smoke', () => {
     await expect(page.getByRole('heading', { name: /build spatial audio rooms/i })).toBeVisible()
   })
 
+  test('desktop app route lazy-loads the editor canvas', async ({ page }) => {
+    const consoleErrors = []
+    page.on('console', (message) => {
+      if (message.type() === 'error') {
+        consoleErrors.push(message.text())
+      }
+    })
+
+    await page.goto('/app')
+
+    await expect(page.getByRole('application', { name: /soundroom 2d audio environment/i })).toBeVisible()
+    expect(consoleErrors).toEqual([])
+  })
+
   test('mobile visitors see the desktop-only guard instead of the editor', async ({ browser }) => {
     const context = await browser.newContext({
       viewport: { width: 390, height: 844 },

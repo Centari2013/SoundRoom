@@ -1,6 +1,4 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import SoundRoom from '@/views/SoundRoom.vue'
-import LandingPage from '@/views/LandingPage.vue'
 import { useAuth } from '@/composables/useAuth'
 import { watch } from 'vue'
 import { applySeo } from '@/utils/seo'
@@ -14,7 +12,7 @@ const router = createRouter({
     {
       name: 'landing',
       path: '/',
-      component: LandingPage,
+      component: () => import('@/views/LandingPage.vue'),
       meta: {
         seo: {
           title: 'SoundRoom | Spatial audio playground',
@@ -25,7 +23,7 @@ const router = createRouter({
     {
       name: 'app',
       path: '/app',
-      component: SoundRoom,
+      component: () => import('@/views/SoundRoom.vue'),
       meta: {
         seo: {
           title: 'SoundRoom Studio',

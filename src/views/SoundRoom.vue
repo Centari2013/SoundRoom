@@ -88,12 +88,12 @@
 
 <script setup>
 import Onboarding from '@/components/ui/context/Onboarding.vue'
-import { computed, watch } from 'vue';
+import { computed, getCurrentInstance, onBeforeMount, onMounted, onUnmounted, provide, ref, watch } from 'vue'
+import VueKonva from 'vue-konva'
 
 defineOptions({
   name: 'SoundRoomRoot',
 })
-import { ref, provide, onBeforeMount, onUnmounted, onMounted } from 'vue'
 import { gsap } from 'gsap'
 
 // Shared constants
@@ -128,6 +128,12 @@ import { storeToRefs } from 'pinia'
 import { useRoute } from 'vue-router'
 import { resetRoomState } from "@/utils/resetRoomState";
 import { supabase } from '@/utils/supabase'
+
+const app = getCurrentInstance()?.appContext?.app
+if (app && !app.config.globalProperties.$soundRoomKonvaInstalled) {
+  app.use(VueKonva)
+  app.config.globalProperties.$soundRoomKonvaInstalled = true
+}
 
 // State
 const selectedIndex = ref(null)
@@ -223,6 +229,8 @@ const welcomeDone = ref(false)
 
 function onWelcomeFinished() {
   welcomeDone.value = true
+  showWelcomeOverlay.value = false
+  markWelcomeSeen()
 }
 
 
@@ -242,7 +250,7 @@ setMaxLibSources(MAX_LIB_SOURCES)
 
 const showWelcomeOverlay = ref(false)
 const showInitOverlay = ref(false)
-const { user, isAuthenticated } = useAuth()
+const { user, isAuthenticated, sessionLoaded } = useAuth()
 
 const preferenceDefaults = Object.freeze({
   autoResumePlayback: false,
@@ -250,18 +258,36 @@ const preferenceDefaults = Object.freeze({
 })
 
 const LOCAL_PREF_KEY = 'soundroom.userPreferences'
+const WELCOME_LAST_SEEN_PREFIX = 'soundroom.welcomeLastSeen'
 
 const userPreferences = ref({ ...preferenceDefaults })
 const preferencesLoaded = ref(false)
 
-const showAudioResumeOverlay = ref(true)
+const showAudioResumeOverlay = ref(false)
+const pendingAutoPlayback = ref(false)
+const justLoggedInThisSession = ref(false)
 
-function resumeAudio() {
+async function resumeAudio() {
   try {
-    engineStore.resumeAudioContext()
-    showAudioResumeOverlay.value = false
+    const engine = audioEngine.value
+    const context = engine?.getAudioContext?.()
+
+    if (context?.state === 'suspended') {
+      await context.resume()
+    } else {
+      engineStore.resumeAudioContext()
+    }
+
+    const stillSuspended = context?.state === 'suspended'
+    showAudioResumeOverlay.value = !!stillSuspended
+
+    if (!stillSuspended && pendingAutoPlayback.value) {
+      pendingAutoPlayback.value = false
+      engine?.playAll?.()
+    }
   } catch (err) {
     console.warn("Failed to resume audio context:", err)
+    showAudioResumeOverlay.value = true
   }
 }
 
@@ -294,7 +320,9 @@ async function hydrateUserPreferences({ forceLocal = false } = {}) {
     return userPreferences.value
   }
 
-  if (!loadCachedPreferences() && user.value?.id) {
+  const hasCachedPreferences = loadCachedPreferences()
+
+  if (user.value?.id) {
     try {
       const { data, error } = await supabase
         .from('users')
@@ -308,27 +336,80 @@ async function hydrateUserPreferences({ forceLocal = false } = {}) {
       applyPreferences(preferences)
       localStorage.setItem(LOCAL_PREF_KEY, JSON.stringify(userPreferences.value))
     } catch (err) {
-      console.warn('Failed to load preferences from Supabase, using defaults', err)
-      applyPreferences(preferenceDefaults)
+      console.warn('Failed to load preferences from Supabase, using local/default preferences', err)
+      if (!hasCachedPreferences) {
+        applyPreferences(preferenceDefaults)
+      }
     }
+  } else if (!hasCachedPreferences) {
+    applyPreferences(preferenceDefaults)
   }
 
   preferencesLoaded.value = true
   return userPreferences.value
 }
 
+function todayKey() {
+  const now = new Date()
+  const month = String(now.getMonth() + 1).padStart(2, '0')
+  const day = String(now.getDate()).padStart(2, '0')
+  return `${now.getFullYear()}-${month}-${day}`
+}
+
+function welcomeStorageKey() {
+  return `${WELCOME_LAST_SEEN_PREFIX}:${user.value?.id ?? 'anonymous'}`
+}
+
+function shouldShowWelcome({ force = false } = {}) {
+  if (force) return true
+
+  try {
+    return localStorage.getItem(welcomeStorageKey()) !== todayKey()
+  } catch (err) {
+    console.warn('Failed to read welcome overlay state', err)
+    return true
+  }
+}
+
+function markWelcomeSeen() {
+  try {
+    localStorage.setItem(welcomeStorageKey(), todayKey())
+  } catch (err) {
+    console.warn('Failed to store welcome overlay state', err)
+  }
+}
+
+function scheduleWelcomeOverlay({ force = false } = {}) {
+  if (welcomeDone.value || showWelcomeOverlay.value) return
+
+  if (shouldShowWelcome({ force })) {
+    showWelcomeOverlay.value = true
+  } else {
+    welcomeDone.value = true
+  }
+}
+
+function waitForSessionReady() {
+  if (sessionLoaded.value) return Promise.resolve()
+
+  return new Promise((resolve) => {
+    const stop = watch(sessionLoaded, (loaded) => {
+      if (loaded) {
+        stop()
+        resolve()
+      }
+    })
+  })
+}
+
 onBeforeMount(async () => {
   registerSoundRoomActions()
-  
-  if (sessionStorage.getItem('justLoggedIn') === 'true') {
+
+  justLoggedInThisSession.value = sessionStorage.getItem('justLoggedIn') === 'true'
+  if (justLoggedInThisSession.value) {
     sessionStorage.removeItem('justLoggedIn')
-    showWelcomeOverlay.value = true
-    const tempSoundRoomData = localStorage.getItem('tempSoundRoomData')
-    if (tempSoundRoomData) {
-      loadRoomLocal()
-      saveRoom()
-    } 
   }
+  scheduleWelcomeOverlay({ force: justLoggedInThisSession.value })
   
   engineStore.setupAudioContext()
   engineStore.loadIR('cathedral', '/impulses/1st_baptist_nashville_far_wide.wav') // Load the default impulse response
@@ -340,6 +421,10 @@ onBeforeMount(async () => {
 const startTour = ref(false);
 
 function waitForWelcome() {
+  if (!showWelcomeOverlay.value || welcomeDone.value) {
+    return Promise.resolve()
+  }
+
   return new Promise((resolve) => {
     const stop = watch(welcomeDone, (done) => {
       if (done) {
@@ -350,9 +435,57 @@ function waitForWelcome() {
   })
 }
 
+async function loadStartupRoom(preferences) {
+  const tempSoundRoomData = localStorage.getItem('tempSoundRoomData')
+
+  if (justLoggedInThisSession.value && tempSoundRoomData) {
+    const loadedLocalRoom = await loadRoomLocal()
+    if (loadedLocalRoom && isAuthenticated.value) {
+      await saveRoom()
+    }
+    return !!loadedLocalRoom
+  }
+
+  if (!preferences.autoResumePlayback || !isAuthenticated.value) {
+    return false
+  }
+
+  return await loadMostRecentRoom()
+}
+
+async function startOrRequestAutoPlayback(loadedRoom) {
+  if (!loadedRoom || !userPreferences.value.autoResumePlayback) {
+    pendingAutoPlayback.value = false
+    showAudioResumeOverlay.value = false
+    return
+  }
+
+  const engine = audioEngine.value
+  if (!engine?.soundSources?.value?.length) {
+    pendingAutoPlayback.value = false
+    showAudioResumeOverlay.value = false
+    return
+  }
+
+  const context = engine.getAudioContext()
+
+  if (context.state === 'suspended') {
+    pendingAutoPlayback.value = true
+    showAudioResumeOverlay.value = true
+    return
+  }
+
+  pendingAutoPlayback.value = false
+  showAudioResumeOverlay.value = false
+  engine.playAll()
+}
+
 let routeUnwatcher = null;
 
 onMounted(async() => {
+  await waitForSessionReady()
+  scheduleWelcomeOverlay({ force: justLoggedInThisSession.value })
+
   routeUnwatcher = watch(
     () => route.path,
     async (newPath) => {
@@ -368,27 +501,11 @@ onMounted(async() => {
     },
     { immediate: true }
   )
-    
-    // If welcome overlay exists, wait for it
-    if (showWelcomeOverlay.value && !welcomeDone.value) {
-      await waitForWelcome()
-    }
+    await waitForWelcome()
 
     const preferences = await hydrateUserPreferences({ forceLocal: true })
-    if (preferences.autoResumePlayback) {
-      await loadMostRecentRoom()
-
-      if (audioEngine.value?.getAudioContext().state === 'suspended') {
-        try {
-          await audioEngine.value.getAudioContext().resume()
-        } catch (error) {
-          console.warn('Failed to auto-resume audio context', error)
-        }
-      }
-      showAudioResumeOverlay.value = audioEngine.value?.getAudioContext().state === 'suspended'
-    } else {
-      showAudioResumeOverlay.value = false;
-    }
+    const loadedRoom = await loadStartupRoom(preferences)
+    await startOrRequestAutoPlayback(loadedRoom)
 
   let onboardingCompleted = localStorage.getItem('soundroom_onboarding_completed') === 'true'
 
