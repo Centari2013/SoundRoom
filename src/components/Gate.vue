@@ -1,7 +1,7 @@
 <!-- components/Gate.vue -->
 <script setup>
 import { useAuth } from '@/composables/useAuth'
-import { can } from '@/lib/permissions'
+import { can } from '@/utils/permissions'
 const props = defineProps({ feature: { type: String, required: true } })
 const { tier } = useAuth()
 

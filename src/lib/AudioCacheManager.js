@@ -207,12 +207,12 @@ export default class AudioCacheManager {
     // the cache is scanned but nothing is deleted.
     const allKeys = await keys()
 
-    // If the cache is under maxCount, do nothing
-    if (allKeys.length <= maxCount && keep.length === 0) return
-
     const keysToRemove = allKeys.filter(k => !keep.includes(k))
+    const shouldPrune = allKeys.length > maxCount || keep.length > 0
 
-    if (keysToRemove.length > 0 && !dryRun) {
+    if (!shouldPrune && !dryRun) return
+
+    if (shouldPrune && keysToRemove.length > 0 && !dryRun) {
       await Promise.all(keysToRemove.map(k => del(k)))
     }
 

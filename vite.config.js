@@ -28,7 +28,22 @@ export default defineConfig({
 
   test: {
     include: ['test/unit/**/*.test.{js,ts}'],
-    exclude: ['e2e/**'], // ⛔ prevent Vitest from running Playwright tests
+    exclude: ['e2e/**'],
+    environment: 'happy-dom',
+    globals: true,
+    setupFiles: ['./test/unit/setup.js'],
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'html', 'json-summary'],
+      reportsDirectory: './coverage',
+      include: ['src/**/*.{js,vue}', 'api/**/*.js'],
+      exclude: [
+        'src/main.js',
+        'src/assets/**',
+        'src/content/**',
+        '**/*.config.js',
+      ],
+    },
   },
 
   build: {

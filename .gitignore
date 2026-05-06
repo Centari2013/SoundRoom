@@ -30,6 +30,7 @@ MUSIC
 /playwright-report/
 /blob-report/
 /playwright/.cache/
+/coverage/
 .vercel
 .env*.local
 

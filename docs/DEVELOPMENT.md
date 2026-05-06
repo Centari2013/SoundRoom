@@ -30,6 +30,46 @@ npm run build
 
 The compiled site will be output to the `dist/` directory.
 
+## Automated Testing
+
+SoundRoom has a pre-launch test suite covering core domain logic, audio scheduling,
+entitlement rules, API helper behavior, reusable UI inputs, and launch-route browser
+smoke tests.
+
+Run the full launch gate:
+
+```bash
+npm test
+```
+
+Run only the Vitest unit suite:
+
+```bash
+npm run test:unit
+```
+
+Run unit tests in watch mode while developing:
+
+```bash
+npm run test:unit:watch
+```
+
+Run the Playwright browser smoke tests:
+
+```bash
+npm run test:e2e
+```
+
+Run the coverage report:
+
+```bash
+npm run test:coverage
+```
+
+Coverage output is written to `coverage/` and Playwright artifacts are written to
+`test-results/` and `playwright-report/`; these directories are generated locally
+and ignored by git.
+
 ## Project Structure Overview
 
 ```
@@ -47,6 +87,8 @@ See [ARCHITECTURE.md](ARCHITECTURE.md) for more detailed explanations of these f
 ## Tips
 
 - Restart the dev server if you add new environment variables.
-- The project currently has no automated tests, but Playwright is included for future end‑to‑end testing.
+- Add tests beside the existing `test/unit` or `test/e2e` suites before changing
+  launch-critical auth, billing, audio, entitlement, room persistence, or routing
+  behavior.
 
 Happy hacking!
