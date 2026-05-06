@@ -1,29 +1,16 @@
 <template>
   <article
-    class="rounded-xl border border-[var(--color-border-subtle)] 
-           bg-surface-raised/70 p-6 space-y-4 hover:bg-surface-raised 
+    class="rounded-xl border border-[var(--color-border-subtle)]
+           bg-surface-raised/50 p-6 space-y-3 hover:bg-surface-raised
            transition-colors"
   >
-    <div class="flex items-center gap-3">
-      <span
-        class="h-10 w-10 rounded-full flex items-center justify-center 
-               text-xl select-none 
-               bg-[color-mix(in_srgb,var(--color-accent)_20%,transparent)] 
-               text-[color-mix(in_srgb,var(--color-accent)_80%,white)]"
-      >
-        {{ emoji }}
-      </span>
-      <h3 class="text-lg font-medium">{{ title }}</h3>
-    </div>
+    <h3 class="text-base font-semibold">{{ title }}</h3>
 
     <p class="text-sm text-text-secondary leading-relaxed">
       {{ text }}
     </p>
 
-    <div
-      class="h-24 rounded-lg 
-              flex items-center justify-center"
-    >
+    <div class="h-20 flex items-center justify-center text-text-muted/50 pt-2">
       <slot name="visual">
         <span class="text-xs text-text-muted">Placeholder</span>
       </slot>
@@ -33,7 +20,6 @@
 
 <script setup>
 defineProps({
-  emoji: { type: String, required: true },
   title: { type: String, required: true },
   text: { type: String, required: true }
 })
