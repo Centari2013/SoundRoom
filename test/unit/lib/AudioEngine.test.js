@@ -19,6 +19,8 @@ function makeSource(id, { playing = false, schedulePlaying = false, locked = fal
     state: { schedule },
     playing,
     playAndWait: vi.fn(async () => {}),
+    loadAudioBuffer: vi.fn(async () => instance._audioBuffer),
+    scheduleLoaded: vi.fn(),
     stop: vi.fn(() => {
       instance.playing = false
       schedule.isPlaying = false
@@ -27,6 +29,7 @@ function makeSource(id, { playing = false, schedulePlaying = false, locked = fal
       instance.playing = active
     }),
     oncePlaybackFinished: vi.fn(),
+    _audioBuffer: { duration: 1 },
   }
 
   return {
@@ -52,6 +55,7 @@ describe('AudioEngine media session controls', () => {
     const active = makeSource('active-source', { playing: true })
     const inactive = makeSource('inactive-source')
     engine.soundSources.value.push(active, inactive)
+    engine.getAudioContext().state = 'running'
 
     expect(engine.pauseForMediaSession()).toBe(true)
 
@@ -60,8 +64,8 @@ describe('AudioEngine media session controls', () => {
 
     await engine.resumeFromMediaSession()
 
-    expect(active.instance.playAndWait).toHaveBeenCalledOnce()
-    expect(inactive.instance.playAndWait).not.toHaveBeenCalled()
+    expect(active.instance.scheduleLoaded).toHaveBeenCalled()
+    expect(inactive.instance.scheduleLoaded).not.toHaveBeenCalled()
   })
 
   it('pauses a running timeline even when non-timeline sources are also present', () => {
