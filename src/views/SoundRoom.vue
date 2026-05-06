@@ -76,6 +76,7 @@
   <PulsingOverlay
     v-if="showInitOverlay"
     :text="'Initializing Your SoundRoom...'"
+    :duration="500"
     @done="showInitOverlay = false"
   />
   <!-- Audio Resume Overlay -->

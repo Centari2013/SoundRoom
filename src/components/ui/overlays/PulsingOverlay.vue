@@ -25,7 +25,7 @@ const props = defineProps({
   },
   duration: {
     type: Number,
-    default: 500 // stays forever unless specified
+    default: null
   }
 })
 

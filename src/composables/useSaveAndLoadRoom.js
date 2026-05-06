@@ -19,6 +19,9 @@ import { useEntitlements } from '@/composables/useEntitlements'
 import { annotateSoundAccess } from '@/utils/soundEntitlements'
 import { filterRoomByAvailableSounds } from '@/utils/soundIntegrity'
 
+const isLoadingRoom = ref(false)
+const isSavingRoom = ref(false)
+
 /**
  * Manage saving and loading of rooms from Supabase or local storage.
  * Provides helper functions and reactive flags used across the app.
@@ -35,8 +38,6 @@ import { filterRoomByAvailableSounds } from '@/utils/soundIntegrity'
  * }}
  */
 export function useSaveAndLoadRoom() {
-  const isLoadingRoom = ref(false);
-  const isSavingRoom = ref(false);
   const { user, tier } = useAuth();
   const roomStore = useRoomStore();
   const listenerStore = useListenerStore();
