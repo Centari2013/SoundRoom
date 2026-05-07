@@ -59,7 +59,7 @@
         :key="sound.libraryId || sound.id"
         :sound="sound"
         :userSound="activeCategory === 'your-sounds'"
-        v-bind="{ waiting, soundLibrarySources, currentlyPlayingId }"
+        v-bind="{ waiting, soundLibrarySources, currentlyPlayingId, loadingIds }"
         @toggle="$emit('toggleSound', $event)"
         @updateCurrent="$emit('updateCurrent', $event)"
         @delete="$emit('delete', $event)"
@@ -114,6 +114,7 @@ const props = defineProps({
   sounds: Array,
   waiting: Boolean,
   soundLibrarySources: Array,
+  loadingIds: Set,
   currentlyPlayingId: String,
   activeCategory: String
 })

@@ -15,6 +15,7 @@
         :sounds="filteredSounds"
         :waiting="waiting"
         :soundLibrarySources="soundLibrarySources"
+        :loadingIds="loadingIds"
         :currentlyPlayingId="currentlyPlayingId"
         :activeCategory="activeCategory"
         @close="router.push({ name: 'app' })"
@@ -72,6 +73,7 @@ const actionStore = useActionManagerStore()
 registerSoundRoomActions()
 const { waiting } = storeToRefs(actionStore)
 const { soundLibrarySources } = storeToRefs(cacheStore)
+const loadingIds = ref(new Set())
 const showUploadPanel = ref(false)
 const deleteSoundModalVisible = ref(false)
 const soundToDelete = ref(null)
@@ -99,15 +101,17 @@ async function toggleAddSource(s) {
     handleLockedSound(s)
     return
   }
-  // if source in soundlibrarysources (draggable sources), delete, otherwise add
-  if (existing) {
-    s.send = true
-    await actionStore.deleteLibrarySoundSource(s)
-    s.send = false
-  } else {
-    s.send = true
-    await actionStore.addLibrarySoundSource(s)
-    s.send = false
+  loadingIds.value = new Set([...loadingIds.value, s.libraryId])
+  try {
+    if (existing) {
+      await actionStore.deleteLibrarySoundSource(s)
+    } else {
+      await actionStore.addLibrarySoundSource(s)
+    }
+  } finally {
+    const next = new Set(loadingIds.value)
+    next.delete(s.libraryId)
+    loadingIds.value = next
   }
 }
 

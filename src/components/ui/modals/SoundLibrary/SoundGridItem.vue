@@ -28,9 +28,10 @@
     <BaseButton
       class="load-BaseButton text-xs px-3 py-1 rounded transition-colors mt-2 bg-[var(--color-bg-elevated)] hover:bg-[var(--color-bg-surface)] text-[var(--color-text-primary)] border border-border-subtle"
       @click="handleToggle"
-      :disabled="waiting || sound.send"
+      :disabled="waiting || isLoading"
     >
-      {{ buttonLabel }}
+      <span v-if="isLoading" class="grid-item-spinner" />
+      <span v-else>{{ buttonLabel }}</span>
     </BaseButton>
     <BaseButton
       v-if="userSound"
@@ -55,6 +56,7 @@ const props = defineProps({
   sound: Object,
   waiting: Boolean,
   soundLibrarySources: Array,
+  loadingIds: Set,
   currentlyPlayingId: String,
   userSound: Boolean
 })
@@ -62,6 +64,7 @@ const props = defineProps({
 const emit = defineEmits(['toggle', 'updateCurrent', 'delete', 'locked'])
 
 const isLoaded = computed(() => props.soundLibrarySources.find((s) => s.libraryId === props.sound.libraryId))
+const isLoading = computed(() => props.loadingIds?.has(props.sound.libraryId) ?? false)
 
 const normalizedTier = computed(() => {
   const tier = props.sound?.plan_tier ?? props.sound?.base ?? ''
@@ -112,10 +115,20 @@ function handleToggle() {
   background: transparent;
   border: transparent;
   color: inherit;
-
 }
 
+.grid-item-spinner {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border: 2px solid rgba(255, 255, 255, 0.25);
+  border-top-color: rgba(255, 255, 255, 0.75);
+  border-radius: 50%;
+  animation: grid-spin 0.6s linear infinite;
+  vertical-align: middle;
+}
 
-
-
+@keyframes grid-spin {
+  to { transform: rotate(360deg); }
+}
 </style>
