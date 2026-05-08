@@ -3,7 +3,7 @@ export const PLANS = ['free', 'basic', 'pro']
 export const ENTITLEMENTS = {
   free: {
     canUpload: false,
-    maxSavedRooms: 1,
+    maxSavedRooms: 2,
     timedLoops: false,
     fullPresets: false,
     curatedPacks: false,
@@ -24,6 +24,7 @@ export const ENTITLEMENTS = {
   pro: {
     canUpload: true,
     maxSavedRooms: Infinity,
+    maxUploadBytes: 10 * 1024 * 1024 * 1024,
     timedLoops: true,
     fullPresets: true,
     curatedPacks: true,

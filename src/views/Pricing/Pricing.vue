@@ -84,7 +84,7 @@ const FEATURE_DEFINITIONS = [
     tiers: {
       free: { status: 'unavailable', detail: 'Pro unlocks uploads' },
       basic: { status: 'unavailable', detail: 'Pro unlocks uploads' },
-      pro: { status: 'included', detail: 'Upload your own audio library' }
+      pro: { status: 'included', detail: 'Upload your own audio — up to 10GB' }
     }
   },
 
@@ -134,15 +134,6 @@ const FEATURE_DEFINITIONS = [
     }
   },
   {
-    key: 'prebuilt-rooms',
-    label: 'Prebuilt Rooms (Coming Soon)',
-    tiers: {
-      free: { status: 'unavailable', detail: 'Coming soon with Pro' },
-      basic: { status: 'unavailable', detail: 'Coming soon with Pro' },
-      pro: { status: 'included', detail: 'Early access when it launches' }
-    }
-  },
-  {
     key: 'theme-options',
     label: 'Theme Options',
     tiers: {
@@ -158,21 +149,21 @@ const planDefinitions = [
     id: 'free',
     name: 'Free',
     price: '$0/mo',
-    tagline: 'Save your go-to room layout and sync across devices.',
+    tagline: 'Try it out — build a room and save your setup.',
     spotlightKeys: ['multi-room-saving']
   },
   {
     id: 'basic',
     name: 'Basic',
     price: '$5/mo',
-    tagline: 'Grow into multi-room mixes with deeper timing control.',
-    spotlightKeys: ['multi-room-saving', 'timed-loops', 'sound-packs']
+    tagline: 'Build a real sound collection — more rooms, more packs, more variety.',
+    spotlightKeys: ['multi-room-saving', 'sound-packs']
   },
   {
     id: 'pro',
     name: 'Pro',
     price: '$10/mo',
-    tagline: 'Unlock everything in Basic + uploads, timeline sequencing, and pro scheduling workflows.',
+    tagline: 'Everything in Basic, plus uploads, timeline sequencing, and advanced scheduling.',
     spotlightKeys: ['custom-uploads', 'timeline-sequencer', 'schedule-playback']
   }
 ]

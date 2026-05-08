@@ -29,9 +29,10 @@ function buildObjectKey(soundId, displayName) {
   return safeExt ? `${soundId}.${safeExt}` : soundId;
 }
 
-async function getSignedUploadUrl(key, userId) {
+async function getSignedUploadUrl(key, userId, fileSize) {
   const params = new URLSearchParams({ key });
   if (userId) params.set('userId', userId);
+  if (fileSize > 0) params.set('fileSize', String(fileSize));
   const accessToken = await getAccessToken();
 
   if (!accessToken) {
@@ -77,7 +78,7 @@ async function getSignedUploadUrl(key, userId) {
 export default async function uploadAudio(file, userId, onProgress) {
   const soundId = createSoundId();
   const objectKey = buildObjectKey(soundId, file.name);
-  const { signedUrl, key } = await getSignedUploadUrl(objectKey, userId);
+  const { signedUrl, key } = await getSignedUploadUrl(objectKey, userId, file.size);
 
   return new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest();

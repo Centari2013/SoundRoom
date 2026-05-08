@@ -4,6 +4,9 @@ import { AwsClient } from "aws4fetch";
 import { authenticateRequest, resolveUserAccessContext } from './_utils/auth.js'
 import { HttpError } from './_utils/errors.js'
 import { buildCorsHeaders } from './_utils/http.js'
+import { supabaseAdmin } from './_utils/serverClients.js'
+
+const MAX_UPLOAD_BYTES = 10 * 1024 * 1024 * 1024 // 10GB
 
 function createRandomId() {
   if (typeof randomUUID === "function") {
@@ -82,6 +85,26 @@ export async function GET(request) {
       throw new HttpError(403, 'Uploads are unavailable on your plan')
     }
 
+    const { searchParams } = new URL(request.url);
+    const fileSize = parseInt(searchParams.get('fileSize') ?? '0', 10)
+
+    if (fileSize > 0 && supabaseAdmin) {
+      const { data: rows, error: usageError } = await supabaseAdmin
+        .from('sound_files')
+        .select('size')
+        .eq('owner_id', user.id)
+
+      if (usageError) {
+        throw new HttpError(500, 'Unable to verify storage usage')
+      }
+
+      const currentUsage = (rows ?? []).reduce((sum, row) => sum + (row.size ?? 0), 0)
+
+      if (currentUsage + fileSize > MAX_UPLOAD_BYTES) {
+        throw new HttpError(403, 'Storage limit reached. You have used your 10GB upload quota.')
+      }
+    }
+
     const { accessKeyId, secretAccessKey, bucketName, accountId } = getR2Config();
 
     if (!accessKeyId || !secretAccessKey || !bucketName || !accountId) {
@@ -106,7 +129,6 @@ export async function GET(request) {
       secretAccessKey,
     });
 
-    const { searchParams } = new URL(request.url);
     const providedKey = sanitizeSegment(searchParams.get("key"));
 
     const objectKey = providedKey || `${createRandomId()}.bin`;
