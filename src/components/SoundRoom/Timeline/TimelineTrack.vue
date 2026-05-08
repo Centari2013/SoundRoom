@@ -8,9 +8,10 @@ const props = defineProps({
   color: { type: String, required: true },
   pxPerSecond: { type: Number, required: true },
   duration: { type: Number, required: true },
+  selected: { type: Boolean, default: false },
 })
 
-const emit = defineEmits(['clip-dragstart', 'clip-resizestart', 'clip-delete'])
+const emit = defineEmits(['clip-dragstart', 'clip-resizestart', 'clip-delete', 'select'])
 
 // Attach the source name onto each clip so the clip label renders correctly
 const annotatedClips = computed(() =>
@@ -25,8 +26,12 @@ const trackWidth = computed(() => props.duration * props.pxPerSecond)
 </script>
 
 <template>
-  <div class="timeline-track">
-    <div class="track-label" :title="source.name">
+  <div class="timeline-track" @click="$emit('select')">
+    <div
+      class="track-label"
+      :class="{ 'track-label--selected': selected }"
+      :title="source.name"
+    >
       {{ source.name }}
     </div>
     <div class="track-lane" :style="{ width: trackWidth + 'px' }">
@@ -68,6 +73,18 @@ const trackWidth = computed(() => props.duration * props.pxPerSecond)
   border-right: 1px solid var(--color-border-subtle, #374151);
   background: var(--color-bg-surface, #111827);
   flex-shrink: 0;
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.1s, color 0.1s;
+}
+.track-label:hover {
+  background: var(--color-bg-elevated, #1f2937);
+  color: var(--color-text-primary, #f9fafb);
+}
+.track-label--selected {
+  background: color-mix(in srgb, var(--color-accent, #2f6dfd) 15%, var(--color-bg-surface, #111827));
+  color: var(--color-accent-soft, #6fa2ff);
+  border-right-color: var(--color-accent, #2f6dfd);
 }
 
 .track-lane {

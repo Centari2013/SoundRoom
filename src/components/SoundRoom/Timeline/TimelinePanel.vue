@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref, onUnmounted } from 'vue'
+import { computed, ref, inject, onUnmounted } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useAudioEngineStore } from '@/stores/useAudioEngineStore'
 import { useActionManagerStore } from '@/stores/useActionManagerStore'
@@ -10,6 +10,20 @@ import TimelineTrack from './TimelineTrack.vue'
 const store = useAudioEngineStore()
 const { audioEngine } = storeToRefs(store)
 const { actionManager } = storeToRefs(useActionManagerStore())
+
+// ── Node selection (synced with canvas) ──────────────────────────────
+const selectedIndex = inject('selectedIndex', null)
+
+function selectSource(source) {
+  if (!selectedIndex) return
+  const idx = audioEngine.value?.soundSources.value.indexOf(source) ?? -1
+  selectedIndex.value = idx >= 0 ? idx : null
+}
+
+function isSelected(source) {
+  if (!selectedIndex || selectedIndex.value == null) return false
+  return audioEngine.value?.soundSources.value[selectedIndex.value] === source
+}
 
 const timeline = computed(() => audioEngine.value?.timeline)
 const scheduler = computed(() => audioEngine.value?.timelineScheduler)
@@ -286,9 +300,11 @@ onUnmounted(() => {
           :color="colorFor(track.source.instance.state.schedule.id)"
           :pxPerSecond="pxPerSecond"
           :duration="timeline.duration"
+          :selected="isSelected(track.source)"
           @clip-dragstart="onClipDragStart"
           @clip-resizestart="onClipResizeStart"
           @clip-delete="onClipDelete"
+          @select="selectSource(track.source)"
         />
 
         <div v-if="tracks.length === 0" class="tl-empty">
