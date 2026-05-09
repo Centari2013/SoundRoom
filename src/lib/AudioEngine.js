@@ -358,7 +358,6 @@ export default class AudioEngine {
 
   async playSoundSourceImmediately(src) {
     this.#mediaSessionPauseSnapshot = null
-    this.#canvasMasterPauseSnapshot = null
 
     if (!src || !src.instance) {
       console.warn("Tried to autoplay sound source but it was not valid:", src)
@@ -382,12 +381,24 @@ export default class AudioEngine {
       return
     }
 
+    // Guard: canvas was paused while this buffer was loading — honour that state.
+    // Check before play() so the source never audibly starts.
+    if (this.#canvasMasterPauseSnapshot) {
+      const schedId = this.#getSourceScheduleId(src)
+      if (schedId && !this.#canvasMasterPauseSnapshot.sourceIds.includes(schedId)) {
+        this.#canvasMasterPauseSnapshot.sourceIds.push(schedId)
+      }
+      this.pauseSoundSource(src, { preserveMediaSessionSnapshot: true })
+      return
+    }
+
     const sched = src.instance.state.schedule
     sched.paused = false
     sched.isPlaying = true
     updateSiteAudioPlaybackState()
 
     await src.instance.play()
+
     updateSiteAudioPlaybackState()
   }
 
@@ -549,6 +560,16 @@ export default class AudioEngine {
     }
 
     const schedId = src.instance.state.schedule.id
+
+    // Guard: master pause was triggered while the buffer was loading.
+    // Honour that state instead of resuming the source we were dispatched for.
+    if (this.#canvasMasterPauseSnapshot) {
+      if (schedId && !this.#canvasMasterPauseSnapshot.sourceIds.includes(schedId)) {
+        this.#canvasMasterPauseSnapshot.sourceIds.push(schedId)
+      }
+      return
+    }
+
     if (this.#scheduler.pauseInfo.has(schedId) && this.#scheduler.pauseInfo.get(schedId).isPaused) {
       this.#scheduler.resumeSource(src.instance)
     } else {
@@ -650,7 +671,7 @@ export default class AudioEngine {
     }
 
     const sourceIds = this.soundSources.value
-      .filter(s => this.#isNonTimelineSourceActive(s))
+      .filter(s => this.#isNonTimelineSourceActive(s) || this.#isNonTimelineSourcePending(s))
       .map(s => this.#getSourceScheduleId(s))
       .filter(Boolean)
 
@@ -677,6 +698,18 @@ export default class AudioEngine {
 
     const sched = src.instance.state?.schedule
     return Boolean(src.instance.playing || sched?.isPlaying)
+  }
+
+  // Sources that are scheduled and enabled but whose buffer hasn't finished loading yet.
+  // These would auto-start when the buffer arrives, so pauseAll must capture them too.
+  #isNonTimelineSourcePending(src) {
+    if (!src?.instance || src.locked || src.instance.locked) return false
+    if (this.isSourceOnTimeline(this.#getSourceScheduleId(src))) return false
+
+    const sched = src.instance.state?.schedule
+    if (!sched?.id || !sched.enabled || sched.paused) return false
+
+    return !src.instance.playing && !sched.isPlaying
   }
 
   #findSourceByScheduleId(scheduleId) {
