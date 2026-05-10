@@ -12,7 +12,7 @@
                   v-model="searchQuery"
                   type="text"
                   placeholder="Search sounds"
-                  class="w-full rounded-full border border-border-subtle bg-surface-base py-2 pl-9 pr-9 text-sm text-text-primary placeholder:text-text-muted outline-none focus:border-border-strong"
+                  class="w-full rounded-full border border-border-subtle bg-surface-base py-2 pl-10 pr-10 text-sm text-text-primary placeholder:text-text-muted outline-none focus:border-border-strong"
                 >
                 <button
                   v-if="hasActiveFilters"
@@ -123,7 +123,7 @@ const INITIAL_VISIBLE_LIMIT = 50
 const VISIBLE_STEP = 50
 
 const categories = ['Nature', 'Human', 'Musical', 'Work/Focus', 'Atmospheric', 'Misc']
-const searchQuery = ref('')
+const searchQuery = defineModel('searchQuery', { type: String, default: '' })
 const isCategoryFilterOpen = ref(false)
 const selectedCategory = ref('')
 const visibleLimit = ref(INITIAL_VISIBLE_LIMIT)

@@ -53,35 +53,49 @@ function toAbsoluteUrl(path) {
 }
 
 /**
- * Update a meta tag if it is available in the document head.
+ * Update a meta tag, creating it (with data-managed="seo") if missing.
  *
  * @param {string} selector
  * @param {string} value
- * @param {string} attribute
+ * @param {{ name?: string, property?: string }} createWith - attributes used when creating a new tag
  */
-function updateMetaTag(selector, value, attribute = 'content') {
+function updateMetaTag(selector, value, createWith = null) {
   if (typeof document === 'undefined') return
 
-  const element = document.head.querySelector(selector)
+  let element = document.head.querySelector(selector)
+  if (!element && createWith && value) {
+    element = document.createElement('meta')
+    if (createWith.name) element.setAttribute('name', createWith.name)
+    if (createWith.property) element.setAttribute('property', createWith.property)
+    element.setAttribute('data-managed', 'seo')
+    document.head.appendChild(element)
+  }
   if (!element) return
 
   if (value) {
-    element.setAttribute(attribute, value)
+    element.setAttribute('content', value)
   } else {
-    element.removeAttribute(attribute)
+    element.removeAttribute('content')
   }
 }
 
 /**
- * Update a link element (e.g., canonical) if present.
+ * Update a link element (e.g., canonical), creating it if missing.
  *
  * @param {string} selector
  * @param {string} value
+ * @param {string} rel - rel attribute to use when creating
  */
-function updateLink(selector, value) {
+function updateLink(selector, value, rel = 'canonical') {
   if (typeof document === 'undefined') return
 
-  const element = document.head.querySelector(selector)
+  let element = document.head.querySelector(selector)
+  if (!element && value) {
+    element = document.createElement('link')
+    element.setAttribute('rel', rel)
+    element.setAttribute('data-managed', 'seo')
+    document.head.appendChild(element)
+  }
   if (!element) return
 
   if (value) {
@@ -116,15 +130,15 @@ export function applySeo(route) {
 
   document.title = seo.title
 
-  updateMetaTag('meta[name="description"][data-managed="seo"]', seo.description)
-  updateMetaTag('meta[name="keywords"][data-managed="seo"]', seo.keywords)
-  updateMetaTag('meta[property="og:title"][data-managed="seo"]', ogTitle)
-  updateMetaTag('meta[property="og:description"][data-managed="seo"]', ogDescription)
-  updateMetaTag('meta[property="og:url"][data-managed="seo"]', canonicalUrl)
-  updateMetaTag('meta[property="og:image"][data-managed="seo"]', shareImageUrl)
-  updateMetaTag('meta[name="twitter:title"][data-managed="seo"]', twitterTitle)
-  updateMetaTag('meta[name="twitter:description"][data-managed="seo"]', twitterDescription)
-  updateMetaTag('meta[name="twitter:image"][data-managed="seo"]', shareImageUrl)
+  updateMetaTag('meta[name="description"][data-managed="seo"]', seo.description, { name: 'description' })
+  updateMetaTag('meta[name="keywords"][data-managed="seo"]', seo.keywords, { name: 'keywords' })
+  updateMetaTag('meta[property="og:title"][data-managed="seo"]', ogTitle, { property: 'og:title' })
+  updateMetaTag('meta[property="og:description"][data-managed="seo"]', ogDescription, { property: 'og:description' })
+  updateMetaTag('meta[property="og:url"][data-managed="seo"]', canonicalUrl, { property: 'og:url' })
+  updateMetaTag('meta[property="og:image"][data-managed="seo"]', shareImageUrl, { property: 'og:image' })
+  updateMetaTag('meta[name="twitter:title"][data-managed="seo"]', twitterTitle, { name: 'twitter:title' })
+  updateMetaTag('meta[name="twitter:description"][data-managed="seo"]', twitterDescription, { name: 'twitter:description' })
+  updateMetaTag('meta[name="twitter:image"][data-managed="seo"]', shareImageUrl, { name: 'twitter:image' })
 
-  updateLink('link[rel="canonical"][data-managed="seo"]', canonicalUrl)
+  updateLink('link[rel="canonical"][data-managed="seo"]', canonicalUrl, 'canonical')
 }

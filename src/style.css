@@ -112,10 +112,15 @@ button:disabled {
   color: var(--color-disabled-text);
 }
 
-input[type="text"],
-input[type="email"],
-input[type="password"] {
-  @apply w-full p-3 border border-border-subtle rounded-lg bg-surface-raised text-text-primary;
+/* Default input styling lives in @layer base so per-input Tailwind utilities
+   (pl-10, py-2, rounded-full, etc.) — which live in @layer utilities — can
+   override these defaults via the cascade layer order. */
+@layer base {
+  input[type="text"],
+  input[type="email"],
+  input[type="password"] {
+    @apply w-full p-3 border border-border-subtle rounded-lg bg-surface-raised text-text-primary;
+  }
 }
 
 input:disabled {

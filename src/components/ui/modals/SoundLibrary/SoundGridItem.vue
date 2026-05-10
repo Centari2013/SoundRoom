@@ -8,12 +8,12 @@
     :data-tour-loadable-sound="!sound.locked ? 'true' : undefined"
   >
 
-    <div
+    <span
       v-if="sound.locked"
-      :class="['absolute top-3 right-3 px-2 py-1 text-[10px] font-semibold uppercase rounded tracking-wide', badgeClass]"
+      :class="['absolute bottom-3 right-3 px-2 py-1 text-[10px] font-semibold uppercase rounded tracking-wide whitespace-nowrap', badgeClass]"
     >
       {{ requiredPlanLabel }}
-    </div>
+    </span>
 
     <MarqueeTitle :text="getSourceName(sound.name)" />
 

@@ -1,0 +1,13 @@
+# https://www.robotstxt.org/robotstxt.html
+User-agent: *
+Allow: /
+Disallow: /app
+Disallow: /app/
+Disallow: /settings
+Disallow: /manage-plan
+Disallow: /update-password
+Disallow: /auth/
+Disallow: /logged-out
+Disallow: /api/
+
+Sitemap: https://soundroom.live/sitemap.xml

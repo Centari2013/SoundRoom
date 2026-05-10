@@ -12,6 +12,7 @@
 
       <SoundGrid
         ref="gridRef"
+        v-model:searchQuery="searchQuery"
         :sounds="filteredSounds"
         :waiting="waiting"
         :soundLibrarySources="soundLibrarySources"
@@ -135,14 +136,35 @@ function handleLockedSound(sound) {
 const activeCategory = ref(categories?.[0]?.id || '')
 const gridRef = ref(null) // ref to SoundGrid component
 const rawSounds = ref([])
+const userSoundsCache = ref([])
 const categorySoundCache = ref([])
 const hasFetchedCategorySounds = ref(false)
+const searchQuery = ref('')
+
 const filteredSounds = computed(() => {
   const userTier = tier.value
   const userId = user.value?.id
   const canUpload = canAccess('canUpload')
-  return rawSounds.value.map(sound => annotateSoundAccess(sound, { userTier, userId, canUpload }))
+  const annotate = (sound) => annotateSoundAccess(sound, { userTier, userId, canUpload })
+
+  // When a search query is active, ignore the left-bar category filter and
+  // expose every sound that's been loaded — categories + the current user's
+  // uploads. The grid's own search filter narrows the union further.
+  if (searchQuery.value.trim()) {
+    const seen = new Set()
+    const merged = []
+    for (const sound of [...categorySoundCache.value, ...userSoundsCache.value]) {
+      const id = sound.id ?? sound.libraryId
+      if (id == null || seen.has(id)) continue
+      seen.add(id)
+      merged.push(sound)
+    }
+    return mapLibraryRows(merged).map(annotate)
+  }
+
+  return rawSounds.value.map(annotate)
 })
+
 watch(
   activeCategory,
   async (newCategory) => {
@@ -153,7 +175,11 @@ watch(
     if (newCategory === 'your-sounds') {
       rawSounds.value = []
       const userSounds = await listUserSounds()
+      userSoundsCache.value = userSounds
       rawSounds.value = mapLibraryRows(userSounds)
+      // Pre-warm the category cache too so a search from this tab can span
+      // both the public library and the user's uploads.
+      ensureCategorySoundsLoaded()
       return
     }
 
@@ -165,8 +191,9 @@ watch(
 ) // run at least once, like a do while
 
 const refreshUserSounds = async () => {
+  const sounds = await listUserSounds()
+  userSoundsCache.value = sounds
   if (activeCategory.value === 'your-sounds') {
-    const sounds = await listUserSounds()
     rawSounds.value = mapLibraryRows(sounds)
   }
 }
