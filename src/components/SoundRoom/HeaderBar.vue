@@ -16,15 +16,10 @@
     <!-- Left: Logo -->
     <RouterLink
       to="/"
-      class="text-4xl font-semibold tracking-tight hover:opacity-90 transition"
+      class="hover:opacity-90 transition"
+      aria-label="SoundRoom — home"
     >
-      <span
-        class="bg-gradient-to-r from-[var(--color-accent)] to-[var(--color-success)]
-               bg-clip-text text-transparent
-               select-none"
-      >
-        SoundRoom
-      </span>
+      <Wordmark class="h-10 w-auto" />
     </RouterLink>
 
     <!-- Right: Menu -->
@@ -86,6 +81,7 @@ import { toggleTheme } from '@/utils/theme';
 import { supabase } from '@/utils/supabase';
 import PulsingOverlay from '@/components/ui/overlays/PulsingOverlay.vue';
 import HamburgerIcon from '@/assets/icons/hamburger.svg';
+import Wordmark from '@/components/brand/Wordmark.vue';
 const menuPanel = ref(null)
 const menuButton = ref(null)
 const isMenuOpen = ref(false)

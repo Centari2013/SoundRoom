@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Standalone gradient wordmark for external use (social previews, decks,
+  press kits, etc.). Colors are hardcoded because <img>-loaded SVGs can't
+  resolve CSS variables. Within the app itself, prefer the
+  <Wordmark /> component (src/components/brand/Wordmark.vue) which uses
+  CSS variables and tracks the active theme.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 80" width="400" height="80" role="img" aria-label="SoundRoom">
+  <title>SoundRoom</title>
+  <defs>
+    <linearGradient id="sr-wordmark-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#2f6dfd" />
+      <stop offset="100%" stop-color="#2ebd94" />
+    </linearGradient>
+  </defs>
+  <text
+    x="200"
+    y="54"
+    text-anchor="middle"
+    font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif"
+    font-weight="600"
+    font-size="44"
+    letter-spacing="-1.1"
+    fill="url(#sr-wordmark-gradient)"
+  >SoundRoom</text>
+</svg>

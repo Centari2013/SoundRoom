@@ -1,112 +1,125 @@
 <template>
-  <div class="flex flex-col w-full space-y-3">
-    <template v-if="pageNumber === 0">
-      <!-- Page 1: Email + Password -->
-      <BaseInput
-        name="email"
-        class="w-full"
-        v-model="email"
-        type="email"
-        placeholder="your@email.com"
-        autocomplete="email"
+  <!-- Each page is its own <form> so Enter advances the right action:
+       page 0 → Continue, page 1 → Create Account. -->
+  <form
+    v-if="pageNumber === 0"
+    class="flex flex-col w-full space-y-3"
+    @submit.prevent="advanceToDetails"
+    novalidate
+  >
+    <BaseInput
+      name="email"
+      class="w-full"
+      v-model="email"
+      type="email"
+      placeholder="your@email.com"
+      autocomplete="email"
+    />
+
+    <div class="relative w-full">
+      <PasswordInput
+        name="password"
+        :type="showPassword ? 'text' : 'password'"
+        v-model="password"
+        autocomplete="new-password"
       />
+    </div>
 
-      <div class="relative w-full">
-        <PasswordInput
-          name="password"
-          :type="showPassword ? 'text' : 'password'"
-          v-model="password"
-          autocomplete="new-password"
-        />
-    
-         
-      </div>
+    <p v-if="email && !validEmail" class="text-status-danger text-sm">
+      Please enter a valid email address.
+    </p>
+    <p v-if="password && !validPassword" class="text-status-danger text-sm">
+      Password must be at least 8 characters and include an uppercase letter, a lowercase letter, a number, and a symbol.
+    </p>
+    <span class="h-3"></span>
+    <BaseButton
+      class="w-full"
+      type="submit"
+      :disabled="!validEmail || !validPassword || !email || !password"
+    >
+      Continue
+    </BaseButton>
+  </form>
 
-      <p v-if="email && !validEmail" class="text-status-danger text-sm">
-        Please enter a valid email address.
-      </p>
-      <p v-if="password && !validPassword" class="text-status-danger text-sm">
-        Password must be at least 8 characters and include an uppercase letter, a lowercase letter, a number, and a symbol.
-      </p>
-      <span class="h-3"></span>
-      <BaseButton
-        class="w-full"
-        @click="() => {pageNumber = 1;emit('hideGoogleButton', true)}"
-        :disabled="!validEmail || !validPassword || !email || !password"
-      >
-        Continue
-      </BaseButton>
+  <div v-else-if="signUpSuccess" class="flex flex-col w-full space-y-3">
+    <p class="text-status-success text-sm">Sign up successful! Please check your email to verify your account.</p>
+  </div>
 
-    </template>
-    <template v-else-if="signUpSuccess">
-      <p class="text-status-success text-sm">Sign up successful! Please check your email to verify your account.</p>
-    </template>
-    <template v-if="pageNumber === 1 && !signUpSuccess">
-      <!-- Page 2: Edit + TOS + more fields -->
-      <BaseInput
-        class="w-full"
-        v-model="email"
-        type="email"
-        placeholder="your@email.com"
+  <form
+    v-else
+    class="flex flex-col w-full space-y-3"
+    @submit.prevent="handleCreateAccount"
+    novalidate
+  >
+    <BaseInput
+      class="w-full"
+      v-model="email"
+      type="email"
+      placeholder="your@email.com"
+      :disabled="true"
+    />
+
+    <div class="relative w-full">
+      <PasswordInput
+        :type="showPassword ? 'text' : 'password'"
+        v-model="password"
         :disabled="true"
       />
-      
-      <div class="relative w-full">
-        <PasswordInput
-          :type="showPassword ? 'text' : 'password'"
-          v-model="password"
-          :disabled="true"
-        />
-      </div>
-  
-
-      <div class="flex-grow border-t border-border-subtle mt-3 mb-6"></div>
+    </div>
 
 
+    <div class="flex-grow border-t border-border-subtle mt-3 mb-6"></div>
+
+
+    <BaseInput
+      name="nickname"
+      class="w-full"
+      v-model="displayName"
+      type="text"
+      placeholder="Display Name"
+      :disabled="loading"
+      autocomplete="nickname"
+    />
+
+    <p v-if="errorMessage" class="text-status-danger text-sm">
+      {{ errorMessage }}
+    </p>
+    <span class="h-5"></span>
+    <!-- TOS agreement -->
+    <div class="flex justify-center space-x-2 text-xs text-[var(--color-text-muted)]">
       <BaseInput
-        name="nickname"
-        class="w-full"
-        v-model="displayName"
-        type="text"
-        placeholder="Display Name"
+        id="tos"
+        type="checkbox"
+        v-model="agreedToTOS"
+        class="accent-[var(--color-accent)]"
         :disabled="loading"
-        autocomplete="nickname"
       />
+      <label for="tos" class="leading-snug">
+        I agree to the
+        <RouterLink to="/terms" target="_blank" class="underline">Terms</RouterLink>
+        and
+        <RouterLink to="/privacy" target="_blank" class="underline">Privacy Policy</RouterLink>.
+      </label>
+    </div>
 
-      <p v-if="errorMessage" class="text-status-danger text-sm">
-        {{ errorMessage }}
-      </p>
-      <span class="h-5"></span>
-      <!-- TOS agreement -->
-      <div class="flex justify-center space-x-2 text-xs text-[var(--color-text-muted)]">
-        <BaseInput
-          id="tos"
-          type="checkbox"
-          v-model="agreedToTOS"
-          class="accent-[var(--color-accent)]"
-          :disabled="loading"
-        />
-        <label for="tos" class="leading-snug">
-          I agree to the
-          <RouterLink to="/terms" target="_blank" class="underline">Terms</RouterLink>
-          and
-          <RouterLink to="/privacy" target="_blank" class="underline">Privacy Policy</RouterLink>.
-        </label>
-
-      </div>
-
-      <div class="flex space-x-2">
-        <BaseButton :disabled="loading" class="w-full" @click="() => {pageNumber = 0; emit('hideGoogleButton', false)}">Back</BaseButton>
-        <BaseButton
-          class="w-full"
-          :disabled="!validEmail || !validPassword || !agreedToTOS || loading || !displayName"
-          @click="emit('signUp', { email, password, displayName })"
-        >
-          Create Account
-        </BaseButton>
-      </div>
-    </template>
-  </div>
+    <div class="flex space-x-2">
+      <BaseButton
+        :disabled="loading"
+        class="w-full"
+        type="button"
+        @click="() => {pageNumber = 0; emit('hideGoogleButton', false)}"
+      >
+        Back
+      </BaseButton>
+      <BaseButton
+        class="w-full"
+        type="submit"
+        :disabled="!validEmail || !validPassword || !agreedToTOS || loading || !displayName"
+      >
+        Create Account
+      </BaseButton>
+    </div>
+  </form>
 </template>
 
 <script setup>
@@ -149,4 +162,15 @@ watch([email, password], ([newEmail, newPassword]) => {
     validPassword.value = validatePassword(newPassword).isValid
   }
 })
+
+function advanceToDetails() {
+  if (!validEmail.value || !validPassword.value || !email.value || !password.value) return
+  pageNumber.value = 1
+  emit('hideGoogleButton', true)
+}
+
+function handleCreateAccount() {
+  if (!validEmail.value || !validPassword.value || !agreedToTOS.value || !displayName.value) return
+  emit('signUp', { email: email.value, password: password.value, displayName: displayName.value })
+}
 </script>

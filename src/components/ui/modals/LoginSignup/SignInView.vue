@@ -1,12 +1,16 @@
 <template>
-  <div class="flex flex-col w-full space-y-3">
+  <form
+    class="flex flex-col w-full space-y-3"
+    @submit.prevent="handleSubmit"
+    novalidate
+  >
     <label for="email" class="sr-only">Email</label>
     <BaseInput
       id="email"
       class="w-full"
       v-model="email"
       type="email"
-      name="email" 
+      name="email"
       placeholder="your@email.com"
       autocomplete="email"
       required
@@ -16,16 +20,16 @@
     <div class="relative w-full">
       <PasswordInput
         id="password"
-        name="password" 
+        name="password"
         v-model="password"
-        autocomplete="current-password" 
+        autocomplete="current-password"
       />
     </div>
 
     <span class="h-3"></span>
     <BaseButton
       class="w-full"
-      @click="emit('signIn', { email, password })"
+      type="submit"
       :disabled="loading || !email || !password"
     >
       Sign In
@@ -40,7 +44,7 @@
     >
       {{ errorMessage }}
     </span>
-  </div>
+  </form>
 </template>
 
 
@@ -67,6 +71,12 @@ defineProps({
 const email = ref('')
 const password = ref('')
 const showPassword = ref(false)
+
+function handleSubmit() {
+  // Form submit (Enter or click): only fire when the button would be enabled.
+  if (!email.value || !password.value) return
+  emit('signIn', { email: email.value, password: password.value })
+}
 
 </script>
 

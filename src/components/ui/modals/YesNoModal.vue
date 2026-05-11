@@ -20,13 +20,27 @@
       </p>
       <div class="flex space-x-4">
         <BaseButton
-          v-for="button in buttons"
-          :key="button.label"
+          ref="yesButton"
           class="px-4 py-2 text-sm font-medium rounded"
-          @click="button.action"
+          @click="handleYes"
           type="button"
         >
-          {{ button.label }}
+          Yes
+        </BaseButton>
+        <BaseButton
+          class="px-4 py-2 text-sm font-medium rounded"
+          @click="handleNo"
+          type="button"
+        >
+          No
+        </BaseButton>
+        <BaseButton
+          v-if="showCancelButton"
+          class="px-4 py-2 text-sm font-medium rounded"
+          @click="handleCancel"
+          type="button"
+        >
+          Cancel
         </BaseButton>
       </div>
     </div>
@@ -34,9 +48,9 @@
 
 </template>
 
-  
+
 <script setup>
-import { computed } from 'vue';
+import { onMounted, onBeforeUnmount, ref, nextTick } from 'vue';
 import SmallModal from '@/components/ui/modals/SmallModalBase.vue';
 import BaseButton from '@/components/ui/input/BaseButton.vue';
 
@@ -64,14 +78,44 @@ const props = defineProps({
   }
 })
 
-const buttons = computed(() => {
-  const arr = [
-    { label: 'Yes', action: () => { props.yesFunction(); emit('close') } },
-    { label: 'No', action: () => { props.noFunction(); emit('close') } }
-  ];
-  if (props.showCancelButton) {
-    arr.push({ label: 'Cancel', action: () => { emit('close') } });
+function handleYes() {
+  props.yesFunction()
+  emit('close')
+}
+
+function handleNo() {
+  props.noFunction()
+  emit('close')
+}
+
+function handleCancel() {
+  emit('close')
+}
+
+// Keyboard shortcuts: Enter = Yes (the default action), Esc = No (cancel).
+// Focusing the Yes button on mount also lets the browser's built-in
+// Enter-on-focused-button behavior act as a backstop.
+const yesButton = ref(null)
+
+function handleKeydown(e) {
+  if (e.key === 'Enter') {
+    e.preventDefault()
+    handleYes()
+  } else if (e.key === 'Escape') {
+    e.preventDefault()
+    handleNo()
   }
-  return arr;
-});
+}
+
+onMounted(async () => {
+  document.addEventListener('keydown', handleKeydown)
+  await nextTick()
+  // BaseButton is a component; reach into $el to focus the underlying <button>.
+  const el = yesButton.value?.$el ?? yesButton.value
+  el?.focus?.()
+})
+
+onBeforeUnmount(() => {
+  document.removeEventListener('keydown', handleKeydown)
+})
 </script>
