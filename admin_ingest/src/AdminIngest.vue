@@ -2,7 +2,7 @@
 import { computed, onMounted, reactive, ref, watch } from 'vue'
 import DirectoryPicker from './DirectoryPicker.vue'
 import FileReview from './FileReview.vue'
-import { BUCKET_OPTIONS } from './utils/categoryList'
+import { BUCKET_OPTIONS, SOURCE_OPTIONS, LICENSE_OPTIONS } from './utils/categoryList'
 import { loadPersistedState, persistState } from './utils/localStore'
 import { uploadFileAndInsert } from './utils/SoundUploader'
 import { supabase } from './utils/supabaseClient'
@@ -40,6 +40,15 @@ const files = ref([])
 const currentIndex = ref(0)
 const uploadedMap = ref({})
 const drafts = reactive({})
+// Counts uploads completed since the current directory was loaded. Used
+// by the footer to show "X uploaded · Y remaining" against the active
+// queue, distinct from lifetime totals in uploadedMap.
+const sessionUploadedCount = ref(0)
+// Toggle: when true, an uploaded file is popped from the queue (and
+// filtered out if the same directory is re-picked). When false, the
+// entry stays in the list flagged uploaded=true and we advance to the
+// next file — the original ingest behavior. Default true.
+const deleteOnUpload = ref(true)
 const toast = ref(null)
 const uploading = ref(false)
 const user = ref(null)
@@ -64,6 +73,9 @@ function hydrateFromPersistence() {
   if (stored.lastDirectoryName) {
     directoryName.value = stored.lastDirectoryName
   }
+  if (typeof stored.deleteOnUpload === 'boolean') {
+    deleteOnUpload.value = stored.deleteOnUpload
+  }
 }
 
 hydrateFromPersistence()
@@ -86,6 +98,8 @@ watch(
   () => persistState({ drafts: { ...drafts } }),
   { deep: true }
 )
+
+watch(deleteOnUpload, (value) => persistState({ deleteOnUpload: value }))
 
 async function initAuth() {
   const { data } = await supabase.auth.getUser()
@@ -148,6 +162,10 @@ function baseFileDraft(relativePath, file, index) {
     plan_tier: storedDraft.plan_tier || supportedPlanTiers.at(-1),
     bucket:
       normalizeBucket(storedDraft.bucket || storedDraft.category) || '',
+    // Licensing metadata — optional, but persisted to drafts so curators
+    // can pick a source once and have it stick across the directory.
+    source: storedDraft.source || '',
+    license_type: storedDraft.license_type || '',
     duration_seconds: storedDraft.duration_seconds ?? null,
     relativePath,
     uploaded: Boolean(uploadedMap.value[relativePath]),
@@ -163,12 +181,22 @@ function cacheDraft(relativePath, patch) {
 
 function handleDirectoryLoaded(payload) {
   files.value.forEach((entry) => URL.revokeObjectURL(entry.previewUrl))
-  const nextFiles = payload.files.map(({ file, relativePath }, index) =>
+  // When deleteOnUpload is on, files that were popped from the queue in
+  // a previous session shouldn't reappear here. When it's off, keep the
+  // legacy behavior of showing every file (already-uploaded ones get
+  // flagged via uploadedMap so the upload button reads "Uploaded").
+  const incoming = deleteOnUpload.value
+    ? payload.files.filter(({ relativePath }) => !uploadedMap.value[relativePath])
+    : payload.files
+  const nextFiles = incoming.map(({ file, relativePath }, index) =>
     baseFileDraft(relativePath, file, index)
   )
   files.value = nextFiles
   directoryName.value = payload.directoryName
   persistState({ lastDirectoryName: payload.directoryName })
+  // Session counter resets when a directory is (re)loaded so the footer
+  // reflects progress against the current queue, not lifetime totals.
+  sessionUploadedCount.value = 0
   if (currentIndex.value >= files.value.length) {
     currentIndex.value = 0
   }
@@ -207,6 +235,27 @@ function prevFile() {
   }
 }
 
+// Pop a file from the queue after a successful upload. The previously
+// generated object URL is revoked to release the underlying blob, the
+// draft is dropped (it's no longer needed since the file is gone), and
+// currentIndex is clamped so it still points at a valid entry — or 0
+// when the queue empties out.
+function removeFileFromQueue(fileEntry) {
+  URL.revokeObjectURL(fileEntry.previewUrl)
+  if (drafts[fileEntry.relativePath]) {
+    delete drafts[fileEntry.relativePath]
+  }
+  const idx = files.value.findIndex(
+    (entry) => entry.relativePath === fileEntry.relativePath
+  )
+  if (idx !== -1) {
+    files.value.splice(idx, 1)
+  }
+  if (currentIndex.value >= files.value.length) {
+    currentIndex.value = Math.max(0, files.value.length - 1)
+  }
+}
+
 function showToast(message, variant = 'error') {
   const id = Date.now()
   toast.value = { id, message, variant }
@@ -239,7 +288,12 @@ async function uploadCurrent() {
     cone_outer: fileEntry.cone_outer,
     plan_tier: fileEntry.plan_tier,
     bucket: normalizedBucket,
-    path: objectKey
+    path: objectKey,
+    // Coerce empty strings to null so the DB stores a meaningful absence
+    // rather than empty text. Legacy/unknown files are explicitly allowed
+    // to ingest without these set.
+    source: fileEntry.source?.trim() || null,
+    license_type: fileEntry.license_type?.trim() || null
   }
 
   if (!metadata.bucket) {
@@ -259,10 +313,20 @@ async function uploadCurrent() {
       userId: user.value.id,
       metadata
     })
-    fileEntry.uploaded = true
     uploadedMap.value = { ...uploadedMap.value, [fileEntry.relativePath]: true }
-    cacheDraft(fileEntry.relativePath, { uploaded: true })
-    nextFile()
+    sessionUploadedCount.value += 1
+
+    if (deleteOnUpload.value) {
+      // Pop from queue. currentIndex auto-advances because splicing
+      // shifts every later entry one slot left.
+      removeFileFromQueue(fileEntry)
+    } else {
+      // Legacy behavior: keep the entry, flag it as uploaded so the
+      // upload button reads "Uploaded", then manually advance.
+      fileEntry.uploaded = true
+      cacheDraft(fileEntry.relativePath, { uploaded: true })
+      nextFile()
+    }
   } catch (error) {
     console.error('[admin-ingest] Upload failed', error)
     showToast(error.message || 'Upload failed')
@@ -271,8 +335,8 @@ async function uploadCurrent() {
   }
 }
 
-const totalFiles = computed(() => files.value.length)
-const uploadedCount = computed(() => Object.values(uploadedMap.value || {}).filter(Boolean).length)
+const remainingCount = computed(() => files.value.length)
+const uploadedCount = computed(() => sessionUploadedCount.value)
 </script>
 
 <template>
@@ -353,7 +417,7 @@ const uploadedCount = computed(() => Object.values(uploadedMap.value || {}).filt
 
       <!-- File Review -->
       <section v-if="currentFile" class="space-y-8">
-        <div class="flex justify-between items-center text-sm text-gray-400">
+        <div class="flex justify-between items-center text-sm text-gray-400 gap-6 flex-wrap">
           <div>
             <span class="text-gray-500">Directory:</span>
             <span class="text-gray-300 font-medium">
@@ -368,14 +432,36 @@ const uploadedCount = computed(() => Object.values(uploadedMap.value || {}).filt
             </span>
             <span v-else class="text-gray-500">Checking session…</span>
           </div>
+
+          <!--
+            Queue behavior toggle. When checked, an uploaded entry is
+            popped from the queue and won't reappear if the directory
+            is re-picked. When unchecked, entries stay in the list
+            flagged as "Uploaded" (legacy behavior).
+          -->
+          <label
+            class="inline-flex items-center gap-2 cursor-pointer select-none"
+            :title="deleteOnUpload
+              ? 'Uploaded files are removed from the queue.'
+              : 'Uploaded files stay in the queue and are flagged Uploaded.'"
+          >
+            <input
+              type="checkbox"
+              class="h-4 w-4 rounded border-gray-600 bg-gray-800 text-emerald-500 focus:(outline-none ring-2 ring-emerald-500)"
+              v-model="deleteOnUpload"
+            />
+            <span class="text-gray-300 font-medium">Remove from queue after upload</span>
+          </label>
         </div>
 
         <FileReview
           :file-entry="currentFile"
           :index="currentIndex"
-          :total="totalFiles"
+          :total="remainingCount"
           :plan-options="supportedPlanTiers"
           :buckets="BUCKET_OPTIONS"
+          :source-options="SOURCE_OPTIONS"
+          :license-options="LICENSE_OPTIONS"
           :uploading="uploading"
           :upload-blocked-reason="uploadBlockedReason"
           @update-field="updateField"
@@ -391,19 +477,29 @@ const uploadedCount = computed(() => Object.values(uploadedMap.value || {}).filt
         v-else
         class="text-center py-24 rounded-2xl border border-dashed border-gray-700 bg-gray-900/40"
       >
-        <p class="text-gray-400 text-lg font-medium mb-1">No directory selected</p>
-        <p class="text-gray-500 text-sm">
-          Choose a folder to begin reviewing and ingesting audio files.
-        </p>
+        <template v-if="directoryName && uploadedCount > 0">
+          <p class="text-gray-300 text-lg font-medium mb-1">
+            Queue clear — {{ uploadedCount }}
+            {{ uploadedCount === 1 ? 'file' : 'files' }} uploaded this session.
+          </p>
+          <p class="text-gray-500 text-sm">
+            Pick another folder to keep ingesting.
+          </p>
+        </template>
+        <template v-else>
+          <p class="text-gray-400 text-lg font-medium mb-1">No directory selected</p>
+          <p class="text-gray-500 text-sm">
+            Choose a folder to begin reviewing and ingesting audio files.
+          </p>
+        </template>
       </div>
 
       <!-- Progress footer -->
       <footer class="text-xs text-gray-500 pt-8">
-        Progress:
-        <span class="text-gray-300 font-semibold">
-          {{ uploadedCount }} / {{ totalFiles }}
-        </span>
-        uploaded
+        <span class="text-gray-300 font-semibold">{{ uploadedCount }}</span>
+        uploaded this session ·
+        <span class="text-gray-300 font-semibold">{{ remainingCount }}</span>
+        remaining in queue
       </footer>
     </div>
 

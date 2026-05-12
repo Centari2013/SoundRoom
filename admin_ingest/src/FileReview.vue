@@ -22,6 +22,14 @@ const props = defineProps({
     type: Array,
     default: () => []
   },
+  sourceOptions: {
+    type: Array,
+    default: () => []
+  },
+  licenseOptions: {
+    type: Array,
+    default: () => []
+  },
   uploading: Boolean,
   uploadBlockedReason: {
     type: String,
@@ -50,7 +58,13 @@ watch(
   { deep: true }
 )
 
-const progressLabel = computed(() => `File ${props.index + 1} of ${props.total}`)
+// `total` is the current remaining-queue length. The displayed position
+// (index + 1) shrinks with the queue as files get popped after upload,
+// so the label reflects "where in the remaining queue we are" rather
+// than a stale absolute count.
+const progressLabel = computed(
+  () => `File ${props.index + 1} of ${props.total} remaining`
+)
 
 function handleAudioMetadata(event) {
   const duration = event.target.duration
@@ -76,6 +90,42 @@ function handleEnter(event) {
     emit('next')
   } else if (event.key === 'ArrowLeft') {
     emit('previous')
+  }
+}
+
+// ── Licensing dropdown helpers ────────────────────────────────────────
+// Both `source` and `license_type` are stored as plain text. The
+// dropdown shows preset options + "Other"; when the field value isn't
+// in the preset list (e.g. the curator typed a custom label), the
+// dropdown shows "Other" and a sibling text input becomes visible so
+// they can edit it. Empty value = the dropdown shows "Unspecified".
+function resolveDropdownValue(value, options) {
+  if (!value) return ''
+  if (options.includes(value)) return value
+  return 'Other'
+}
+
+const resolvedSource = computed(() =>
+  resolveDropdownValue(props.fileEntry.source, props.sourceOptions)
+)
+const resolvedLicense = computed(() =>
+  resolveDropdownValue(props.fileEntry.license_type, props.licenseOptions)
+)
+
+const showSourceCustomInput = computed(() => resolvedSource.value === 'Other')
+const showLicenseCustomInput = computed(() => resolvedLicense.value === 'Other')
+
+function handleDropdownSelect(field, options, selected) {
+  if (selected === 'Other') {
+    // Preserve any custom value the curator already typed; otherwise
+    // seed the field with the literal "Other" so the text input below
+    // shows up with something editable.
+    const current = props.fileEntry[field]
+    if (!current || options.includes(current)) {
+      emitField(field, 'Other')
+    }
+  } else {
+    emitField(field, selected)
   }
 }
 </script>
@@ -159,6 +209,48 @@ function handleEnter(event) {
             @blur="handleTagBlur"
             @keyup.enter="handleTagBlur"
             placeholder="rain, mellow, storm"
+          />
+        </div>
+
+        <!-- Source (provenance) -->
+        <div class="space-y-1.5">
+          <label class="text-sm text-gray-300 font-medium">Source</label>
+          <select
+            class="w-full bg-gray-800 border border-gray-700 rounded-md px-3 py-2 text-sm text-gray-100 focus:(outline-none ring-2 ring-emerald-500)"
+            :value="resolvedSource"
+            @change="handleDropdownSelect('source', sourceOptions, $event.target.value)"
+          >
+            <option value="">Unspecified</option>
+            <option v-for="opt in sourceOptions" :key="opt" :value="opt">{{ opt }}</option>
+          </select>
+          <input
+            v-if="showSourceCustomInput"
+            type="text"
+            class="w-full bg-gray-800/70 border border-gray-700 rounded-md px-3 py-2 text-sm text-gray-100 focus:(outline-none ring-2 ring-emerald-500)"
+            :value="fileEntry.source"
+            @input="emitField('source', $event.target.value)"
+            placeholder="Enter source label"
+          />
+        </div>
+
+        <!-- License type -->
+        <div class="space-y-1.5">
+          <label class="text-sm text-gray-300 font-medium">License</label>
+          <select
+            class="w-full bg-gray-800 border border-gray-700 rounded-md px-3 py-2 text-sm text-gray-100 focus:(outline-none ring-2 ring-emerald-500)"
+            :value="resolvedLicense"
+            @change="handleDropdownSelect('license_type', licenseOptions, $event.target.value)"
+          >
+            <option value="">Unspecified</option>
+            <option v-for="opt in licenseOptions" :key="opt" :value="opt">{{ opt }}</option>
+          </select>
+          <input
+            v-if="showLicenseCustomInput"
+            type="text"
+            class="w-full bg-gray-800/70 border border-gray-700 rounded-md px-3 py-2 text-sm text-gray-100 focus:(outline-none ring-2 ring-emerald-500)"
+            :value="fileEntry.license_type"
+            @input="emitField('license_type', $event.target.value)"
+            placeholder="Enter license label"
           />
         </div>
       </div>

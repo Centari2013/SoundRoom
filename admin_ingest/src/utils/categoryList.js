@@ -35,3 +35,31 @@ export const BUCKET_OPTIONS = [
     description: 'Everything weird, unclassifiable, experimental, glitchy, or “what the hell is that?”'
   }
 ]
+
+// Provenance — where the audio asset came from.
+// Stored as plain text in public.sound_files.source. Picking "Other"
+// reveals a free-text input in the FileReview form so curators can
+// drop in a one-off label without expanding this list.
+export const SOURCE_OPTIONS = [
+  'Sonniss',
+  'Pixabay',
+  'ZapSplat',
+  'Freesound',
+  'Self-recorded',
+  'Generated',
+  'Unknown',
+  'Other'
+]
+
+// License coverage for the asset.
+// Stored as plain text in public.sound_files.license_type. Same
+// "Other" → free-text pattern as SOURCE_OPTIONS.
+export const LICENSE_OPTIONS = [
+  'Commercial License',
+  'Pixabay License',
+  'CC0',
+  'Creative Commons',
+  'Royalty-Free',
+  'Unknown',
+  'Other'
+]

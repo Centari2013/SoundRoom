@@ -98,10 +98,15 @@ function uploadViaXhr(file, signedUrl) {
 
 /**
  * Upload a single file and then insert the DB row.
+ *
  * @param {Object} options
  * @param {File} options.file
  * @param {string} options.userId
- * @param {Object} options.metadata - payload destined for public.sound_files
+ * @param {Object} options.metadata payload destined for public.sound_files. Includes
+ *   `id`, `name`, `tags`, `duration_seconds`, `cone_inner`, `cone_outer`,
+ *   `plan_tier`, `bucket`, `path`, plus optional licensing fields
+ *   `source` (e.g. "Sonniss") and `license_type` (e.g. "CC0"). Licensing
+ *   fields are nullable — pass `null` when unknown.
  */
 export async function uploadFileAndInsert({ file, userId, metadata }) {
   if (!userId) {
