@@ -244,34 +244,56 @@ export default class AudioCacheManager {
   }
 
   /**
-   * Self-cleaner: prune all persistent cache except whitelisted keys.
+   * Self-cleaner: prune persistent cache until it fits within `maxCount`.
+   * Whitelisted keys are protected first; remaining slots are filled
+   * with non-keep entries.
+   *
+   * Previous behavior deleted *every* non-keep entry on every invocation,
+   * which collapsed the persistent cache to whatever was in the memory
+   * cache (~20 entries) instead of the configured 100. The fix below
+   * evicts only `total - maxCount` entries, preferring non-keep first.
+   *
+   * Note: `idb-keyval` does not expose insertion order, so eviction
+   * within the non-keep set is arbitrary-but-bounded, not strict LRU.
+   * If LRU becomes important, store a `lastUsedAt` per entry alongside
+   * the blob and sort by that here.
    *
    * @param {Object} [opts]
-   * @param {string[]} [opts.keep]  File IDs to always keep.
+   * @param {string[]} [opts.keep]  File IDs to always keep (best-effort —
+   *   honored unless `maxCount` is smaller than `keep.length`).
    * @param {number} [opts.maxCount=100]  Maximum allowed entries.
-   * @param {boolean} [opts.dryRun=false]  If true, no files are deleted and a
-   *   summary is still returned.
+   * @param {boolean} [opts.dryRun=false]  If true, no files are deleted
+   *   but stats describing what would be removed are returned.
    * @returns {Promise<{total:number, removed:number, kept:number}>}
    */
   async prunePersistentCache({ keep = [], maxCount = 100, dryRun = false } = {}) {
-    // Remove old blobs from IndexedDB until the number of entries is under
-    // `maxCount`. Keys listed in `keep` are preserved. When `dryRun` is true
-    // the cache is scanned but nothing is deleted.
     const allKeys = await keys()
+    const toEvict = Math.max(0, allKeys.length - maxCount)
 
-    const keysToRemove = allKeys.filter(k => !keep.includes(k))
-    const shouldPrune = allKeys.length > maxCount || keep.length > 0
+    if (toEvict === 0) {
+      return {
+        total: allKeys.length,
+        removed: 0,
+        kept: allKeys.length,
+      }
+    }
 
-    if (!shouldPrune && !dryRun) return
+    // Prefer evicting entries not in the keep set. If `keep` is larger
+    // than `maxCount`, we'll only evict from the non-keep pool — the
+    // cache may stay slightly over `maxCount` rather than dropping
+    // protected entries.
+    const keepSet = new Set(keep)
+    const evictable = allKeys.filter((k) => !keepSet.has(k))
+    const keysToRemove = evictable.slice(0, toEvict)
 
-    if (shouldPrune && keysToRemove.length > 0 && !dryRun) {
-      await Promise.all(keysToRemove.map(k => del(k)))
+    if (!dryRun && keysToRemove.length > 0) {
+      await Promise.all(keysToRemove.map((k) => del(k)))
     }
 
     return {
       total: allKeys.length,
       removed: keysToRemove.length,
-      kept: allKeys.length - keysToRemove.length
+      kept: allKeys.length - keysToRemove.length,
     }
   }
 
