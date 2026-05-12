@@ -101,9 +101,13 @@ export default class SoundSource {
     pn.refDistance = 1
     pn.maxDistance = 10000
     pn.rolloffFactor = 1
-    pn.coneInnerAngle = this.state.coneInner
-    pn.coneOuterAngle = this.state.coneOuter
     pn.coneOuterGain = 0.2
+    // Initial cone angles. After construction these stay in sync via
+    // setConeAngles() — called inside updateAudio() so any reactive
+    // change to state.coneInner / state.coneOuter is reflected the next
+    // time the source is repositioned, and callable directly from a
+    // future cone-editor UI.
+    this._syncConeAngles()
 
     this._gainNode.connect(this._pannerNode)
 
@@ -574,12 +578,43 @@ export default class SoundSource {
     p.orientationY.setValueAtTime(Math.sin(angleRad), ctx.currentTime);
     p.orientationZ.setValueAtTime(0, ctx.currentTime);
 
+    // Pick up any external mutation of cone widths.
+    this._syncConeAngles()
+
     this.applySurroundMode(this.state.surround)
 
     if (this._room) {
       this.updateRoomInteraction(this._room);
     }
 
+  }
+
+  /**
+   * Push the current state.coneInner / state.coneOuter onto the panner.
+   * Inner must be <= outer per Web Audio spec; we clamp defensively. Call
+   * directly when cone state changes outside of a position/angle update
+   * (e.g. from a future cone-editor UI):
+   *
+   *   source.instance.state.coneOuter = 120
+   *   source.instance.setConeAngles()    // takes effect immediately
+   *
+   * @param {number} [inner] override the value to write for inner
+   * @param {number} [outer] override the value to write for outer
+   */
+  setConeAngles(inner, outer) {
+    if (inner !== undefined) this.state.coneInner = inner
+    if (outer !== undefined) this.state.coneOuter = outer
+    this._syncConeAngles()
+  }
+
+  _syncConeAngles() {
+    if (!this._pannerNode || !this.state) return
+    const innerRaw = Number(this.state.coneInner)
+    const outerRaw = Number(this.state.coneOuter)
+    const inner = Number.isFinite(innerRaw) ? Math.max(0, Math.min(360, innerRaw)) : 360
+    const outer = Number.isFinite(outerRaw) ? Math.max(inner, Math.min(360, outerRaw)) : 360
+    this._pannerNode.coneInnerAngle = inner
+    this._pannerNode.coneOuterAngle = outer
   }
 
 

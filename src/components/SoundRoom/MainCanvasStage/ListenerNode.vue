@@ -328,8 +328,8 @@ function onHandleMouseMove(e) {
   const delta = currentMouseAngle - initialMouseAngle
   const newAngle = initialListenerAngle + delta
 
+  // updateAngle() already calls updateAudio() internally — don't double up.
   listener.value.updateAngle(newAngle)
-  listener.value.updateAudio()
 }
 
 function onHandleMouseUp() {
