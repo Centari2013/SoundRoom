@@ -79,13 +79,25 @@ export default class Listener {
 
   /**
    * Synchronise the listener position and orientation with the audio context.
+   *
+   * ─── Convention note ─────────────────────────────────────────────────
+   * The canvas and Web Audio use different coordinate grids. `_angle` is
+   * stored in canvas convention (Konva-style: 0 = +X / right, 90 = +Y /
+   * down). The -90° offset below and the absence of a Y-flip on the
+   * position values are intentional adjustments that map canvas
+   * convention onto Web Audio's own coordinate system.
+   *
+   * The visual teardrop's pointy end IS forward — visual / audio
+   * alignment is verified empirically, not derivable by reading either
+   * grid in isolation. Don't "fix" the -90° or add a Y-flip unless
+   * you've actually listened to it being broken.
+   * ─────────────────────────────────────────────────────────────────────
    */
   updateAudio() {
     if (!this._audioContext) return
 
     const scale = 0.01
-    
-    // subtracted 90 degrees to have listener facing 'up' in room
+
     const angleRad = ((this._angle - 90) * Math.PI) / 180;
 
     this._audioContext.listener.setPosition(this.x * scale, this.y * scale, 0)

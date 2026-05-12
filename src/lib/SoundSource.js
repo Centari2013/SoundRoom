@@ -558,6 +558,17 @@ export default class SoundSource {
 
   /**
    * Sync Web Audio panner position and orientation with the state used by the canvas.
+   *
+   * ─── Convention note ─────────────────────────────────────────────────
+   * Source angles use canvas convention (0 = +X / right, 90 = +Y /
+   * down) — the *same* grid Listener uses, but with a different offset
+   * applied during audio translation. Listener subtracts 90° in its
+   * own updateAudio(); sources don't, because the visual cone /
+   * direction-diamond geometry expects 0° = facing right rather than
+   * 0° = facing up. The two are individually verified by ear, not by
+   * deriving one from the other. See Listener.updateAudio() for the
+   * matching warning.
+   * ─────────────────────────────────────────────────────────────────────
    */
   updateAudio() {
     if (!this._audioContext) return
