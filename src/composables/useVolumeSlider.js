@@ -1,5 +1,8 @@
 import { storeToRefs } from "pinia"
 import { useActionManagerStore } from "@/stores/useActionManagerStore"
+import { getCurrentScope, onScopeDispose, watch } from "vue"
+
+const VOLUME_ACTION_NAMES = ["set_sound_source_volume"]
 
 /**
  * Provides handlers for adjusting the volume of the currently selected sound source.
@@ -10,15 +13,44 @@ import { useActionManagerStore } from "@/stores/useActionManagerStore"
 export function useVolumeSlider(selectedSource) {
   const actionStore = useActionManagerStore()
   const { actionManager } = storeToRefs(actionStore)
-  actionManager.value.registerActionHandlers(
-    "set_sound_source_volume",
-    (payload) => {
-      selectedSource.value.instance.setVolume(payload.to)
+
+  const unregisterVolumeActions = (manager) => {
+    manager?.unregisterActionHandlers(VOLUME_ACTION_NAMES)
+  }
+
+  const registerVolumeActions = (manager) => {
+    manager.registerActionHandlers(
+      "set_sound_source_volume",
+      (payload) => {
+        selectedSource.value.instance.setVolume(payload.to)
+      },
+      (payload) => {
+        selectedSource.value.instance.setVolume(payload.from)
+      }
+    )
+  }
+
+  let registeredVolumeActionManager = null
+  const stopVolumeActionRegistration = watch(
+    actionManager,
+    (manager, previousManager) => {
+      if (previousManager && previousManager !== manager) {
+        unregisterVolumeActions(previousManager)
+      }
+
+      registerVolumeActions(manager)
+      registeredVolumeActionManager = manager
     },
-    (payload) => {
-      selectedSource.value.instance.setVolume(payload.from)
-    }
+    { immediate: true, flush: "sync" }
   )
+
+  if (getCurrentScope()) {
+    onScopeDispose(() => {
+      stopVolumeActionRegistration()
+      unregisterVolumeActions(registeredVolumeActionManager)
+      registeredVolumeActionManager = null
+    })
+  }
 
   let volumePayload = null
 

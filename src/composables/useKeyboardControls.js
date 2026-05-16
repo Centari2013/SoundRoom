@@ -3,6 +3,13 @@ import { useListenerStore } from "@/stores/useListenerStore"
 import { useActionManagerStore } from "@/stores/useActionManagerStore"
 import { useAudioEngineStore } from "@/stores/useAudioEngineStore"
 import { storeToRefs } from "pinia"
+import { getCurrentScope, onScopeDispose, watch } from "vue"
+
+const KEYBOARD_ACTION_NAMES = [
+  "move_listener",
+  "rotate_listener_angle",
+  "rotate_source_angle",
+]
 
 /**
  * Provides global keyboard controls for manipulating the listener and
@@ -24,49 +31,76 @@ export function useKeyboardControls({selectedSource, selectedIndex}) {
   let listenerAngleStart = null
   let sourceAngleStart = null
   const isSelectedSourceLocked = () => Boolean(selectedSource.value?.locked)
-  
 
-  actionManager.value.registerActionHandlers(
-    "move_listener",
-    (payload) => {
-      listener.value.x = payload.to.x
-      listener.value.y = payload.to.y
-    },
-    (payload) => {
-      listener.value.x = payload.from.x
-      listener.value.y = payload.from.y
-    }
-  )
+  const unregisterKeyboardActions = (manager) => {
+    manager?.unregisterActionHandlers(KEYBOARD_ACTION_NAMES)
+  }
 
-  actionManager.value.registerActionHandlers(
-    "rotate_listener_angle",
-    (payload) => {
-      listener.value.updateAngle(payload.to)
-      listener.value.updateAudio()
-    },
-    (payload) => {
-      listener.value.updateAngle(payload.from)
-      listener.value.updateAudio()
-    }
-  )
+  const registerKeyboardActions = (manager) => {
+    manager.registerActionHandlers(
+      "move_listener",
+      (payload) => {
+        listener.value.x = payload.to.x
+        listener.value.y = payload.to.y
+      },
+      (payload) => {
+        listener.value.x = payload.from.x
+        listener.value.y = payload.from.y
+      }
+    )
 
-  actionManager.value.registerActionHandlers(
-    "rotate_source_angle",
-    (payload) => {
-      if (selectedSource.value !== null) {
-        selectedSource.value.instance.state.angle = payload.to
-        selectedSource.value.instance.updateAudio()
+    manager.registerActionHandlers(
+      "rotate_listener_angle",
+      (payload) => {
+        listener.value.updateAngle(payload.to)
+        listener.value.updateAudio()
+      },
+      (payload) => {
+        listener.value.updateAngle(payload.from)
         listener.value.updateAudio()
       }
-    },
-    (payload) => {
-      if (selectedSource.value !== null) {
-        selectedSource.value.instance.state.angle = payload.from
-        selectedSource.value.instance.updateAudio()
-        listener.value.updateAudio()
+    )
+
+    manager.registerActionHandlers(
+      "rotate_source_angle",
+      (payload) => {
+        if (selectedSource.value !== null) {
+          selectedSource.value.instance.state.angle = payload.to
+          selectedSource.value.instance.updateAudio()
+          listener.value.updateAudio()
+        }
+      },
+      (payload) => {
+        if (selectedSource.value !== null) {
+          selectedSource.value.instance.state.angle = payload.from
+          selectedSource.value.instance.updateAudio()
+          listener.value.updateAudio()
+        }
       }
-    }
+    )
+  }
+
+  let registeredKeyboardActionManager = null
+  const stopKeyboardActionRegistration = watch(
+    actionManager,
+    (manager, previousManager) => {
+      if (previousManager && previousManager !== manager) {
+        unregisterKeyboardActions(previousManager)
+      }
+
+      registerKeyboardActions(manager)
+      registeredKeyboardActionManager = manager
+    },
+    { immediate: true, flush: "sync" }
   )
+
+  if (getCurrentScope()) {
+    onScopeDispose(() => {
+      stopKeyboardActionRegistration()
+      unregisterKeyboardActions(registeredKeyboardActionManager)
+      registeredKeyboardActionManager = null
+    })
+  }
 
   /**
    * Handle keydown events for moving the listener or sources and managing

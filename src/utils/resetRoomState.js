@@ -5,6 +5,17 @@ import { useRoomStore } from '@/stores/useRoomStore'
 import { registerSoundRoomActions, unregisterSoundRoomActions } from '@/composables/useSoundRoomActions'
 import { useAudioCacheStore } from '@/stores/useAudioCacheStore'
 
+function syncListenerToFreshAudioEngine(listenerStore, engineStore) {
+  try {
+    const audioContext = engineStore.audioEngine?.getAudioContext?.()
+    if (!audioContext) return
+
+    listenerStore.listener.setAudioContext(audioContext)
+    listenerStore.listener.updateAudio()
+  } catch (error) {
+    console.warn('Failed to initialize listener audio after room reset:', error)
+  }
+}
 
 /**
  * Reset all core stores to their initial state.
@@ -36,6 +47,7 @@ export function resetRoomState() {
 
   // Dispose of audio engine and start from scratch
   engineStore.resetAudioEngine()
+  syncListenerToFreshAudioEngine(listenerStore, engineStore)
 
   roomStore.markCurrentStateAsEmpty()
   roomStore.getSaveSnapshot({ markAsInitial: true })
