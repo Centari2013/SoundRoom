@@ -52,23 +52,21 @@
                    bg-[color-mix(in_srgb,var(--color-panel)_85%,black_15%)]
                    shadow-[0_24px_60px_rgba(0,0,0,0.5)] overflow-hidden"
           >
-            <!-- Browser chrome -->
-            <div class="flex items-center gap-2 px-4 py-2.5 bg-[var(--color-bg-surface)] border-b border-[var(--color-border-subtle)]">
-              <span class="h-3 w-3 rounded-full bg-[#ff5f57]"></span>
-              <span class="h-3 w-3 rounded-full bg-[#ffbd2e]"></span>
-              <span class="h-3 w-3 rounded-full bg-[#28c840]"></span>
-              <div class="flex-1 flex justify-center">
-                <div class="w-2/3 h-5 rounded-md bg-white/5 text-xs text-center leading-5 text-text-muted">
-                  soundroom.live
-                </div>
-              </div>
-              <div class="w-14"></div>
+            <!-- DEMO VIDEO -->
+            
+            <div class="w-full bg-black" style="aspect-ratio: 1020 / 695">
+              <iframe
+              class="h-full w-full"
+              width="1020"
+              height="695"
+              :src="demoVideoEmbedUrl"
+              title="SoundRoom Demo"
+              frameborder="0"
+              allow="autoplay; encrypted-media; picture-in-picture"
+              referrerpolicy="strict-origin-when-cross-origin"
+              allowfullscreen
+            ></iframe>
             </div>
-            <img
-              src="/images/editor-preview.png"
-              alt="SoundRoom canvas preview"
-              class="w-full object-cover opacity-95"
-            />
           </div>
         </div>
       </section>
@@ -210,4 +208,8 @@
 
 <script setup>
 import FeatureCard from "@/components/Landing/FeatureCard.vue"
+const demoVideoId = 'b1nHvgzCMxM'
+
+const demoVideoEmbedUrl =
+  `https://www.youtube.com/embed/${demoVideoId}?autoplay=1&mute=1&loop=1&playlist=${demoVideoId}&controls=1&modestbranding=1&rel=0&playsinline=1`
 </script>
