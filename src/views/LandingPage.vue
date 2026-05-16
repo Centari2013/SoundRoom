@@ -196,8 +196,7 @@
       <div class="max-w-6xl mx-auto px-6 flex flex-wrap items-center justify-between gap-4">
         <p class="opacity-60">© 2025 SoundRoom</p>
         <div class="flex gap-6">
-          <RouterLink :to="{name: 'privacy'}" class="hover:text-text-primary transition">Privacy</RouterLink>
-          <RouterLink :to="{name: 'terms'}" class="hover:text-text-primary transition">Terms</RouterLink>
+          <RouterLink :to="{name: 'policies'}" class="hover:text-text-primary transition">Policies & Terms</RouterLink>
           <RouterLink :to="{name: 'help'}" class="hover:text-text-primary transition">Support</RouterLink>
         </div>
       </div>

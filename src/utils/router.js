@@ -147,6 +147,17 @@ const router = createRouter({
       redirect: '/app/upgrade',
     },
     {
+      name: 'policies',
+      path: '/policies',
+      component: () => import('@/views/Policies.vue'),
+      meta: {
+        seo: {
+          title: 'Policies & Terms | SoundRoom',
+          description: 'Find SoundRoom legal documents, including the Privacy Policy, Terms of Service, and Cookie Policy.',
+        },
+      },
+    },
+    {
       name: 'terms',
       path: '/terms',
       component: () => import('@/views/TermsOfService.vue'),

@@ -164,6 +164,11 @@ const visibleButtons = computed(() => {
       shouldShow: !authed,
     },
     {
+      label: 'Policies & Terms',
+      action: () => router.push({ name: 'policies' }),
+      shouldShow: true,
+    },
+    {
       label: 'Help',
       action: () => router.push({ name: 'help' }),
       shouldShow: true
