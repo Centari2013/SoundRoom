@@ -371,6 +371,23 @@ export default class AudioEngine {
 
     if (this.isSourceOnTimeline(src.instance.state.schedule.id)) return
 
+    // If the source is scheduled (the default for new canvas sources),
+    // the SoundScheduler already started a looping playback from
+    // addSoundSource. Firing src.instance.play() here on top would
+    // double-trigger and you'd hear a phasey transient. Let the
+    // scheduler own playback in that case.
+    const sched = src.instance.state.schedule
+    if (sched?.enabled && !sched?.paused) {
+      // Still resume the audio context if needed — the user just
+      // interacted (drag-drop), so this should succeed.
+      const ctx = this.getAudioContext()
+      if (ctx.state === 'suspended') {
+        await ctx.resume()
+      }
+      updateSiteAudioPlaybackState()
+      return
+    }
+
     const audioContext = this.getAudioContext()
     if (audioContext.state === 'suspended') {
       await audioContext.resume()
@@ -392,7 +409,6 @@ export default class AudioEngine {
       return
     }
 
-    const sched = src.instance.state.schedule
     sched.paused = false
     sched.isPlaying = true
     updateSiteAudioPlaybackState()

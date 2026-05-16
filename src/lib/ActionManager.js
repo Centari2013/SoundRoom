@@ -61,22 +61,27 @@ export default class ActionManager {
    */
   async doAction(actionName, payload = null) {
     this.waiting.value = true
-    const action = this._actionMap[actionName]
-    if (!action) {
-      console.warn(`No registered action for "${actionName}"`)
+    try {
+      const action = this._actionMap[actionName]
+      if (!action) {
+        console.warn(`No registered action for "${actionName}"`)
+        return
+      }
+
+      await action.doAction?.(payload)
+      this._actionStack.value.push({ name: actionName, payload })
+
+      if (this._actionStack.value.length > this.#MAX_STACK) {
+        this._actionStack.value.shift()
+      }
+
+      this._redoStack.value.length = 0
+    } finally {
+      // Always release the waiting flag, even if the handler throws.
+      // Otherwise the UI's "disabled-while-waiting" guards lock up
+      // permanently until a page reload.
       this.waiting.value = false
-      return
     }
-
-    await action.doAction?.(payload)
-    this._actionStack.value.push({ name: actionName, payload })
-
-    if (this._actionStack.value.length > this.#MAX_STACK) {
-      this._actionStack.value.shift()
-    }
-
-    this._redoStack.value.length = 0
-    this.waiting.value = false
   }
 
   /**
@@ -84,27 +89,26 @@ export default class ActionManager {
    */
   async undoLastAction() {
     this.waiting.value = true
-    if (this.actionStackEmpty.value) {
+    try {
+      if (this.actionStackEmpty.value) return
+
+      const { name, payload } = this._actionStack.value.pop()
+      const action = this._actionMap[name]
+
+      if (!action) {
+        console.warn(`No undo handler for "${name}"`)
+        return
+      }
+
+      await action.undoAction?.(payload)
+      this._redoStack.value.push({ name, payload })
+
+      if (this._redoStack.value.length > this.#MAX_STACK) {
+        this._redoStack.value.shift()
+      }
+    } finally {
       this.waiting.value = false
-      return
     }
-
-    const { name, payload } = this._actionStack.value.pop()
-    const action = this._actionMap[name]
-
-    if (!action) {
-      console.warn(`No undo handler for "${name}"`)
-      this.waiting.value = false
-      return
-    }
-
-    await action.undoAction?.(payload)
-    this._redoStack.value.push({ name, payload })
-
-    if (this._redoStack.value.length > this.#MAX_STACK) {
-      this._redoStack.value.shift()
-    }
-    this.waiting.value = false
   }
 
   /**
@@ -112,23 +116,22 @@ export default class ActionManager {
    */
   async redoLastAction() {
     this.waiting.value = true
-    if (this.redoStackEmpty.value) {
+    try {
+      if (this.redoStackEmpty.value) return
+
+      const { name, payload } = this._redoStack.value.pop()
+      const action = this._actionMap[name]
+
+      if (!action) {
+        console.warn(`No redo handler for "${name}"`)
+        return
+      }
+
+      await action.doAction?.(payload)
+      this._actionStack.value.push({ name, payload })
+    } finally {
       this.waiting.value = false
-      return
     }
-
-    const { name, payload } = this._redoStack.value.pop()
-    const action = this._actionMap[name]
-
-    if (!action) {
-      console.warn(`No redo handler for "${name}"`)
-      this.waiting.value = false
-      return
-    }
-
-    await action.doAction?.(payload)
-    this._actionStack.value.push({ name, payload })
-    this.waiting.value = false
   }
 
   /**

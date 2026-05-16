@@ -97,7 +97,7 @@
 
       <hr class="w-full border-[var(--color-border-subtle)]" />
 
-      <!-- Scheduling Toggle -->
+      <!-- Repeat / scheduling toggle -->
       <div class="w-full flex items-center space-x-2 text-left px-1 text-[var(--color-text-muted)]">
         <input
           type="checkbox"
@@ -106,19 +106,15 @@
           @change="handleSchedulingToggle"
           class="accent-blue-500 disabled:cursor-not-allowed disabled:opacity-60"
         />
-        <label class="text-sm">{{ isOnTimeline ? 'Enable Simple Scheduling' : 'Enable Scheduling' }}</label>
+        <label class="text-sm">
+          {{ isOnTimeline ? 'Repeat (timeline-controlled)' : 'Repeat this sound' }}
+        </label>
       </div>
       <p
         v-if="isOnTimeline"
         class="w-full px-1 text-left text-xs text-[var(--color-text-muted)]"
       >
-        Timeline clips control this source. Remove it from the timeline to use simple scheduling.
-      </p>
-      <p
-        v-else-if="!canUseTimedLoops"
-        class="w-full px-1 text-left text-xs text-[var(--color-warning)]"
-      >
-        Upgrade to unlock timed loops for automated playback.
+        Timeline clips control this source. Remove it from the timeline to set its own repeat behavior.
       </p>
 
       <!-- Scheduling Settings -->
@@ -128,16 +124,17 @@
       >
         <!-- Mode -->
         <div class="flex flex-col space-y-1">
-          <label class="text-sm text-left">Schedule Mode</label>
+          <label class="text-sm text-left">How it repeats</label>
           <select
             :value="schedule.mode"
             @change="handleScheduleModeChange"
             @blur="commitScheduleEdit"
             class="px-2 py-1 rounded border border-[var(--color-border-subtle)] bg-[var(--color-bg-elevated)]"
             :disabled="isLocked">
-            <option value="interval">Interval</option>
-            <option v-if="canUseAdvancedScheduling" value="count">Count</option>
-            <option v-if="canUseAdvancedScheduling" value="interval+count">Interval + Count</option>
+            <option value="loop">Loop continuously</option>
+            <option value="interval">Repeat with random gaps</option>
+            <option v-if="canUseAdvancedScheduling" value="count">Play a set number of times</option>
+            <option v-if="canUseAdvancedScheduling" value="interval+count">Play within a time window</option>
           </select>
         </div>
 
@@ -415,11 +412,16 @@ function handleSchedulingToggle(event) {
   commitSchedulePatch({ enabled: nextEnabled });
 }
 
+// Modes available without the schedulePlayback entitlement.
+// 'loop' and 'interval' are the basic repeat behaviors; the count-based
+// modes ('count', 'interval+count') stay Pro-only.
+const FREE_SCHEDULE_MODES = ['loop', 'interval']
+
 function handleScheduleModeChange(event) {
   if (isLocked.value || isOnTimeline.value) return
   const nextMode = event.target.value;
-  if (!canUseAdvancedScheduling.value && nextMode !== 'interval') {
-    event.target.value = schedule.value.mode ?? 'interval';
+  if (!canUseAdvancedScheduling.value && !FREE_SCHEDULE_MODES.includes(nextMode)) {
+    event.target.value = schedule.value.mode ?? 'loop';
     return;
   }
   commitSchedulePatch({ mode: nextMode });

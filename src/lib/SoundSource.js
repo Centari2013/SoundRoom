@@ -31,8 +31,17 @@ export default class SoundSource {
     this.state.surround = this.state.surround ?? false
     this.state.schedule = reactive(state.schedule ?? {
       id: crypto.randomUUID(),
-      enabled: false,
-      mode: 'interval', // "loop", "interval", "count", or "interval+count"
+      // Canvas sources auto-loop by default — the studio's whole point
+      // is layered ambience that breathes. Sources loaded from older
+      // saved rooms keep whatever enabled value they had, since the
+      // `state.schedule ?? {...}` short-circuit only uses these
+      // defaults when no schedule was provided.
+      enabled: true,
+      // 'loop' mode = continuous repeat with zero gap (the natural
+      // "auto-repeat" feel). Users who want random gaps between plays
+      // can switch to 'interval' from the sidebar dropdown.
+      // Values: "loop", "interval", "count", or "interval+count"
+      mode: 'loop',
 
       // Applies to interval-based scheduling
       gapMin: 5,

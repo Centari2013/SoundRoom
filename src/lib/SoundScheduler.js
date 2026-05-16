@@ -647,7 +647,16 @@ export default class SoundScheduler {
   }
 
   _contextTimeForActiveEnd(sched) {
-    if (!sched.enabled || !Number.isFinite(sched.activeEnd)) return Infinity
+    if (!sched.enabled) return Infinity
+    // activeEnd is only meaningful for modes whose UI exposes a time
+    // window ('count' and 'interval+count'). For 'loop' / 'interval'
+    // modes we treat activeEnd as infinity so the engine doesn't
+    // silently retire long-running ambient sources at the saved
+    // default (300s). Without this guard, an interval-mode source
+    // would stop after five minutes even though its UI never showed
+    // the activeEnd field.
+    if (!['count', 'interval+count'].includes(sched.mode)) return Infinity
+    if (!Number.isFinite(sched.activeEnd)) return Infinity
     return (this.roomStartTime ?? this._now()) + Math.max(0, sched.activeEnd)
   }
 

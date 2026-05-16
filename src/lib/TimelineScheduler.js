@@ -329,9 +329,6 @@ export default class TimelineScheduler {
         const offset = Math.max(0, sourceOffset + elapsedBeforeStart)
         const onended = () => {
           this._scheduledEventKeys.delete(eventKey)
-          if (this._scheduledEventKeys.size === 0 && !this.isRunning.value) {
-            this._activeTimelinePlays?.clear?.()
-          }
         }
 
         if (typeof instance.scheduleLoaded !== 'function') {

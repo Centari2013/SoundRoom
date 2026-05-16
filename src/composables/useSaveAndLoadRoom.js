@@ -401,57 +401,64 @@ export function useSaveAndLoadRoom() {
     }
 
     isLoadingRoom.value = true;
-    canvasStore.resetRenderedSoundSourceCount()
-    stopAllAudioForRoomChange()
-    // get room data from supabase
-    const { data, error } = await getRoomDataById(roomId);
-    if (!data) {
-      console.warn("No room data found.");
-      isLoadingRoom.value = false;
-      return false;
-    }
-    if (error) {
-      console.error("Error loading room:", error);
-      isLoadingRoom.value = false;
-      return false;
-    }
-    
-    let roomData = data.room_config;
-    const resolvedRoomId = data?.id ?? (roomId ?? roomData?.room?.id ?? null);
-    roomData.room.id = resolvedRoomId; // Set the room ID from the database
-    roomData.room.name = data.name; // Set the room name from the database
-    const ids = uniqueRoomSoundIds(roomData);
-    const { annotated: dbSounds, lockedIds, missingIds } = await getSoundsFromDB(ids);
-    const accessContext = {
-      userTier: tier.value,
-      userId: user.value?.id,
-      canUpload: canAccess('canUpload')
-    }
-    const hydrated = hydrateRoomAudioMetadata(roomData, dbSounds, accessContext)
-    roomData = hydrated.roomData
-    const finalSources = hydrated.finalSources
-    soundLibrarySources.value = finalSources;
-
-    reportRoomSoundAvailability({ lockedIds, missingIds, removed: hydrated.removed })
-    applyLoadedSourceMetadataToEngine(roomData, finalSources, accessContext)
-    
-    //resetRoomState();
-
-    roomStore.loadRoom(roomData.room);
-    if (!room.value.id) {
-      room.value.id = resolvedRoomId;
-    }
-    listenerStore.loadListener(roomData.listener);
-    applyTimelineAccess(roomData)
-    audioEngineStore.loadAudioEngine(roomData.audioEngine);
-
     try {
+      canvasStore.resetRenderedSoundSourceCount()
+      stopAllAudioForRoomChange()
+      // get room data from supabase
+      const { data, error } = await getRoomDataById(roomId);
+      if (!data) {
+        console.warn("No room data found.");
+        return false;
+      }
+      if (error) {
+        console.error("Error loading room:", error);
+        return false;
+      }
+
+      let roomData = data.room_config;
+      if (!roomData?.room) {
+        console.warn("Loaded room is missing its config payload.");
+        return false;
+      }
+      const resolvedRoomId = data?.id ?? (roomId ?? roomData?.room?.id ?? null);
+      roomData.room.id = resolvedRoomId; // Set the room ID from the database
+      roomData.room.name = data.name; // Set the room name from the database
+      const ids = uniqueRoomSoundIds(roomData);
+      const { annotated: dbSounds, lockedIds, missingIds } = await getSoundsFromDB(ids);
+      const accessContext = {
+        userTier: tier.value,
+        userId: user.value?.id,
+        canUpload: canAccess('canUpload')
+      }
+      const hydrated = hydrateRoomAudioMetadata(roomData, dbSounds, accessContext)
+      roomData = hydrated.roomData
+      const finalSources = hydrated.finalSources
+      soundLibrarySources.value = finalSources;
+
+      reportRoomSoundAvailability({ lockedIds, missingIds, removed: hydrated.removed })
+      applyLoadedSourceMetadataToEngine(roomData, finalSources, accessContext)
+
+      //resetRoomState();
+
+      roomStore.loadRoom(roomData.room);
+      if (!room.value.id) {
+        room.value.id = resolvedRoomId;
+      }
+      listenerStore.loadListener(roomData.listener);
+      applyTimelineAccess(roomData)
+      audioEngineStore.loadAudioEngine(roomData.audioEngine);
+
       await setupLoadedRoomAudio()
+
+      return true;
     } finally {
+      // Single try/finally over the whole body — previously only the
+      // setupLoadedRoomAudio call was guarded, so any throw earlier
+      // (corrupted room_config, missing .room shape, etc.) left
+      // isLoadingRoom stuck at true and the UI in a permanent
+      // "loading" state until refresh.
       isLoadingRoom.value = false;
     }
-
-    return true;
   }
 
   /**
@@ -577,15 +584,27 @@ export function useSaveAndLoadRoom() {
    */
   async function loadRoomLocal() {
     isLoadingRoom.value = true;
-    canvasStore.resetRenderedSoundSourceCount()
-    stopAllAudioForRoomChange()
-    const stored = localStorage.getItem("tempSoundRoomData");
-    if (!stored) {
-      console.warn("No room data found in local storage.");
-      isLoadingRoom.value = false;
-      return false
-    } else {
-      let roomData = JSON.parse(stored);
+    try {
+      canvasStore.resetRenderedSoundSourceCount()
+      stopAllAudioForRoomChange()
+      const stored = localStorage.getItem("tempSoundRoomData");
+      if (!stored) {
+        console.warn("No room data found in local storage.");
+        return false
+      }
+
+      // JSON.parse can throw on malformed/stale localStorage data from
+      // earlier app versions. Catch so we don't surface it as a
+      // generic "page broken" error to the user.
+      let roomData
+      try {
+        roomData = JSON.parse(stored)
+      } catch (err) {
+        console.warn("Local room data is corrupt; discarding.", err)
+        localStorage.removeItem("tempSoundRoomData")
+        return false
+      }
+
       const ids = uniqueRoomSoundIds(roomData);
       const { annotated: dbSounds, lockedIds, missingIds } = await getSoundsFromDB(ids);
       const accessContext = {
@@ -609,11 +628,12 @@ export function useSaveAndLoadRoom() {
       audioEngine.value = AudioEngine.fromJSON(roomData.audioEngine);
 
       await setupLoadedRoomAudio()
-    }
-    localStorage.removeItem("tempSoundRoomData");
-    isLoadingRoom.value = false;
 
-    return true
+      localStorage.removeItem("tempSoundRoomData");
+      return true
+    } finally {
+      isLoadingRoom.value = false;
+    }
   }
   return {
     saveRoom,

@@ -1,5 +1,5 @@
 import { createApp } from 'vue'
-import AdminIngest from './AdminIngest.vue'
+import AppShell from './AppShell.vue'
 import './style.css'
 
-createApp(AdminIngest).mount('#app')
+createApp(AppShell).mount('#app')

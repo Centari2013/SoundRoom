@@ -5,8 +5,11 @@ export const BUCKET_OPTIONS = [
     description: 'Rain, water, fire, birds, wind, forests, storms, insects, foliage, rivers.'
   },
   {
-    value: 'atmosphere',
-    label: 'Atmosphere',
+    // Matches the `atmospheric` category id in SoundLibrary.vue. The
+    // earlier `atmosphere` spelling caused new uploads to land in a
+    // bucket the customer-facing library never rendered.
+    value: 'atmospheric',
+    label: 'Atmospheric',
     description: 'Ambience, drones, tonal beds, soft textures, abstract pads, whitespace, reverb beds.'
   },
   {

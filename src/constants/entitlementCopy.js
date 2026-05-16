@@ -13,10 +13,6 @@ export const ENTITLEMENT_COPY = {
     featureName: 'Timed Loops',
     action: 'use timed loops to automate transitions'
   },
-  fullPresets: {
-    featureName: 'Preset Library',
-    action: 'unlock every preset'
-  },
   curatedPacks: {
     featureName: 'Curated Packs',
     action: 'access our curated sound packs'

@@ -1,5 +1,30 @@
 <template>
-  <section class="rounded-2xl border border-border-subtle bg-[color-mix(in_srgb,var(--color-bg-surface)_90%,transparent)] p-6 shadow-sm space-y-6">
+  <!-- Theme switching is a Pro-only feature. Free / Basic users see a
+       compact upgrade card in place of the full picker. -->
+  <section
+    v-if="!canUseThemes"
+    class="rounded-2xl border border-border-subtle bg-[color-mix(in_srgb,var(--color-bg-surface)_90%,transparent)] p-6 shadow-sm space-y-3"
+  >
+    <header class="space-y-2">
+      <div class="flex items-center gap-2">
+        <h2 class="text-xl font-semibold">Appearance</h2>
+        <span class="text-[10px] uppercase tracking-wide font-semibold rounded px-2 py-0.5 bg-[color-mix(in_srgb,var(--color-accent)_20%,transparent)] text-[var(--color-accent-soft)]">
+          Pro
+        </span>
+      </div>
+      <p class="text-sm text-[var(--color-text-muted)]">
+        Custom themes and palette picking are a Pro feature.
+      </p>
+    </header>
+    <RouterLink :to="'/upgrade'">
+      <BaseButton type="button">Upgrade to unlock themes</BaseButton>
+    </RouterLink>
+  </section>
+
+  <section
+    v-else
+    class="rounded-2xl border border-border-subtle bg-[color-mix(in_srgb,var(--color-bg-surface)_90%,transparent)] p-6 shadow-sm space-y-6"
+  >
     <header class="space-y-2">
       <h2 class="text-xl font-semibold">Appearance</h2>
       <p class="text-sm text-[var(--color-text-muted)]">Pick a theme and preview its palette.</p>
@@ -112,11 +137,18 @@ import { previewThemeBase } from '@/utils/theme'
 import { fetchAllThemes, fetchUserTheme, saveUserTheme } from '@/utils/themeApi'
 import { compareTiers, formatTierLabel } from '@/utils/tierUtils'
 import { useAuth } from '@/composables/useAuth'
+import { useEntitlements } from '@/composables/useEntitlements'
 import { useThemeStore } from '@/stores/useThemeStore'
 import LockIcon from '@/assets/icons/lock.svg'
 
 const themeStore = useThemeStore()
 const { tier, isAuthenticated, user } = useAuth()
+const { canAccess } = useEntitlements()
+
+// Top-level gate. Non-Pro tiers see an upgrade card instead of the
+// picker. Per-theme required_plan logic remains in place as a finer
+// sub-gate (relevant if you ever add intermediate-tier themes later).
+const canUseThemes = computed(() => canAccess('themes'))
 
 const BUILTIN_THEMES = [
   {
