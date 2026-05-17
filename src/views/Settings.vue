@@ -324,7 +324,7 @@ async function syncCheckoutIfNeeded() {
 
   try {
     if (sessionId) {
-      const response = await fetch('/api/sync-checkout-session', {
+      const response = await fetch('/api/billing?action=sync-checkout', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

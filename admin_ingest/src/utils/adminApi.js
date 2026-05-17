@@ -34,8 +34,8 @@ async function readError(res) {
  * then the sound_files row.
  */
 export async function deleteSound({ id, confirmName }) {
-  const params = new URLSearchParams({ id, confirm: confirmName })
-  const res = await fetch(buildApiUrl(`/api/admin-delete-sound?${params}`), {
+  const params = new URLSearchParams({ action: 'delete-sound', id, confirm: confirmName })
+  const res = await fetch(buildApiUrl(`/api/admin?${params}`), {
     method: 'DELETE',
     headers: await withAuthHeaders(),
   })
@@ -48,7 +48,7 @@ export async function deleteSound({ id, confirmName }) {
  * fields; anything not allowed is silently dropped.
  */
 export async function updateSound({ id, patch }) {
-  const res = await fetch(buildApiUrl('/api/admin-update-sound'), {
+  const res = await fetch(buildApiUrl('/api/admin?action=update-sound'), {
     method: 'PATCH',
     headers: await withAuthHeaders({ 'Content-Type': 'application/json' }),
     body: JSON.stringify({ id, patch }),
@@ -63,8 +63,8 @@ export async function updateSound({ id, patch }) {
  * the previews bucket.
  */
 export async function listR2Keys({ bucket = 'main' } = {}) {
-  const params = new URLSearchParams({ bucket })
-  const res = await fetch(buildApiUrl(`/api/admin-list-r2-keys?${params}`), {
+  const params = new URLSearchParams({ action: 'list-r2-keys', bucket })
+  const res = await fetch(buildApiUrl(`/api/admin?${params}`), {
     method: 'GET',
     headers: await withAuthHeaders(),
   })
@@ -79,8 +79,13 @@ export async function listR2Keys({ bucket = 'main' } = {}) {
  * key and checks `id`.
  */
 export async function deleteR2Orphan({ key, confirmKey, bucket = 'main' }) {
-  const params = new URLSearchParams({ key, confirm: confirmKey, bucket })
-  const res = await fetch(buildApiUrl(`/api/admin-delete-r2-orphan?${params}`), {
+  const params = new URLSearchParams({
+    action: 'delete-r2-orphan',
+    key,
+    confirm: confirmKey,
+    bucket,
+  })
+  const res = await fetch(buildApiUrl(`/api/admin?${params}`), {
     method: 'DELETE',
     headers: await withAuthHeaders(),
   })

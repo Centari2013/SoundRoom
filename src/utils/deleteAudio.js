@@ -20,8 +20,8 @@ export default async function deleteAudio(bucket, path, base) {
     throw new Error('You must be signed in to delete audio');
   }
 
-  const params = new URLSearchParams({ bucket, path, base });
-  const res = await fetch(`/api/delete-file?${params.toString()}`, {
+  const params = new URLSearchParams({ action: 'delete', bucket, path, base });
+  const res = await fetch(`/api/files?${params.toString()}`, {
     method: 'DELETE',
     headers: {
       Authorization: `Bearer ${token}`,

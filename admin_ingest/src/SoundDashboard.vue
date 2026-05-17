@@ -4,11 +4,12 @@
   Safety properties:
     - Loads sound_files from Supabase using the curator's authenticated
       session. Pure read until the user explicitly clicks Edit/Delete.
-    - Edit changes go through /api/admin-update-sound which whitelists
-      fields server-side; nothing here can mutate path/id/size/etc.
+    - Edit changes go through /api/admin?action=update-sound which
+      whitelists fields server-side; nothing here can mutate
+      path/id/size/etc.
     - Delete uses the type-to-confirm modal and the
-      /api/admin-delete-sound endpoint which double-checks the typed
-      name on the server before deleting from R2 + Supabase.
+      /api/admin?action=delete-sound endpoint which double-checks the
+      typed name on the server before deleting from R2 + Supabase.
     - No bulk operations. No "delete all" buttons. Every destructive
       action is per-row, confirmed individually.
 -->

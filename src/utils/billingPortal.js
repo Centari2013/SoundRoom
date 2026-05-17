@@ -18,7 +18,7 @@ export async function createBillingPortalSession(returnUrl) {
     throw new Error('You must be signed in to manage your subscription.')
   }
 
-  const response = await fetch('/api/create-portal-session', {
+  const response = await fetch('/api/billing?action=create-portal', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

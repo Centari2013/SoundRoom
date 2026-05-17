@@ -19,7 +19,7 @@ function createObjectKey(soundId, filename) {
  * but always targeting the flat <soundId>.<ext> naming convention.
  */
 async function getSignedUploadUrl({ objectKey, userId }) {
-  const params = new URLSearchParams({ key: objectKey })
+  const params = new URLSearchParams({ action: 'upload-url', key: objectKey })
 
   if (userId) params.set('userId', userId)
 
@@ -38,7 +38,7 @@ async function getSignedUploadUrl({ objectKey, userId }) {
     throw new Error('Missing Supabase access token. Please sign in again.')
   }
 
-  const endpoint = buildApiUrl(`/api/get-upload-url?${params.toString()}`)
+  const endpoint = buildApiUrl(`/api/files?${params.toString()}`)
 
   const response = await fetch(endpoint, {
     method: 'GET',
@@ -66,7 +66,7 @@ async function getSignedUploadUrl({ objectKey, userId }) {
   } catch (_err) {
     const snippet = rawBody?.slice(0, 240)
     throw new Error(
-      `Unexpected response from /api/get-upload-url (status ${response.status}): ${snippet || 'Empty body'}`
+      `Unexpected response from /api/files?action=upload-url (status ${response.status}): ${snippet || 'Empty body'}`
     )
   }
 

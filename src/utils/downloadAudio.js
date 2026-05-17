@@ -24,7 +24,7 @@ export function buildStorageKey(_base, _bucket, path) {
 export async function fetchAudioBlob(key) {
   const token = await getAccessToken()
 
-  const res = await fetch(`/api/get-signed-url?key=${encodeURIComponent(key)}`, {
+  const res = await fetch(`/api/files?action=signed-url&key=${encodeURIComponent(key)}`, {
     headers: token
       ? {
           Authorization: `Bearer ${token}`,

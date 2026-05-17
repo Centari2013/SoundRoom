@@ -40,7 +40,7 @@ export async function redirectToCheckout(options) {
     throw new Error('Stripe failed to load')
   }
 
-  const response = await fetch('/api/create-checkout-session', {
+  const response = await fetch('/api/billing?action=create-checkout', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

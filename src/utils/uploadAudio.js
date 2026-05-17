@@ -33,13 +33,14 @@ async function getSignedUploadUrl(key, userId, fileSize) {
   const params = new URLSearchParams({ key });
   if (userId) params.set('userId', userId);
   if (fileSize > 0) params.set('fileSize', String(fileSize));
+  params.set('action', 'upload-url');
   const accessToken = await getAccessToken();
 
   if (!accessToken) {
     throw new Error('You must be signed in to upload audio.');
   }
 
-  const res = await fetch(buildApiUrl(`/api/get-upload-url?${params.toString()}`), {
+  const res = await fetch(buildApiUrl(`/api/files?${params.toString()}`), {
     headers: {
       Authorization: `Bearer ${accessToken}`,
     },
