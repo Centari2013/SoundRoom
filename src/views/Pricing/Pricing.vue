@@ -72,7 +72,7 @@ const FEATURE_DEFINITIONS = [
     key: 'multi-room-saving',
     label: 'Multi-Room Saving',
     tiers: {
-      free: { status: 'unavailable', detail: 'Save 1 room' },
+      free: { status: 'limited', detail: 'Save up to 2 rooms' },
       basic: { status: 'included', detail: 'Save up to 10 rooms' },
       pro: { status: 'included', detail: 'Unlimited saved rooms' }
     }
@@ -92,9 +92,9 @@ const FEATURE_DEFINITIONS = [
     key: 'timed-loops',
     label: 'Simple Scheduling',
     tiers: {
-      free: { status: 'unavailable', detail: 'Basic unlocks simple scheduling' },
-      basic: { status: 'included', detail: 'Per-source interval timing' },
-      pro: { status: 'included', detail: 'Per-source interval timing' }
+      free: { status: 'included', detail: 'Per-source loop and interval timing' },
+      basic: { status: 'included', detail: 'Per-source loop and interval timing' },
+      pro: { status: 'included', detail: 'Per-source loop and interval timing' }
     }
   },
   {
@@ -128,8 +128,8 @@ const FEATURE_DEFINITIONS = [
     key: 'schedule-playback',
     label: 'Advanced Scheduling',
     tiers: {
-      free: { status: 'unavailable', detail: 'Pro unlocks play counts' },
-      basic: { status: 'unavailable', detail: 'Pro unlocks play counts' },
+      free: { status: 'unavailable', detail: 'Basic unlocks play counts' },
+      basic: { status: 'included', detail: 'Play counts and interval + count modes' },
       pro: { status: 'included', detail: 'Play counts and interval + count modes' }
     }
   },

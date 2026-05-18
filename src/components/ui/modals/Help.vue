@@ -29,9 +29,9 @@
           <div class="rounded-xl border border-border-subtle bg-surface-base/70 p-5 space-y-3">
             <h2 class="text-lg font-semibold">Plan Highlights</h2>
             <ul class="list-disc list-inside space-y-2 text-text-secondary">
-              <li><strong>Free:</strong> 2 saved rooms, starter sounds, no uploads, no scheduling or timeline.</li>
-              <li><strong>Basic:</strong> Up to 10 saved rooms, simple per-source scheduling, more sounds.</li>
-              <li><strong>Pro:</strong> Unlimited rooms, uploads, UI themes, advanced scheduling, and the timeline sequencer.</li>
+              <li><strong>Free:</strong> 2 saved rooms, starter sounds, basic scheduling (loop and interval modes). No uploads, play counts, or timeline.</li>
+              <li><strong>Basic:</strong> Up to 10 saved rooms, curated sound packs, full scheduling including play counts and interval+count modes. No uploads or timeline.</li>
+              <li><strong>Pro:</strong> Unlimited rooms, uploads (up to 10GB), all packs, UI themes, and the timeline sequencer.</li>
             </ul>
             
           </div>
@@ -263,10 +263,10 @@ const featureSections = [
   {
     title: 'Scheduling & Loops',
     caption: 'Basic/Pro',
-    description: 'Simple scheduling is controlled per-source in the sidebar and uses randomized gaps between plays.',
+    description: 'Scheduling is controlled per-source in the sidebar and uses randomized gaps between plays.',
     points: [
-      'Toggle Enable Scheduling to start interval-based playback; Basic unlocks simple scheduling.',
-      'Pro adds play counts plus combined interval + count modes for more predictable bursts.',
+      'Toggle Enable Scheduling to start interval-based playback — available on all plans.',
+      'Basic and Pro unlock play counts and interval + count modes for more predictable bursts.',
       'Scheduling pauses when you pause the room; resuming honors remaining gap time.',
       'Use gap min/max to keep loops organic. Add play counts for finite stingers that stop themselves.',
     ]
@@ -323,7 +323,7 @@ const featureSections = [
     caption: 'MVP notes',
     points: [
       'Maximum of 30 placed sources and 20 unique library sounds per session.',
-      'Uploads, the timeline sequencer, and advanced scheduling are Pro features; Basic has simple scheduling but lacks uploads, timeline clips, and advanced counts.',
+      'Uploads and the timeline sequencer are Pro-only. Basic and Pro both get full scheduling including play counts; Free gets loop and interval modes only.',
       'Mobile is currently redirected to a “Coming Soon” view; best experienced on desktop.',
     ]
   },
