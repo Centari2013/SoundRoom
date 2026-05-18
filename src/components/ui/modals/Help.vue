@@ -22,18 +22,18 @@
             <ul class="list-disc list-inside space-y-2 text-text-secondary">
               <li>Sign in to unlock saving, plan-specific packs, uploads (Pro), and RoomManager access.</li>
               <li>Hit <strong>+ Add Source</strong> → pick a category → tap the preview ring to audition → <strong>Load</strong> to send tiles to the source tray.</li>
-              <li>Drag a tray tile onto the grid to place it. Rooms support up to <strong>30</strong> active nodes and <strong>20</strong> unique library sounds at once.</li>
-              <li>Move the listener with <strong>WASD/Arrows</strong>, rotate with <strong>Q/E</strong>, and adjust cones/volumes from the right sidebar.</li>
+              <li>Drag a tray tile onto the grid to place it. Rooms support as many active nodes and as many unique library sounds as your setup can handle.</li>
+              <li>Move the listener with <strong>WASD/Arrows</strong>, rotate with <strong>Q/E</strong>, and adjust cones/volumes from the right sidebar. Or you can just use your mouse to drag.</li>
             </ul>
           </div>
           <div class="rounded-xl border border-border-subtle bg-surface-base/70 p-5 space-y-3">
             <h2 class="text-lg font-semibold">Plan Highlights</h2>
             <ul class="list-disc list-inside space-y-2 text-text-secondary">
-              <li><strong>Free:</strong> 1 saved room, curated starter packs, no uploads, no scheduling or timeline.</li>
-              <li><strong>Basic:</strong> Up to 10 saved rooms, simple per-source scheduling, full preset access, curated packs.</li>
-              <li><strong>Pro:</strong> Unlimited rooms, uploads, all packs/themes, advanced scheduling, and the timeline sequencer.</li>
+              <li><strong>Free:</strong> 2 saved rooms, starter sounds, no uploads, no scheduling or timeline.</li>
+              <li><strong>Basic:</strong> Up to 10 saved rooms, simple per-source scheduling, more sounds.</li>
+              <li><strong>Pro:</strong> Unlimited rooms, uploads, UI themes, advanced scheduling, and the timeline sequencer.</li>
             </ul>
-            <p class="text-xs text-text-muted">Plan badges on sounds enforce access; selecting a locked sound triggers the upgrade prompt.</p>
+            
           </div>
         </section>
 
@@ -258,17 +258,16 @@ const featureSections = [
       'Tap the preview ring on any tile to audition before loading.',
       'Locked tiles show which plan is required. Attempting to load prompts an upgrade modal unless your tier already matches.',
       'Your Sounds lists uploads you own. Deleting an upload removes it from RoomManager scenes that reference it.',
-      'Pro supports uploads; Basic/Free can still use shared packs and curated presets.',
     ]
   },
   {
     title: 'Canvas & Placement',
-    caption: '30 nodes, 20 unique sources',
+    caption: 'Controlling sources',
     description: 'Drag tray items onto the grid to create directional sources. Each node shows a cone for its facing direction.',
     points: [
       'Select a node to reveal volume, cone angles, coordinates, and schedule controls in the right sidebar.',
       'Use Z/C to rotate a selected source; right-click for context nudge actions.',
-      'The listener (white avatar) moves with WASD/arrow keys and rotates with Q/E. Use Tab to cycle selection across sources and listener.',
+      'The listener moves with WASD/arrow keys and rotates with Q/E. Use Tab to cycle selection across sources and listener.',
       'Delete removes the selected source. Undo/redo (U/R) reverses moves, rotations, and deletions.',
     ]
   },
