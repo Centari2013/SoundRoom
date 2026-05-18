@@ -39,7 +39,7 @@
 
         <section class="space-y-4">
           <h2 class="text-lg font-semibold">Feature Guides</h2>
-          <div class="grid gap-3 lg:grid-cols-2">
+          <div class="grid gap-3 lg:grid-cols-2 items-start">
             <details v-for="section in featureSections" :key="section.title" class="group rounded-xl border border-border-subtle bg-surface-base/70 px-5 py-4">
               <summary class="flex items-center justify-between cursor-pointer text-sm font-semibold text-text-primary">{{ section.title }}<span class="text-xs text-text-muted">{{ section.caption }}</span></summary>
               <div class="mt-3 space-y-2 text-text-secondary">
@@ -53,44 +53,33 @@
         </section>
 
         <section class="space-y-4">
-          <h2 class="text-lg font-semibold">FAQ & Troubleshooting</h2>
-          <div class="grid gap-4 lg:grid-cols-2">
-            <article
-              v-for="(group, groupIndex) in faqGroups"
-              :key="group.title"
-              class="rounded-xl border border-border-subtle bg-surface-base/70 p-4 space-y-2"
-            >
-              <header class="flex items-center justify-between">
-                <h3 class="text-sm font-semibold">{{ group.title }}</h3>
-                <span class="text-xs text-text-muted">{{ group.hint }}</span>
-              </header>
-              <ul class="divide-y divide-border-subtle/70">
-                <li
-                  v-for="(faq, i) in group.items"
-                  :key="i"
-                  class="py-2"
+          <h2 class="text-lg font-semibold">FAQ</h2>
+          <div class="rounded-xl border border-border-subtle bg-surface-base/70 overflow-hidden divide-y divide-border-subtle/50">
+            <template v-for="group in faqGroups" :key="group.title">
+              <div class="px-5 py-2.5 text-xs font-semibold text-text-muted uppercase tracking-wide bg-surface-base/40">
+                {{ group.title }}
+              </div>
+              <div
+                v-for="(faq, i) in group.items"
+                :key="i"
+                class="px-5 py-3 border-t border-border-subtle/50"
+              >
+                <BaseButton
+                  @click="faq.open = !faq.open"
+                  class="w-full text-left font-medium text-[var(--color-text-primary)] focus:outline-none transition-colors flex items-center justify-between gap-4"
                 >
-                  <BaseButton
-                    @click="faq.open = !faq.open"
-                    class="w-full text-left font-medium text-[var(--color-text-primary)] focus:outline-none transition-colors"
-                  >
-                    {{ faq.question }}
-                  </BaseButton>
-                  <p
-                    v-if="faq.open"
-                    class="mt-2 text-xs text-[var(--color-text-muted)] leading-snug"
-                  >
-                    <span
-                      v-if="faq.isHtml"
-                      v-html="faq.answer"
-                    />
-                    <span v-else>
-                      {{ faq.answer }}
-                    </span>
-                  </p>
-                </li>
-              </ul>
-            </article>
+                  <span>{{ faq.question }}</span>
+                  <span class="text-text-muted text-base leading-none flex-shrink-0">{{ faq.open ? '−' : '+' }}</span>
+                </BaseButton>
+                <p
+                  v-if="faq.open"
+                  class="mt-2 text-xs text-[var(--color-text-muted)] leading-snug"
+                >
+                  <span v-if="faq.isHtml" v-html="faq.answer" />
+                  <span v-else>{{ faq.answer }}</span>
+                </p>
+              </div>
+            </template>
           </div>
         </section>
 
@@ -309,7 +298,7 @@ const featureSections = [
     points: [
       'Save Room (footer) becomes active after any change. Unsaved scenes prompt before loading another room.',
       'RoomManager lets you load, rename, or delete saved rooms with pagination and thumbnails.',
-      'Free stores 1 room, Basic up to 10, Pro unlimited. Duplicating uses unique naming to prevent collisions.',
+      'Free stores 2 rooms, Basic up to 10, Pro unlimited. Duplicating uses unique naming to prevent collisions.',
     ]
   },
   {
@@ -342,175 +331,76 @@ const featureSections = [
 
 const faqGroups = ref([
   {
-    title: 'Onboarding & Accounts',
-    hint: 'Access + login',
+    title: 'Getting Started & Accounts',
     items: [
       {
         question: 'Do I need an account to build?',
-        answer: 'You can audition and place sounds on Free, but saving rooms, RoomManager, scheduling, and uploads all require signing in.',
+        answer: 'You can audition and place sounds without signing in, but saving rooms, RoomManager, scheduling, and uploads all require an account.',
         open: false
       },
       {
         question: 'Why am I seeing the mobile splash?',
-        answer: 'If you open SoundRoom on a small viewport or mobile browser we show a “Mobile Coming Soon” page. Resize or switch to desktop for the full canvas.',
+        answer: 'SoundRoom is desktop-only for now. If you\'re on a small viewport or mobile browser, resize or switch to desktop to access the full canvas.',
         open: false
       },
       {
         question: 'How do I reset my password?',
-        answer: 'Use the Forgot Password link on the sign-in page. An email with reset instructions will be sent to your account email.',
+        answer: 'Use the Forgot Password link on the sign-in page. An email with reset instructions will be sent to your account address.',
         open: false
       },
       {
-        question: 'How do I delete my account or request data deletion?',
-        answer: 'You can request account or data deletion by using the contact form and selecting “Account/Data Deletion” as the reason. If you’re logged in, we’ll include your account ID automatically so we can process the request safely.',
+        question: 'How do I delete my account or request data removal?',
+        answer: 'Use the contact form below and select “Account/Data Deletion.” If you\'re signed in, your account ID is included automatically so we can process the request safely.',
         open: false
       }
     ]
   },
   {
-    title: 'Sound Library',
-    hint: 'Packs, previews',
+    title: 'Saving, Rooms & Billing',
     items: [
       {
-        question: 'How do I load a sound onto the canvas?',
-        answer: 'Open + Add Source, pick a category, preview it if you\'d like, then click Load. The tile moves to your source tray so you can drag it into the room.',
-        open: false
-      },
-      {
-        question: 'What happens if I delete an upload?',
-        answer: 'Deleting from Your Sounds removes it from any rooms that reference it.',
-        open: false
-      },
-      {
-        question: 'Why is a tile locked?',
-        answer: 'Tiles show a badge for the required plan. Selecting them opens the upgrade modal unless you are already on Basic or Pro. Free cannot unlock gated packs.',
-        open: false
-      }
-    ]
-  },
-  {
-    title: 'Saving & Rooms',
-    hint: 'RoomManager',
-    items: [
-      {
-        question: 'Why is Save disabled?',
-        answer: 'The Save Room button lights up only when the scene differs from your last save. Move a node, tweak a cone, or change volume to enable it.',
+        question: 'Why is Save Room disabled?',
+        answer: 'The button activates only after a change — move a node, adjust a cone, or tweak volume to enable it.',
         open: false
       },
       {
         question: 'Will I lose changes when switching rooms?',
-        answer: 'If there are unsaved edits, you will be prompted before loading another room. Save first to avoid losing the current layout.',
-        open: false
-      }
-    ]
-  },
-  {
-    title: 'Scheduling & Playback',
-    hint: 'Intervals + counts',
-    items: [
-      {
-        question: 'How do timed loops work?',
-        answer: 'Select a source, open the sidebar, and toggle Enable Scheduling. Set min/max gaps to randomize the wait between replays. Basic enables this simple scheduling control.',
+        answer: 'If there are unsaved edits you\'ll be prompted before loading another room. Save first to keep the current layout.',
         open: false
       },
-      {
-        question: 'What is available on Pro scheduling?',
-        answer: 'Pro adds play counts and combined interval+count modes so you can fire a source a set number of times with natural spacing. Pro also unlocks the timeline sequencer for arranging clips against a playhead.',
-        open: false
-      },
-      {
-        question: 'How does the timeline sequencer work?',
-        answer: 'The timeline drawer lets Pro users place sources as clips, seek through the room, loop the timeline, and stretch clips into repeated regions. Sources on the timeline are controlled by the timeline, so their simple scheduling toggle is disabled until they are removed from the timeline.',
-        open: false
-      },
-      {
-        question: 'What happens to timeline data if I downgrade?',
-        answer: 'Timeline duration, loop settings, and clips stay saved in the room data, but the timeline is gated and inactive on Free or Basic. If you return to Pro and reload the room, the saved timeline becomes active again.',
-        open: false
-      },
-      {
-        question: 'My scheduled source stopped after pausing.',
-        answer: 'Pausing the room halts active playback and timers. Resume and the scheduler will honor any remaining gap time before the next loop. But more features are coming!',
-        open: false
-      }
-    ]
-  },
-  {
-    title: 'Controls & Shortcuts',
-    hint: 'Power users',
-    items: [
-      {
-        question: 'What are the core shortcuts?',
-        answer: 'WASD/Arrows move the listener, Q/E rotate, Z/C rotate the selected source, Tab cycles selection, Delete/Backspace removes, and U/R undo-redo.',
-        open: false
-      },
-      {
-        question: 'How do I reset the mix quickly?',
-        answer: 'Use the toolbar master play/pause to stop everything, then adjust the Master gain slider before resuming.',
-        open: false
-      },
-      {
-        question: 'Can I right-click sources?',
-        answer: 'Yes—context actions let you nudge position without dragging, useful for fine alignment on crowded canvases.',
-        open: false
-      }
-    ]
-  },
-  {
-    title: 'Billing & Plans',
-    hint: 'Stripe-backed',
-    items: [
       {
         question: 'How do I change or cancel my plan?',
-        answer: 'Open Manage Plan. Upgrades redirect to Stripe Checkout; downgrades call the manage-plan endpoint to move you to Free.',
+        answer: 'Open Manage Plan from your account menu. Upgrades redirect to Stripe Checkout; downgrades move you to Free immediately.',
         open: false
       },
       {
-        question: 'Where can I download invoices?',
-        answer: 'If you have billing history, use the Stripe billing portal link in Manage Plan. Otherwise, email support@soundroom.app with your account email.',
-        open: false,
-        isHtml: true
+        question: 'Where can I find my invoices?',
+        answer: 'If you have billing history, use the Stripe billing portal link in Manage Plan. Otherwise, email support@soundroom.live with your account email.',
+        open: false
       },
       {
-        question: 'Why did I see an upgrade dialog in the library?',
-        answer: 'Tap View Plan FAQ or Manage Plan to upgrade and unlock the pack.',
+        question: 'Why did I see an upgrade prompt in the library?',
+        answer: 'Tiles marked with a plan badge are gated. Selecting them opens the upgrade modal. Use Manage Plan to unlock the relevant tier.',
         open: false
       }
     ]
   },
   {
-    title: 'Troubleshooting Audio',
-    hint: 'No sound?',
+    title: 'Tips & Controls',
     items: [
       {
-        question: 'I cannot hear previews.',
-        answer: 'Check your system output and make sure another preview is not already playing. Only one preview plays at a time; tap the ring again to stop.',
+        question: 'Can I right-click sources on the canvas?',
+        answer: 'Yes — context actions let you nudge a source\'s position without dragging, which is useful for fine alignment on crowded canvases.',
         open: false
       },
-      {
-        question: 'Sources are silent after loading a room.',
-        answer: 'Verify the Master slider is above zero and that the listener is within range and facing the cones. If an uploaded file was deleted, replace it from Your Sounds.',
-        open: false
-      },
-      {
-        question: 'Undo/redo is not working.',
-        answer: 'Undo (U) and Redo (R) work on moves, rotations, deletes, and adds. Some settings like master gain are global and do not record an action.',
-        open: false
-      }
-    ]
-  },
-  {
-    title: 'Power Users & Tips',
-    hint: 'Advanced moves',
-    items: [
       {
         question: 'How do I keep mixes from feeling repetitive?',
-        answer: 'Use scheduling gaps with wide min/max ranges, rotate sources periodically, and layer complementary packs (e.g., Atmospheric + Human).',
+        answer: 'Use wide min/max scheduling gaps, rotate sources occasionally, and layer complementary packs — Atmospheric + Human or Nature + Work & Focus pair well.',
         open: false
       },
       {
-        question: 'Any experimental areas?',
-        answer: 'Uploads, pack gating, and scheduling are stable; more advanced search, occlusion, and collaboration are on the roadmap. Expect iterative updates.',
+        question: 'What\'s on the roadmap?',
+        answer: 'Uploads, pack gating, and scheduling are stable. Advanced search, occlusion modeling, and collaboration features are planned. Expect iterative updates.',
         open: false
       }
     ]
