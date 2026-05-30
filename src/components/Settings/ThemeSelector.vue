@@ -1,33 +1,12 @@
 <template>
-  <!-- Theme switching is a Pro-only feature. Free / Basic users see a
-       compact upgrade card in place of the full picker. -->
   <section
-    v-if="!canUseThemes"
-    class="rounded-2xl border border-border-subtle bg-[color-mix(in_srgb,var(--color-bg-surface)_90%,transparent)] p-6 shadow-sm space-y-3"
-  >
-    <header class="space-y-2">
-      <div class="flex items-center gap-2">
-        <h2 class="text-xl font-semibold">Appearance</h2>
-        <span class="text-[10px] uppercase tracking-wide font-semibold rounded px-2 py-0.5 bg-[color-mix(in_srgb,var(--color-accent)_20%,transparent)] text-[var(--color-accent-soft)]">
-          Pro
-        </span>
-      </div>
-      <p class="text-sm text-[var(--color-text-muted)]">
-        Custom themes and palette picking are a Pro feature.
-      </p>
-    </header>
-    <RouterLink :to="'/upgrade'">
-      <BaseButton type="button">Upgrade to unlock themes</BaseButton>
-    </RouterLink>
-  </section>
-
-  <section
-    v-else
     class="rounded-2xl border border-border-subtle bg-[color-mix(in_srgb,var(--color-bg-surface)_90%,transparent)] p-6 shadow-sm space-y-6"
   >
     <header class="space-y-2">
       <h2 class="text-xl font-semibold">Appearance</h2>
-      <p class="text-sm text-[var(--color-text-muted)]">Pick a theme and preview its palette.</p>
+      <p class="text-sm text-[var(--color-text-muted)]">
+        {{ canUseThemes ? 'Pick a theme and preview its palette.' : 'Choose between dark and light modes.' }}
+      </p>
     </header>
     <div class="max-h-[28rem] overflow-y-auto p-4">
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -103,7 +82,21 @@
         </button>
       </div>
     </div>
-  
+
+    <!-- Compact upgrade nudge for Free/Basic -->
+    <div
+      v-if="!canUseThemes"
+      class="flex items-center justify-between gap-4 rounded-xl border border-[var(--color-border-subtle)] bg-[color-mix(in_srgb,var(--color-bg-elevated)_70%,transparent)] px-4 py-3"
+    >
+      <p class="text-sm text-[var(--color-text-muted)]">
+        Unlock premium palettes with
+        <span class="text-[10px] uppercase tracking-wide font-semibold rounded px-1.5 py-0.5 bg-[color-mix(in_srgb,var(--color-accent)_20%,transparent)] text-[var(--color-accent-soft)] ml-0.5">Pro</span>
+      </p>
+      <RouterLink :to="'/upgrade'" class="text-sm font-medium text-[var(--color-accent-soft)] hover:text-[var(--color-accent)] transition">
+        Upgrade
+      </RouterLink>
+    </div>
+
     <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
       <p class="text-sm text-[var(--color-text-muted)]">{{ selectionStatus }}</p>
       <div class="flex items-center gap-3">
@@ -363,7 +356,7 @@ const upsertTheme = (theme) => {
 }
 
 const loadThemes = async () => {
-  if (!isAuthenticated.value) {
+  if (!isAuthenticated.value || !canUseThemes.value) {
     availableThemes.value = [...BUILTIN_THEMES]
     hydratePreviews()
     return
