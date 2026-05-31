@@ -42,6 +42,13 @@
               or view plans →
             </RouterLink>
           </div>
+
+          <!-- Platform note -->
+          <p class="text-xs text-[var(--color-text-muted)] flex items-center gap-2 pl-1">
+            <span title="Desktop">🖥️ Best on desktop</span>
+            <span class="opacity-40">·</span>
+            <span title="Mobile">📱 Also available on mobile</span>
+          </p>
         </div>
 
         <!-- Right: browser mockup -->

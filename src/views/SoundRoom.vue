@@ -636,6 +636,10 @@ onMounted(async() => {
 
   if (onboardingCompleted) return;
 
+  // Tour is desktop-only — the instructions reference mouse/drag interactions
+  // that don't map to the mobile HUD experience.
+  if (isPhone.value) return;
+
   if (route.path == '/app') {
     startTour.value = true
     return
