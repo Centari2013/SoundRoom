@@ -13,7 +13,7 @@
       <!-- HERO -->
       <section class="grid gap-12 lg:grid-cols-2 items-center">
         <!-- Left -->
-        <div class="space-y-7 max-w-xl">
+        <div class="space-y-7 w-full ">
           <p class="text-sm uppercase tracking-[0.25em] text-[var(--color-accent-soft)]">
             Immersive sound design
           </p>
@@ -45,7 +45,7 @@
         </div>
 
         <!-- Right: browser mockup -->
-        <div class="relative">
+        <div class="">
           <div class="absolute inset-0 blur-3xl bg-[rgba(88,101,242,0.2)] -z-10 scale-90"></div>
           <div
             class="relative rounded-2xl border border-[var(--color-border-strong)]

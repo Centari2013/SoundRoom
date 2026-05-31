@@ -14,6 +14,7 @@
       :librarySource="s"
       @contextmenu="(e) => openContextMenu(e, s)"
       @dragstart="(e) => { if (!s.locked) handleDragStart(e, s) }"
+      @click="() => { if (handleTap && !s.locked) handleTap(s) }"
     />
   </ul>
 
@@ -42,6 +43,7 @@ import { useRouter } from 'vue-router'
 const props = defineProps({
   MAX_SOURCES: Number,
   handleDragStart: Function,
+  handleTap: { type: Function, default: null },
 })
 
 const router = useRouter()

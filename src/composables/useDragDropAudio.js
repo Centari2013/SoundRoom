@@ -1,8 +1,9 @@
 import { reactive } from "vue"
 import { useActionManagerStore } from "@/stores/useActionManagerStore";
 import { useCanvasStore } from "@/stores/useCanvasStore";
+import { useRoomStore } from "@/stores/useRoomStore";
 import { registerSoundRoomActions } from "@/composables/useSoundRoomActions";
-import { storeToRefs } from "pinia";  
+import { storeToRefs } from "pinia";
 import { buildStorageKey } from "@/utils/downloadAudio";
 
 // useDragDropAudio.js
@@ -15,6 +16,7 @@ import { buildStorageKey } from "@/utils/downloadAudio";
 export function useDragDropAudio({ draggedSource }) {
   const actionStore = useActionManagerStore()
   const { actionManager } = storeToRefs(actionStore)
+  const { room } = storeToRefs(useRoomStore())
 
   // Ensure the SoundRoom action set is registered on the active ActionManager instance.
   registerSoundRoomActions()
@@ -72,5 +74,43 @@ export function useDragDropAudio({ draggedSource }) {
   }
   
 
-  return { handleDragStart, handleDrop }
+  /**
+   * Mobile tap-to-place: adds a source at the canvas center.
+   * Used when HTML5 drag-and-drop is unavailable (iOS Safari).
+   *
+   * @param {Object} source - the library source to place
+   */
+  function handleTap(source) {
+    if (!source || source.locked) return
+
+    const base = source?.base ?? source?.plan_tier ?? 'users'
+    const storageKey = source?.bucket && source?.path
+      ? buildStorageKey(base, source.bucket, source.path)
+      : null
+
+    const src = {
+      state: reactive({
+        x: room.value.width / 2,
+        y: room.value.height / 2,
+        angle: 0,
+        coneInner: source.coneInner ?? 60,
+        coneOuter: source.coneOuter ?? 180,
+        surround: false,
+      }),
+      audioPath: source.audioPath,
+      name: source.name,
+      libraryId: source.libraryId,
+      bucket: source.bucket,
+      path: source.path,
+      base,
+      plan_tier: source.plan_tier,
+      storageKey,
+      fileId: source.libraryId ?? storageKey ?? source.audioPath ?? null,
+    }
+
+    registerSoundRoomActions()
+    actionManager.value.doAction("add_canvas_sound_source", { src, autoplay: true })
+  }
+
+  return { handleDragStart, handleDrop, handleTap }
 }

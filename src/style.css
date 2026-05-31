@@ -28,6 +28,23 @@
   --color-input: var(--color-input);
 }
 
+/*
+ * Phone detection variants (orientation-independent).
+ * Width-based so they trigger for a phone in BOTH portrait (narrow width) and
+ * landscape (short height), while excluding tablets and desktop windows via the
+ * 932px width guard on the landscape branch. The SoundRoom editor is locked to
+ * landscape on phones, so `phone:` styles are seen mainly in landscape.
+ *   phone:            phone in any orientation
+ *   phone-landscape:  phone held in landscape (short + not too wide)
+ */
+@custom-variant phone {
+  @media (max-width: 500px) { @slot; }
+  @media (max-height: 500px) and (max-width: 932px) { @slot; }
+}
+@custom-variant phone-landscape {
+  @media (max-height: 500px) and (max-width: 932px) { @slot; }
+}
+
 :root {
   font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
   line-height: 1.5;
@@ -141,4 +158,20 @@ input:disabled {
 
 .modal-header {
   @apply top-0 left-0 right-0 z-10 flex justify-between items-center px-6 py-4 bg-[color-mix(in_srgb,var(--color-bg-app)_85%,transparent)] backdrop-blur-md border-b border-[var(--color-border-subtle)];
+}
+
+/* Canvas vignette — used by SoundRoom.vue and PhoneLandscapeHUD.vue */
+.canvas-vignette {
+  --vignette-inner:  rgba(var(--color-text-inverse-rgb), 0.06);
+  --vignette-middle: rgba(var(--color-text-inverse-rgb), 0.04);
+  --vignette-outer:  rgba(var(--color-text-inverse-rgb), 0.08);
+  --vignette-shadow: inset 0 0 70px rgba(var(--color-text-inverse-rgb), 0.12);
+  background: radial-gradient(circle at center, var(--vignette-inner) 0%, var(--vignette-middle) 38%, var(--vignette-outer) 100%);
+  box-shadow: var(--vignette-shadow);
+}
+[data-theme="dark"] .canvas-vignette {
+  --vignette-inner:  rgba(var(--color-text-primary-rgb), 0.1);
+  --vignette-middle: rgba(var(--color-text-primary-rgb), 0.06);
+  --vignette-outer:  rgba(var(--color-text-inverse-rgb), 0.48);
+  --vignette-shadow: inset 0 0 140px rgba(var(--color-text-inverse-rgb), 0.42);
 }

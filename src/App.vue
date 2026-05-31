@@ -1,7 +1,7 @@
 <!-- App.vue -->
 <template>
   <Analytics />
-  <MobileComingSoon v-if="isMobile" />
+  
   <div class="w-screen h-screen max-w-screen max-h-screen min-w-0 overflow-hidden flex flex-col">
     <HeaderBar />
     <div class="flex-1 min-h-0 min-w-0 overflow-hidden flex flex-col">

@@ -6,6 +6,7 @@
     aria-label="SoundRoom 2D audio environment. Use keyboard or mouse to interact with sound nodes."
     class="canvas-grid relative border border-[var(--color-border-subtle)] flex items-center justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)] shadow-[var(--color-shadow-soft)]"
     :class="`w-[${room.width}px] h-[${room.height}px]`"
+    :style="canvasScaleStyle"
     @dragover.prevent
     @drop="handleDrop"
     @keydown="onKeyDown"
@@ -24,6 +25,7 @@
       :config="stageConfig"
       @contextmenu="onStageContextMenu"
       @mousedown="handleStageClick"
+      @touchstart="handleStageClick"
       aria-hidden="true"
     >
       <v-layer ref="mainLayer">
@@ -51,7 +53,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted, nextTick, watch } from 'vue'
+import { ref, computed, onMounted, onUnmounted, nextTick, watch, shallowRef } from 'vue'
 
 import ContextMenu from '@/components/ui/context/ContextMenu.vue'
 import SoundSourceNode from '@/components/SoundRoom/MainCanvasStage/SoundSourceNode.vue'
@@ -99,6 +101,27 @@ const mainLayer = ref(null)
 const coordsVersion = ref(0) // reactive bump trigger
 let stopSourceRenderWatch = null
 
+// Responsive canvas scaling — shrinks the stage to fit its container on small screens
+// without altering the logical room dimensions (audio math stays the same).
+const canvasScale = ref(1)
+let resizeObserver = null
+
+function updateCanvasScale() {
+  const parent = stageDivRef.value?.parentElement
+  if (!parent) return
+  const { width: cw, height: ch } = parent.getBoundingClientRect()
+  const padding = 16
+  const sx = (cw - padding) / room.value.width
+  const sy = (ch - padding) / room.value.height
+  canvasScale.value = Math.min(sx, sy, 1)
+}
+
+const canvasScaleStyle = computed(() =>
+  canvasScale.value < 1
+    ? { transform: `scale(${canvasScale.value})`, transformOrigin: 'center' }
+    : undefined
+)
+
 onMounted(() => {
   window.addEventListener('resize', updateCoords)
   const canvasStore = useCanvasStore()
@@ -113,9 +136,17 @@ onMounted(() => {
     reportRenderedSoundSources,
     { immediate: true, flush: 'post' }
   )
+
+  const parent = stageDivRef.value?.parentElement
+  if (parent) {
+    resizeObserver = new ResizeObserver(updateCanvasScale)
+    resizeObserver.observe(parent)
+    updateCanvasScale()
+  }
 })
 onUnmounted(() => {
   window.removeEventListener('resize', updateCoords)
+  resizeObserver?.disconnect()
   stopSourceRenderWatch?.()
   useCanvasStore().setRenderedSoundSourceCount(0)
 })

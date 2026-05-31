@@ -1,7 +1,7 @@
 <template>
   <aside
     id="sidebar-left"
-    class="flex flex-col h-full bg-[var(--color-bg-elevated)] border-r border-[var(--color-border-subtle)] p-4 space-y-6 text-[var(--color-text-primary)]"
+    class="flex flex-col h-full w-full bg-[var(--color-bg-elevated)] border-r border-[var(--color-border-subtle)] p-4 space-y-6 text-[var(--color-text-primary)]"
     role="region"
     aria-labelledby="library-panel-label"
   >
@@ -12,7 +12,8 @@
         class="h-full"
         v-bind="{
           MAX_SOURCES,
-          handleDragStart
+          handleDragStart,
+          handleTap,
         }"
       />
     </div>
@@ -30,6 +31,7 @@ import ListenerReadout from '@/components/SoundRoom/SidebarLeft/ListenerReadout.
 
 defineProps([
   'MAX_SOURCES',
-  'handleDragStart'
+  'handleDragStart',
+  'handleTap',
 ])
 </script>

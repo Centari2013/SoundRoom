@@ -7,11 +7,12 @@
   />
 
   <header
-    class="px-6 py-4 border-b border-[var(--color-border-subtle)]
+    class="px-6 py-4 phone:px-4 phone:py-3 border-b border-[var(--color-border-subtle)]
            bg-[color-mix(in_srgb,var(--color-bg-surface)_95%,black_5%)]
            backdrop-blur-sm
            flex items-center justify-between sticky top-0 z-40
            shadow-[0_4px_20px_rgba(0,0,0,0.25)]"
+    :class="{ 'phone-landscape:hidden': isEditorRoute }"
   >
     <!-- Left: Logo -->
     <RouterLink
@@ -19,7 +20,7 @@
       class="hover:opacity-90 transition"
       aria-label="SoundRoom — home"
     >
-      <Wordmark class="h-10 w-auto" />
+      <Wordmark class="h-10 phone:h-7 w-auto" />
     </RouterLink>
 
     <!-- Right: Menu -->
@@ -94,6 +95,11 @@ const showAuthModal = ref(false);
 
 const hiddenHeaderRoutes = ['/logged-out', '/fullscreen-modal']
 const shouldShowNavButtons = computed(() => !hiddenHeaderRoutes.includes(route.path))
+
+// On the editor route, the header is hidden in landscape on phones so the canvas
+// gets the full height. It still shows in portrait (where the rotate prompt sits
+// below it), keeping nav reachable.
+const isEditorRoute = computed(() => route.path === '/app' || route.path.startsWith('/app/'))
 
 const isLoggingOut = ref(false); // Track if logging out
 

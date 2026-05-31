@@ -63,6 +63,8 @@
       name="sound-node-part"
       @mousedown="onSourceMouseDown"
       @mouseup="onSourceMouseUp"
+      @touchstart="onSourceMouseDown"
+      @touchend="onSourceMouseUp"
       @mouseover="setCursor($event, 'pointer')"
       @mouseout="setCursor($event, 'default')"
     />
@@ -133,6 +135,8 @@
       :shadowBlur="4"
       @mousedown="onSourceMouseDown"
       @mouseup="onSourceMouseUp"
+      @touchstart="onSourceMouseDown"
+      @touchend="onSourceMouseUp"
       @mouseover="setCursor($event, 'pointer')"
       @mouseout="setCursor($event, 'default')"
       name="sound-node-part"
@@ -150,6 +154,8 @@
       fill="transparent"
       @mousedown="onHandleMouseDown"
       @mouseup="onHandleMouseUp"
+      @touchstart="onHandleMouseDown"
+      @touchend="onHandleMouseUp"
       @mouseover="setCursor($event, 'pointer')"
       @mouseout="setCursor($event, 'default')"
       name="sound-node-part"
@@ -341,13 +347,23 @@ let initialSourceAngle = null
 
 // Source dragging
 function onSourceMouseDown(e) {
+  const isTouch = e.evt?.type === 'touchstart'
+
   if (isLocked.value) {
     emit('select', props.index)
     e.evt?.stopPropagation?.()
     return
   }
-  emit('select', props.index) // select current SoundSourceNode to display in SelectSourcePanel.vue
-  e.evt.stopPropagation()
+
+  // Mouse: select immediately so desktop highlights on mousedown.
+  // Touch: defer select to touchend — if we emitted here, the bottom sheet
+  // would open instantly and block the canvas before the drag threshold is met.
+  if (!isTouch) {
+    emit('select', props.index)
+  }
+
+  e.evt?.stopPropagation?.()
+  e.evt?.preventDefault?.() // prevent scroll during touch drag
 
   const stage = e.target.getStage()
   const mousePos = stage.getPointerPosition()
@@ -357,7 +373,7 @@ function onSourceMouseDown(e) {
   const group = e.target.getParent()
   group.draggable(true)
 
-  stage.on("mousemove.sourceDragDetect", () => {
+  stage.on("mousemove.sourceDragDetect touchmove.sourceDragDetect", () => {
     const currentPos = stage.getPointerPosition()
     const dx = currentPos.x - mouseDownPos.x
     const dy = currentPos.y - mouseDownPos.y
@@ -368,13 +384,16 @@ function onSourceMouseDown(e) {
     }
   })
 
-  stage.on("mouseup.sourceDragDetect", () => {
-    stage.off("mousemove.sourceDragDetect")
-    stage.off("mouseup.sourceDragDetect")
+  stage.on("mouseup.sourceDragDetect touchend.sourceDragDetect", () => {
+    stage.off("mousemove.sourceDragDetect touchmove.sourceDragDetect")
+    stage.off("mouseup.sourceDragDetect touchend.sourceDragDetect")
 
     if (!isDragging) {
       group.draggable(false)
+      // Touch tap (no drag): now it's safe to select and open the sheet.
+      if (isTouch) emit('select', props.index)
     }
+    // Touch drag end: don't select — user was positioning, not tapping.
 
     onSourceMouseUp(e)
   })
@@ -426,13 +445,22 @@ function onSourceMouseUp(e) {
 
 // Rotation interaction
 function onHandleMouseDown(e) {
+  const isTouch = e.evt?.type === 'touchstart'
+
   if (isLocked.value) {
     emit('select', props.index)
     e.evt?.stopPropagation?.()
     return
   }
-  emit('select', props.index)
-  e.evt.stopPropagation()
+
+  // Same deferred-select logic as drag: on touch, wait until touchend so the
+  // bottom sheet doesn't open and block the canvas mid-rotation.
+  if (!isTouch) {
+    emit('select', props.index)
+  }
+
+  e.evt?.stopPropagation?.()
+  e.evt?.preventDefault?.()
 
   const group = e.target.getParent()
   if (group?.draggable()) {
@@ -448,11 +476,14 @@ function onHandleMouseDown(e) {
   const dy = mousePos.y - props.source.instance.state.y
   initialMouseAngle = Math.atan2(dy, dx) * (180 / Math.PI)
 
-  stage.on("mousemove.sourceRotate", onHandleMouseMove)
-  stage.on("mouseup.sourceRotate", () => {
+  stage.on("mousemove.sourceRotate touchmove.sourceRotate", onHandleMouseMove)
+  stage.on("mouseup.sourceRotate touchend.sourceRotate", () => {
     onHandleMouseUp()
-    stage.off("mousemove.sourceRotate")
-    stage.off("mouseup.sourceRotate")
+    stage.off("mousemove.sourceRotate touchmove.sourceRotate")
+    stage.off("mouseup.sourceRotate touchend.sourceRotate")
+    // On touch: never select after rotation — the gesture was purely for rotating.
+    // The sheet can be opened by tapping the source body separately.
+    // On mouse: select was already emitted on mousedown above.
   })
 }
 

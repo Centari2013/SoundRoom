@@ -5,24 +5,64 @@
     :startTour="startTour"
     @finished="handleOnboardingFinished"
   />
-  <div class="h-full w-full min-h-0 min-w-0 overflow-hidden bg-surface-app text-text-primary flex flex-col">
-    <!-- Main Layout -->
+  <!-- ── Landscape phone: full-bleed HUD layout ───────────────────────────── -->
+  <PhoneLandscapeHUD
+    v-if="isPhone && !isPortrait"
+    v-model:mobileSidebarOpen="mobileSidebarOpen"
+    :MAX_SOURCES="MAX_LIB_SOURCES"
+    :handleDragStart="handleDragStart"
+    :handleTap="handleTap"
+    :listener="listener"
+    :handleDrop="handleDrop"
+    :onKeyDown="onKeyDown"
+    :onKeyUp="onKeyUp"
+    :contextMenuActions="contextMenuActions"
+    :showContextMenu="showContextMenu"
+    :selectedIndex="selectedIndex"
+    :handleStageClick="handleStageClick"
+    :selectedSource="selectedSource"
+    :isLoadingRoom="isLoadingRoom"
+    :isSavingRoom="isSavingRoom"
+    :saveRoom="saveRoom"
+    @selectNode="selectedIndex = $event"
+    @deselect="selectedIndex = null"
+  />
+
+  <!-- ── Desktop + portrait phone (rotate prompt) ──────────────────────── -->
+  <div
+    v-else
+    class="relative h-full w-full min-h-0 min-w-0 overflow-hidden bg-surface-app text-text-primary flex flex-col"
+  >
+    <!-- Portrait phone: prompt to rotate -->
+    <div
+      v-if="isPhone && isPortrait"
+      class="absolute inset-0 z-[60] flex flex-col items-center justify-center gap-5 bg-surface-app text-text-primary text-center px-8"
+      role="dialog"
+      aria-label="Rotate your device to landscape"
+    >
+      <div class="text-6xl text-[var(--color-accent)] animate-pulse" aria-hidden="true">⟳</div>
+      <h2 class="text-xl font-semibold">Rotate to landscape</h2>
+      <p class="max-w-xs text-sm text-[var(--color-text-muted)]">
+        SoundRoom's canvas needs room to breathe. Turn your device sideways to start designing your space.
+      </p>
+    </div>
+
+    <!-- Main Layout: left sidebar + canvas + right sidebar -->
     <div class="flex flex-1 min-h-0 min-w-0 overflow-hidden">
+      <!-- Left Sidebar: static column on desktop -->
+      <div class="flex-shrink-0 w-[20%] min-w-[7.5rem] max-w-64">
+        <SidebarLeft
+          :MAX_SOURCES="MAX_LIB_SOURCES"
+          :handleDragStart="handleDragStart"
+          :handleTap="handleTap"
+          :listener="listener"
+        />
+      </div>
 
-      <!-- Left Sidebar -->
-      <SidebarLeft 
-        class="min-w-[7.5rem] max-w-64 w-[20%] flex-shrink-0"
-        :MAX_SOURCES="MAX_LIB_SOURCES"
-        :handleDragStart="handleDragStart"
-        :listener="listener"
-      />
-
-      <!-- Canvas + Controls -->
+      <!-- Canvas + Toolbar -->
       <main class="flex-1 min-h-0 min-w-0 overflow-hidden flex flex-col">
-        <!-- Toolbar -->
-        <Toolbar/>
+        <Toolbar />
 
-        <!-- Canvas Area -->
         <div class="flex-1 min-h-0 min-w-0 relative overflow-hidden bg-[var(--color-bg-surface)] flex items-center justify-center border-t border-[var(--color-border-subtle)]">
           <div class="pointer-events-none absolute inset-0 canvas-vignette" aria-hidden="true"></div>
           <MainCanvasStage
@@ -37,27 +77,21 @@
             }"
             @selectNode="e => { selectedIndex = e }"
           />
-          <!-- Frosted Load/Save Overlay -->
-           <PulsingOverlay
+          <PulsingOverlay
             v-if="isLoadingRoom || isSavingRoom"
             :text="isLoadingRoom ? 'Loading your room...' : 'Saving your room...'"
-            />
+          />
         </div>
       </main>
 
-      <!-- Right Sidebar -->
+      <!-- Right Sidebar: desktop only -->
       <SidebarRight
-        class="min-w-[7.5rem] max-w-64 w-[20%] flex-shrink-0"
-        v-bind="{
-          selectedSource
-        }"
+        class="flex min-w-[7.5rem] max-w-64 w-[20%] flex-shrink-0"
+        v-bind="{ selectedSource }"
       />
     </div>
-    <Transition
-      :css="false"
-      @enter="onTimelineEnter"
-      @leave="onTimelineLeave"
-    >
+
+    <Transition :css="false" @enter="onTimelineEnter" @leave="onTimelineLeave">
       <TimelinePanel v-if="timelineOpen && canUseTimeline" />
     </Transition>
     <FooterBar
@@ -107,7 +141,9 @@ const SOUND_NODE_PART_NAME = 'sound-node-part'
 import Toolbar from '@/components/SoundRoom/Toolbar.vue'
 import SidebarLeft from '@/components/SoundRoom/SidebarLeft/SidebarLeft.vue'
 import SidebarRight from '@/components/SoundRoom/SidebarRight/SidebarRight.vue'
+import SelectedSourcePanel from '@/components/SoundRoom/SidebarRight/SelectedSourcePanel.vue'
 import MainCanvasStage from '@/components/SoundRoom/MainCanvasStage/MainCanvasStage.vue'
+import PhoneLandscapeHUD from '@/components/SoundRoom/PhoneLandscapeHUD.vue'
 import FooterBar from '@/components/SoundRoom/FooterBar.vue'
 import TimelinePanel from '@/components/SoundRoom/Timeline/TimelinePanel.vue'
 import PulsingOverlay from '@/components/ui/overlays/PulsingOverlay.vue'
@@ -231,6 +267,50 @@ function handleStageClick(e) {
   }
 }
 
+const mobileSidebarOpen = ref(false)
+
+// Phone detection — orientation-independent (mirrors the `phone` variant in
+// style.css). Width-based so it holds for a phone in BOTH portrait (narrow) and
+// landscape (short + not too wide); a plain `md` width breakpoint would wrongly
+// treat a ~812px-wide landscape phone as desktop. Drives a v-if so exactly ONE
+// SelectedSourcePanel mounts — desktop sidebar OR mobile bottom sheet, never both.
+const PHONE_QUERY = '(max-width: 500px), (max-height: 500px) and (max-width: 932px)'
+const isPhone = ref(
+  typeof window !== 'undefined' && window.matchMedia(PHONE_QUERY).matches
+)
+const isPortrait = ref(
+  typeof window !== 'undefined' && window.matchMedia('(orientation: portrait)').matches
+)
+provide('isPhone', isPhone)
+
+let phoneMql = null
+let orientationMql = null
+// Recompute from matchMedia. Bound to both the mediaquery `change` events and
+// window resize/orientationchange so it stays correct everywhere (some browsers
+// and emulators don't fire mediaquery `change` on a programmatic viewport resize).
+function syncViewport() {
+  const phone = phoneMql ? phoneMql.matches : window.matchMedia(PHONE_QUERY).matches
+  const portrait = orientationMql ? orientationMql.matches : window.matchMedia('(orientation: portrait)').matches
+  isPhone.value = phone
+  isPortrait.value = portrait
+  if (!phone) mobileSidebarOpen.value = false // close drawer back on desktop
+}
+onMounted(() => {
+  phoneMql = window.matchMedia(PHONE_QUERY)
+  orientationMql = window.matchMedia('(orientation: portrait)')
+  syncViewport()
+  phoneMql.addEventListener('change', syncViewport)
+  orientationMql.addEventListener('change', syncViewport)
+  window.addEventListener('resize', syncViewport)
+  window.addEventListener('orientationchange', syncViewport)
+})
+onUnmounted(() => {
+  phoneMql?.removeEventListener('change', syncViewport)
+  orientationMql?.removeEventListener('change', syncViewport)
+  window.removeEventListener('resize', syncViewport)
+  window.removeEventListener('orientationchange', syncViewport)
+})
+
 const welcomeDone = ref(false)
 
 function onWelcomeFinished() {
@@ -242,7 +322,7 @@ function onWelcomeFinished() {
 
 
 // Composable Logic
-const { handleDragStart, handleDrop } = useDragDropAudio({
+const { handleDragStart, handleDrop, handleTap } = useDragDropAudio({
   draggedSource
 })
 
@@ -592,19 +672,5 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-.canvas-vignette {
-  --vignette-inner: rgba(var(--color-text-inverse-rgb), 0.06);
-  --vignette-middle: rgba(var(--color-text-inverse-rgb), 0.04);
-  --vignette-outer: rgba(var(--color-text-inverse-rgb), 0.08);
-  --vignette-shadow: inset 0 0 70px rgba(var(--color-text-inverse-rgb), 0.12);
-
-  background: radial-gradient(circle at center, var(--vignette-inner) 0%, var(--vignette-middle) 38%, var(--vignette-outer) 100%);
-  box-shadow: var(--vignette-shadow);
-}
-[data-theme="dark"] .canvas-vignette {
-  --vignette-inner: rgba(var(--color-text-primary-rgb), 0.1);
-  --vignette-middle: rgba(var(--color-text-primary-rgb), 0.06);
-  --vignette-outer: rgba(var(--color-text-inverse-rgb), 0.48);
-  --vignette-shadow: inset 0 0 140px rgba(var(--color-text-inverse-rgb), 0.42);
-}
+/* canvas-vignette is defined globally in style.css so PhoneLandscapeHUD can use it too */
 </style>

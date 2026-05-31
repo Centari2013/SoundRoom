@@ -28,6 +28,8 @@
       :shadowOpacity="bodyShadowOpacity"
       @mousedown="onListenerMouseDown"
       @mouseup="onListenerMouseUp"
+      @touchstart="onListenerMouseDown"
+      @touchend="onListenerMouseUp"
       @mouseover="setCursor($event, 'pointer')"
       @mouseout="setCursor($event, 'default')"
     />
@@ -41,6 +43,8 @@
       :shadowOpacity="detailShadowOpacity"
       @mousedown="onListenerMouseDown"
       @mouseup="onListenerMouseUp"
+      @touchstart="onListenerMouseDown"
+      @touchend="onListenerMouseUp"
       @mouseover="setCursor($event, 'pointer')"
       @mouseout="setCursor($event, 'default')"
     />
@@ -76,6 +80,8 @@
       :opacity="0.96"
       @mousedown="onListenerMouseDown"
       @mouseup="onListenerMouseUp"
+      @touchstart="onListenerMouseDown"
+      @touchend="onListenerMouseUp"
       @mouseover="setCursor($event, 'pointer')"
       @mouseout="setCursor($event, 'default')"
     />
@@ -93,6 +99,8 @@
       @mouseout="setCursor($event, 'default')"
       @mousedown="onHandleMouseDown"
       @mouseup="onHandleMouseUp"
+      @touchstart="onHandleMouseDown"
+      @touchend="onHandleMouseUp"
     />
   </v-group>
 </template>
@@ -219,6 +227,7 @@ function onListenerMouseDown(e) {
 
   const stage = e.target.getStage()
   if (!stage) return
+  e.evt?.preventDefault?.() // prevent scroll during touch drag
   dragStartPos = stage.getPointerPosition()
   moveListenerPayload = null
   isDragging = false
@@ -228,7 +237,7 @@ function onListenerMouseDown(e) {
 
   group.draggable(true)
 
-  stage.on("mousemove.listenerDragDetect", () => {
+  stage.on("mousemove.listenerDragDetect touchmove.listenerDragDetect", () => {
     const movePos = stage.getPointerPosition()
     const dx = movePos.x - dragStartPos.x
     const dy = movePos.y - dragStartPos.y
@@ -243,9 +252,9 @@ function onListenerMouseDown(e) {
     }
   })
 
-  stage.on("mouseup.listenerDragDetect", () => {
-    stage.off("mousemove.listenerDragDetect")
-    stage.off("mouseup.listenerDragDetect")
+  stage.on("mouseup.listenerDragDetect touchend.listenerDragDetect", () => {
+    stage.off("mousemove.listenerDragDetect touchmove.listenerDragDetect")
+    stage.off("mouseup.listenerDragDetect touchend.listenerDragDetect")
 
     if (!isDragging) {
       group.draggable(false)
@@ -304,18 +313,20 @@ function onHandleMouseDown(e) {
   const dy = mousePos.y - listener.value.y
   initialMouseAngle = Math.atan2(dy, dx) * (180 / Math.PI)
 
-  stage.on("mousemove.listenerRotate", onHandleMouseMove)
+  stage.on("mousemove.listenerRotate touchmove.listenerRotate", onHandleMouseMove)
 
   rotationMouseUpListener = () => {
     onHandleMouseUp()
-    stage.off("mousemove.listenerRotate")
-    stage.off("mouseup.listenerRotate")
+    stage.off("mousemove.listenerRotate touchmove.listenerRotate")
+    stage.off("mouseup.listenerRotate touchend.listenerRotate")
     window.removeEventListener('mouseup', rotationMouseUpListener)
+    window.removeEventListener('touchend', rotationMouseUpListener)
     rotationMouseUpListener = null
   }
 
-  stage.on("mouseup.listenerRotate", rotationMouseUpListener)
+  stage.on("mouseup.listenerRotate touchend.listenerRotate", rotationMouseUpListener)
   window.addEventListener('mouseup', rotationMouseUpListener)
+  window.addEventListener('touchend', rotationMouseUpListener)
 }
 
 function onHandleMouseMove(e) {
@@ -348,6 +359,7 @@ function onHandleMouseUp() {
 onBeforeUnmount(() => {
   if (rotationMouseUpListener) {
     window.removeEventListener('mouseup', rotationMouseUpListener)
+    window.removeEventListener('touchend', rotationMouseUpListener)
     rotationMouseUpListener = null
   }
 })
