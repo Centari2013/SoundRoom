@@ -292,6 +292,32 @@ export function installSiteMediaSessionHandlers() {
     document.addEventListener('play', updateSiteAudioPlaybackState, true)
     document.addEventListener('pause', updateSiteAudioPlaybackState, true)
     document.addEventListener('ended', updateSiteAudioPlaybackState, true)
+
+    // iOS suspends the AudioContext when the tab/app goes to background.
+    // On return, kick the silent transport audio and every registered target
+    // so the AudioContext resumes without requiring another user gesture.
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState !== 'visible') return
+
+      // Re-kick the silent looping element — this is the iOS trick that
+      // keeps the audio session alive across app switches.
+      const transport = getTransportElement()
+      if (transport && transport.paused && anyRegisteredAudioPlaying()) {
+        transport.play().catch(() => {})
+      }
+
+      // Resume any suspended AudioContexts for each registered target.
+      for (const target of audioTargets) {
+        try {
+          const ctx = typeof target.getAudioContext === 'function'
+            ? target.getAudioContext()
+            : null
+          if (ctx && ctx.state === 'suspended') {
+            ctx.resume().catch(() => {})
+          }
+        } catch (_) {}
+      }
+    })
   }
 }
 

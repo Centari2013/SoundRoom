@@ -24,6 +24,9 @@
     :isLoadingRoom="isLoadingRoom"
     :isSavingRoom="isSavingRoom"
     :saveRoom="saveRoom"
+    :timelineOpen="timelineOpen"
+    :canUseTimeline="canUseTimeline"
+    :toggleTimeline="toggleTimeline"
     @selectNode="selectedIndex = $event"
     @deselect="selectedIndex = null"
   />

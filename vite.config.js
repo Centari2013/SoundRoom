@@ -123,6 +123,11 @@ const plugins = [
       ],
     },
     workbox: {
+      // Take control of all open tabs immediately when a new SW installs —
+      // without this the user has to close every tab before the update lands.
+      skipWaiting: true,
+      clientsClaim: true,
+
       // Cache the app shell (JS, CSS, HTML, fonts, SVGs)
       // Audio files in S3 are intentionally excluded — too large to precache
       globPatterns: ['**/*.{js,css,html,svg,woff2,png,ico}'],

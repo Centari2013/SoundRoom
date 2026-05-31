@@ -46,8 +46,12 @@
 
     <!-- Slim top bar: ☰ library, transport, master volume -->
     <div
-      class="flex items-center justify-between px-2 shrink-0 h-10
+      class="hud-bar flex items-center justify-between px-2 shrink-0 h-10
              bg-[var(--color-bg-elevated)] border-b border-[var(--color-border-subtle)]"
+      :style="{
+        paddingLeft:  'max(0.5rem, env(safe-area-inset-left))',
+        paddingRight: 'max(0.5rem, env(safe-area-inset-right))',
+      }"
     >
       <!-- Left: library toggle + play/undo/redo -->
       <div class="flex items-center gap-1.5">
@@ -60,50 +64,71 @@
         >☰</button>
 
         <button
-          class="w-9 h-8 flex items-center justify-center rounded
+          class="w-9 h-8 flex items-center justify-center rounded text-base
                  bg-[var(--color-bg-surface)] border border-[var(--color-border-subtle)]
                  text-[var(--color-text-primary)] disabled:opacity-40"
           :disabled="!hasCanvasTransportSources"
           :title="isPlaying ? 'Pause all' : 'Play all'"
           @click="isPlaying ? audioEngine.pauseAll() : audioEngine.playAll()"
-        >
-          <component :is="isPlaying ? Pause : Play" class="h-4 w-4 fill-[var(--color-text-primary)]" />
-        </button>
+        >{{ isPlaying ? '⏸' : '▶' }}</button>
 
         <button
-          class="w-9 h-8 flex items-center justify-center rounded
+          class="w-9 h-8 flex items-center justify-center rounded text-base
                  bg-[var(--color-bg-surface)] border border-[var(--color-border-subtle)]
                  text-[var(--color-text-primary)] disabled:opacity-40"
           :disabled="actionStackEmpty || waiting"
           title="Undo"
           @click="actionManager.undoLastAction"
-        >
-          <UndoRedo class="h-4 w-4 fill-[var(--color-text-primary)]" />
-        </button>
+        >↩</button>
 
         <button
-          class="w-9 h-8 flex items-center justify-center rounded
+          class="w-9 h-8 flex items-center justify-center rounded text-base
                  bg-[var(--color-bg-surface)] border border-[var(--color-border-subtle)]
                  text-[var(--color-text-primary)] disabled:opacity-40"
           :disabled="redoStackEmpty || waiting"
           title="Redo"
           @click="actionManager.redoLastAction"
-        >
-          <UndoRedo class="h-4 w-4 scale-x-[-1] fill-[var(--color-text-primary)]" />
-        </button>
+        >↪</button>
       </div>
 
-      <!-- Right: master volume slider -->
-      <div class="flex items-center pr-1">
+      <!-- Right: master volume + account menu -->
+      <div class="flex items-center gap-1.5">
         <VueSlider
           v-model="audioEngine.masterVolume.value"
           :min="0"
           :max="1"
           :interval="0.01"
-          :width="90"
+          :width="80"
           :height="4"
           tooltip="none"
         />
+
+        <!-- Account / nav menu -->
+        <div class="relative">
+          <button
+            class="w-9 h-8 flex items-center justify-center rounded
+                   bg-[var(--color-bg-surface)] border border-[var(--color-border-subtle)]
+                   text-[var(--color-text-primary)] text-lg leading-none"
+            @click.stop="menuOpen = !menuOpen"
+            aria-label="Account and settings menu"
+          >⋯</button>
+          <div
+            v-if="menuOpen"
+            class="absolute right-0 top-full mt-1 w-40 rounded-xl overflow-hidden
+                   border border-[var(--color-border-subtle)]
+                   bg-[color-mix(in_srgb,var(--color-bg-elevated)_96%,black_4%)]
+                   shadow-[0_12px_30px_rgba(0,0,0,0.4)] backdrop-blur-md
+                   flex flex-col divide-y divide-[var(--color-border-subtle)] z-50"
+          >
+            <button
+              v-for="item in hudMenuItems"
+              :key="item.label"
+              class="px-4 py-3 text-left text-sm font-medium text-[var(--color-text-primary)]
+                     hover:bg-[color-mix(in_srgb,var(--color-bg-surface)_85%,transparent)] transition"
+              @click="runMenuItem(item)"
+            >{{ item.label }}</button>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -131,10 +156,21 @@
       />
     </div>
 
-    <!-- Slim bottom bar: save + new room -->
+    <!-- Timeline panel: slides in above the bottom bar when open -->
+    <TimelinePanel v-if="timelineOpen && canUseTimeline" />
+
+    <!-- Slim bottom bar: save + new room.
+         Use padding (not fixed height) so the buttons stay vertically centred
+         and the home-indicator inset just adds space below them. -->
     <div
-      class="flex items-center gap-2 px-2 shrink-0 h-10
+      class="hud-bar flex items-center gap-2 shrink-0
              bg-[var(--color-bg-elevated)] border-t border-[var(--color-border-subtle)]"
+      :style="{
+        paddingTop:    '0.375rem',
+        paddingBottom: 'max(0.375rem, env(safe-area-inset-bottom))',
+        paddingLeft:   'max(0.5rem, env(safe-area-inset-left))',
+        paddingRight:  'max(0.5rem, env(safe-area-inset-right))',
+      }"
     >
       <button
         class="px-3 py-1.5 rounded text-sm
@@ -155,6 +191,18 @@
         @click="showNewRoomConfirm = true"
         aria-label="New room"
       >New Room +</button>
+
+      <!-- Timeline toggle — only shown when the entitlement is active -->
+      <button
+        v-if="canUseTimeline && toggleTimeline"
+        class="px-3 py-1.5 rounded text-sm border transition
+               focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)]"
+        :class="timelineOpen
+          ? 'bg-[var(--color-bg-elevated)] border-[var(--color-focus-ring)] text-[var(--color-text-primary)]'
+          : 'bg-[var(--color-bg-surface)] border-[var(--color-border-subtle)] text-[var(--color-text-primary)]'"
+        @click="toggleTimeline"
+        aria-label="Toggle timeline"
+      >{{ timelineOpen ? '▲ Timeline' : '▶ Timeline' }}</button>
     </div>
   </div>
 
@@ -169,8 +217,12 @@
     class="fixed inset-x-0 bottom-0 z-50 transition-transform duration-300 ease-out
            max-h-[75vh] overflow-y-auto overscroll-contain
            rounded-t-2xl border-t border-[var(--color-border-subtle)]
-           bg-[var(--color-bg-elevated)] shadow-[0_-12px_30px_rgba(0,0,0,0.35)]
-           pb-[max(0.75rem,env(safe-area-inset-bottom))]"
+           bg-[var(--color-bg-elevated)] shadow-[0_-12px_30px_rgba(0,0,0,0.35)]"
+    :style="{
+      paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom))',
+      paddingLeft:   'max(0px, env(safe-area-inset-left))',
+      paddingRight:  'max(0px, env(safe-area-inset-right))',
+    }"
     :class="selectedSource ? 'translate-y-0' : 'translate-y-full'"
     role="dialog"
     aria-label="Selected source settings"
@@ -196,7 +248,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
 import { storeToRefs } from 'pinia'
 
@@ -204,18 +256,19 @@ import { useAudioEngineStore } from '@/stores/useAudioEngineStore'
 import { useActionManagerStore } from '@/stores/useActionManagerStore'
 import { useRoomStore } from '@/stores/useRoomStore'
 import { useAuth } from '@/composables/useAuth'
+import { useEntitlements } from '@/composables/useEntitlements'
+import { toggleTheme } from '@/utils/theme'
 import { resetRoomState } from '@/utils/resetRoomState'
 
 import SidebarLeft from '@/components/SoundRoom/SidebarLeft/SidebarLeft.vue'
 import MainCanvasStage from '@/components/SoundRoom/MainCanvasStage/MainCanvasStage.vue'
 import SelectedSourcePanel from '@/components/SoundRoom/SidebarRight/SelectedSourcePanel.vue'
+import TimelinePanel from '@/components/SoundRoom/Timeline/TimelinePanel.vue'
 import PulsingOverlay from '@/components/ui/overlays/PulsingOverlay.vue'
 import YesNoModal from '@/components/ui/modals/YesNoModal.vue'
 import VueSlider from 'vue-3-slider-component'
 
-import UndoRedo from '@/assets/icons/undo-redo.svg'
-import Pause from '@/assets/icons/pause.svg'
-import Play from '@/assets/icons/play.svg'
+// Transport controls use emoji instead of SVG to avoid iOS WebKit fill="" rendering bugs
 
 // ─── Props ──────────────────────────────────────────────────────────────────
 
@@ -242,9 +295,14 @@ const props = defineProps({
   selectedSource: { type: Object, default: null },
 
   // Loading / saving
-  isLoadingRoom: { type: Boolean, default: false },
-  isSavingRoom:  { type: Boolean, default: false },
-  saveRoom:      { type: Function, required: true },
+  isLoadingRoom:  { type: Boolean, default: false },
+  isSavingRoom:   { type: Boolean, default: false },
+  saveRoom:       { type: Function, required: true },
+
+  // Timeline
+  timelineOpen:   { type: Boolean, default: false },
+  canUseTimeline: { type: Boolean, default: false },
+  toggleTimeline: { type: Function, default: null },
 })
 
 const emit = defineEmits(['update:mobileSidebarOpen', 'selectNode', 'deselect'])
@@ -252,7 +310,8 @@ const emit = defineEmits(['update:mobileSidebarOpen', 'selectNode', 'deselect'])
 // ─── Stores ─────────────────────────────────────────────────────────────────
 
 const router = useRouter()
-const { isAuthenticated } = useAuth()
+const { isAuthenticated, tier } = useAuth()
+const { canAccess } = useEntitlements()
 
 const engineStore = useAudioEngineStore()
 const actionStore = useActionManagerStore()
@@ -261,6 +320,30 @@ const roomStore   = useRoomStore()
 const { audioEngine, isPlaying, hasCanvasTransportSources } = storeToRefs(engineStore)
 const { actionManager, actionStackEmpty, redoStackEmpty, waiting } = storeToRefs(actionStore)
 const { isRoomSaveable, isRoomEmpty } = storeToRefs(roomStore)
+
+// ─── HUD account menu ────────────────────────────────────────────────────────
+
+const menuOpen = ref(false)
+
+const hudMenuItems = computed(() => [
+  { label: 'Switch Themes',  action: () => toggleTheme(),                              show: true },
+  { label: 'Help',           action: () => router.push({ name: 'help' }),              show: true },
+  { label: 'Room Manager',   action: () => router.push({ name: 'room-manager' }),      show: isAuthenticated.value },
+  { label: 'Sign In',        action: () => router.push({ name: 'login' }),             show: !isAuthenticated.value },
+  { label: tier.value === 'basic' ? 'Upgrade to Pro' : 'Upgrade',
+                             action: () => router.push({ name: 'upgrade' }),           show: isAuthenticated.value && tier.value !== 'pro' },
+  { label: 'Settings',       action: () => router.push({ name: 'settings' }),         show: isAuthenticated.value },
+].filter(i => i.show))
+
+function runMenuItem(item) {
+  menuOpen.value = false
+  item.action()
+}
+
+// Close the menu on outside tap
+function onDocClick() { menuOpen.value = false }
+onMounted(() => document.addEventListener('click', onDocClick))
+onBeforeUnmount(() => document.removeEventListener('click', onDocClick))
 
 // ─── Save / New room ────────────────────────────────────────────────────────
 

@@ -52,12 +52,14 @@
 
   <portal-target name="modal" />
   <EntitlementUpsellModal />
+  <IOSInstallBanner />
 </template>
 
 <script setup>
 import { ref, watch, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import HeaderBar from '@/components/SoundRoom/HeaderBar.vue'
+import IOSInstallBanner from '@/components/ui/ios/IOSInstallBanner.vue'
 import MobileComingSoon from '@/views/MobileComingSoon.vue'
 import { isMobileBrowser } from '@/utils/device'
 import EntitlementUpsellModal from '@/components/ui/modals/EntitlementUpsellModal.vue'

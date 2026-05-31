@@ -1,6 +1,6 @@
 <template>
   <div
-    class="room-row p-4 border border-border-subtle rounded-lg shadow-sm hover:bg-[var(--color-bg-elevated)] transition bg-surface-base text-text-primary"
+    class="room-row p-4 phone:p-3 border border-border-subtle rounded-lg shadow-sm hover:bg-[var(--color-bg-elevated)] transition bg-surface-base text-text-primary"
     :class="{ 'opacity-60': locked }"
     :title="locked ? lockTooltip : undefined"
   >
@@ -26,15 +26,19 @@
       />
     </div>
     <div class="room-meta text-xs text-text-muted">{{ formatDate(room.updated_at) }}</div>
-    <div class="room-actions mt-3 flex gap-2">
+    <div class="room-actions mt-3 phone:mt-2 flex gap-2">
       <BaseButton
+        class="phone:py-2 phone:flex-1"
         @click="emit('load', room.id)"
         :disabled="locked"
         :title="locked ? lockTooltip : undefined"
       >
         Load
       </BaseButton>
-      <BaseButton @click="emit('delete', room.id)">Delete</BaseButton>
+      <BaseButton
+        class="phone:py-2 phone:flex-1"
+        @click="emit('delete', room.id)"
+      >Delete</BaseButton>
     </div>
   </div>
 </template>

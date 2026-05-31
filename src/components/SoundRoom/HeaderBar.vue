@@ -13,6 +13,7 @@
            flex items-center justify-between sticky top-0 z-40
            shadow-[0_4px_20px_rgba(0,0,0,0.25)]"
     :class="{ 'phone-landscape:hidden': isEditorRoute }"
+    :style="{ paddingTop: 'max(1rem, env(safe-area-inset-top))' }"
   >
     <!-- Left: Logo -->
     <RouterLink

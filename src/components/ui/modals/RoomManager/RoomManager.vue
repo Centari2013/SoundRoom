@@ -4,11 +4,11 @@
     class="modal-backdrop"
   >
     <div
-      class="modal-panel flex"
+      class="modal-panel flex phone:!w-[96vw] phone:!h-[90dvh]"
     >
-      <!-- Left Sidebar -->
+      <!-- Left Sidebar — hidden on phones (only one section, wastes width) -->
       <aside
-        class="w-60 bg-surface-base text-text-primary border-r border-border-subtle p-4 space-y-3 overflow-y-auto"
+        class="w-60 phone:hidden bg-surface-base text-text-primary border-r border-border-subtle p-4 space-y-3 overflow-y-auto"
       >
         <h2 class="font-bold text-sm mb-2"></h2>
         <BaseButton
@@ -26,16 +26,22 @@
         <!-- Floating Top Bar -->
         <div
           ref="headerBar"
-          class="absolute top-0 left-0 right-0 z-10 flex justify-between items-center px-6 py-4 bg-[color-mix(in_srgb,var(--color-bg-surface)_70%,transparent)] backdrop-blur-md border-b border-border-subtle"
+          class="absolute top-0 left-0 right-0 z-10 flex justify-between items-center
+                 px-6 py-4 phone:px-4 phone:py-2.5
+                 bg-[color-mix(in_srgb,var(--color-bg-surface)_70%,transparent)] backdrop-blur-md border-b border-border-subtle"
         >
-          <h2 class="text-2xl font-bold">RoomManager</h2>
-          <BaseButton class="text-sm" @click="router.push({ name: 'app' })">Close</BaseButton>
+          <h2 class="text-2xl phone:text-lg font-bold">Your Rooms</h2>
+          <BaseButton
+            class="text-sm phone:py-2 phone:px-4"
+            @click="router.push({ name: 'app' })"
+          >Close</BaseButton>
         </div>
-        
+
         <!-- Scrollable Grid -->
         <div
           ref="gridScroll"
-          class="relative mt-5 place-content-start p-6 pt-20 overflow-y-auto h-full grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"
+          class="relative mt-5 place-content-start p-6 pt-20 pb-20 phone:p-3 phone:pt-16 phone:pb-16 overflow-y-auto h-full
+                 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 phone:gap-3"
         >
         <div v-if="loading" class="absolute top-0 left-0 bottom-0 right-0 mt-15 mb-25">
           <LoadingDiv text="Getting your Rooms..." :duration="1000" @done="loading = false"/>

@@ -76,6 +76,42 @@ body,
 
 html {
   overscroll-behavior: none;
+  /* Prevent iOS from auto-resizing text/elements on orientation change */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+/* ── iOS PWA fixes ───────────────────────────────────────────────────────────
+   Apply globally; env() values are 0 in browser so these are inert on desktop.
+*/
+
+/* Kill the gray tap-flash on every touchable element */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* iOS WebKit fix: SVG paths/rects with fill="" don't inherit CSS fill like Chrome does.
+   Map empty-fill elements to currentColor so they pick up the nearest color context.
+   This fixes play/pause icons in the HUD which have fill="" in their source SVGs. */
+svg path[fill=""],
+svg rect[fill=""],
+svg polygon[fill=""],
+svg circle[fill=""],
+svg[fill=""] {
+  fill: currentColor;
+}
+
+/* Prevent the long-press callout (share/copy) on the canvas and interactive UI */
+canvas,
+[role="application"],
+[role="dialog"] {
+  -webkit-touch-callout: none;
+}
+
+/* Prevent accidental text selection during gestures */
+.hud-bar {
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 body {
