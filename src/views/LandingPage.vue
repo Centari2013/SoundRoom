@@ -14,9 +14,12 @@
       <section class="grid gap-12 lg:grid-cols-2 items-center">
         <!-- Left -->
         <div class="space-y-7 w-full ">
-          <p class="text-sm uppercase tracking-[0.25em] text-[var(--color-accent-soft)]">
-            Immersive sound design
-          </p>
+          <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold
+                      bg-[var(--color-accent)]/10 border border-[var(--color-accent)]/25
+                      text-[var(--color-accent)]">
+            <span class="w-1.5 h-1.5 rounded-full bg-[var(--color-success)] animate-pulse"></span>
+            Early Access
+          </div>
           <h1 class="text-5xl lg:text-6xl font-semibold leading-tight">
             Spatial audio rooms that feel alive.
           </h1>
@@ -170,7 +173,12 @@
                p-12 shadow-[0_20px_60px_rgba(0,0,0,0.35)] space-y-8"
       >
         <div class="space-y-4 max-w-2xl">
-          <p class="text-sm uppercase tracking-[0.25em] text-[var(--color-accent-soft)]">Get started</p>
+          <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold
+                      bg-[var(--color-accent)]/10 border border-[var(--color-accent)]/25
+                      text-[var(--color-accent)]">
+            <span class="w-1.5 h-1.5 rounded-full bg-[var(--color-success)] animate-pulse"></span>
+            Early Access
+          </div>
           <h3 class="text-3xl font-semibold leading-tight">
             Open a blank room in seconds and sculpt your own personal
             <span class="bg-gradient-to-r from-[var(--color-accent)] to-[var(--color-success)] bg-clip-text text-transparent">SoundRoom</span>.
