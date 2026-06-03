@@ -1,7 +1,8 @@
 <!-- App.vue -->
 <template>
   <Analytics />
-  
+  <SpeedInsights />
+
   <div class="w-screen h-screen max-w-screen max-h-screen min-w-0 overflow-hidden flex flex-col">
     <HeaderBar />
     <div class="flex-1 min-h-0 min-w-0 overflow-hidden flex flex-col">
@@ -67,6 +68,7 @@ import BaseButton from '@/components/ui/input/BaseButton.vue'
 import ErrorBoundary from '@/components/ErrorBoundary.vue'
 import { useThemeBootstrap } from '@/composables/useThemeBootstrap'
 import { Analytics } from '@vercel/analytics/vue';
+import { SpeedInsights } from '@vercel/speed-insights/vue';
 
 const isMobile = isMobileBrowser()
 const globalError = ref(null)
