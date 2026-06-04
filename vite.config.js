@@ -22,6 +22,11 @@ const PRERENDER_ROUTES = [
     description: 'Design and layer immersive spatial audio scenes in your browser. Drag directional sources, sculpt ambient mixes, and save custom rooms with SoundRoom.',
   },
   {
+    path: '/app/upgrade',
+    title: 'Pricing & Plans | SoundRoom',
+    description: 'Compare SoundRoom plans to unlock expanded sound libraries, room saves, and upcoming collaboration features.',
+  },
+  {
     path: '/terms',
     title: 'Terms of Service | SoundRoom',
     description: 'Review the SoundRoom Terms of Service covering usage guidelines, licensing, and account responsibilities.',
