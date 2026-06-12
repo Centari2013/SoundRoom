@@ -133,9 +133,9 @@ const plugins = [
       skipWaiting: true,
       clientsClaim: true,
 
-      // Cache the app shell (JS, CSS, HTML, fonts, SVGs)
-      // Audio files in S3 are intentionally excluded — too large to precache
-      globPatterns: ['**/*.{js,css,html,svg,woff2,png,ico}'],
+      // Cache the app shell, but keep large preview/splash images out of the
+      // install path so service-worker startup does not stall on slower links.
+      globPatterns: ['**/*.{js,css,html,svg,woff2}'],
       globIgnores: ['**/impulses/**'],
       runtimeCaching: [
         {
